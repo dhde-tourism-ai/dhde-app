@@ -30,10 +30,11 @@ The app only reads JSON from `public/data/`. It does no data processing and make
 | `regional_economics.json` | dhde-ai-demo `economics/build_regional_economics.py` | visitors, revenue, opportunity lost per node and region |
 | `strategic_questions.json` | strategy team | numbers and statuses for the Strategy view |
 | `routes.json` | `scripts/fetch_routes.mjs` (run once) | road geometry between node pairs, plus the shinkansen line |
+| `real_data.json` | `scripts/build_real_data.py` from dhde-preprocessing-model (**real**, refreshed daily) | last 90 days per node: visitors estimate, weather, traffic, hotels, survey counts, Google Maps metrics; hotel forward bookings |
 | `live_demo.json` | `scripts/gen_live_demo.mjs` (**dummy**) | hourly people, flows, traffic, weather, sentiment for today + 7 days |
 | `market_voice_demo.json` | `scripts/gen_market_voice_demo.mjs` (**dummy**, fictional posts and reviews) | hotels, search intent, survey, social media, reviews |
 
-The files here are snapshots so the app runs on its own. In production the pipeline publishes them next to the app.
+The demo files are snapshots so the app runs on its own; `real_data.json` is refreshed daily by the Data refresh workflow.
 
 Known data caveat: JTA monthly figures for Fukui municipalities jump sharply from March 2026. Check them before quoting any town-level number (the economics layer shows this warning).
 
@@ -70,6 +71,33 @@ All hourly arrays have `hours` entries starting 00:00 JST on `start` (index = da
   "weather_alerts": [{ "id": "", "type": "heavy_rain|wind|thunder|waves|snow|heat", "level": "advisory|warning", "nodes": [], "start": 0, "end": 0, "title_en": "", "title_ja": "", "detail_en": "", "detail_ja": "" }]
 }
 ```
+
+### real_data.json and the fallback rule
+
+Built by `scripts/build_real_data.py` (the lead's adapter; its docstring has the schema and calibration) from dhde-preprocessing-model's per-node master tables: 6 nodes, the last 90 days daily plus hotel forward bookings up to 90 days, per-node calibration and an `as_of` date per source group. Types: `src/types/real.ts`.
+
+**Rule: real wins where it exists, demo fills the rest, nothing breaks.** The file is optional. `src/lib/real.ts` validates it field by field (`parseReal`) and merges it over the demo files (`mergeAll`); a missing or malformed file, node or field falls back to the demo value, and a merge error falls back to the whole demo. Each layer's badge says what it runs on: "Demo data", "Real · <date>", or "Mixed" when only some nodes, roads or areas are real.
+
+| Layer | Real from real_data.json | Still demo |
+|---|---|---|
+| People / density | per-node daily `visitors_est` (modelled: the node's signal scaled to the prefecture's 2025 official annual count; confidence high / medium / low shown). The timeline gains the last 7 observed days. Future days: mean of the same weekday over the last 4 weeks. | hourly shape (scaled so each day adds up to the real total). Fukui Station has no official count: camera detections only, no visitor number |
+| People flow | route volumes follow the destination's real day total | split by road and hour |
+| Weather | daily `temp_c`, `precip_mm`, `wind_ms`, `sun_h`, `humidity_pct`, `snow_cm` (hourly curve synthesised) | future days, advisories (marked Demo) |
+| Traffic | roads with a counter (Katsuyama, Eiheiji, Rainbow Line): demo congestion profile scaled by the day's `traffic_volume` vs the 90-day mean. Zero or today's partial counts are treated as no reading | roads without a counter (Tojinbo, Awara), future days |
+| Hotels | `hotel_occ`, `hotel_adr_yen`, rooms sold / total per day; `hotel_forward` for nights ahead (Fukui Station, Awara, regional coast feed for Echizen, Mikata for Rainbow Line) | Rakuten availability |
+| Search intent | Google Maps Business Profile map views, search views, directions with a 14-day sparkline (lags about 5 days; `as_of` shown) for the node in each area | Ono, Tsuruga |
+| Reviews | rating (30-day average of new Google reviews, weighted by count) and new reviews in 30 days | total count, snippets (fictional) |
+| Survey | responses in 30 days (sum of `survey_responses`) | satisfaction, NPS, reasons, origin |
+| Social, sentiment | | all |
+| Nudges | demand vs normal = real 90-day mean `visitors_est`; booking balance from real occupancy and forward bookings | weather-route (future weather is demo) |
+
+The header chip shows `shared_date` (the latest day every node has data for).
+
+`scripts/check_data.mjs` validates the file (exit 1 when malformed, 0 when valid or absent). The Pages workflow runs it before the build, so a bad data push fails the deploy and the previous site stays up.
+
+## Data refresh
+
+`.github/workflows/daily-data.yml` runs every day at 00:00 UTC (09:00 JST, after all sources publish) and on demand. It checks out the public dhde-preprocessing-model into `$RUNNER_TEMP/ws`, restores the JMA hourly cache (`ws/jma_cache`; a cold run backfills about 12 minutes per node), runs `fetch_data.py` and `build_node.py` for the six nodes (a single node may fail; fewer than 4 master files fails the job), builds `real_data.json` with `scripts/build_real_data.py` (which writes nothing if its own validation fails), checks it with `scripts/check_data.mjs`, commits it to `main` as github-actions[bot] when it changed, and dispatches `pages.yml` (pushes made with `GITHUB_TOKEN` do not trigger other workflows). No secrets are used: TomTom and Rakuten report "not set" and the build continues. Python deps for the adapter: `requirements-ci.txt`.
 
 ### market_voice_demo.json (dummy today, same shape for the real feeds)
 
