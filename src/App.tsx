@@ -2,126 +2,94 @@ import { lazy, Suspense } from 'react'
 import { useProductData } from './hooks/useProductData'
 import { useHashRoute } from './hooks/useHashRoute'
 import type { ViewId } from './hooks/useHashRoute'
-import NodeDashboard from './views/NodeDashboard'
-import { AsOf } from './components/AsOf'
-import { isEstimatedMeasure, MEASURE_LABEL, nodeSwitcherIds } from './lib/nodes'
+import { useLang } from './lib/i18n'
+import { Icon } from './components/icons'
+import type { IconName } from './lib/icons'
+import { fmtDate } from './lib/format'
+import { Loading, LoadError } from './components/StateMsg'
 
-// Map (Leaflet) and Strategy are split into their own chunks.
+// Every view is its own chunk (Leaflet for the map, recharts for Nodes and Strategy).
 const MapView = lazy(() => import('./views/map/MapView'))
 const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
+const NodesView = lazy(() => import('./views/nodes/NodesView'))
 
-const TABS: { id: ViewId; label: string; ja: string }[] = [
-  { id: 'map', label: 'Map', ja: '地図' },
-  { id: 'nodes', label: 'Nodes', ja: 'ノード' },
-  { id: 'strategy', label: 'Strategy', ja: '戦略' },
+const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
+  { id: 'map', en: 'Map', ja: '地図', icon: 'map' },
+  { id: 'nodes', en: 'Nodes', ja: 'ノード', icon: 'nodes' },
+  { id: 'strategy', en: 'Strategy', ja: '戦略', icon: 'strategy' },
 ]
 
-function Loading({ what }: { what: string }) {
+function BrandMark() {
+  // Six nodes on a flow arc: the product in one glyph.
   return (
-    <div className="state-msg">
-      <p className="font-display">Loading {what}...</p>
-    </div>
-  )
-}
-
-function LoadError({ file, error }: { file: string; error: Error | null }) {
-  return (
-    <div className="state-msg error">
-      <p>Could not load data/{file}. Make sure this file is served alongside index.html.</p>
-      <p className="small">{error ? error.message : 'Unknown error'}</p>
-    </div>
+    <svg className="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="9" fill="#17233a" />
+      <path d="M6 22c4-9 9-12 20-13" stroke="#8b9dff" strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="1 3.2" />
+      <circle cx="7" cy="21.5" r="2.6" fill="#3987e5" />
+      <circle cx="15.5" cy="13.5" r="3.4" fill="#8b9dff" />
+      <circle cx="25" cy="9.3" r="2.2" fill="#d55181" />
+    </svg>
   )
 }
 
 export default function App() {
-  const { dashboard, registry, economics, strategy } = useProductData()
+  const data = useProductData()
+  const { dashboard, registry, economics, strategy, live, routes } = data
   const [route, navigate] = useHashRoute()
-  const data = dashboard.data
-  const liveNodes = data?.nodes ?? {}
-  const inRegistry = (id: string) => !!registry.data?.nodes.some((n) => n.id === id)
-  const selectedNode =
-    route.view === 'nodes' && route.node && (liveNodes[route.node] || inRegistry(route.node)) ? route.node : 'all'
-  const regNode = registry.data?.nodes.find((n) => n.id === selectedNode)
-  const activeLive = selectedNode !== 'all' ? liveNodes[selectedNode] : undefined
-  const measure = regNode?.measure ?? activeLive?.measure
+  const { lang, setLang, t } = useLang()
+
+  const generated = live.data?.generated_at ?? dashboard.data?.generated_at
+  const isDemo = live.data?.demo
 
   return (
-    <>
-      <header className={`hero ${route.view === 'nodes' ? '' : 'hero-compact'}`}>
-        <div className="grain"></div>
-        <div className="hero-inner">
-          <div className="hero-top">
-            <div>
-              <div className="eyebrow">福井県観光データ分析システム · Fukui Tourism Analytics System</div>
-              <h1 className="font-display hero-title">FTAS Executive Dashboard</h1>
-              {route.view === 'nodes' && (
-                <p className="hero-sub">
-                  Operational demand intelligence for DMOs, hotel operators, and municipal planners across the Reihoku and Reinan corridors.
-                </p>
-              )}
-            </div>
-            <div className="hero-right">
-              <span className="status-pill">
-                <span className="status-dot"></span> Live pipeline
-              </span>
-              <div className="hero-generated">
-                {data?.generated_at
-                  ? 'Generated ' + new Date(data.generated_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
-                  : ''}
-              </div>
-            </div>
-          </div>
+    <div className={`app view-${route.view}`}>
+      <header className="appbar">
+        <a className="brand" href="#/map" aria-label="DHDE · Fukui Tourism Intelligence">
+          <BrandMark />
+          <span className="brand-name">
+            DHDE<span className="dot">·</span>
+            <span className="brand-sub">{t('Fukui Tourism Intelligence', '福井観光インテリジェンス')}</span>
+          </span>
+        </a>
 
-          <nav className="view-tabs" aria-label="Views">
-            {TABS.map((t) => (
-              <a
-                key={t.id}
-                href={`#/${t.id}`}
-                className={`view-tab ${route.view === t.id ? 'active' : ''}`}
-                aria-current={route.view === t.id ? 'page' : undefined}
-              >
-                {t.label} <span className="ja">{t.ja}</span>
-              </a>
-            ))}
-          </nav>
+        <nav className="tabs" aria-label={t('Views', 'ビュー')}>
+          {TABS.map((tab) => (
+            <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
+              <Icon name={tab.icon} />
+              <span className="tab-label">{t(tab.en, tab.ja)}</span>
+            </a>
+          ))}
+        </nav>
 
-          {route.view === 'nodes' && data && (
-            <div className="node-bar">
-              <button className={`node-btn ${selectedNode === 'all' ? 'active' : ''}`} onClick={() => navigate({ view: 'nodes' })}>
-                All Nodes Overview
-              </button>
-              {nodeSwitcherIds(registry.data, data).map((key) => {
-                const n = liveNodes[key]
-                const reg = registry.data?.nodes.find((r) => r.id === key)
-                const label = n?.label ?? reg?.name ?? key
-                return (
-                  <button
-                    key={key}
-                    className={`node-btn ${selectedNode === key ? 'active' : ''} ${n ? '' : 'pending'}`}
-                    onClick={() => navigate({ view: 'nodes', node: key })}
-                    title={n ? undefined : 'Data not published yet'}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
+        <div className="appbar-right">
+          {generated && (
+            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : undefined}>
+              <span className="fresh-dot" aria-hidden="true"></span>
+              <span className="fresh-text-long">{t('Data', 'データ')}</span> {fmtDate(generated, lang)}
+            </span>
           )}
+          <div className="lang-toggle" role="group" aria-label={t('Language', '言語')}>
+            <button aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
+              EN
+            </button>
+            <button aria-pressed={lang === 'ja'} onClick={() => setLang('ja')} lang="ja">
+              日本語
+            </button>
+          </div>
         </div>
-
-        <svg className="wave-divider" viewBox="0 0 1200 28" preserveAspectRatio="none">
-          <path d="M0,14 C150,28 350,0 600,14 C850,28 1050,0 1200,14 L1200,28 L0,28 Z" fill="#F7F3EA" />
-        </svg>
       </header>
 
-      <main>
+      <main id="main">
         {route.view === 'map' && (
-          <Suspense fallback={<Loading what="map" />}>
+          <Suspense fallback={<Loading what={t('Loading map…', '地図を読み込み中…')} />}>
             <MapView
               registry={registry.data}
-              dashboard={data}
+              dashboard={dashboard.data}
               economics={economics.data}
               economicsError={economics.error}
+              live={live.data}
+              liveError={live.error}
+              routes={routes.data}
               selectedId={route.node}
               onSelect={(id) => navigate({ view: 'map', node: id })}
               onOpenNode={(id) => navigate({ view: 'nodes', node: id })}
@@ -129,56 +97,29 @@ export default function App() {
           </Suspense>
         )}
 
-        {route.view === 'nodes' &&
-          (dashboard.isLoading ? (
-            <Loading what="Fukui Tourism Analytics System" />
-          ) : dashboard.error || !data ? (
-            <LoadError file="dashboard_data.json" error={dashboard.error} />
-          ) : (
-            <>
-              <div className="freshness-strip">
-                <AsOf
-                  as_of={activeLive?.as_of}
-                  generated_at={data.generated_at}
-                  shared_date={activeLive?.shared_date ?? data.shared_date}
-                  is_estimated={activeLive?.is_estimated}
-                  stale={activeLive?.stale}
-                  label="Data as of"
-                />
-                {measure && (
-                  <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>
-                )}
-              </div>
-              {selectedNode !== 'all' && !activeLive ? (
-                <section className="node-pending">
-                  <h2>
-                    {regNode?.name ?? selectedNode} <span className="ja">{regNode?.name_ja}</span>
-                  </h2>
-                  <p>
-                    No published data for this node yet. Its visitor estimate
-                    {measure ? ` (${MEASURE_LABEL[measure].toLowerCase()})` : ''} is being added to the data pipeline
-                    and will appear here once it is published.
-                  </p>
-                </section>
-              ) : (
-                <NodeDashboard data={data} selectedNode={selectedNode} />
-              )}
-            </>
-          ))}
+        {route.view === 'nodes' && (
+          <Suspense fallback={<Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />}>
+            <NodesView data={data} selected={route.node} onSelect={(id) => navigate({ view: 'nodes', node: id })} />
+          </Suspense>
+        )}
 
         {route.view === 'strategy' &&
           (strategy.isLoading ? (
-            <Loading what="strategic questions" />
+            <Loading what={t('Loading strategic questions…', '戦略課題を読み込み中…')} />
           ) : strategy.error || !strategy.data ? (
             <LoadError file="strategic_questions.json" error={strategy.error} />
           ) : (
-            <Suspense fallback={<Loading what="strategy view" />}>
+            <Suspense fallback={<Loading what={t('Loading strategy view…', '読み込み中…')} />}>
               <StrategyView data={strategy.data} />
             </Suspense>
           ))}
       </main>
 
-      <footer className="site">Fukui Tourism Analytics System — Distributed Human Data Engine · React 18 Migration</footer>
-    </>
+      {route.view !== 'map' && (
+        <footer className="site-foot">
+          DHDE · Fukui Tourism Intelligence · {t('Distributed Human Data Engine, Sakura Science Program. Node forecasts from the FTAS pipeline.', '分散型ヒューマンデータエンジン（さくらサイエンスプログラム）。ノード予測はFTASパイプラインより。')}
+        </footer>
+      )}
+    </div>
   )
 }

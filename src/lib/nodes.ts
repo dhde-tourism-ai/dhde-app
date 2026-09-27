@@ -77,7 +77,7 @@ export interface CongestionTier {
 /** Congestion tiers from the demo map, on a 0-100 index. */
 export function congestionTier(index: number): CongestionTier {
   if (index < 30) return { label: 'Free flow', label_ja: '順調', colour: '#0ca30c' }
-  if (index < 55) return { label: 'Moderate', label_ja: '普通', colour: '#c98500' }
+  if (index < 55) return { label: 'Moderate', label_ja: '普通', colour: '#fab219' }
   if (index < 75) return { label: 'Congested', label_ja: '混雑', colour: '#ec835a' }
   return { label: 'Gridlock', label_ja: '立ち往生', colour: '#d03b3b' }
 }
