@@ -38,7 +38,9 @@ export default function App() {
   const [route, navigate] = useHashRoute()
   const data = dashboard.data
   const liveNodes = data?.nodes ?? {}
-  const selectedNode = route.view === 'nodes' && route.node && liveNodes[route.node] ? route.node : 'all'
+  const inRegistry = (id: string) => !!registry.data?.nodes.some((n) => n.id === id)
+  const selectedNode =
+    route.view === 'nodes' && route.node && (liveNodes[route.node] || inRegistry(route.node)) ? route.node : 'all'
   const regNode = registry.data?.nodes.find((n) => n.id === selectedNode)
   const activeLive = selectedNode !== 'all' ? liveNodes[selectedNode] : undefined
   const measure = regNode?.measure ?? activeLive?.measure
@@ -95,10 +97,9 @@ export default function App() {
                 return (
                   <button
                     key={key}
-                    className={`node-btn ${selectedNode === key ? 'active' : ''}`}
+                    className={`node-btn ${selectedNode === key ? 'active' : ''} ${n ? '' : 'pending'}`}
                     onClick={() => navigate({ view: 'nodes', node: key })}
-                    disabled={!n}
-                    title={n ? undefined : 'No data yet in dashboard_data.json'}
+                    title={n ? undefined : 'Data not published yet'}
                   >
                     {label}
                   </button>
@@ -148,7 +149,20 @@ export default function App() {
                   <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>
                 )}
               </div>
-              <NodeDashboard data={data} selectedNode={selectedNode} />
+              {selectedNode !== 'all' && !activeLive ? (
+                <section className="node-pending">
+                  <h2>
+                    {regNode?.name ?? selectedNode} <span className="ja">{regNode?.name_ja}</span>
+                  </h2>
+                  <p>
+                    No published data for this node yet. Its visitor estimate
+                    {measure ? ` (${MEASURE_LABEL[measure].toLowerCase()})` : ''} is being added to the data pipeline
+                    and will appear here once it is published.
+                  </p>
+                </section>
+              ) : (
+                <NodeDashboard data={data} selectedNode={selectedNode} />
+              )}
             </>
           ))}
 

@@ -291,3 +291,10 @@ td.heat-hidden { color: var(--pend); background: var(--pend-bg); font-size: .6re
 @media print {
   .view-tabs, .map-toolbar, .strat-nav { display: none; }
 }
+
+/* Nodes in the registry that have no published data yet */
+.node-btn.pending { border-style: dashed; opacity: 0.8; }
+.node-pending { max-width: 720px; margin: 24px auto; padding: 20px 24px; border: 1px dashed currentColor; border-radius: 10px; }
+.node-pending h2 { margin: 0 0 8px; font-size: 20px; }
+.node-pending .ja { font-size: 14px; opacity: 0.7; margin-left: 6px; }
+.node-pending p { margin: 0; line-height: 1.6; }
