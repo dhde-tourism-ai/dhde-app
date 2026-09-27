@@ -1,0 +1,67 @@
+/**
+ * public/data/real_data.json, written by scripts/build_real_data.py from
+ * dhde-preprocessing-model's per-node master tables. Every field may be null.
+ * The app merges it over the demo files (src/lib/real.ts); anything missing or
+ * malformed falls back to the demo value for that node and field.
+ */
+
+export interface RealDaily {
+  date: string
+  /** Raw daily signal (camera detections, vehicles, bookings or proxy). */
+  signal: number | null
+  /** signal × calibration factor: visitors scaled to the 2025 official count (modelled). */
+  visitors_est: number | null
+  temp_c: number | null
+  precip_mm: number | null
+  wind_ms: number | null
+  sun_h: number | null
+  humidity_pct: number | null
+  snow_cm: number | null
+  traffic_volume: number | null
+  /** 0..1 */
+  hotel_occ: number | null
+  hotel_adr_yen: number | null
+  hotel_rooms_sold: number | null
+  hotel_rooms_total: number | null
+  survey_responses: number | null
+  gmb_map_views: number | null
+  gmb_search_views: number | null
+  gmb_directions: number | null
+  gmb_rating: number | null
+  gmb_review_change: number | null
+}
+
+export interface RealForward {
+  date: string
+  hotel_occ: number | null
+  hotel_rooms_sold: number | null
+  hotel_rooms_total: number | null
+}
+
+export interface RealCalibration {
+  official_annual_2025: number | null
+  signal_sum_2025: number | null
+  factor: number | null
+  source: string
+  status: string
+  signal_days_2025?: number
+  confidence: 'high' | 'medium' | 'low' | 'none'
+}
+
+export interface RealNode {
+  measure: string | null
+  signal_column: string | null
+  calibration: RealCalibration
+  as_of: Partial<Record<'visitors' | 'weather' | 'traffic' | 'hotel' | 'survey' | 'google_maps', string | null>>
+  daily: RealDaily[]
+  hotel_forward: RealForward[]
+}
+
+export interface RealData {
+  generated_at: string
+  today: string
+  shared_date: string | null
+  source: { repo: string; commit: string | null }
+  notes: string[]
+  nodes: Record<string, RealNode>
+}
