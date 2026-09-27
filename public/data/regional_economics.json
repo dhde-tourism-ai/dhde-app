@@ -26,7 +26,7 @@
   "benchmark_overnight_share_kanazawa": {
    "value": 0.39,
    "status": "modelled",
-   "source": "Kanazawa City overnight share ~39%, from Gabriella's pilot. Benchmark only: a different city with a different visitor mix"
+   "source": "Kanazawa City overnight share ~39%, from the strategy team's pilot. Benchmark only: a different city with a different visitor mix"
   },
   "hotel_occupancy_fukui": {
    "value": 0.465,

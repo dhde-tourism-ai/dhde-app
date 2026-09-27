@@ -3,7 +3,7 @@
     "title": "Fukui Tourism Intelligence · five questions",
     "subtitle": "Pilot model of the Government Intelligence dashboard",
     "as_of": "2026-09-27",
-    "author": "Gabriella Gunarto",
+    "author": "Strategy team",
     "source_doc": "Strategic Questions Integrated Dashboard v1 (shared 27 Sep 2026). Pilot, not definitive.",
     "footer": "Pilot for discussion with the tech team and the Fukui Prefecture Tourism Federation. Programme ends 10 Nov 2026."
   },
@@ -63,7 +63,7 @@
   },
   "todos": [
     {
-      "for": "Gabriella",
+      "for": "strategy team",
       "text": "Research note (27 Sep 2026): the Vision progress report gives 3.87M overnight guests and 110k foreign guests as 2025 figures, not FY2024 (2024 = 4.03M and 92k). They are labelled \"2025\" here; please confirm which year the scorecard should use. Also: 入込数 2025 spend is ¥198.7bn, already above the ¥170bn 2029 target; the scorecard still shows the FY2024 ¥151.3bn."
     }
   ],
@@ -165,7 +165,7 @@
               "unit": "M",
               "prefix": "",
               "current_year": "2025",
-              "todo": "Research note: 3.87M is a 2025 figure (2024 = 4.03M). Confirm with Gabriella."
+              "todo": "Research note: 3.87M is a 2025 figure (2024 = 4.03M). Confirm with the strategy team."
             },
             {
               "label": "Foreign overnight guests",
@@ -175,7 +175,7 @@
               "unit": "k",
               "prefix": "",
               "current_year": "2025",
-              "todo": "Research note: 110k is a 2025 figure (2024 = 92k). Confirm with Gabriella."
+              "todo": "Research note: 110k is a 2025 figure (2024 = 92k). Confirm with the strategy team."
             }
           ]
         },
@@ -1903,7 +1903,12 @@
                 "¥[16,700]",
                 ".78 vs .93"
               ],
-              "status": "illustrative"
+              "status": "illustrative",
+              "pace": {
+                "value": 0.78,
+                "expected": 0.93,
+                "label": "Coins claimed vs time elapsed"
+              }
             },
             {
               "cells": [

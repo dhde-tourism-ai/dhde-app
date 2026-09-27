@@ -1,0 +1,103 @@
+/**
+ * Contract for public/data/market_voice_demo.json: the Market (hotels, search
+ * intent) and Voice of visitor (survey, social, reviews) layers. Today's file is
+ * DUMMY data from scripts/gen_market_voice_demo.mjs ("demo": true, all posts and
+ * reviews fictional). Per-day arrays have `days` entries starting on `start`.
+ */
+
+export interface HotelArea {
+  id: string
+  name: string
+  name_ja: string
+  lat: number
+  lon: number
+  /** Node whose demand this area serves (nudge loop #3). */
+  node: string
+  /** FTAS reservation feed name. */
+  feed: string
+  rooms_total: number
+  /** Occupancy per night, one per day. */
+  occupancy_pct: number[]
+  rooms_left: number[]
+  /** Booking curve for the busiest upcoming night: share booked N days ahead, vs last year. */
+  booking_curve: { target_day: number; points: { days_ahead: number; booked_pct: number; last_year_pct: number }[] }
+  /** Rakuten availability: share of hotels within radius_km with rooms left 1 / 7 / 30 days out. */
+  rakuten: { radius_km: number; hotels_checked: number; share_with_rooms_pct: { d1: number; d7: number; d30: number } }
+}
+
+export interface RsiArea {
+  id: string
+  name: string
+  name_ja: string
+  lat: number
+  lon: number
+  /** Route-search / online interest index today (0-100). */
+  index: number
+  /** Last 14 days, oldest first; the last value is today. */
+  history: number[]
+  change_7d_pct: number
+}
+
+export interface Share {
+  en: string
+  ja: string
+  share: number
+}
+
+export interface SurveyNode {
+  responses_30d: number
+  /** Mean satisfaction, 1-5. */
+  satisfaction: number
+  /** Net promoter score, -100..100. */
+  nps: number
+  top_reasons: Share[]
+  origin_share: Share[]
+  source: string
+}
+
+export interface SocialPost {
+  id: string
+  kind: 'photo' | 'short' | 'comment'
+  /** Fictional handle. */
+  handle: string
+  hours_ago: number
+  sentiment: number
+  en: string
+  ja: string
+  likes: number
+  comments: number
+  /** Abstract placeholder the app draws (never a real photo). */
+  thumb: { motif: 'cliff' | 'train' | 'dino' | 'lake' | 'onsen' | 'temple'; hue: number }
+}
+
+export interface SocialNode {
+  posts_24h: number
+  images_24h: number
+  comments_24h: number
+  avg_sentiment: number
+  feed: SocialPost[]
+}
+
+export interface ReviewsNode {
+  rating: number
+  count: number
+  rating_30d_ago: number
+  new_30d: number
+  /** Share of reviews at 5, 4, 3, 2, 1 stars. */
+  distribution_pct: number[]
+  snippets: { stars: number; en: string; ja: string; days_ago: number }[]
+  source: string
+}
+
+export interface MarketVoiceData {
+  demo: boolean
+  note: string
+  generated_at: string
+  start: string
+  days: number
+  hotels: HotelArea[]
+  rsi: RsiArea[]
+  survey: Record<string, SurveyNode>
+  social: Record<string, SocialNode>
+  reviews: Record<string, ReviewsNode>
+}

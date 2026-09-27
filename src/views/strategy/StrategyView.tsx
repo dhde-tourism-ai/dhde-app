@@ -1,61 +1,108 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
+import { Icon } from '../../components/icons'
+import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
+import '../../styles/pages.css'
 
 /**
- * Port of Gabriella's "Fukui Tourism Intelligence · five questions" pilot.
- * Layout only: every number comes from public/data/strategic_questions.json.
+ * The five strategic questions as dashboard components. Layout only: every
+ * number comes from public/data/strategic_questions.json.
  */
 export default function StrategyView({ data }: { data: StrategicQuestions }) {
+  const { t } = useLang()
   const [showSpecs, setShowSpecs] = useState(false)
+  const [activeQ, setActiveQ] = useState(data.questions[0]?.id)
   const { meta, equation } = data
 
+  // Scroll-spy for the sticky question nav.
+  useEffect(() => {
+    const els = data.questions.map((q) => document.getElementById(q.id)).filter((e): e is HTMLElement => !!e)
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        if (vis[0]) setActiveQ(vis[0].target.id)
+      },
+      { rootMargin: '-120px 0px -55% 0px' },
+    )
+    els.forEach((e) => io.observe(e))
+    return () => io.disconnect()
+  }, [data])
+
   return (
-    <div className="strategy">
-      <section className="panel strat-head">
-        <div className="section-head">
-          <div>
-            <div className="section-title">{meta.title}</div>
-            <div className="section-sub">
-              {meta.subtitle} · <AsOf as_of={meta.as_of} /> · {meta.author}
-            </div>
-          </div>
-          <label className="toggle">
+    <div className="page strategy">
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">{t('Strategy', '戦略')}</div>
+          <h1 className="page-title">{meta.title}</h1>
+          <p className="page-sub">
+            {meta.subtitle} · <AsOf as_of={meta.as_of} />
+          </p>
+        </div>
+        <label className="spec-toggle">
+          <span className="switch">
             <input type="checkbox" checked={showSpecs} onChange={(e) => setShowSpecs(e.target.checked)} />
-            Show build specs
-          </label>
-        </div>
+            <span className="switch-track"></span>
+          </span>
+          {t('Show build specs', 'ビルド仕様を表示')}
+        </label>
+      </div>
+
+      <div className="card strat-legend">
         <PillLegend labels={data.pills} />
+      </div>
 
-        <div className="equation">
-          <div className="equation-terms">
-            {equation.terms.map((t, i) => (
-              <span key={i} className="eq-term-wrap">
-                <span className={`eq-term ${t.value_text === null ? 'pending' : ''}`}>
-                  <span className="eq-value">{t.value_text ?? '[x]'}</span>
-                  <span className="eq-label">{t.label}</span>
-                </span>
-                {t.op && <span className="eq-op">{t.op}</span>}
-              </span>
-            ))}
-            <StatusPill status={equation.status} />
-          </div>
-          <p className="equation-caption">{equation.caption}</p>
+      <section className="card equation" aria-label={t('Revenue equation', '観光消費の式')}>
+        <div className="eq-head">
+          <h2 className="card-title">{t('How the total is built', '観光消費額の構成')}</h2>
+          <StatusPill status={equation.status} />
         </div>
-
-        {data.todos.map((t, i) => (
-          <div key={i} className="todo-box">
-            <strong>TODO for {t.for}:</strong> {t.text}
-          </div>
-        ))}
+        <div className="eq-terms">
+          {equation.terms.map((term, i) => (
+            <div key={i} className="eq-part">
+              <div className={`eq-term ${term.value_text === null ? 'pending' : ''} ${term.op === null ? 'total' : ''}`}>
+                <span className="eq-value">{term.value_text ?? '[x]'}</span>
+                <span className="eq-label">{term.label}</span>
+              </div>
+              {term.op && (
+                <span className="eq-op" aria-hidden="true">
+                  {term.op}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <p className="eq-caption">{equation.caption}</p>
       </section>
 
-      <nav className="strat-nav" aria-label="Questions">
+      {data.todos.map((td, i) => (
+        <div key={i} className="banner banner-warn research-note">
+          <Icon name="info" />
+          <span>
+            <strong>
+              {t('Research note for the', '研究メモ：')} {td.for}:
+            </strong>{' '}
+            {td.text}
+          </span>
+        </div>
+      ))}
+
+      <nav className="q-nav" aria-label={t('Questions', '設問')}>
         {data.questions.map((q) => (
-          <a key={q.id} href={`#/strategy`} onClick={(e) => { e.preventDefault(); document.getElementById(q.id)?.scrollIntoView({ behavior: 'smooth' }) }}>
-            <span className="q-num">Q{q.number}</span> {q.nav}
+          <a
+            key={q.id}
+            href="#/strategy"
+            className={activeQ === q.id ? 'on' : ''}
+            aria-current={activeQ === q.id ? 'true' : undefined}
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById(q.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          >
+            <span className="q-num">Q{q.number}</span>
+            <span className="q-nav-label">{q.nav}</span>
           </a>
         ))}
       </nav>
@@ -64,34 +111,39 @@ export default function StrategyView({ data }: { data: StrategicQuestions }) {
         <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
       ))}
 
-      <section className="panel strat-foot">
+      <footer className="strat-foot">
         <p>{meta.footer}</p>
-        <p className="small">Source: {meta.source_doc}</p>
-      </section>
+        <p className="muted">
+          {t('Source', '出典')}: {meta.source_doc}
+        </p>
+      </footer>
     </div>
   )
 }
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
+  const { t } = useLang()
   return (
-    <section className="panel strat-q" id={q.id}>
-      <div className="q-head">
+    <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
+      <header className="q-head">
         <span className="q-badge">Q{q.number}</span>
         <div>
-          <h2 className="section-title">{q.title}</h2>
+          <h2 className="q-title" id={`${q.id}-title`}>
+            {q.title}
+          </h2>
           <p className="q-why">{q.why}</p>
+          <div className="q-subs">
+            {q.subs.map((s) => (
+              <span key={s} className="chip">
+                {s}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="q-subs">
-        {q.subs.map((s) => (
-          <span key={s} className="chip">
-            {s}
-          </span>
-        ))}
-      </div>
+      </header>
       <div className="answer">
-        <div className="answer-label">Answer today</div>
-        <div>{q.answer}</div>
+        <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
+        <p>{q.answer}</p>
       </div>
       <div className="card-grid">
         {q.cards.map((c) => (
@@ -100,17 +152,17 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
       </div>
       {showSpecs && (
         <div className="spec">
-          <div className="spec-title">Build spec</div>
+          <div className="spec-title">{t('Build spec', 'ビルド仕様')}</div>
           <dl>
-            <dt>Data</dt>
+            <dt>{t('Data', 'データ')}</dt>
             <dd>{q.spec.data}</dd>
-            <dt>Model</dt>
+            <dt>{t('Model', 'モデル')}</dt>
             <dd>{q.spec.model}</dd>
-            <dt>Outputs</dt>
+            <dt>{t('Outputs', '出力')}</dt>
             <dd>{q.spec.outputs}</dd>
-            <dt>Acceptance test</dt>
+            <dt>{t('Acceptance test', '受入基準')}</dt>
             <dd>{q.spec.acceptance}</dd>
-            <dt>Status</dt>
+            <dt>{t('Status', '状況')}</dt>
             <dd>{q.spec.status}</dd>
           </dl>
         </div>

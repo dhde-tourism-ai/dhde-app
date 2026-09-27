@@ -1,42 +1,161 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CircleMarker, LayerGroup, LayersControl, MapContainer, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
+import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import '../../styles/map.css'
+import '../../styles/map-layers.css'
 import type { DashboardData } from '../../types/dashboard'
-import type { NodeRegistry, Prefecture } from '../../types/nodes'
+import type { NodeRegistry } from '../../types/nodes'
 import type { RegionalEconomics } from '../../types/economics'
-import { buildMapNodes, congestionTier, isEstimatedMeasure, latestReading } from '../../lib/nodes'
-import type { MapNode } from '../../lib/nodes'
-import { EconomicsLayer } from './EconomicsLayer'
-import { econCaveats } from '../../lib/economics'
-import { MapLegend } from './MapLegend'
-import { NodePanel } from './NodePanel'
+import type { LiveData } from '../../types/live'
+import type { RoutesFile } from '../../types/routes'
+import type { MarketVoiceData } from '../../types/market'
+import { buildMapNodes } from '../../lib/nodes'
+import { frameAt, timeLabel } from '../../lib/live'
+import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
+import { computeNudges, topPerDay } from '../../lib/nudges'
+import type { Nudge } from '../../lib/nudges'
+import { useLang } from '../../lib/i18n'
+import { useIsNarrow } from '../../hooks/useIsNarrow'
+import { Icon } from '../../components/icons'
+import { DemoBadge } from '../../components/DemoBadge'
+import { DEFAULT_LAYERS, readUrlState } from './layers'
+import type { BasemapId, LayerId } from './layers'
+import { PeopleLayer } from './layers/PeopleLayer'
+import { FlowLayer } from './layers/FlowLayer'
+import { TrafficLayer } from './layers/TrafficLayer'
+import { WeatherLayer } from './layers/WeatherLayer'
+import { SentimentLayer } from './layers/SentimentLayer'
+import { DensityLayer } from './layers/FieldLayers'
+import { EconomicsLayer } from './layers/EconomicsLayer'
+import { LayersPanel } from './panels/LayersPanel'
+import { AlertsPanel } from './panels/AlertsPanel'
+import { NodeDrawer } from './panels/NodeDrawer'
+import { Timeline } from './panels/Timeline'
+import { NudgesPanel } from './panels/NudgesPanel'
+import { NudgeLayer } from './layers/NudgeLayer'
+import { HotelsLayer, ReviewsLayer, RsiLayer, SocialLayer, SurveyLayer } from './layers/VoiceMarketLayers'
 
-const FALLBACK_BOUNDS: Prefecture['bounds'] = [[35.3, 135.35], [36.65, 137.05]]
+/** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
+const VIEW_BOUNDS: [[number, number], [number, number]] = [
+  [35.57, 135.84],
+  [36.3, 136.56],
+]
 
-/** Marker radius from a 0-100 index (same curve as the demo map). */
-function radiusFor(index: number): number {
-  return 7 + Math.sqrt(Math.max(index, 1)) * 2.0
-}
-
-const LABEL_OFFSET: Record<'left' | 'right' | 'top' | 'bottom', [number, number]> = {
-  left: [-10, 0],
-  right: [10, 0],
-  top: [0, -10],
-  bottom: [0, 10],
-}
-
-function FitBounds({ bounds }: { bounds: Prefecture['bounds'] }) {
+function FitView({ narrow }: { narrow: boolean }) {
   const map = useMap()
   useEffect(() => {
-    // The container can still be settling (lazy chunk, banners above it), so
-    // re-measure before fitting.
-    const t = window.setTimeout(() => {
+    const id = window.setTimeout(() => {
       map.invalidateSize()
-      map.fitBounds(bounds, { padding: [8, 8] })
-    }, 60)
-    return () => window.clearTimeout(t)
-  }, [map, bounds])
+      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] } : { paddingTopLeft: [330, 64], paddingBottomRight: [440, 96] })
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [map, narrow])
   return null
+}
+
+function FlyTo({ target }: { target: { at: [number, number]; key: number } | null }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!target) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    map.flyTo(target.at, Math.max(map.getZoom(), 10.5), { animate: !reduce, duration: 0.8 })
+  }, [map, target])
+  return null
+}
+
+/**
+ * Keep hover cards inside the visible map: below the status strip and above the
+ * timeline. Leaflet positions tooltips with a transform, so the nudge is a margin.
+ */
+function KeepCardsInView() {
+  const map = useMap()
+  useEffect(() => {
+    let el: HTMLElement | null = null
+    let raf = 0
+    const fit = () => {
+      if (!el) return
+      el.style.marginTop = ''
+      const r = el.getBoundingClientRect()
+      const mapBox = map.getContainer().getBoundingClientRect()
+      const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
+      const timeline = document.querySelector('.map-bottom')?.getBoundingClientRect()
+      const top = Math.max(mapBox.top, strip ? strip.bottom : mapBox.top) + 8
+      const bottom = Math.min(mapBox.bottom, timeline ? timeline.top : mapBox.bottom) - 8
+      let d = 0
+      if (r.top < top) d = top - r.top
+      else if (r.bottom > bottom) d = Math.max(top - r.top, bottom - r.bottom)
+      if (d !== 0) el.style.marginTop = `${d}px`
+    }
+    const schedule = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(fit)
+    }
+    // React renders the card's content after Leaflet opens it, so refit when it resizes and shortly after.
+    const ro = new ResizeObserver(schedule)
+    const timers: number[] = []
+    const open = (e: L.LeafletEvent) => {
+      el = ((e as L.TooltipEvent).tooltip?.getElement() as HTMLElement | undefined) ?? null
+      ro.disconnect()
+      if (el) ro.observe(el)
+      schedule()
+      timers.push(window.setTimeout(fit, 60), window.setTimeout(fit, 200))
+    }
+    const close = () => {
+      el = null
+      ro.disconnect()
+    }
+    map.on('tooltipopen', open)
+    map.on('tooltipclose', close)
+    map.on('mousemove move zoomend', schedule)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      timers.forEach((x) => window.clearTimeout(x))
+      map.off('tooltipopen', open)
+      map.off('tooltipclose', close)
+      map.off('mousemove move zoomend', schedule)
+    }
+  }, [map])
+  return null
+}
+
+const ESRI_ATTR = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community · Labels &copy; Esri'
+
+function Basemap({ id }: { id: BasemapId }) {
+  if (id === 'dark') {
+    // CARTO dark matter now returns "API key required" tiles without a key, so the dark
+    // basemap is Esri's key-free Dark Gray Canvas (base + labels).
+    return (
+      <>
+        <TileLayer
+          key="dark"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          attribution="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors"
+          maxZoom={16}
+        />
+        <TileLayer key="dark-ref" url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}" maxZoom={16} />
+      </>
+    )
+  }
+  if (id === 'streets') {
+    return (
+      <TileLayer
+        key="streets"
+        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        maxZoom={19}
+        className="tiles-streets"
+      />
+    )
+  }
+  return (
+    <>
+      <TileLayer key="img" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution={ESRI_ATTR} maxZoom={18} className="tiles-imagery" />
+      <TileLayer key="roads" url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}" maxZoom={18} opacity={0.55} />
+      <TileLayer key="ref" url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
+    </>
+  )
 }
 
 interface MapViewProps {
@@ -44,180 +163,211 @@ interface MapViewProps {
   dashboard: DashboardData | null
   economics: RegionalEconomics | null
   economicsError: Error | null
+  live: LiveData | null
+  liveError: Error | null
+  routes: RoutesFile | null
+  market: MarketVoiceData | null
   selectedId?: string
   onSelect: (id: string | undefined) => void
   onOpenNode: (id: string) => void
 }
 
-export default function MapView({ registry, dashboard, economics, economicsError, selectedId, onSelect, onOpenNode }: MapViewProps) {
-  const [prefecture, setPrefecture] = useState('fukui')
-  const [showSecondary, setShowSecondary] = useState(false)
-  // ?layer=economics opens the map with the economics layer on (shareable link).
-  const [showEconomics, setShowEconomics] = useState(() => new URLSearchParams(window.location.search).get('layer') === 'economics')
+export default function MapView({ registry, dashboard, economics, economicsError, live, liveError, routes, market, selectedId, onSelect, onOpenNode }: MapViewProps) {
+  const { t: tr, lang } = useLang()
+  const narrow = useIsNarrow()
+  const [url] = useState(readUrlState)
+  const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? DEFAULT_LAYERS))
+  const [showPrecip, setShowPrecip] = useState(true)
+  const [tIdx, setT] = useState<number | null>(url.t)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState(1)
+  const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
+  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
+  const [showAllNudges, setShowAllNudges] = useState(false)
+  const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
+  const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
+
+  const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.observed_until ?? 0))
+
+  useEffect(() => {
+    if (!playing || !live) return
+    const id = window.setInterval(() => {
+      setT((cur) => {
+        const c = cur ?? live.observed_until
+        return c + 1 >= live.hours ? 0 : c + 1
+      })
+    }, 900 / speed)
+    return () => window.clearInterval(id)
+  }, [playing, speed, live])
+
+  const toggle = (l: LayerId) =>
+    setActive((s) => {
+      const n = new Set(s)
+      if (n.has(l)) n.delete(l)
+      else n.add(l)
+      return n
+    })
 
   const allNodes = useMemo(() => buildMapNodes(registry, dashboard), [registry, dashboard])
-  const prefectures = registry?.prefectures ?? []
-  const bounds = prefectures.find((p) => p.id === prefecture)?.bounds ?? FALLBACK_BOUNDS
-  const visible = allNodes.filter((n) => n.prefecture === prefecture && (n.priority || showSecondary || n.id === selectedId))
+  const nodes = useMemo(() => allNodes.filter((n) => n.prefecture === 'fukui'), [allNodes])
+  const frame = useMemo(() => (live ? frameAt(live, t) : null), [live, t])
+  const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
+  const top = alerts ? topAlert(alerts) : null
+  const day = Math.floor(t / 24)
+  const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], 0) : []), [live, market, registry])
+  const nudgesShown = useMemo(() => (showAllNudges ? nudges : topPerDay(nudges, 3)), [nudges, showAllNudges])
+  const nudgesFrom = useMemo(() => nudgesShown.filter((n) => n.day >= day), [nudgesShown, day])
+  const nudgesFromAll = useMemo(() => nudges.filter((n) => n.day >= day).length, [nudges, day])
+  const pickNudge = (n: Nudge) => {
+    setPlaying(false)
+    setT(n.start)
+    setActiveNudge(n.id)
+    setFly({ at: n.focus, key: Date.now() })
+    setActive((s) => (s.has('nudges') ? s : new Set([...s, 'nudges'])))
+    if (narrow) setSheet(null)
+  }
   const selected = allNodes.find((n) => n.id === selectedId)
+  const kanazawa = registry?.nodes.find((n) => n.id === 'kanazawa')
+  const isDemo = Boolean(live?.demo)
+  const observed = live ? t <= live.observed_until : true
+  const layerOn = (l: LayerId) => active.has(l)
+  const paused = false
+
+  const tabs = (
+    <div className="panel-tabs" role="tablist" aria-label={tr('Right panel', 'パネル')}>
+      <button role="tab" aria-selected={rightTab === 'board'} onClick={() => setRightTab('board')}>
+        <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
+      </button>
+      <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
+        <Icon name="flag" size={14} /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+      </button>
+    </div>
+  )
+  const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
+  const nudgeTitle = (
+    <h2 className="fp-title">
+      <Icon name="flag" /> {tr('Nudges', 'ナッジ')}
+    </h2>
+  )
+
+  const rightPanel = selected ? (
+    <NodeDrawer
+      node={selected}
+      frame={frame?.[selected.id]}
+      live={live}
+      routes={routes}
+      dashboard={dashboard}
+      economics={economics}
+      market={market}
+      t={t}
+      onClose={() => onSelect(undefined)}
+      onOpenNode={onOpenNode}
+    />
+  ) : showNudges && live ? (
+    <NudgesPanel nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
+  ) : alerts ? (
+    <AlertsPanel alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
+  ) : null
+
+  const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
 
   return (
-    <section className="map-wrap">
-      <div className="map-toolbar">
-        <div className="seg" role="group" aria-label="Prefecture">
-          {prefectures.map((p) => (
-            <button key={p.id} className={`seg-btn ${prefecture === p.id ? 'active' : ''}`} onClick={() => setPrefecture(p.id)}>
-              {p.name} <span className="ja">{p.name_ja}</span>
-            </button>
-          ))}
-        </div>
-        <label className="toggle">
-          <input type="checkbox" checked={showSecondary} onChange={(e) => setShowSecondary(e.target.checked)} />
-          Show all nodes
-        </label>
-        <label className="toggle">
-          <input type="checkbox" checked={showEconomics} onChange={(e) => setShowEconomics(e.target.checked)} />
-          Economics layer
-        </label>
-      </div>
+    <section className={`mapview sheet-${sheetState}`}>
+      <MapContainer bounds={VIEW_BOUNDS} zoomSnap={0.25} zoomDelta={0.5} zoomControl={false} scrollWheelZoom className="map-canvas" preferCanvas={false} worldCopyJump={false}>
+        <FitView narrow={narrow} />
+        {!narrow && <ZoomControl position="bottomright" />}
+        <Basemap id={basemap} />
 
-      {showEconomics && economics?.sample && (
-        <div className="sample-banner" role="status">
-          <strong>Sample data.</strong> regional_economics.json is a placeholder in the agreed contract shape; every figure is illustrative or pending and must not be quoted.
-        </div>
-      )}
-      {showEconomics &&
-        economics &&
-        econCaveats(economics).map((c) => (
-          <div key={c} className="caveat-banner" role="note">
-            <strong>Check before quoting:</strong> {c}
+        {live && frame && routes && (
+          <>
+            {layerOn('density') && <DensityLayer nodes={nodes} frame={frame} />}
+            {layerOn('traffic') && <TrafficLayer live={live} routes={routes} t={t} paused={paused} />}
+            {layerOn('flow') && <FlowLayer live={live} routes={routes} t={t} paused={paused} />}
+            {layerOn('sentiment') && <SentimentLayer nodes={nodes} frame={frame} />}
+          </>
+        )}
+        {market && layerOn('hotels') && <HotelsLayer data={market} day={day} />}
+        {market && layerOn('rsi') && <RsiLayer data={market} />}
+        {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
+        {(layerOn('people') || layerOn('flow')) && (
+          <PeopleLayer
+            nodes={layerOn('people') ? nodes : []}
+            frame={frame}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            showCounts={layerOn('people')}
+            kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
+          />
+        )}
+        {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
+        {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
+        {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
+        {market && layerOn('social') && <SocialLayer data={market} nodes={nodes} frame={frame} />}
+        {layerOn('nudges') && <NudgeLayer nudges={nudgesShown} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
+        <FlyTo target={fly} />
+        <KeepCardsInView />
+      </MapContainer>
+
+      <div className="map-ui">
+        {live && (
+          <div className="status-strip" role="status" aria-live="polite">
+            <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{observed ? tr('LIVE', 'ライブ') : tr('FORECAST', '予測')}</span>
+            <span className="ss-time">{timeLabel(live, t, lang)}</span>
+            {top ? (
+              <span className="ss-msg">
+                <span className="ss-sev" style={{ background: SEV_COLOUR[top.sev] }} aria-hidden="true"></span>
+                {tr(top.en, top.ja)}
+              </span>
+            ) : (
+              <span className="ss-msg">
+                <span className="ss-sev" style={{ background: '#0ca30c' }} aria-hidden="true"></span>
+                {tr('All conditions normal.', 'すべて平常です。')}
+              </span>
+            )}
+            {isDemo && <DemoBadge />}
           </div>
-        ))}
-      {showEconomics && economicsError && (
-        <div className="sample-banner">Economics layer unavailable: {economicsError.message}</div>
-      )}
+        )}
+        {liveError && <div className="banner banner-warn status-strip">live_demo.json: {liveError.message}</div>}
 
-      <div className="map-layout">
-        <div className="map-box">
-          <MapContainer bounds={bounds} scrollWheelZoom className="leaflet-host" zoomControl>
-            <FitBounds bounds={bounds} />
-            <LayersControl position="topright">
-              <LayersControl.BaseLayer checked name="Light grey (Esri)">
-                <LayerGroup>
-                  <TileLayer
-                    url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-                    attribution="&copy; Esri &mdash; Esri, DeLorme, NAVTEQ"
-                    maxZoom={16}
-                  />
-                  <TileLayer
-                    url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
-                    maxZoom={16}
-                  />
-                </LayerGroup>
-              </LayersControl.BaseLayer>
-              <LayersControl.BaseLayer name="OpenStreetMap">
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution="&copy; OpenStreetMap contributors"
-                  maxZoom={18}
-                />
-              </LayersControl.BaseLayer>
-            </LayersControl>
-
-            {showEconomics && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
-
-            {visible.map((n) => (
-              <NodeMarker key={n.id} node={n} selected={n.id === selectedId} onSelect={onSelect} />
-            ))}
-          </MapContainer>
-          <MapLegend showEconomics={showEconomics && Boolean(economics)} />
+        <div className="map-left">
+          <LayersPanel
+            basemap={basemap}
+            setBasemap={setBasemap}
+            active={active}
+            toggle={toggle}
+            showPrecip={showPrecip}
+            setShowPrecip={setShowPrecip}
+            isDemo={isDemo}
+            economics={economics}
+            market={market}
+            economicsError={economicsError}
+            onClose={narrow ? () => setSheet(null) : undefined}
+          />
         </div>
 
-        <NodePanel
-          node={selected}
-          nodes={visible}
-          dashboard={dashboard}
-          economics={showEconomics ? economics : null}
-          onSelect={onSelect}
-          onOpenNode={onOpenNode}
-        />
+        <div className="map-right">{rightPanel}</div>
+
+        <div className="map-bottom">
+          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} />}
+          {narrow && (
+            <div className="sheet-tabs" role="group" aria-label={tr('Panels', 'パネル')}>
+              <button className="btn" aria-pressed={sheetState === 'left'} onClick={() => { onSelect(undefined); setSheet(sheet === 'layers' ? null : 'layers') }}>
+                <Icon name="layers" /> {tr('Layers', 'レイヤー')} <span className="count-badge">{active.size}</span>
+              </button>
+              <button className="btn" aria-pressed={sheet === 'alerts' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'alerts' ? null : 'alerts') }}>
+                <Icon name="alert" /> {tr('Live', 'ライブ')}
+                {alerts && alerts.traffic.length + alerts.weather.length + alerts.crowd.length > 0 && (
+                  <span className="count-badge warn">{alerts.traffic.length + alerts.weather.length + alerts.crowd.length}</span>
+                )}
+              </button>
+              <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
+                <Icon name="flag" /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </section>
-  )
-}
-
-function NodeMarker({ node, selected, onSelect }: { node: MapNode; selected: boolean; onSelect: (id: string | undefined) => void }) {
-  const reading = latestReading(node.live)
-  const estimated = isEstimatedMeasure(node.measure ?? node.live?.measure, node.live)
-  const handlers = { click: () => onSelect(selected ? undefined : node.id) }
-  const dir = node.label_dir ?? 'right'
-  const label = (
-    <span>
-      {node.name} <span className="ja">{node.name_ja}</span>
-      {estimated && <span className="est-tag">est.</span>}
-    </span>
-  )
-  const tooltip = (
-    <Tooltip
-      permanent={node.priority}
-      sticky={!node.priority}
-      direction={dir}
-      offset={LABEL_OFFSET[dir]}
-      className="node-label"
-    >
-      {label}
-    </Tooltip>
-  )
-
-  if (!reading) {
-    // No live feed yet: a small hollow grey marker so the node is placed but clearly not measured.
-    return (
-      <CircleMarker
-        center={[node.lat, node.lon]}
-        radius={6}
-        pathOptions={{ color: selected ? '#12202C' : '#7a8595', weight: 2, dashArray: '2,3', fillColor: '#c3cad4', fillOpacity: 0.5 }}
-        eventHandlers={handlers}
-      >
-        {tooltip}
-      </CircleMarker>
-    )
-  }
-
-  const tier = congestionTier(reading.congestionIndex)
-  const rActual = radiusFor(reading.actualIndex)
-  const rPred = radiusFor(reading.forecastIndex)
-  return (
-    <>
-      {/* Predicted: dashed ring */}
-      <CircleMarker
-        center={[node.lat, node.lon]}
-        radius={rPred}
-        interactive={false}
-        pathOptions={{ color: tier.colour, weight: 2, dashArray: '2,5', fillOpacity: 0, opacity: 0.85 }}
-      />
-      {selected && (
-        <CircleMarker
-          center={[node.lat, node.lon]}
-          radius={Math.max(rActual, rPred) + 6}
-          interactive={false}
-          pathOptions={{ color: '#12202C', weight: 2.5, dashArray: '3,4', fillOpacity: 0 }}
-        />
-      )}
-      {/* Actual: solid fill. Estimated (proxy / reservations) nodes get a paler fill and dashed outline. */}
-      <CircleMarker
-        center={[node.lat, node.lon]}
-        radius={rActual}
-        pathOptions={{
-          color: estimated ? tier.colour : '#ffffff',
-          weight: 2.5,
-          dashArray: estimated ? '4,3' : undefined,
-          fillColor: tier.colour,
-          fillOpacity: estimated ? 0.4 : 0.92,
-        }}
-        eventHandlers={handlers}
-      >
-        {tooltip}
-      </CircleMarker>
-    </>
   )
 }

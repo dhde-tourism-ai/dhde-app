@@ -33,9 +33,10 @@ export function sumMetrics(ms: Metric[]): number | null {
 }
 
 /** "27 Sep 2026" from an ISO date or datetime. */
-export function fmtDate(iso: string | undefined | null): string {
+export function fmtDate(iso: string | undefined | null, lang: 'en' | 'ja' = 'en'): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso
+  if (lang === 'ja') return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }

@@ -1,5 +1,5 @@
 /**
- * Types for public/data/strategic_questions.json (Gabriella's
+ * Types for public/data/strategic_questions.json (the strategy team's
  * "Fukui Tourism Intelligence · five questions" pilot). All numbers live in
  * the data file; components only lay them out.
  */
@@ -125,7 +125,12 @@ export interface IndicatorsCard extends CardBase {
 export interface TableCard extends CardBase {
   type: 'table'
   columns: string[]
-  rows: { cells: (string | null)[]; status: PillStatus }[]
+  rows: {
+    cells: (string | null)[]
+    status: PillStatus
+    /** Optional pace bar: value vs expected by now (0..1 each). */
+    pace?: { value: number; expected: number; label?: string }
+  }[]
 }
 
 export interface BuilderLever {

@@ -1,0 +1,102 @@
+/*
+ * DHDE design tokens. Dark theme first.
+ *
+ * Ground: deep navy ink. One accent (periwinkle) for interaction and selection only.
+ * Semantic status (good / warn / serious / crit) is a separate fixed scale and is
+ * never used for identity. Series colours are the dataviz reference palette's dark
+ * steps, validated against --surface (#121c2f) with scripts/validate_palette.js:
+ * all eight pass (worst adjacent CVD ΔE 8.4, normal-vision ΔE 19.3, all >= 3:1).
+ * Arrivals / departures (#3987e5 / #d55181) pass the all-pairs check (CVD ΔE 15.9).
+ */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,750&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  color-scheme: dark;
+
+  /* ground and surfaces */
+  --bg: #0a1120;
+  --bg-2: #0d1627;
+  --surface: #121c2f;
+  --surface-2: #17233a;
+  --surface-3: #1e2c47;
+  --glass: rgba(13, 21, 37, 0.86);
+  --line: rgba(160, 185, 230, 0.1);
+  --line-strong: rgba(160, 185, 230, 0.2);
+
+  /* ink */
+  --text: #e9eef8;
+  --text-2: #aeb9cd;
+  --muted: #7f8ba3;
+
+  /* the one accent */
+  --accent: #8b9dff;
+  --accent-strong: #a9b7ff;
+  --accent-soft: rgba(139, 157, 255, 0.14);
+  --accent-ink: #0a1120;
+
+  /* status (fixed; always with an icon or label) */
+  --good: #0ca30c;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --crit: #d03b3b;
+  --good-text: #4fd06a;
+  --crit-text: #ff8a8a;
+  --warn-text: #ffcb5c;
+
+  /* provenance pills */
+  --real: #3dbb6e;
+  --modelled: #5b9cf0;
+  --illustrative: #e0a33a;
+  --pending: #8a94a6;
+
+  /* series (dark steps of the reference palette) */
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+  --s6: #008300;
+  --s7: #9085e9;
+  --s8: #e66767;
+  --arrive: #3987e5;
+  --depart: #d55181;
+
+  /* sequential blue (dark: low = near surface) and diverging */
+  --seq-1: #184f95;
+  --seq-2: #256abf;
+  --seq-3: #3987e5;
+  --seq-4: #6da7ec;
+  --seq-5: #9ec5f4;
+  --div-neg: #e66767;
+  --div-mid: #3a4356;
+  --div-pos: #3987e5;
+
+  /* chart chrome */
+  --grid: #1f2a3f;
+  --axis: #34425e;
+
+  /* type */
+  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', 'IBM Plex Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-ja: 'IBM Plex Sans JP', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* spacing scale (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --appbar-h: 56px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
