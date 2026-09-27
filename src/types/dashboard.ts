@@ -11,7 +11,7 @@
 export type NodeKey = string
 
 /** Default render order for the six priority Fukui nodes; other nodes follow in data order. */
-export const NODE_ORDER: NodeKey[] = ['tojinbo', 'fukui_station', 'katsuyama', 'rainbow_line', 'awara', 'eiheiji']
+export const NODE_ORDER: NodeKey[] = ['tojinbo', 'fukui_station', 'katsuyama', 'rainbow_line', 'awara_onsen', 'eiheiji']
 
 /**
  * What a node's visitor count measures.

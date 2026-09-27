@@ -29,6 +29,8 @@ export interface RegistryNode {
   colour?: string
   /** Other ids this node is known by (e.g. 'station' in the demo map). */
   aliases?: string[]
+  /** Which side of the marker the label sits on (declutters close nodes). */
+  label_dir?: 'left' | 'right' | 'top' | 'bottom'
   /** Coordinates are an approximate town / station centre. */
   coords_approx?: boolean
 }
