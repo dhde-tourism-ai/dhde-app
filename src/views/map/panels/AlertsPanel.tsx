@@ -4,7 +4,8 @@ import { SEV_COLOUR } from '../../../lib/alerts'
 import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
 import type { IconName } from '../../../lib/icons'
-import { DemoBadge } from '../../../components/DemoBadge'
+import { SourceBadge } from '../../../components/SourceBadge'
+import type { SourceInfo } from '../../../types/live'
 import type { NodeFrame } from '../../../lib/live'
 import type { MapNode } from '../../../lib/nodes'
 
@@ -63,12 +64,14 @@ interface Props {
   onSelect: (id: string) => void
   onClose?: () => void
   tabs?: ReactNode
+  source?: SourceInfo
 }
 
 /** Right-hand panel when no node is selected: node board plus traffic, weather and operator alerts. */
-export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs }: Props) {
+export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs, source }: Props) {
   const { t } = useLang()
-  const total = frame ? Object.values(frame).reduce((a, f) => a + f.onSite, 0) : 0
+  const withEst = frame ? Object.values(frame).filter((f) => !f.noEstimate) : []
+  const total = withEst.reduce((a, f) => a + f.onSite, 0)
   return (
     <section className="float-panel alerts-panel" aria-label={t('Live board', 'ライブボード')}>
       <header className="fp-head">
@@ -77,7 +80,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
             <Icon name="alert" /> {t('Live board', 'ライブボード')}
           </h2>
         )}
-        {isDemo && <DemoBadge compact={Boolean(tabs)} />}
+        {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} />}
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />
@@ -88,7 +91,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         {frame && (
           <div className="board">
             <div className="board-total">
-              <span className="eyebrow">{t('People on site, six nodes', '6ノードの現地人数')}</span>
+              <span className="eyebrow">{withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`)}</span>
               <span className="board-num">{Math.round(total).toLocaleString()}</span>
             </div>
             <ul className="board-list">
@@ -99,12 +102,11 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
                   return (
                     <li key={n.id}>
                       <button className="board-row" onClick={() => onSelect(n.id)}>
-                        <span className="sw" style={{ background: f.tier.colour }} aria-hidden="true"></span>
+                        <span className="sw" style={{ background: f.noEstimate ? 'transparent' : f.tier.colour, boxShadow: f.noEstimate ? 'inset 0 0 0 1.5px #c9d4ff' : undefined }} aria-hidden="true"></span>
                         <span className="board-name">{t(n.name.replace(' East Entrance', ''), n.name_ja)}</span>
-                        <span className="board-tier">{t(f.tier.label, f.tier.label_ja)}</span>
+                        <span className="board-tier">{f.noEstimate ? t('no estimate', '推計なし') : t(f.tier.label, f.tier.label_ja)}</span>
                         <span className="board-val num">
-                          {f.observed ? '' : '~'}
-                          {Math.round(f.onSite).toLocaleString()}
+                          {f.noEstimate ? '—' : `${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString()}`}
                         </span>
                       </button>
                     </li>

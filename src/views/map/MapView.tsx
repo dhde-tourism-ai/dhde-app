@@ -19,6 +19,7 @@ import { useLang } from '../../lib/i18n'
 import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
+import { SourceBadge } from '../../components/SourceBadge'
 import { DEFAULT_LAYERS, readUrlState } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
@@ -188,13 +189,13 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
 
-  const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.observed_until ?? 0))
+  const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.now_index ?? live?.observed_until ?? 0))
 
   useEffect(() => {
     if (!playing || !live) return
     const id = window.setInterval(() => {
       setT((cur) => {
-        const c = cur ?? live.observed_until
+        const c = cur ?? live.now_index ?? live.observed_until
         return c + 1 >= live.hours ? 0 : c + 1
       })
     }, 900 / speed)
@@ -215,7 +216,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
   const top = alerts ? topAlert(alerts) : null
   const day = Math.floor(t / 24)
-  const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], 0) : []), [live, market, registry])
+  const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0) : []), [live, market, registry])
   const nudgesShown = useMemo(() => (showAllNudges ? nudges : topPerDay(nudges, 3)), [nudges, showAllNudges])
   const nudgesFrom = useMemo(() => nudgesShown.filter((n) => n.day >= day), [nudgesShown, day])
   const nudgesFromAll = useMemo(() => nudges.filter((n) => n.day >= day).length, [nudges, day])
@@ -265,9 +266,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
       onOpenNode={onOpenNode}
     />
   ) : showNudges && live ? (
-    <NudgesPanel nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
+    <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
-    <AlertsPanel alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
+    <AlertsPanel source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
 
   const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
@@ -297,6 +298,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
             selectedId={selectedId}
             onSelect={onSelect}
             showCounts={layerOn('people')}
+            meta={live?.node_meta}
+            day={day}
             kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
           />
         )}
@@ -325,7 +328,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 {tr('All conditions normal.', 'すべて平常です。')}
               </span>
             )}
-            {isDemo && <DemoBadge />}
+            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} /> : <DemoBadge />)}
           </div>
         )}
         {liveError && <div className="banner banner-warn status-strip">live_demo.json: {liveError.message}</div>}
@@ -341,6 +344,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             isDemo={isDemo}
             economics={economics}
             market={market}
+            sources={live?.sources}
             economicsError={economicsError}
             onClose={narrow ? () => setSheet(null) : undefined}
           />

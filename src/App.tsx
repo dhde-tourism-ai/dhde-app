@@ -34,12 +34,13 @@ function BrandMark() {
 
 export default function App() {
   const data = useProductData()
-  const { dashboard, registry, economics, strategy, live, routes, market } = data
+  const { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading } = data
   const [route, navigate] = useHashRoute()
   const { lang, setLang, t } = useLang()
 
-  const generated = live.data?.generated_at ?? dashboard.data?.generated_at
-  const isDemo = live.data?.demo
+  const shared = merged?.real?.shared_date ?? null
+  const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
+  const isDemo = !shared && live.data?.demo
 
   return (
     <div className={`app view-${route.view}`}>
@@ -63,9 +64,9 @@ export default function App() {
 
         <div className="appbar-right">
           {generated && (
-            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : undefined}>
+            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')}>
               <span className="fresh-dot" aria-hidden="true"></span>
-              <span className="fresh-text-long">{t('Data', 'データ')}</span> {fmtDate(generated, lang)}
+              <span className="fresh-text-long">{shared ? t('Real data to', '実データ') : t('Data', 'データ')}</span> {fmtDate(generated, lang)}
             </span>
           )}
           <div className="lang-toggle" role="group" aria-label={t('Language', '言語')}>
@@ -80,17 +81,18 @@ export default function App() {
       </header>
 
       <main id="main">
-        {route.view === 'map' && (
+        {route.view === 'map' && (live.isLoading || realLoading) && <Loading what={t('Loading map…', '地図を読み込み中…')} />}
+        {route.view === 'map' && !live.isLoading && !realLoading && (
           <Suspense fallback={<Loading what={t('Loading map…', '地図を読み込み中…')} />}>
             <MapView
               registry={registry.data}
               dashboard={dashboard.data}
               economics={economics.data}
               economicsError={economics.error}
-              live={live.data}
+              live={merged?.live ?? live.data}
               liveError={live.error}
               routes={routes.data}
-              market={market.data}
+              market={merged?.market ?? market.data}
               selectedId={route.node}
               onSelect={(id) => navigate({ view: 'map', node: id })}
               onOpenNode={(id) => navigate({ view: 'nodes', node: id })}

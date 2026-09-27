@@ -22,6 +22,8 @@ export interface Nudge {
   sev: Sev
   /** Size of the deviation behind the nudge (ranks nudges of equal severity). */
   magnitude: number
+  /** Triggered from real data (plus the forecast), not the demo. */
+  real?: boolean
   node: string
   day: number
   /** Hour indices the nudge applies to. */
@@ -69,8 +71,10 @@ function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja') {
   return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
 }
 
-/** "Normal" daily visitors: 2025 annual count ÷ 365, else the window's mean forecast. */
+/** "Normal" daily visitors: mean real visitors_est over the history when available, else 2025 annual ÷ 365, else the window's mean forecast. */
 function normalDaily(live: LiveData, id: string): number {
+  const real = live.node_meta?.[id]?.normal_daily
+  if (real) return real
   const a = live.nodes[id]?.annual_visitors_2025
   if (a) return a / 365
   const d = dailyArrivals(live, id)
@@ -86,6 +90,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
 
   // #1 Demand alerts
   for (const id of Object.keys(live.nodes)) {
+    if (live.node_meta?.[id]?.no_estimate) continue
     const normal = normalDaily(live, id)
     for (const { d, predicted } of dailyArrivals(live, id)) {
       if (d < fromDay) continue
@@ -99,13 +104,14 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
         loop: 1,
         sev: up ? (pct >= 0.45 ? 'serious' : 'warn') : 'info',
         magnitude: Math.abs(pct),
+        real: Boolean(live.node_meta?.[id]),
         node: id,
         day: d,
         start: d * 24 + 9,
         end: d * 24 + 17,
         title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal`,
         title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}`,
-        reason_en: `Forecast ${Math.round(predicted).toLocaleString()} visitors vs normal ${Math.round(normal).toLocaleString()} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).`,
+        reason_en: `Forecast ${Math.round(predicted).toLocaleString()} visitors vs normal ${Math.round(normal).toLocaleString()}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).`,
         reason_ja: `予測${Math.round(predicted).toLocaleString()}人、平常${Math.round(normal).toLocaleString()}人（${day.weekend ? '週末' : '平日'}）。`,
         action_en: up ? 'Add staff, extend parking and shop hours; push timed entry.' : 'Run a same-week offer and promote to nearby overnight guests.',
         action_ja: up ? '増員、駐車場・営業時間の延長、時間指定入場の案内を。' : '今週限りの特典で近隣宿泊客へ告知を。',
@@ -176,6 +182,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             loop: 3,
             sev: 'serious',
             magnitude: occ / 100 + (ratio - 1),
+            real: Boolean(h.real_days?.[d]),
             node: h.node,
             day: d,
             start: d * 24 + 15,
@@ -194,6 +201,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             loop: 3,
             sev: 'info',
             magnitude: (100 - occ) / 100,
+            real: Boolean(h.real_days?.[d]),
             node: h.node,
             day: d,
             start: d * 24 + 10,

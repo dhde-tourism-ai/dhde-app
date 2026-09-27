@@ -6,6 +6,8 @@ import type { MapNode } from '../../../lib/nodes'
 import { isEstimatedMeasure } from '../../../lib/nodes'
 import { escapeHtml, peopleRadius } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
+import type { RealNodeMeta } from '../../../types/live'
+import { measureLabel } from '../../../lib/real'
 
 const ACCENT = '#8b9dff'
 
@@ -16,7 +18,21 @@ interface Props {
   onSelect: (id: string | undefined) => void
   showCounts: boolean
   kanazawa?: { lat: number; lon: number }
+  meta?: Record<string, RealNodeMeta>
+  day?: number
 }
+
+/** Latest real signal on or before day d (for nodes without a visitor estimate). */
+function lastSignal(m: RealNodeMeta | undefined, d: number): { v: number; day: number } | null {
+  if (!m) return null
+  for (let k = Math.min(d, m.signal_daily.length - 1); k >= 0; k--) {
+    const v = m.signal_daily[k]
+    if (v !== null && v !== undefined) return { v, day: k }
+  }
+  return null
+}
+
+const CONF: Record<string, [string, string]> = { high: ['high', '高'], medium: ['medium', '中'], low: ['low', '低'], none: ['none', 'なし'] }
 
 /**
  * People: circle area = people on site. Solid fill = observed count; dashed ring =
@@ -24,7 +40,7 @@ interface Props {
  * crowding tier (status scale, always with a text label). Estimated measures
  * (footfall proxy, bookings, vehicle counts) get a dashed outline and "est." tag.
  */
-export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, kanazawa }: Props) {
+export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, kanazawa, meta, day = 0 }: Props) {
   const { t, lang } = useLang()
 
   const labelIcons = useMemo(() => {
@@ -35,10 +51,13 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
       const dir = n.label_dir ?? 'right'
       const r = f ? peopleRadius(Math.max(f.onSite, f.predicted)) : 6
       const name = escapeHtml(lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', ''))
-      const count = f
+      const sig = f?.noEstimate ? lastSignal(meta?.[n.id], day) : null
+      const count = f?.noEstimate
+        ? `<span class="nt-count fc">${sig ? `${escapeHtml(t('cam', 'カメラ'))} ${Math.round(sig.v).toLocaleString()}` : escapeHtml(t('no estimate', '推計なし'))}</span>`
+        : f
         ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString()}</span>`
         : `<span class="nt-count none">${escapeHtml(t('no data yet', 'データなし'))}</span>`
-      const tier = f ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
+      const tier = f && !f.noEstimate ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
       const estTag = est ? `<span class="nt-est">${escapeHtml(t('est.', '推定'))}</span>` : ''
       out[n.id] = L.divIcon({
         className: 'map-divicon',
@@ -47,7 +66,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
       })
     }
     return out
-  }, [nodes, frame, selectedId, showCounts, lang, t])
+  }, [nodes, frame, selectedId, showCounts, lang, t, meta, day])
 
   const kzIcon = useMemo(
     () =>
@@ -99,6 +118,35 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
             </CircleMarker>
           )
         }
+        if (f.noEstimate) {
+          const sig = lastSignal(meta?.[n.id], day)
+          return (
+            <CircleMarker
+              key={n.id}
+              center={[n.lat, n.lon]}
+              radius={9}
+              eventHandlers={click}
+              pathOptions={{ color: selected ? ACCENT : '#c9d4ff', weight: 2, dashArray: '2 3', fillColor: '#0a1120', fillOpacity: 0.65 }}
+            >
+              <Tooltip className="map-tip wide" direction="top" offset={[0, -10]}>
+                <div className="tt-head">
+                  <span>{t(n.name, n.name_ja)}</span>
+                  <span className="tt-real">{t('Real signal', '実シグナル')}</span>
+                </div>
+                <div className="tt-hero">
+                  <b className="num">{sig ? Math.round(sig.v).toLocaleString() : '—'}</b>
+                  <span>{t('camera detections in the day (not unique visitors)', '1日のカメラ検知数（延べ、来訪者数ではない）')}</span>
+                </div>
+                <div className="tip-sub">
+                  {t('No visitor estimate: there is no official annual count for this site to calibrate against.', '来訪者推計なし：換算に使う公式年間値がありません。')}
+                  {sig && meta?.[n.id] ? ` ${t('Latest', '最新')}: ${meta[n.id].visitors_as_of ?? ''}` : ''}
+                </div>
+              </Tooltip>
+            </CircleMarker>
+          )
+        }
+        const m = meta?.[n.id]
+        const realV = f.realDay?.visitors ?? null
         const est = isEstimatedMeasure(n.measure) || n.measure === 'vehicles'
         const rNow = peopleRadius(f.onSite)
         const rPred = peopleRadius(f.predicted)
@@ -136,8 +184,14 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
               <Tooltip className="map-tip wide" direction="top" offset={[0, -rNow]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
-                  <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                  {realV !== null ? <span className="tt-real">{t('Real day total', '実日合計')}</span> : m ? <span className="tt-demo">{t('Forecast', '予測')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
                 </div>
+                {realV !== null && (
+                  <div className="tt-hero">
+                    <b className="num">{Math.round(realV).toLocaleString()}</b>
+                    <span>{t('visitors this day (modelled)', 'この日の来訪者数（推計）')}</span>
+                  </div>
+                )}
                 <div className="tt-hero">
                   <b className="num">{Math.round(f.onSite).toLocaleString()}</b>
                   <span>{f.observed ? t('people on site now', '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
@@ -156,7 +210,13 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                   <span className="tt-k">{t('Arriving this hour', 'この1時間の到着')}</span>
                   <span className="tt-v num">{Math.round(f.arrivals).toLocaleString()}</span>
                 </div>
-                {est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>}
+                {m ? (
+                  <div className="tip-sub">
+                    {t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} ({m.official_2025?.toLocaleString() ?? '—'}) · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
+                  </div>
+                ) : (
+                  est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>
+                )}
               </Tooltip>
             </CircleMarker>
           </Fragment>

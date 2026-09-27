@@ -65,28 +65,48 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
           <Tip>
             <div className="tt-head">
               <span>{t(h.name, h.name_ja)}</span>
-              <span className="tt-demo">{t('Demo', 'デモ')}</span>
+              {h.real_days?.[d] ? <span className="tt-real">{t('Real', '実データ')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
             </div>
             <div className="tt-hero">
               <b className="num">{h.occupancy_pct[d]}%</b>
               <span>
-                {t('occupied tonight', '本日泊の稼働率')} · {h.rooms_left[d].toLocaleString()} / {h.rooms_total.toLocaleString()} {t('rooms left', '室空き')}
+                {t('occupied that night', 'この日の稼働率')} · {h.rooms_left[d].toLocaleString()} / {h.rooms_total.toLocaleString()} {t('rooms left', '室空き')}
               </span>
             </div>
-            <div className="tt-sec">{t('Booking curve for the busiest night', '最繁忙日の予約カーブ')}</div>
-            <Bars items={h.booking_curve.points.map((p) => ({ label: `${p.days_ahead} ${t('days out', '日前')}`, value: p.booked_pct }))} />
+            {h.adr_yen?.[d] ? (
+              <div className="tt-grid">
+                <span className="tt-k">{t('Average daily rate', '平均客室単価')}</span>
+                <span className="tt-v num">¥{Math.round(h.adr_yen[d]!).toLocaleString()}</span>
+              </div>
+            ) : null}
+            {h.forward && h.forward.length > 0 ? (
+              <>
+                <div className="tt-sec">
+                  {t('Forward bookings: on the books for nights ahead', '先行予約：各日の予約済み稼働率')} <span className="tt-real">{t('Real', '実データ')}</span>
+                </div>
+                <Bars items={h.forward.map((p) => ({ label: `${t('in', '')} ${p.days_ahead} ${t(p.days_ahead === 1 ? 'day' : 'days', '日後')}`, value: p.occ_pct }))} />
+              </>
+            ) : (
+              <>
+                <div className="tt-sec">{t('Booking curve for the busiest night', '最繁忙日の予約カーブ')}</div>
+                <Bars items={h.booking_curve.points.map((p) => ({ label: `${p.days_ahead} ${t('days out', '日前')}`, value: p.booked_pct }))} />
+                <div className="tt-kv">
+                  <span>{t('Last year, 7 days out', '前年・7日前')}</span>
+                  <b className="num">{h.booking_curve.points.find((p) => p.days_ahead === 7)?.last_year_pct}%</b>
+                </div>
+              </>
+            )}
             <div className="tt-kv">
-              <span>{t('Last year, 7 days out', '前年・7日前')}</span>
-              <b className="num">{h.booking_curve.points.find((p) => p.days_ahead === 7)?.last_year_pct}%</b>
               <span>
-                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} km {t('with rooms', 'で空室あり')}
+                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} km {t('with rooms (1/7/30 days)', 'で空室あり（1・7・30日先）')} <span className="tt-demo">{t('Demo', 'デモ')}</span>
               </span>
               <b className="num">
                 {h.rakuten.share_with_rooms_pct.d1}% / {h.rakuten.share_with_rooms_pct.d7}% / {h.rakuten.share_with_rooms_pct.d30}%
               </b>
             </div>
             <div className="tip-sub">
-              {t('1 / 7 / 30 days out', '1・7・30日先')} · {h.rakuten.hotels_checked} {t('hotels checked', '軒')} · {h.feed}
+              {h.feed}
+              {h.as_of ? ` · ${t('as of', '時点')} ${h.as_of}` : ''}
             </div>
           </Tip>
         </Marker>
@@ -107,7 +127,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             m.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-rsi"><span class="ov-bar" style="background:${rsiColour(m.index)}"></span><span class="ov-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span><b class="num">${m.index}</b><svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div>`,
+              html: `<div class="ov-badge ov-rsi${m.gmb ? ' gmb' : ''}"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><span class="ov-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString() : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -122,19 +142,41 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
           <Tip>
             <div className="tt-head">
               <span>{t(m.name, m.name_ja)}</span>
-              <span className="tt-demo">{t('Demo', 'デモ')}</span>
+              {m.gmb ? <span className="tt-real">{t('Real', '実データ')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
             </div>
-            <div className="tt-hero">
-              <b className="num">{m.index}</b>
-              <span>
-                {t('route-search interest index (0–100)', 'ルート検索関心指数（0〜100）')} · {m.change_7d_pct >= 0 ? '+' : ''}
-                {m.change_7d_pct}% {t('vs previous 7 days', '（前7日比）')}
-              </span>
-            </div>
+            {m.gmb ? (
+              <>
+                <div className="tt-hero">
+                  <b className="num">{m.gmb.map_views.toLocaleString()}</b>
+                  <span>
+                    {t('Google Maps views of the', 'Googleマップでの表示（')} {m.gmb.node.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} {t('profile', 'のプロフィール）')} · {m.change_7d_pct >= 0 ? '+' : ''}
+                    {m.change_7d_pct}% {t('week on week', '（前週比）')}
+                  </span>
+                </div>
+                <div className="tt-grid">
+                  <span className="tt-k">{t('Search views', '検索での表示')}</span>
+                  <span className="tt-v num">{m.gmb.search_views.toLocaleString()}</span>
+                  <span className="tt-k">{t('Direction requests', '経路検索')}</span>
+                  <span className="tt-v num">{m.gmb.directions.toLocaleString()}</span>
+                </div>
+              </>
+            ) : (
+              <div className="tt-hero">
+                <b className="num">{m.index}</b>
+                <span>
+                  {t('route-search interest index (0–100)', 'ルート検索関心指数（0〜100）')} · {m.change_7d_pct >= 0 ? '+' : ''}
+                  {m.change_7d_pct}% {t('vs previous 7 days', '（前7日比）')}
+                </span>
+              </div>
+            )}
             <svg className="tt-spark" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
               <path d={sparkPath(m.history, 300, 60)} />
             </svg>
-            <div className="tip-sub">{t('Last 14 days. Weekend searches peak Thursday to Friday.', '直近14日。週末の検索は木〜金曜にピーク。')}</div>
+            <div className="tip-sub">
+              {m.gmb
+                ? t(`Google Maps Business Profile, last 14 days to ${m.gmb.as_of} (reports lag about 5 days).`, `Googleビジネスプロフィール、${m.gmb.as_of}までの14日間（約5日遅れ）。`)
+                : t('Last 14 days. Weekend searches peak Thursday to Friday.', '直近14日。週末の検索は木〜金曜にピーク。')}
+            </div>
           </Tip>
         </Marker>
       ))}
@@ -174,13 +216,19 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
                 <span>
                   {t(n.name, n.name_ja)} · {t('visitor survey', '来訪者アンケート')}
                 </span>
-                <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                {s.responses_real ? <span className="tt-real">{t('Mixed', '一部実データ')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
               </div>
               <div className="tt-hero">
                 <b className="num">{s.satisfaction.toFixed(1)}</b>
                 <span>
                   {t('satisfaction (1–5)', '満足度（1〜5）')} · NPS {s.nps > 0 ? '+' : ''}
-                  {s.nps} · {s.responses_30d} {t('responses in 30 days', '件（30日）')}
+                  {s.nps} <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                </span>
+              </div>
+              <div className="tt-grid">
+                <span className="tt-k">{t('Responses, last 30 days', '回答数（30日）')}</span>
+                <span className="tt-v num">
+                  {s.responses_30d.toLocaleString()} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
                 </span>
               </div>
               <div className="tt-sec">{t('Top reasons for visiting', '主な来訪理由')}</div>
@@ -199,7 +247,10 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
                   </span>
                 ))}
               </div>
-              <div className="tip-sub">{s.source}</div>
+              <div className="tip-sub">
+                {s.source}
+                {s.responses_real ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}` : ''}
+              </div>
             </Tip>
           </Marker>
         )
@@ -314,7 +365,7 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
             n.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-below" style="--r:${nodeR(frame, n.id)}px">${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.count.toLocaleString()})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span></div>`,
+              html: `<div class="ov-badge ov-below" style="--r:${nodeR(frame, n.id)}px">${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString()})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -334,16 +385,19 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
                 <span>
                   {t(n.name, n.name_ja)} · {t('reviews', 'レビュー')}
                 </span>
-                <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>
+                {r.real ? <span className="tt-real">{t('Real rating', '実評価')}</span> : <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>}
               </div>
               <div className="tt-hero">
                 <b className="num">{r.rating.toFixed(1)}</b>
                 <span>
-                  <Stars value={r.rating} /> {r.count.toLocaleString()} {t('reviews', '件')} · {ch >= 0 ? '+' : ''}
-                  {ch.toFixed(1)} {t('in 30 days', '（30日）')} · {r.new_30d} {t('new', '件新規')}
+                  <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString()} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
+                  {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
                 </span>
               </div>
-              <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />
+              {!r.real && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
+              <div className="tt-sec">
+                {t('Sample snippets', 'サンプル抜粋')} <span className="tt-demo">{t('Fictional', '架空')}</span>
+              </div>
               <ul className="tt-quotes">
                 {r.snippets.map((s, i) => (
                   <li key={i}>
@@ -351,7 +405,7 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
                   </li>
                 ))}
               </ul>
-              <div className="tip-sub">{r.source}</div>
+              <div className="tip-sub">{r.real ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`) : r.source}</div>
             </Tip>
           </Marker>
         )

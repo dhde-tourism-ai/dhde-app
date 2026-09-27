@@ -1,0 +1,586 @@
+/**
+ * Merge public/data/real_data.json over the demo files.
+ *
+ * Rule: wherever a real value exists it replaces the demo value; everywhere else
+ * the demo stays and keeps its "Demo data" badge. A missing or malformed file
+ * (or node, or field) never breaks a view: parseReal() drops what it cannot
+ * trust and mergeLive() / mergeMarket() return the demo unchanged when nothing
+ * real is left.
+ *
+ * What changes when real data is present:
+ * - The timeline gains the last PAST_DAYS observed days before today.
+ * - People: per-node daily visitors = visitors_est (modelled); the demo intraday
+ *   shape of the same weekday is scaled so each day's total matches. Today and
+ *   future days: forecast = mean visitors_est on the same weekday over the last
+ *   4 weeks (a naive seasonal forecast), again spread with the demo shape.
+ *   Nodes without an estimate (Fukui Station) keep demo shapes but are flagged
+ *   no_estimate so the UI shows camera detections, never a visitor number.
+ * - Weather: real daily temperature, rain, wind, sun, humidity and snow; the
+ *   hourly curve is synthesised from the daily values. Advisories stay demo.
+ * - Traffic: roads with a real counter get the demo congestion profile scaled
+ *   by that day's real volume vs the node's 90-day mean; others stay demo.
+ * - Hotels, search intent (GMB), reviews (GMB) and survey response counts: see
+ *   mergeMarket().
+ */
+import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, DataSources } from '../types/live'
+import type { MarketVoiceData } from '../types/market'
+import type { RealData, RealDaily, RealForward, RealNode } from '../types/real'
+
+export const PAST_DAYS = 7
+
+const NUM_FIELDS: (keyof RealDaily)[] = [
+  'signal',
+  'visitors_est',
+  'temp_c',
+  'precip_mm',
+  'wind_ms',
+  'sun_h',
+  'humidity_pct',
+  'snow_cm',
+  'traffic_volume',
+  'hotel_occ',
+  'hotel_adr_yen',
+  'hotel_rooms_sold',
+  'hotel_rooms_total',
+  'survey_responses',
+  'gmb_map_views',
+  'gmb_search_views',
+  'gmb_directions',
+  'gmb_rating',
+  'gmb_review_change',
+]
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+const str = (v: unknown): string | null => (typeof v === 'string' ? v : null)
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** Validate and normalise real_data.json. Returns null when nothing usable is left. */
+export function parseReal(raw: unknown): RealData | null {
+  if (!isObj(raw) || !isObj(raw.nodes)) return null
+  const nodes: Record<string, RealNode> = {}
+  for (const [id, n] of Object.entries(raw.nodes)) {
+    if (!isObj(n) || !Array.isArray(n.daily)) continue
+    const daily: RealDaily[] = []
+    for (const r of n.daily) {
+      if (!isObj(r) || typeof r.date !== 'string' || !DATE_RE.test(r.date)) continue
+      const rec = { date: r.date } as RealDaily
+      for (const f of NUM_FIELDS) (rec as unknown as Record<string, number | null>)[f] = num(r[f])
+      if (rec.hotel_occ !== null && (rec.hotel_occ < 0 || rec.hotel_occ > 1.5)) rec.hotel_occ = null
+      daily.push(rec)
+    }
+    if (daily.length === 0) continue
+    const fwd: RealForward[] = Array.isArray(n.hotel_forward)
+      ? n.hotel_forward
+          .filter((r): r is Record<string, unknown> => isObj(r) && typeof r.date === 'string' && DATE_RE.test(r.date))
+          .map((r) => ({ date: r.date as string, hotel_occ: num(r.hotel_occ), hotel_rooms_sold: num(r.hotel_rooms_sold), hotel_rooms_total: num(r.hotel_rooms_total) }))
+      : []
+    const c = isObj(n.calibration) ? n.calibration : {}
+    const conf = c.confidence === 'high' || c.confidence === 'medium' || c.confidence === 'low' ? c.confidence : 'none'
+    const asOf = isObj(n.as_of) ? n.as_of : {}
+    nodes[id] = {
+      measure: str(n.measure),
+      signal_column: str(n.signal_column),
+      calibration: {
+        official_annual_2025: num(c.official_annual_2025),
+        signal_sum_2025: num(c.signal_sum_2025),
+        factor: num(c.factor),
+        source: str(c.source) ?? '',
+        status: str(c.status) ?? 'none',
+        confidence: conf,
+      },
+      as_of: {
+        visitors: str(asOf.visitors),
+        weather: str(asOf.weather),
+        traffic: str(asOf.traffic),
+        hotel: str(asOf.hotel),
+        survey: str(asOf.survey),
+        google_maps: str(asOf.google_maps),
+      },
+      daily: daily.sort((a, b) => a.date.localeCompare(b.date)),
+      hotel_forward: fwd,
+    }
+  }
+  if (Object.keys(nodes).length === 0) return null
+  return {
+    generated_at: str(raw.generated_at) ?? '',
+    today: str(raw.today) ?? '',
+    shared_date: str(raw.shared_date),
+    source: isObj(raw.source) ? { repo: str(raw.source.repo) ?? '', commit: str(raw.source.commit) } : { repo: '', commit: null },
+    notes: Array.isArray(raw.notes) ? raw.notes.filter((x): x is string => typeof x === 'string') : [],
+    nodes,
+  }
+}
+
+/* ---------------- helpers ---------------- */
+
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function addDays(iso: string, k: number): string {
+  const d = new Date(iso + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + k)
+  return d.toISOString().slice(0, 10)
+}
+
+function dowOf(iso: string): string {
+  return DOW[new Date(iso + 'T00:00:00Z').getUTCDay()]
+}
+
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
+const sum = (xs: (number | null)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0)
+
+function rowOn(n: RealNode | undefined, date: string): RealDaily | undefined {
+  return n?.daily.find((r) => r.date === date)
+}
+
+function statusOf(realCount: number, total: number): SourceInfo['status'] {
+  if (realCount === 0) return 'demo'
+  return realCount >= total ? 'real' : 'mixed'
+}
+
+function maxDate(ds: (string | null | undefined)[]): string | null {
+  const v = ds.filter((x): x is string => !!x).sort()
+  return v.length ? v[v.length - 1] : null
+}
+
+const MEASURE_LABEL: Record<string, string> = {
+  camera: 'camera detections',
+  vehicles: 'vehicle counts',
+  reservations: 'museum bookings',
+  proxy_camera: 'nearest-camera proxy',
+  proxy_survey: 'survey proxy',
+}
+
+export function measureLabel(m: string | null): string {
+  return m ? (MEASURE_LABEL[m] ?? m) : 'no signal'
+}
+
+/* ---------------- live merge ---------------- */
+
+export interface Merged {
+  live: LiveData
+  market: MarketVoiceData | null
+  sources: DataSources
+  real: RealData | null
+}
+
+/** Hour index → demo hour index of the same weekday (for past days) or itself (demo days). */
+function demoIndexFor(demo: LiveData, dayDate: string, dayOffset: number, dayIdx: number, h: number): number {
+  const k = dayIdx - dayOffset
+  if (k >= 0 && k < demo.days.length) return k * 24 + h
+  const dow = dowOf(dayDate)
+  const kk = demo.days.findIndex((d) => d.dow === dow)
+  return (kk < 0 ? 0 : kk) * 24 + h
+}
+
+function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind: number; pop: number; cond: WeatherCondition } {
+  const t = r.temp_c ?? 20
+  const temp = t + 3.2 * Math.sin(((h - 9) / 24) * 2 * Math.PI)
+  const mmDay = r.precip_mm ?? 0
+  // Rain is spread over the wetter half of the day (afternoon-weighted) rather than flat.
+  const w = 0.6 + 0.8 * Math.max(0, Math.sin(((h - 6) / 24) * 2 * Math.PI))
+  const mm = mmDay > 0 ? (mmDay / 24) * w : 0
+  const night = h < 6 || h >= 18
+  let cond: WeatherCondition
+  if (r.snow_cm && r.snow_cm > 0 && t < 2) cond = 'snow'
+  else if (mmDay >= 30) cond = 'heavy_rain'
+  else if (mmDay >= 1) cond = 'rain'
+  else if ((r.sun_h ?? 0) >= 0.5) cond = night ? 'clear_night' : 'clear'
+  else if ((r.sun_h ?? 0) >= 0.2) cond = night ? 'partly_night' : 'partly'
+  else cond = 'cloudy'
+  const pop = mmDay >= 10 ? 90 : mmDay >= 1 ? 70 : mmDay > 0 ? 40 : 10
+  return { temp: Math.round(temp * 10) / 10, mm: Math.round(mm * 10) / 10, wind: Math.round((r.wind_ms ?? 2) * 10) / 10, pop, cond }
+}
+
+export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null): Merged {
+  if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
+
+  const today = demo.start
+  const P = PAST_DAYS
+  const dates = [...Array.from({ length: P }, (_, k) => addDays(today, k - P)), ...demo.days.map((d) => d.date)]
+  const D = dates.length
+  const H = D * 24
+  const days = dates.map((date) => {
+    const dow = dowOf(date)
+    const demoDay = demo.days.find((d) => d.date === date)
+    return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: demoDay?.holiday ?? false }
+  })
+  const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], P, dayIdx, h)
+  const pick = <T,>(arr: T[], dayIdx: number, h: number): T => arr[di(dayIdx, h)]
+
+  const node_meta: Record<string, RealNodeMeta> = {}
+  const nodes: LiveData['nodes'] = {}
+  const peopleReal: string[] = []
+  const weatherReal: string[] = []
+  let lastObservedDay = -1
+
+  for (const [id, dn] of Object.entries(demo.nodes)) {
+    const rn = real.nodes[id]
+    const visitorsDaily = dates.map((dt) => rowOn(rn, dt)?.visitors_est ?? null)
+    const signalDaily = dates.map((dt) => rowOn(rn, dt)?.signal ?? null)
+    const hist = (rn?.daily ?? []).map((r) => r.visitors_est).filter((v): v is number => v !== null)
+    const normal = mean(hist)
+    const noEstimate = !!rn && rn.calibration.factor === null
+    const hasPeople = !!rn && hist.length > 0
+
+    // Naive seasonal forecast: mean visitors_est on the same weekday over the last 4 weeks.
+    const sameWeekday = (dt: string) => {
+      const vals: number[] = []
+      for (let w = 1; w <= 4; w++) {
+        const v = rowOn(rn, addDays(dt, -7 * w))?.visitors_est
+        if (v !== null && v !== undefined) vals.push(v)
+      }
+      if (vals.length < 2) {
+        // Fall back to any same-weekday values in the history window.
+        const dow = dowOf(dt)
+        for (const r of rn?.daily ?? []) if (r.visitors_est !== null && dowOf(r.date) === dow) vals.push(r.visitors_est)
+      }
+      return mean(vals)
+    }
+
+    const arrA: (number | null)[] = []
+    const arrP: number[] = []
+    const osA: (number | null)[] = []
+    const osP: number[] = []
+    const lo: number[] = []
+    const hi: number[] = []
+    for (let d = 0; d < D; d++) {
+      const demoArr = Array.from({ length: 24 }, (_, h) => pick(dn.arrivals.predicted, d, h))
+      const demoTotal = Math.max(1, sum(demoArr))
+      const realV = hasPeople ? visitorsDaily[d] : null
+      const fc = hasPeople && d >= P ? sameWeekday(dates[d]) : null
+      const kA = realV !== null ? realV / demoTotal : null
+      const kP = fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
+      for (let h = 0; h < 24; h++) {
+        const i = di(d, h)
+        const pa = dn.arrivals.predicted[i]
+        const po = dn.on_site.predicted[i]
+        arrP.push(Math.round(pa * kP))
+        osP.push(Math.round(po * kP))
+        lo.push(Math.round((dn.on_site.lo?.[i] ?? po) * kP))
+        hi.push(Math.round((dn.on_site.hi?.[i] ?? po) * kP))
+        if (kA !== null) {
+          arrA.push(Math.round(pa * kA))
+          osA.push(Math.round(po * kA))
+        } else if (!hasPeople && d >= P) {
+          // Demo-only node: keep the demo "actuals" on the demo's own days.
+          arrA.push(dn.arrivals.actual[i] ?? null)
+          osA.push(dn.on_site.actual[i] ?? null)
+        } else {
+          arrA.push(null)
+          osA.push(null)
+        }
+      }
+      if (realV !== null) lastObservedDay = Math.max(lastObservedDay, d)
+    }
+    if (hasPeople) peopleReal.push(id)
+
+    // Weather
+    const wx = dn.weather
+    const temp: number[] = []
+    const mm: number[] = []
+    const wind: number[] = []
+    const pop: number[] = []
+    const cond: WeatherCondition[] = []
+    const realDays: boolean[] = []
+    for (let d = 0; d < D; d++) {
+      const r = rowOn(rn, dates[d])
+      const isReal = !!r && r.temp_c !== null
+      realDays.push(isReal)
+      for (let h = 0; h < 24; h++) {
+        if (isReal) {
+          const s = synthWeather(r!, h)
+          temp.push(s.temp)
+          mm.push(s.mm)
+          wind.push(s.wind)
+          pop.push(s.pop)
+          cond.push(s.cond)
+        } else {
+          temp.push(pick(wx.temp_c, d, h))
+          mm.push(pick(wx.precip_mm, d, h))
+          wind.push(pick(wx.wind_ms, d, h))
+          pop.push(pick(wx.precip_pct, d, h))
+          cond.push(pick(wx.condition, d, h))
+        }
+      }
+    }
+    if (realDays.some(Boolean)) weatherReal.push(id)
+
+    const series = (a: (number | null)[], p: number[], l?: number[], hh?: number[]): LiveSeries => ({ actual: a, predicted: p, lo: l, hi: hh })
+    const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt, d) => (d >= P ? arr[d - P] : arr[demo.days.findIndex((x) => x.dow === dowOf(dt))] ?? arr[0]))
+    nodes[id] = {
+      ...dn,
+      on_site: series(osA, osP, lo, hi),
+      arrivals: series(arrA, arrP),
+      weather: {
+        ...wx,
+        temp_c: temp,
+        precip_mm: mm,
+        wind_ms: wind,
+        precip_pct: pop,
+        condition: cond,
+        sun_h: dates.map((dt) => rowOn(rn, dt)?.sun_h ?? null),
+        humidity_pct: dates.map((dt) => rowOn(rn, dt)?.humidity_pct ?? null),
+        snow_cm: dates.map((dt) => rowOn(rn, dt)?.snow_cm ?? null),
+        daily_temp_c: dates.map((dt) => rowOn(rn, dt)?.temp_c ?? null),
+        daily_precip_mm: dates.map((dt) => rowOn(rn, dt)?.precip_mm ?? null),
+        daily_wind_ms: dates.map((dt) => rowOn(rn, dt)?.wind_ms ?? null),
+        real_days: realDays,
+      },
+      sentiment: {
+        score: sentimentPad(dn.sentiment.score),
+        posts: sentimentPad(dn.sentiment.posts),
+        keywords: sentimentPad(dn.sentiment.keywords),
+      },
+    }
+    if (rn) {
+      node_meta[id] = {
+        measure: rn.measure,
+        confidence: rn.calibration.confidence,
+        factor: rn.calibration.factor,
+        official_2025: rn.calibration.official_annual_2025,
+        calibration_source: rn.calibration.source,
+        visitors_as_of: rn.as_of.visitors ?? null,
+        no_estimate: noEstimate,
+        visitors_daily: visitorsDaily,
+        signal_daily: signalDaily,
+        normal_daily: normal,
+        forecast_method: 'Mean of the same weekday over the last 4 weeks (real visitors_est), spread over the day with the demo hourly shape.',
+      }
+    }
+  }
+
+  // Flows: demo shape of the same weekday, scaled by the destination node's real/forecast ratio.
+  const flows: LiveData['flows'] = {}
+  const ROUTE_DEST: Record<string, string> = {}
+  for (const rid of Object.keys(demo.flows)) {
+    const parts = rid.replace(/^rail-/, '').split('-')
+    ROUTE_DEST[rid] = parts[parts.length - 1]
+  }
+  for (const [rid, f] of Object.entries(demo.flows)) {
+    const dest = ROUTE_DEST[rid]
+    const n = nodes[dest]
+    const dnn = demo.nodes[dest]
+    const fw: number[] = []
+    const rv: number[] = []
+    for (let d = 0; d < D; d++) {
+      let k = 1
+      if (n && dnn) {
+        const demoTot = Math.max(1, sum(Array.from({ length: 24 }, (_, h) => pick(dnn.arrivals.predicted, d, h))))
+        const tot = sum(Array.from({ length: 24 }, (_, h) => n.arrivals.actual[d * 24 + h] ?? n.arrivals.predicted[d * 24 + h]))
+        k = Math.max(0.2, Math.min(3, tot / demoTot))
+      }
+      for (let h = 0; h < 24; h++) {
+        fw.push(Math.round(pick(f.forward, d, h) * k))
+        rv.push(Math.round(pick(f.reverse, d, h) * k))
+      }
+    }
+    flows[rid] = { ...f, forward: fw, reverse: rv }
+  }
+
+  // Traffic: route → node with a counter. A zero or today's partial day counts as no reading.
+  const COUNTER: Record<string, string> = {
+    'fukui_station-katsuyama': 'katsuyama',
+    'fukui_station-eiheiji': 'eiheiji',
+    'fukui_station-rainbow_line': 'rainbow_line',
+    'fukui_station-awara_onsen': 'fukui_station',
+  }
+  const traffic: LiveData['traffic'] = {}
+  const trafficReal: string[] = []
+  for (const [rid, tr] of Object.entries(demo.traffic)) {
+    const node = COUNTER[rid]
+    const rn = node ? real.nodes[node] : undefined
+    const vols = dates.map((dt) => {
+      const v = rowOn(rn, dt)?.traffic_volume ?? null
+      return v !== null && v > 0 && dt < real.today ? v : null
+    })
+    const base = mean((rn?.daily ?? []).map((r) => r.traffic_volume).filter((v): v is number => v !== null && v > 0))
+    const realDays = vols.map((v) => v !== null && base !== null)
+    const congestion = tr.congestion.map((seg) => {
+      const out: number[] = []
+      for (let d = 0; d < D; d++) {
+        const k = realDays[d] ? Math.max(0.5, Math.min(1.6, vols[d]! / base!)) : 1
+        for (let h = 0; h < 24; h++) out.push(Math.round(Math.min(0.98, pick(seg, d, h) * k) * 100) / 100)
+      }
+      return out
+    })
+    const vph: number[] = []
+    for (let d = 0; d < D; d++) for (let h = 0; h < 24; h++) vph.push(realDays[d] ? Math.round((vols[d]! * pick(tr.vehicles_per_hour, d, h)) / Math.max(1, sum(Array.from({ length: 24 }, (_, hh) => pick(tr.vehicles_per_hour, d, hh))))) : pick(tr.vehicles_per_hour, d, h))
+    if (realDays.some(Boolean)) trafficReal.push(rid)
+    traffic[rid] = { ...tr, congestion, vehicles_per_hour: vph, counter_node: rn ? node : undefined, real_volume: vols, real_days: realDays }
+  }
+
+  const shift = P * 24
+  const nodeIds = Object.keys(demo.nodes)
+  // "Observed" runs to the shared date (the latest day every node has data for), not to the
+  // freshest single node (Katsuyama bookings are known for today already).
+  const sharedIdx = real.shared_date ? dates.indexOf(real.shared_date) : -1
+  const obsDay = sharedIdx >= 0 ? sharedIdx : lastObservedDay
+  const observedUntil = obsDay >= 0 ? obsDay * 24 + 23 : demo.observed_until + shift
+  const sources: DataSources = {
+    people: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
+    density: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
+    flow: { status: peopleReal.length ? 'mixed' : 'demo', as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
+    weather: { status: statusOf(weatherReal.length, nodeIds.length), as_of: maxDate(weatherReal.map((id) => real.nodes[id].as_of.weather)), real: weatherReal },
+    traffic: { status: trafficReal.length ? 'mixed' : 'demo', as_of: maxDate(trafficReal.map((rid) => real.nodes[COUNTER[rid]]?.as_of.traffic)), real: trafficReal },
+    nudges: { status: peopleReal.length ? 'mixed' : 'demo', as_of: real.shared_date, real: peopleReal },
+  }
+
+  const live: LiveData = {
+    ...demo,
+    start: dates[0],
+    hours: H,
+    days,
+    observed_until: observedUntil,
+    today_day: P,
+    now_index: demo.observed_until + shift,
+    nodes,
+    flows,
+    traffic,
+    advisories: demo.advisories.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift })),
+    weather_alerts: demo.weather_alerts.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift, demo: true })),
+    node_meta,
+    sources,
+    shared_date: real.shared_date,
+  }
+
+  const market = demoMarket ? mergeMarket(demoMarket, real, dates, P, sources) : null
+  return { live, market, sources, real }
+}
+
+/* ---------------- market merge ---------------- */
+
+/** FTAS reservation feed behind each hotel area (Tojinbo, Katsuyama and Eiheiji share the regional coastal feed). */
+const HOTEL_FEED: Record<string, string> = {
+  fukui_station: 'fukui_station',
+  awara_onsen: 'awara_onsen',
+  echizen_coast: 'tojinbo',
+  mikata_five_lakes: 'rainbow_line',
+}
+
+/** Search-intent municipality → node whose Google Maps profile it shows. */
+const RSI_NODE: Record<string, string> = {
+  fukui: 'fukui_station',
+  sakai: 'tojinbo',
+  awara: 'awara_onsen',
+  katsuyama: 'katsuyama',
+  eiheiji: 'eiheiji',
+  mihama_wakasa: 'rainbow_line',
+}
+
+function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: number, sources: DataSources): MarketVoiceData {
+  const D = dates.length
+  const padDay = <T,>(arr: T[], d: number): T => (d >= P ? arr[Math.min(arr.length - 1, d - P)] : arr[Math.min(arr.length - 1, (7 + d - P) % 7)])
+
+  const hotelReal: string[] = []
+  const hotels = m.hotels.map((h) => {
+    const rn = real.nodes[HOTEL_FEED[h.id]]
+    if (!rn) {
+      return { ...h, occupancy_pct: Array.from({ length: D }, (_, d) => padDay(h.occupancy_pct, d)), rooms_left: Array.from({ length: D }, (_, d) => padDay(h.rooms_left, d)) }
+    }
+    const occ: number[] = []
+    const left: number[] = []
+    const adr: (number | null)[] = []
+    const realDays: boolean[] = []
+    let total = h.rooms_total
+    for (let d = 0; d < D; d++) {
+      const r = rowOn(rn, dates[d])
+      const f = rn.hotel_forward.find((x) => x.date === dates[d])
+      const o = r?.hotel_occ ?? f?.hotel_occ ?? null
+      const t = r?.hotel_rooms_total ?? f?.hotel_rooms_total ?? null
+      const sold = r?.hotel_rooms_sold ?? f?.hotel_rooms_sold ?? null
+      if (t) total = t
+      if (o !== null) {
+        occ.push(Math.round(o * 100))
+        left.push(t !== null && sold !== null ? Math.max(0, Math.round(t - sold)) : Math.round(total * (1 - o)))
+        realDays.push(true)
+      } else {
+        occ.push(padDay(h.occupancy_pct, d))
+        left.push(padDay(h.rooms_left, d))
+        realDays.push(false)
+      }
+      adr.push(r?.hotel_adr_yen ?? null)
+    }
+    const fwdPoints = [1, 7, 14, 30, 60, 90]
+      .map((k) => {
+        const f = rn.hotel_forward.find((x) => x.date === addDays(real.today, k))
+        return f && f.hotel_occ !== null ? { days_ahead: k, occ_pct: Math.round(f.hotel_occ * 100) } : null
+      })
+      .filter((x): x is { days_ahead: number; occ_pct: number } => x !== null)
+    if (realDays.some(Boolean)) hotelReal.push(h.id)
+    return { ...h, rooms_total: total, occupancy_pct: occ, rooms_left: left, adr_yen: adr, real_days: realDays, forward: fwdPoints, as_of: rn.as_of.hotel ?? null, real_feed_node: HOTEL_FEED[h.id] }
+  })
+
+  const rsiReal: string[] = []
+  const rsi = m.rsi.map((a) => {
+    const node = RSI_NODE[a.id]
+    const rn = node ? real.nodes[node] : undefined
+    const asOf = rn?.as_of.google_maps ?? null
+    if (!rn || !asOf) return a
+    const rows = rn.daily.filter((r) => r.date <= asOf && r.gmb_map_views !== null)
+    if (rows.length < 7) return a
+    const hist14 = rows.slice(-14).map((r) => r.gmb_map_views as number)
+    const last = rows[rows.length - 1]
+    const last7 = rows.slice(-7).reduce((s, r) => s + (r.gmb_map_views ?? 0), 0)
+    const prev7 = rows.slice(-14, -7).reduce((s, r) => s + (r.gmb_map_views ?? 0), 0)
+    rsiReal.push(a.id)
+    return {
+      ...a,
+      history: hist14,
+      change_7d_pct: prev7 > 0 ? Math.round((last7 / prev7 - 1) * 1000) / 10 : 0,
+      gmb: {
+        node,
+        map_views: last.gmb_map_views ?? 0,
+        search_views: last.gmb_search_views ?? 0,
+        directions: last.gmb_directions ?? 0,
+        history: hist14,
+        as_of: asOf,
+      },
+    }
+  })
+
+  const reviewsReal: string[] = []
+  const reviews = { ...m.reviews }
+  for (const [id, r] of Object.entries(m.reviews)) {
+    const rn = real.nodes[id]
+    const asOf = rn?.as_of.google_maps ?? null
+    if (!rn || !asOf) continue
+    // gmb_rating is the day's average of new reviews (0 = none that day); weight by new reviews.
+    const win = (from: number, to: number) => rn.daily.filter((x) => x.date <= addDays(asOf, -from) && x.date > addDays(asOf, -to) && (x.gmb_rating ?? 0) > 0)
+    const wavg = (rows: RealDaily[]) => {
+      const w = rows.reduce((s, x) => s + Math.max(1, x.gmb_review_change ?? 1), 0)
+      return w ? rows.reduce((s, x) => s + (x.gmb_rating as number) * Math.max(1, x.gmb_review_change ?? 1), 0) / w : null
+    }
+    const cur = win(0, 30)
+    const prev = win(30, 60)
+    const rating = wavg(cur)
+    if (rating === null) continue
+    const newReviews = rn.daily.filter((x) => x.date <= asOf && x.date > addDays(asOf, -30)).reduce((s, x) => s + (x.gmb_review_change ?? 0), 0)
+    reviews[id] = {
+      ...r,
+      rating: Math.round(rating * 10) / 10,
+      rating_30d_ago: Math.round((wavg(prev) ?? rating) * 10) / 10,
+      new_30d: Math.round(newReviews),
+      real: { as_of: asOf, reviews_used: Math.round(newReviews) },
+    }
+    reviewsReal.push(id)
+  }
+
+  const surveyReal: string[] = []
+  const survey = { ...m.survey }
+  for (const [id, s] of Object.entries(m.survey)) {
+    const rn = real.nodes[id]
+    const asOf = rn?.as_of.survey ?? null
+    if (!rn || !asOf) continue
+    const n = rn.daily.filter((x) => x.date <= asOf && x.date > addDays(asOf, -30)).reduce((a, x) => a + (x.survey_responses ?? 0), 0)
+    survey[id] = { ...s, responses_30d: Math.round(n), responses_real: { as_of: asOf } }
+    surveyReal.push(id)
+  }
+
+  sources.hotels = { status: statusOf(hotelReal.length, m.hotels.length), as_of: maxDate(hotels.map((h) => h.as_of ?? null)), real: hotelReal }
+  sources.rsi = { status: statusOf(rsiReal.length, m.rsi.length), as_of: maxDate(rsi.map((a) => a.gmb?.as_of ?? null)), real: rsiReal }
+  sources.reviews = { status: reviewsReal.length ? 'mixed' : 'demo', as_of: maxDate(reviewsReal.map((id) => real.nodes[id].as_of.google_maps)), real: reviewsReal }
+  sources.survey = { status: surveyReal.length ? 'mixed' : 'demo', as_of: maxDate(surveyReal.map((id) => real.nodes[id].as_of.survey)), real: surveyReal }
+
+  return { ...m, start: dates[0], days: D, hotels, rsi, reviews, survey }
+}

@@ -50,12 +50,32 @@ export function WeatherLayer({ nodes, frame, showPrecip }: { nodes: MapNode[]; f
               <strong>
                 {t(n.name, n.name_ja)} · {t(CONDITION_LABEL[w.cond].en, CONDITION_LABEL[w.cond].ja)}
               </strong>
-              <div className="tip-row">
-                {w.temp.toFixed(1)}°C · {t('rain', '降水確率')} {w.pop}% · {w.mm} mm/h · {t('wind', '風')} {w.wind} m/s
-              </div>
+              {f.wxDay.real ? (
+                <>
+                  <div className="tt-grid">
+                    <span className="tt-k">{t('Day mean temperature', '日平均気温')}</span>
+                    <span className="tt-v num">{f.wxDay.temp !== null ? `${f.wxDay.temp.toFixed(1)}°C` : '—'}</span>
+                    <span className="tt-k">{t('Rain (day total)', '降水量（日合計）')}</span>
+                    <span className="tt-v num">{f.wxDay.precip !== null ? `${f.wxDay.precip.toFixed(1)} mm` : '—'}</span>
+                    <span className="tt-k">{t('Wind (mean)', '風速（平均）')}</span>
+                    <span className="tt-v num">{f.wxDay.wind !== null ? `${f.wxDay.wind.toFixed(1)} m/s` : '—'}</span>
+                    <span className="tt-k">{t('Sunshine (hourly mean)', '日照（時間平均）')}</span>
+                    <span className="tt-v num">{f.wxDay.sun !== null ? `${f.wxDay.sun.toFixed(2)} h` : '—'}</span>
+                    <span className="tt-k">{t('Humidity', '湿度')}</span>
+                    <span className="tt-v num">{f.wxDay.humidity !== null ? `${Math.round(f.wxDay.humidity)}%` : '—'}</span>
+                    <span className="tt-k">{t('Snow depth', '積雪')}</span>
+                    <span className="tt-v num">{f.wxDay.snow !== null ? `${f.wxDay.snow} cm` : t('none reported', 'なし')}</span>
+                  </div>
+                  <div className="tip-sub">{t('Real daily values (JMA). The hourly curve and this hour’s figures are synthesised from them.', '日別は実データ（気象庁）。時間別は日別値から合成。')}</div>
+                </>
+              ) : (
+                <div className="tip-row">
+                  {w.temp.toFixed(1)}°C · {t('rain', '降水確率')} {w.pop}% · {w.mm} mm/h · {t('wind', '風')} {w.wind} m/s <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                </div>
+              )}
               {f.alerts.map((a) => (
                 <div key={a.id} className="tip-row tip-alert">
-                  ⚠ {t(a.title_en, a.title_ja)}
+                  ⚠ {t(a.title_en, a.title_ja)} {a.demo && <span className="tt-demo">{t('Demo', 'デモ')}</span>}
                 </div>
               ))}
               <div className="tip-sub">

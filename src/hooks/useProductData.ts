@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { useDashboardData } from './useDashboardData'
+import { mergeAll, parseReal } from '../lib/real'
 import { useJsonResource } from './useJsonResource'
 import type { NodeRegistry } from '../types/nodes'
 import type { RegionalEconomics } from '../types/economics'
@@ -19,7 +21,24 @@ export function useProductData() {
   const live = useJsonResource<LiveData>('live_demo.json')
   const routes = useJsonResource<RoutesFile>('routes.json')
   const market = useJsonResource<MarketVoiceData>('market_voice_demo.json')
-  return { dashboard, registry, economics, strategy, live, routes, market }
+  // Optional: a missing or broken real_data.json just leaves the demo in place.
+  const real = useJsonResource<unknown>('real_data.json')
+  const merged = useMemo(() => {
+    if (!live.data) return null
+    let parsed = null
+    try {
+      parsed = parseReal(real.data)
+    } catch {
+      parsed = null
+    }
+    try {
+      return mergeAll(live.data, market.data, parsed)
+    } catch (e) {
+      console.error('real_data.json merge failed; using demo data', e)
+      return mergeAll(live.data, market.data, null)
+    }
+  }, [live.data, market.data, real.data])
+  return { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }
 }
 
 export type ProductData = ReturnType<typeof useProductData>
