@@ -20,6 +20,8 @@ export interface Nudge {
   id: string
   loop: 1 | 2 | 3
   sev: Sev
+  /** Size of the deviation behind the nudge (ranks nudges of equal severity). */
+  magnitude: number
   node: string
   day: number
   /** Hour indices the nudge applies to. */
@@ -96,6 +98,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
         id: `n1-${id}-${d}`,
         loop: 1,
         sev: up ? (pct >= 0.45 ? 'serious' : 'warn') : 'info',
+        magnitude: Math.abs(pct),
         node: id,
         day: d,
         start: d * 24 + 9,
@@ -133,6 +136,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
           id: `n2-${id}-${open}`,
           loop: 2,
           sev: 'crit',
+          magnitude: peakMm / 10 + peakWind / 15,
           node: id,
           day: d,
           start: open,
@@ -171,6 +175,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             id: `n3-${h.id}-${d}`,
             loop: 3,
             sev: 'serious',
+            magnitude: occ / 100 + (ratio - 1),
             node: h.node,
             day: d,
             start: d * 24 + 15,
@@ -188,6 +193,7 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             id: `n3u-${h.id}-${d}`,
             loop: 3,
             sev: 'info',
+            magnitude: (100 - occ) / 100,
             node: h.node,
             day: d,
             start: d * 24 + 10,
@@ -207,4 +213,18 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
 
   const rank: Record<Sev, number> = { crit: 3, serious: 2, warn: 1, info: 0 }
   return out.sort((a, b) => a.day - b.day || rank[b.sev] - rank[a.sev] || a.start - b.start)
+}
+
+const SEV_RANK: Record<Sev, number> = { crit: 3, serious: 2, warn: 1, info: 0 }
+
+/** The top `n` nudges per day, ranked by severity then size of deviation; output keeps day order. */
+export function topPerDay(nudges: Nudge[], n = 3): Nudge[] {
+  const byDay = new Map<number, Nudge[]>()
+  for (const x of nudges) byDay.set(x.day, [...(byDay.get(x.day) ?? []), x])
+  const out: Nudge[] = []
+  for (const day of [...byDay.keys()].sort((a, b) => a - b)) {
+    const ranked = byDay.get(day)!.sort((a, b) => SEV_RANK[b.sev] - SEV_RANK[a.sev] || b.magnitude - a.magnitude)
+    out.push(...ranked.slice(0, n))
+  }
+  return out
 }

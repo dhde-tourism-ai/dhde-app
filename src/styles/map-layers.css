@@ -740,3 +740,17 @@
     display: none;
   }
 }
+
+.nudge-scope {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nudge-all {
+  flex: none;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--accent-strong);
+}

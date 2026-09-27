@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
+import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
 import '../../styles/map-layers.css'
@@ -12,7 +13,7 @@ import type { MarketVoiceData } from '../../types/market'
 import { buildMapNodes } from '../../lib/nodes'
 import { frameAt, timeLabel } from '../../lib/live'
 import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
-import { computeNudges } from '../../lib/nudges'
+import { computeNudges, topPerDay } from '../../lib/nudges'
 import type { Nudge } from '../../lib/nudges'
 import { useLang } from '../../lib/i18n'
 import { useIsNarrow } from '../../hooks/useIsNarrow'
@@ -60,6 +61,62 @@ function FlyTo({ target }: { target: { at: [number, number]; key: number } | nul
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     map.flyTo(target.at, Math.max(map.getZoom(), 10.5), { animate: !reduce, duration: 0.8 })
   }, [map, target])
+  return null
+}
+
+/**
+ * Keep hover cards inside the visible map: below the status strip and above the
+ * timeline. Leaflet positions tooltips with a transform, so the nudge is a margin.
+ */
+function KeepCardsInView() {
+  const map = useMap()
+  useEffect(() => {
+    let el: HTMLElement | null = null
+    let raf = 0
+    const fit = () => {
+      if (!el) return
+      el.style.marginTop = ''
+      const r = el.getBoundingClientRect()
+      const mapBox = map.getContainer().getBoundingClientRect()
+      const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
+      const timeline = document.querySelector('.map-bottom')?.getBoundingClientRect()
+      const top = Math.max(mapBox.top, strip ? strip.bottom : mapBox.top) + 8
+      const bottom = Math.min(mapBox.bottom, timeline ? timeline.top : mapBox.bottom) - 8
+      let d = 0
+      if (r.top < top) d = top - r.top
+      else if (r.bottom > bottom) d = Math.max(top - r.top, bottom - r.bottom)
+      if (d !== 0) el.style.marginTop = `${d}px`
+    }
+    const schedule = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(fit)
+    }
+    // React renders the card's content after Leaflet opens it, so refit when it resizes and shortly after.
+    const ro = new ResizeObserver(schedule)
+    const timers: number[] = []
+    const open = (e: L.LeafletEvent) => {
+      el = ((e as L.TooltipEvent).tooltip?.getElement() as HTMLElement | undefined) ?? null
+      ro.disconnect()
+      if (el) ro.observe(el)
+      schedule()
+      timers.push(window.setTimeout(fit, 60), window.setTimeout(fit, 200))
+    }
+    const close = () => {
+      el = null
+      ro.disconnect()
+    }
+    map.on('tooltipopen', open)
+    map.on('tooltipclose', close)
+    map.on('mousemove move zoomend', schedule)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      timers.forEach((x) => window.clearTimeout(x))
+      map.off('tooltipopen', open)
+      map.off('tooltipclose', close)
+      map.off('mousemove move zoomend', schedule)
+    }
+  }, [map])
   return null
 }
 
@@ -127,6 +184,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [speed, setSpeed] = useState(1)
   const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
   const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
+  const [showAllNudges, setShowAllNudges] = useState(false)
   const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
 
@@ -158,7 +216,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const top = alerts ? topAlert(alerts) : null
   const day = Math.floor(t / 24)
   const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], 0) : []), [live, market, registry])
-  const nudgesFrom = useMemo(() => nudges.filter((n) => n.day >= day), [nudges, day])
+  const nudgesShown = useMemo(() => (showAllNudges ? nudges : topPerDay(nudges, 3)), [nudges, showAllNudges])
+  const nudgesFrom = useMemo(() => nudgesShown.filter((n) => n.day >= day), [nudgesShown, day])
+  const nudgesFromAll = useMemo(() => nudges.filter((n) => n.day >= day).length, [nudges, day])
   const pickNudge = (n: Nudge) => {
     setPlaying(false)
     setT(n.start)
@@ -205,7 +265,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
       onOpenNode={onOpenNode}
     />
   ) : showNudges && live ? (
-    <NudgesPanel nudges={nudgesFrom} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
+    <NudgesPanel nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
     <AlertsPanel alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
@@ -244,8 +304,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
         {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
         {market && layerOn('social') && <SocialLayer data={market} nodes={nodes} frame={frame} />}
-        {layerOn('nudges') && <NudgeLayer nudges={nudges} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
+        {layerOn('nudges') && <NudgeLayer nudges={nudgesShown} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
         <FlyTo target={fly} />
+        <KeepCardsInView />
       </MapContainer>
 
       <div className="map-ui">

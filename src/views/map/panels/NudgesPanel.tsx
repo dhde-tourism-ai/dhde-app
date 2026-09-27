@@ -13,6 +13,10 @@ const SEV_LABEL = { crit: ['Critical', '重大'], serious: ['High', '高'], warn
 
 interface Props {
   nudges: Nudge[]
+  /** All nudges in the window before the top-3-per-day filter. */
+  total: number
+  showAll: boolean
+  setShowAll: (v: boolean) => void
   live: LiveData
   day: number
   activeId?: string
@@ -22,7 +26,7 @@ interface Props {
 }
 
 /** The three nudge loops as an actionable list; clicking one focuses the map and timeline. */
-export function NudgesPanel({ nudges, live, day, activeId, onPick, tabs, onClose }: Props) {
+export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, activeId, onPick, tabs, onClose }: Props) {
   const { t, lang } = useLang()
   const [loop, setLoop] = useState<0 | 1 | 2 | 3>(0)
   const list = nudges.filter((n) => loop === 0 || n.loop === loop)
@@ -50,7 +54,18 @@ export function NudgesPanel({ nudges, live, day, activeId, onPick, tabs, onClose
             </button>
           ))}
         </div>
-        <p className="lg-note">{t('From the selected day onward. Flags on the map show the selected day.', '選択日以降。地図の旗は選択日の分です。')}</p>
+        <div className="nudge-scope">
+          <p className="lg-note">
+            {showAll
+              ? t('All nudges from the selected day onward.', '選択日以降のすべてのナッジ。')
+              : t('Top 3 per day by severity, then size of deviation. Map flags follow this list.', '1日あたり上位3件（重要度・乖離の大きさ順）。地図の旗も同じ。')}
+          </p>
+          {total > nudges.length || showAll ? (
+            <button className="btn btn-ghost nudge-all" aria-pressed={showAll} onClick={() => setShowAll(!showAll)}>
+              {showAll ? t('Top 3 per day', '1日上位3件') : `${t('Show all', 'すべて表示')} (${total})`}
+            </button>
+          ) : null}
+        </div>
         {list.length === 0 ? (
           <p className="al-empty">{t('No nudges for this window.', 'この期間のナッジはありません。')}</p>
         ) : (
