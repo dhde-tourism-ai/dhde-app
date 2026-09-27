@@ -28,6 +28,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # A malformed real_data.json fails the deploy here; the previous site stays up.
+      - run: node scripts/check_data.mjs
       - run: npm run build
       # Hash routing already works on static hosting; the 404 copy catches stray deep links.
       - run: cp dist/index.html dist/404.html
