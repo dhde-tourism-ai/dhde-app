@@ -1,0 +1,1319 @@
+{
+ "demo": true,
+ "note": "DEMO DATA. Simulated by scripts/gen_market_voice_demo.mjs. All posts, handles and reviews are fictional; thumbnails are abstract motifs drawn by the app. Replace with the real feeds in the same shape and demo: false.",
+ "generated_at": "2026-09-27T08:26:42.382Z",
+ "start": "2026-09-27",
+ "days": 8,
+ "hotels": [
+  {
+   "id": "fukui_station",
+   "name": "Fukui Station hotels",
+   "name_ja": "福井駅周辺ホテル",
+   "lat": 36.0585,
+   "lon": 136.2135,
+   "node": "fukui_station",
+   "feed": "FTAS reservations: Fukui Station",
+   "rooms_total": 2350,
+   "occupancy_pct": [
+    54,
+    65,
+    69,
+    61,
+    67,
+    72,
+    85,
+    53
+   ],
+   "rooms_left": [
+    1074,
+    830,
+    738,
+    915,
+    775,
+    648,
+    363,
+    1095
+   ],
+   "booking_curve": {
+    "target_day": 6,
+    "points": [
+     {
+      "days_ahead": 30,
+      "booked_pct": 44,
+      "last_year_pct": 38
+     },
+     {
+      "days_ahead": 14,
+      "booked_pct": 59,
+      "last_year_pct": 53
+     },
+     {
+      "days_ahead": 7,
+      "booked_pct": 71,
+      "last_year_pct": 65
+     },
+     {
+      "days_ahead": 1,
+      "booked_pct": 82,
+      "last_year_pct": 75
+     }
+    ]
+   },
+   "rakuten": {
+    "radius_km": 3,
+    "hotels_checked": 38,
+    "share_with_rooms_pct": {
+     "d1": 48,
+     "d7": 66,
+     "d30": 88
+    }
+   }
+  },
+  {
+   "id": "awara_onsen",
+   "name": "Awara Onsen ryokan",
+   "name_ja": "あわら温泉旅館",
+   "lat": 36.2215,
+   "lon": 136.2045,
+   "node": "awara_onsen",
+   "feed": "FTAS reservations: Awara",
+   "rooms_total": 1180,
+   "occupancy_pct": [
+    47,
+    61,
+    61,
+    57,
+    61,
+    78,
+    92,
+    50
+   ],
+   "rooms_left": [
+    625,
+    466,
+    456,
+    513,
+    464,
+    262,
+    94,
+    596
+   ],
+   "booking_curve": {
+    "target_day": 6,
+    "points": [
+     {
+      "days_ahead": 30,
+      "booked_pct": 48,
+      "last_year_pct": 41
+     },
+     {
+      "days_ahead": 14,
+      "booked_pct": 64,
+      "last_year_pct": 58
+     },
+     {
+      "days_ahead": 7,
+      "booked_pct": 77,
+      "last_year_pct": 70
+     },
+     {
+      "days_ahead": 1,
+      "booked_pct": 89,
+      "last_year_pct": 81
+     }
+    ]
+   },
+   "rakuten": {
+    "radius_km": 3,
+    "hotels_checked": 21,
+    "share_with_rooms_pct": {
+     "d1": 52,
+     "d7": 69,
+     "d30": 91
+    }
+   }
+  },
+  {
+   "id": "echizen_coast",
+   "name": "Echizen coast inns",
+   "name_ja": "越前海岸の宿",
+   "lat": 35.99,
+   "lon": 135.975,
+   "node": "tojinbo",
+   "feed": "FTAS reservations: Echizen coast (regional)",
+   "rooms_total": 640,
+   "occupancy_pct": [
+    28,
+    36,
+    39,
+    31,
+    36,
+    47,
+    62,
+    24
+   ],
+   "rooms_left": [
+    460,
+    408,
+    391,
+    444,
+    409,
+    337,
+    245,
+    485
+   ],
+   "booking_curve": {
+    "target_day": 6,
+    "points": [
+     {
+      "days_ahead": 30,
+      "booked_pct": 32,
+      "last_year_pct": 28
+     },
+     {
+      "days_ahead": 14,
+      "booked_pct": 43,
+      "last_year_pct": 39
+     },
+     {
+      "days_ahead": 7,
+      "booked_pct": 52,
+      "last_year_pct": 47
+     },
+     {
+      "days_ahead": 1,
+      "booked_pct": 60,
+      "last_year_pct": 55
+     }
+    ]
+   },
+   "rakuten": {
+    "radius_km": 3,
+    "hotels_checked": 17,
+    "share_with_rooms_pct": {
+     "d1": 77,
+     "d7": 95,
+     "d30": 98
+    }
+   }
+  },
+  {
+   "id": "mikata_five_lakes",
+   "name": "Mikata Five Lakes lodgings",
+   "name_ja": "三方五湖周辺の宿",
+   "lat": 35.565,
+   "lon": 135.905,
+   "node": "rainbow_line",
+   "feed": "FTAS reservations: Mikata Five Lakes",
+   "rooms_total": 520,
+   "occupancy_pct": [
+    30,
+    42,
+    44,
+    39,
+    44,
+    56,
+    75,
+    31
+   ],
+   "rooms_left": [
+    365,
+    301,
+    293,
+    319,
+    289,
+    229,
+    132,
+    358
+   ],
+   "booking_curve": {
+    "target_day": 6,
+    "points": [
+     {
+      "days_ahead": 30,
+      "booked_pct": 39,
+      "last_year_pct": 33
+     },
+     {
+      "days_ahead": 14,
+      "booked_pct": 53,
+      "last_year_pct": 47
+     },
+     {
+      "days_ahead": 7,
+      "booked_pct": 63,
+      "last_year_pct": 57
+     },
+     {
+      "days_ahead": 1,
+      "booked_pct": 73,
+      "last_year_pct": 66
+     }
+    ]
+   },
+   "rakuten": {
+    "radius_km": 3,
+    "hotels_checked": 14,
+    "share_with_rooms_pct": {
+     "d1": 71,
+     "d7": 88,
+     "d30": 98
+    }
+   }
+  }
+ ],
+ "rsi": [
+  {
+   "id": "fukui",
+   "name": "Fukui City",
+   "name_ja": "福井市",
+   "lat": 35.995,
+   "lon": 136.265,
+   "index": 64,
+   "history": [
+    51,
+    57,
+    53,
+    57,
+    58,
+    56,
+    60,
+    56,
+    63,
+    58,
+    71,
+    72,
+    70,
+    64
+   ],
+   "change_7d_pct": 15.8
+  },
+  {
+   "id": "sakai",
+   "name": "Sakai City",
+   "name_ja": "坂井市",
+   "lat": 36.16,
+   "lon": 136.25,
+   "index": 69,
+   "history": [
+    51,
+    52,
+    56,
+    53,
+    59,
+    61,
+    57,
+    61,
+    65,
+    63,
+    78,
+    78,
+    75,
+    69
+   ],
+   "change_7d_pct": 25.7
+  },
+  {
+   "id": "awara",
+   "name": "Awara City",
+   "name_ja": "あわら市",
+   "lat": 36.245,
+   "lon": 136.265,
+   "index": 49,
+   "history": [
+    45,
+    45,
+    45,
+    45,
+    42,
+    46,
+    47,
+    45,
+    48,
+    49,
+    54,
+    58,
+    55,
+    49
+   ],
+   "change_7d_pct": 13.7
+  },
+  {
+   "id": "katsuyama",
+   "name": "Katsuyama City",
+   "name_ja": "勝山市",
+   "lat": 36.03,
+   "lon": 136.585,
+   "index": 83,
+   "history": [
+    56,
+    57,
+    58,
+    63,
+    60,
+    64,
+    68,
+    71,
+    70,
+    73,
+    86,
+    86,
+    83,
+    83
+   ],
+   "change_7d_pct": 29.6
+  },
+  {
+   "id": "eiheiji",
+   "name": "Eiheiji Town",
+   "name_ja": "永平寺町",
+   "lat": 36.1,
+   "lon": 136.33,
+   "index": 40,
+   "history": [
+    43,
+    40,
+    43,
+    45,
+    40,
+    42,
+    43,
+    42,
+    38,
+    41,
+    48,
+    50,
+    41,
+    40
+   ],
+   "change_7d_pct": 1.4
+  },
+  {
+   "id": "ono",
+   "name": "Ono City",
+   "name_ja": "大野市",
+   "lat": 35.93,
+   "lon": 136.56,
+   "index": 33,
+   "history": [
+    23,
+    24,
+    24,
+    24,
+    22,
+    28,
+    26,
+    29,
+    30,
+    32,
+    42,
+    39,
+    34,
+    33
+   ],
+   "change_7d_pct": 39.8
+  },
+  {
+   "id": "mihama_wakasa",
+   "name": "Mihama & Wakasa",
+   "name_ja": "美浜町・若狭町",
+   "lat": 35.55,
+   "lon": 135.93,
+   "index": 42,
+   "history": [
+    54,
+    56,
+    54,
+    52,
+    50,
+    48,
+    51,
+    52,
+    46,
+    47,
+    56,
+    55,
+    51,
+    42
+   ],
+   "change_7d_pct": -4.4
+  },
+  {
+   "id": "tsuruga",
+   "name": "Tsuruga City",
+   "name_ja": "敦賀市",
+   "lat": 35.66,
+   "lon": 136.1,
+   "index": 34,
+   "history": [
+    31,
+    32,
+    36,
+    32,
+    32,
+    32,
+    35,
+    32,
+    32,
+    37,
+    42,
+    47,
+    40,
+    34
+   ],
+   "change_7d_pct": 14.8
+  }
+ ],
+ "survey": {
+  "tojinbo": {
+   "responses_30d": 92,
+   "satisfaction": 4.1,
+   "nps": 26,
+   "top_reasons": [
+    {
+     "en": "Scenery",
+     "ja": "景観",
+     "share": 47
+    },
+    {
+     "en": "Seafood",
+     "ja": "海鮮",
+     "share": 24
+    },
+    {
+     "en": "Sunset",
+     "ja": "夕日",
+     "share": 13
+    },
+    {
+     "en": "Photos",
+     "ja": "写真",
+     "share": 16
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 18
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 17
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 27
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 15
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 14
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 9
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  },
+  "fukui_station": {
+   "responses_30d": 250,
+   "satisfaction": 4.1,
+   "nps": 18,
+   "top_reasons": [
+    {
+     "en": "Transfer",
+     "ja": "乗り換え",
+     "share": 45
+    },
+    {
+     "en": "Dinosaur statues",
+     "ja": "恐竜モニュメント",
+     "share": 24
+    },
+    {
+     "en": "Local food",
+     "ja": "ご当地グルメ",
+     "share": 13
+    },
+    {
+     "en": "Shopping",
+     "ja": "買い物",
+     "share": 18
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 22
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 14
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 26
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 14
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 16
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 8
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  },
+  "katsuyama": {
+   "responses_30d": 66,
+   "satisfaction": 4.1,
+   "nps": 9,
+   "top_reasons": [
+    {
+     "en": "Dinosaur museum",
+     "ja": "恐竜博物館",
+     "share": 49
+    },
+    {
+     "en": "Family trip",
+     "ja": "家族旅行",
+     "share": 26
+    },
+    {
+     "en": "Education",
+     "ja": "学び",
+     "share": 12
+    },
+    {
+     "en": "Nature",
+     "ja": "自然",
+     "share": 13
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 16
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 18
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 28
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 20
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 13
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 5
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  },
+  "rainbow_line": {
+   "responses_30d": 227,
+   "satisfaction": 3.8,
+   "nps": 30,
+   "top_reasons": [
+    {
+     "en": "Scenic drive",
+     "ja": "ドライブ",
+     "share": 49
+    },
+    {
+     "en": "Five Lakes view",
+     "ja": "五湖の眺め",
+     "share": 22
+    },
+    {
+     "en": "Foot bath",
+     "ja": "足湯",
+     "share": 16
+    },
+    {
+     "en": "Photos",
+     "ja": "写真",
+     "share": 13
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 18
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 17
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 27
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 15
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 14
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 9
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  },
+  "awara_onsen": {
+   "responses_30d": 110,
+   "satisfaction": 3.9,
+   "nps": 22,
+   "top_reasons": [
+    {
+     "en": "Hot springs",
+     "ja": "温泉",
+     "share": 50
+    },
+    {
+     "en": "Kaiseki food",
+     "ja": "会席料理",
+     "share": 22
+    },
+    {
+     "en": "Relaxation",
+     "ja": "休養",
+     "share": 14
+    },
+    {
+     "en": "Shinkansen access",
+     "ja": "新幹線の便",
+     "share": 14
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 8
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 12
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 30
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 16
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 26
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 8
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  },
+  "eiheiji": {
+   "responses_30d": 43,
+   "satisfaction": 4.3,
+   "nps": 4,
+   "top_reasons": [
+    {
+     "en": "Zen temple",
+     "ja": "禅寺",
+     "share": 44
+    },
+    {
+     "en": "Architecture",
+     "ja": "建築",
+     "share": 28
+    },
+    {
+     "en": "Zazen",
+     "ja": "座禅",
+     "share": 15
+    },
+    {
+     "en": "Quiet",
+     "ja": "静けさ",
+     "share": 13
+    }
+   ],
+   "origin_share": [
+    {
+     "en": "Fukui",
+     "ja": "福井県内",
+     "share": 18
+    },
+    {
+     "en": "Hokuriku",
+     "ja": "北陸",
+     "share": 17
+    },
+    {
+     "en": "Kansai",
+     "ja": "関西",
+     "share": 27
+    },
+    {
+     "en": "Chubu",
+     "ja": "中部",
+     "share": 15
+    },
+    {
+     "en": "Kanto",
+     "ja": "関東",
+     "share": 14
+    },
+    {
+     "en": "Overseas",
+     "ja": "海外",
+     "share": 9
+    }
+   ],
+   "source": "FTAS / Fukui Prefecture Tourism Federation visitor survey"
+  }
+ },
+ "social": {
+  "tojinbo": {
+   "posts_24h": 68,
+   "images_24h": 51,
+   "comments_24h": 132,
+   "avg_sentiment": 0.26,
+   "feed": [
+    {
+     "id": "tojinbo-p0",
+     "kind": "photo",
+     "handle": "visitor_1375",
+     "hours_ago": 9,
+     "sentiment": 0.8,
+     "en": "Those basalt cliffs at golden hour. Worth the drive.",
+     "ja": "夕暮れの柱状節理、来てよかった。",
+     "likes": 69,
+     "comments": 19,
+     "thumb": {
+      "motif": "cliff",
+      "hue": 37
+     }
+    },
+    {
+     "id": "tojinbo-p1",
+     "kind": "photo",
+     "handle": "visitor_9211",
+     "hours_ago": 3,
+     "sentiment": -0.4,
+     "en": "Parking queue was 40 minutes on the coast road.",
+     "ja": "沿岸道路で駐車待ち40分。",
+     "likes": 33,
+     "comments": 10,
+     "thumb": {
+      "motif": "cliff",
+      "hue": 307
+     }
+    },
+    {
+     "id": "tojinbo-p2",
+     "kind": "short",
+     "handle": "visitor_9553",
+     "hours_ago": 9,
+     "sentiment": 0.6,
+     "en": "Grilled squid on a stick by the sea. Perfect.",
+     "ja": "海辺でいか焼き。最高。",
+     "likes": 86,
+     "comments": 6,
+     "thumb": {
+      "motif": "cliff",
+      "hue": 338
+     }
+    }
+   ]
+  },
+  "fukui_station": {
+   "posts_24h": 219,
+   "images_24h": 125,
+   "comments_24h": 371,
+   "avg_sentiment": 0.48,
+   "feed": [
+    {
+     "id": "fukui_station-p0",
+     "kind": "photo",
+     "handle": "visitor_9665",
+     "hours_ago": 12,
+     "sentiment": 0.5,
+     "en": "The dinosaur outside the station moved and roared!",
+     "ja": "駅前の恐竜が動いて吠えた！",
+     "likes": 145,
+     "comments": 8,
+     "thumb": {
+      "motif": "train",
+      "hue": 208
+     }
+    },
+    {
+     "id": "fukui_station-p1",
+     "kind": "photo",
+     "handle": "visitor_6804",
+     "hours_ago": 13,
+     "sentiment": 0.3,
+     "en": "Easy shinkansen transfer, lockers everywhere.",
+     "ja": "新幹線の乗り換えが楽、ロッカーも多い。",
+     "likes": 14,
+     "comments": 18,
+     "thumb": {
+      "motif": "train",
+      "hue": 223
+     }
+    },
+    {
+     "id": "fukui_station-p2",
+     "kind": "short",
+     "handle": "visitor_5568",
+     "hours_ago": 6,
+     "sentiment": -0.3,
+     "en": "Bus to Tojinbo leaves every hour, missed it by a minute.",
+     "ja": "東尋坊行きバスは1時間に1本、1分差で逃した。",
+     "likes": 44,
+     "comments": 13,
+     "thumb": {
+      "motif": "train",
+      "hue": 289
+     }
+    }
+   ]
+  },
+  "katsuyama": {
+   "posts_24h": 173,
+   "images_24h": 110,
+   "comments_24h": 331,
+   "avg_sentiment": 0.37,
+   "feed": [
+    {
+     "id": "katsuyama-p0",
+     "kind": "photo",
+     "handle": "visitor_5527",
+     "hours_ago": 6,
+     "sentiment": 0.9,
+     "en": "Kids did not want to leave the museum. Neither did I.",
+     "ja": "子供が帰りたがらない。私も。",
+     "likes": 147,
+     "comments": 16,
+     "thumb": {
+      "motif": "dino",
+      "hue": 115
+     }
+    },
+    {
+     "id": "katsuyama-p1",
+     "kind": "photo",
+     "handle": "visitor_2861",
+     "hours_ago": 13,
+     "sentiment": -0.5,
+     "en": "Queue to get in wrapped round the building by 11.",
+     "ja": "11時には入場待ちが建物を一周。",
+     "likes": 26,
+     "comments": 2,
+     "thumb": {
+      "motif": "dino",
+      "hue": 104
+     }
+    },
+    {
+     "id": "katsuyama-p2",
+     "kind": "short",
+     "handle": "visitor_4296",
+     "hours_ago": 17,
+     "sentiment": 0.7,
+     "en": "The skeleton hall is enormous. Book a timed ticket.",
+     "ja": "骨格の展示室は圧巻。時間指定券がおすすめ。",
+     "likes": 80,
+     "comments": 4,
+     "thumb": {
+      "motif": "dino",
+      "hue": 90
+     }
+    }
+   ]
+  },
+  "rainbow_line": {
+   "posts_24h": 55,
+   "images_24h": 30,
+   "comments_24h": 74,
+   "avg_sentiment": 0.32,
+   "feed": [
+    {
+     "id": "rainbow_line-p0",
+     "kind": "photo",
+     "handle": "visitor_7188",
+     "hours_ago": 10,
+     "sentiment": 0.8,
+     "en": "All five lakes from the summit terrace. Clear skies.",
+     "ja": "山頂テラスから五湖すべて。快晴。",
+     "likes": 10,
+     "comments": 19,
+     "thumb": {
+      "motif": "lake",
+      "hue": 159
+     }
+    },
+    {
+     "id": "rainbow_line-p1",
+     "kind": "photo",
+     "handle": "visitor_4031",
+     "hours_ago": 5,
+     "sentiment": 0.4,
+     "en": "Foot bath with a view of the sea. Cold wind though.",
+     "ja": "海を見ながら足湯。風は冷たい。",
+     "likes": 123,
+     "comments": 22,
+     "thumb": {
+      "motif": "lake",
+      "hue": 318
+     }
+    },
+    {
+     "id": "rainbow_line-p2",
+     "kind": "short",
+     "handle": "visitor_4020",
+     "hours_ago": 9,
+     "sentiment": -0.2,
+     "en": "Fog rolled in, could not see a thing at the top.",
+     "ja": "霧で山頂から何も見えず。",
+     "likes": 100,
+     "comments": 7,
+     "thumb": {
+      "motif": "lake",
+      "hue": 217
+     }
+    }
+   ]
+  },
+  "awara_onsen": {
+   "posts_24h": 75,
+   "images_24h": 41,
+   "comments_24h": 141,
+   "avg_sentiment": 0.37,
+   "feed": [
+    {
+     "id": "awara_onsen-p0",
+     "kind": "photo",
+     "handle": "visitor_4576",
+     "hours_ago": 11,
+     "sentiment": 0.7,
+     "en": "Open-air bath under the stars after the shinkansen.",
+     "ja": "新幹線を降りて星空の露天風呂。",
+     "likes": 155,
+     "comments": 12,
+     "thumb": {
+      "motif": "onsen",
+      "hue": 277
+     }
+    },
+    {
+     "id": "awara_onsen-p1",
+     "kind": "photo",
+     "handle": "visitor_8784",
+     "hours_ago": 6,
+     "sentiment": 0.6,
+     "en": "Kaiseki dinner with Echizen crab season coming soon.",
+     "ja": "越前がにの季節ももうすぐ、会席料理。",
+     "likes": 184,
+     "comments": 22,
+     "thumb": {
+      "motif": "onsen",
+      "hue": 82
+     }
+    },
+    {
+     "id": "awara_onsen-p2",
+     "kind": "short",
+     "handle": "visitor_5443",
+     "hours_ago": 14,
+     "sentiment": 0.2,
+     "en": "Quiet town, the foot bath plaza is lovely at night.",
+     "ja": "静かな町。夜の足湯広場が素敵。",
+     "likes": 35,
+     "comments": 11,
+     "thumb": {
+      "motif": "onsen",
+      "hue": 135
+     }
+    }
+   ]
+  },
+  "eiheiji": {
+   "posts_24h": 60,
+   "images_24h": 33,
+   "comments_24h": 103,
+   "avg_sentiment": 0.29,
+   "feed": [
+    {
+     "id": "eiheiji-p0",
+     "kind": "photo",
+     "handle": "visitor_6589",
+     "hours_ago": 7,
+     "sentiment": 0.8,
+     "en": "Morning service in the cedar mist. Unforgettable.",
+     "ja": "杉の霧の中の朝のお勤め。忘れられない。",
+     "likes": 33,
+     "comments": 12,
+     "thumb": {
+      "motif": "temple",
+      "hue": 252
+     }
+    },
+    {
+     "id": "eiheiji-p1",
+     "kind": "photo",
+     "handle": "visitor_7865",
+     "hours_ago": 2,
+     "sentiment": 0.5,
+     "en": "Sesame tofu at the gate shop. Simple and good.",
+     "ja": "門前のごま豆腐。素朴でおいしい。",
+     "likes": 101,
+     "comments": 9,
+     "thumb": {
+      "motif": "temple",
+      "hue": 339
+     }
+    },
+    {
+     "id": "eiheiji-p2",
+     "kind": "short",
+     "handle": "visitor_5986",
+     "hours_ago": 9,
+     "sentiment": -0.1,
+     "en": "Lots of stairs, bring good shoes.",
+     "ja": "階段が多い、歩きやすい靴で。",
+     "likes": 78,
+     "comments": 8,
+     "thumb": {
+      "motif": "temple",
+      "hue": 229
+     }
+    }
+   ]
+  }
+ },
+ "reviews": {
+  "tojinbo": {
+   "rating": 4.2,
+   "count": 6467,
+   "rating_30d_ago": 4.2,
+   "new_30d": 137,
+   "distribution_pct": [
+    59,
+    24,
+    9,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 5,
+     "en": "Dramatic coastline, go at sunset.",
+     "ja": "夕日の時間に行くべき絶景の海岸。",
+     "days_ago": 4
+    },
+    {
+     "stars": 3,
+     "en": "Crowded shops at the entrance, cliffs are great.",
+     "ja": "入口の店は混雑、崖は素晴らしい。",
+     "days_ago": 8
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  },
+  "fukui_station": {
+   "rating": 4.3,
+   "count": 3778,
+   "rating_30d_ago": 4.2,
+   "new_30d": 112,
+   "distribution_pct": [
+    62,
+    24,
+    8,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 4,
+     "en": "Clean, compact, fun dinosaur theme.",
+     "ja": "きれいでコンパクト、恐竜テーマが楽しい。",
+     "days_ago": 4
+    },
+    {
+     "stars": 3,
+     "en": "Not many signs in English for buses.",
+     "ja": "バスの英語案内が少ない。",
+     "days_ago": 9
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  },
+  "katsuyama": {
+   "rating": 4.1,
+   "count": 3482,
+   "rating_30d_ago": 4.2,
+   "new_30d": 66,
+   "distribution_pct": [
+    60,
+    25,
+    9,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 5,
+     "en": "One of the best dinosaur museums anywhere.",
+     "ja": "世界屈指の恐竜博物館。",
+     "days_ago": 2
+    },
+    {
+     "stars": 4,
+     "en": "Great but book ahead on weekends.",
+     "ja": "素晴らしいが週末は予約を。",
+     "days_ago": 8
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  },
+  "rainbow_line": {
+   "rating": 4,
+   "count": 6850,
+   "rating_30d_ago": 4.1,
+   "new_30d": 181,
+   "distribution_pct": [
+    61,
+    22,
+    9,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 5,
+     "en": "Stunning lake views from the top.",
+     "ja": "山頂からの湖の眺めが見事。",
+     "days_ago": 4
+    },
+    {
+     "stars": 4,
+     "en": "Toll is worth it on a clear day.",
+     "ja": "晴れた日なら通行料の価値あり。",
+     "days_ago": 7
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  },
+  "awara_onsen": {
+   "rating": 4.3,
+   "count": 1536,
+   "rating_30d_ago": 4.2,
+   "new_30d": 51,
+   "distribution_pct": [
+    67,
+    25,
+    9,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 5,
+     "en": "Relaxing ryokan stay, great food.",
+     "ja": "くつろげる旅館、料理が絶品。",
+     "days_ago": 2
+    },
+    {
+     "stars": 4,
+     "en": "Quiet town, easy from the station.",
+     "ja": "静かな町、駅から近い。",
+     "days_ago": 8
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  },
+  "eiheiji": {
+   "rating": 4.5,
+   "count": 8716,
+   "rating_30d_ago": 4.5,
+   "new_30d": 148,
+   "distribution_pct": [
+    65,
+    24,
+    9,
+    3,
+    2
+   ],
+   "snippets": [
+    {
+     "stars": 5,
+     "en": "Peaceful and profound. Allow two hours.",
+     "ja": "静かで深い。2時間は見ておきたい。",
+     "days_ago": 6
+    },
+    {
+     "stars": 4,
+     "en": "Beautiful halls, many stairs.",
+     "ja": "美しい伽藍、階段が多い。",
+     "days_ago": 8
+    }
+   ],
+   "source": "Google reviews shape (fictional sample)"
+  }
+ }
+}
