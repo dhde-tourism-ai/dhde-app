@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
 import { DemoBadge } from '../../../components/DemoBadge'
+import { SourceBadge } from '../../../components/SourceBadge'
+import type { DataSources, SourceInfo } from '../../../types/live'
 import { PillLegend } from '../../../components/StatusPill'
 import { CROWD_TIERS, TRAFFIC_TIERS } from '../../../lib/live'
 import { econCaveats } from '../../../lib/economics'
@@ -23,7 +25,21 @@ interface Props {
   economics: RegionalEconomics | null
   economicsError: Error | null
   market?: MarketVoiceData | null
+  sources?: DataSources
   onClose?: () => void
+}
+
+const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
+  people: ['Day totals are real estimates (daily signal scaled to the 2025 official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections only.', '日合計は実推計（日次シグナルを2025年公式年間値に換算）。時間別の形は模擬で日合計に一致。将来日は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数のみ。'],
+  density: ['Follows the People layer: real day totals, simulated hourly shape.', '人数レイヤーと同じ：日合計は実データ、時間別は模擬。'],
+  flow: ['Route volumes follow each destination’s real day total; the split by road and hour is simulated.', '各目的地の実日合計に比例。道路・時間の配分は模擬。'],
+  traffic: ['Roads with a counter (Katsuyama, Eiheiji, Rainbow Line) follow the real daily volume; others and all future days stay demo.', '計測器のある道路（勝山・永平寺・レインボーライン）は実交通量。その他と将来日はデモ。'],
+  weather: ['Daily temperature, rain, wind, sun, humidity and snow are real (JMA); the hourly curve is synthesised. Advisories are demo.', '日別の気温・降水・風・日照・湿度・積雪は実データ（気象庁）。時間別は合成。注意報はデモ。'],
+  hotels: ['Occupancy, ADR and rooms from FTAS reservation feeds, forward bookings up to 90 days (real). Rakuten availability is demo.', '稼働率・客室単価・室数はFTAS予約データ、90日先までの予約（実データ）。楽天の空室はデモ。'],
+  rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
+  reviews: ['Rating and new reviews in 30 days are real (GMB). Total count and snippets are fictional demo.', '評価と30日の新規件数は実データ。総件数と抜粋は架空のデモ。'],
+  survey: ['Response counts are real; satisfaction, NPS, reasons and origin are demo.', '回答数は実データ。満足度・NPS・理由・居住地はデモ。'],
+  nudges: ['Demand and booking nudges use real visitor history and forward bookings where available.', '需要・予約ナッジは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
 function Grad({ from, to, left, right }: { from: string; to: string; left: string; right: string }) {
@@ -40,6 +56,18 @@ function Grad({ from, to, left, right }: { from: string; to: string; left: strin
 
 export function LayersPanel(p: Props) {
   const { t } = useLang()
+  const src = (id: LayerId): SourceInfo | undefined => (p.sources as Record<string, SourceInfo | undefined> | undefined)?.[id]
+  const anyReal = Object.values(p.sources ?? {}).some((x) => x && x.status !== 'demo')
+  const realNote = (id: LayerId): ReactNode => {
+    const i = src(id)
+    if (!i || i.status === 'demo') return null
+    return (
+      <div className="lg-src">
+        <SourceBadge info={i} />
+        <span className="lg-note">{REAL_NOTE[id] ? t(REAL_NOTE[id]![0], REAL_NOTE[id]![1]) : ''}</span>
+      </div>
+    )
+  }
 
   const legend: Record<LayerId, ReactNode> = {
     nudges: (
@@ -222,7 +250,7 @@ export function LayersPanel(p: Props) {
         <h2 className="fp-title">
           <Icon name="layers" /> {t('Layers', 'レイヤー')}
         </h2>
-        {p.isDemo && <DemoBadge />}
+        {p.isDemo && (anyReal ? <SourceBadge info={{ status: 'mixed', as_of: null, real: [] }} compact /> : <DemoBadge />)}
         {p.onClose && (
           <button className="icon-btn fp-close" onClick={p.onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />
@@ -257,7 +285,7 @@ export function LayersPanel(p: Props) {
                       <span className="layer-text">
                         <span className="layer-name">
                           {t(l.en, l.ja)}
-                          {l.demo && p.isDemo && on && <DemoBadge compact />}
+                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact />}
                         </span>
                         <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
                       </span>
@@ -266,7 +294,12 @@ export function LayersPanel(p: Props) {
                         <span className="switch-track"></span>
                       </span>
                     </label>
-                    {on && <div className="layer-legend">{legend[l.id]}</div>}
+                    {on && (
+                      <div className="layer-legend">
+                        {realNote(l.id)}
+                        {legend[l.id]}
+                      </div>
+                    )}
                   </li>
                 )
               })}

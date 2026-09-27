@@ -35,6 +35,16 @@ export interface LiveWeather {
   precip_mm: number[]
   wind_ms: number[]
   condition: WeatherCondition[]
+  /* ---- Added by the real-data merge (per day, null where unknown). ---- */
+  sun_h?: (number | null)[]
+  humidity_pct?: (number | null)[]
+  snow_cm?: (number | null)[]
+  /** Daily totals / means from real_data.json, for the cards. */
+  daily_temp_c?: (number | null)[]
+  daily_precip_mm?: (number | null)[]
+  daily_wind_ms?: (number | null)[]
+  /** True where the day's weather comes from real_data.json. */
+  real_days?: boolean[]
 }
 
 export interface LiveSentiment {
@@ -73,6 +83,10 @@ export interface LiveTraffic {
   /** Congestion 0 (free) to 1 (standstill), per segment per hour. */
   congestion: number[][]
   vehicles_per_hour: number[]
+  /** Added by the real-data merge: node whose counter drives this road, its daily volume, and which days are real. */
+  counter_node?: string
+  real_volume?: (number | null)[]
+  real_days?: boolean[]
 }
 
 export interface LiveAdvisory {
@@ -96,6 +110,8 @@ export interface LiveWeatherAlert {
   title_ja: string
   detail_en: string
   detail_ja: string
+  /** True for simulated advisories (all of them until a real JMA feed is wired in). */
+  demo?: boolean
 }
 
 export interface LiveData {
@@ -115,4 +131,41 @@ export interface LiveData {
   traffic: Record<string, LiveTraffic>
   advisories: LiveAdvisory[]
   weather_alerts: LiveWeatherAlert[]
+  /* ---- Added by the real-data merge (src/lib/real.ts). ---- */
+  /** Day index of today (0 for the demo file; 7 when real past days are prepended). */
+  today_day?: number
+  /** Hour index the timeline opens on ("now"). Defaults to observed_until. */
+  now_index?: number
+  node_meta?: Record<string, RealNodeMeta>
+  sources?: DataSources
+  shared_date?: string | null
+}
+
+export type SourceStatus = 'demo' | 'real' | 'mixed'
+
+export interface SourceInfo {
+  status: SourceStatus
+  as_of: string | null
+  /** Nodes / areas covered by real values. */
+  real: string[]
+}
+
+export type DataSources = Partial<Record<'people' | 'flow' | 'density' | 'traffic' | 'weather' | 'hotels' | 'rsi' | 'reviews' | 'survey' | 'nudges', SourceInfo>>
+
+export interface RealNodeMeta {
+  /** people (camera) | vehicles | reservations | proxy_camera | proxy_survey */
+  measure: string | null
+  confidence: 'high' | 'medium' | 'low' | 'none'
+  factor: number | null
+  official_2025: number | null
+  calibration_source: string
+  visitors_as_of: string | null
+  /** No official count to scale to (Fukui Station): show the raw signal only. */
+  no_estimate: boolean
+  /** Per merged day. */
+  visitors_daily: (number | null)[]
+  signal_daily: (number | null)[]
+  /** Mean visitors_est over the real history ("normal"). */
+  normal_daily: number | null
+  forecast_method: string
 }

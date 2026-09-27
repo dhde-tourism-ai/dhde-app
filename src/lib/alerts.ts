@@ -76,6 +76,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
   }
 
   for (const [id, f] of Object.entries(frame)) {
+    if (f.noEstimate) continue
     if (f.tier.key === 'crit' || f.tier.key === 'serious') {
       crowd.push({
         id: `cr-${id}`,

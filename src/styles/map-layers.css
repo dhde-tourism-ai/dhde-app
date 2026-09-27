@@ -754,3 +754,101 @@
   font-size: 12px;
   color: var(--accent-strong);
 }
+
+.lg-src {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 9px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: rgba(61, 187, 110, 0.06);
+  border: 1px solid rgba(61, 187, 110, 0.25);
+}
+
+.lg-src .src-badge {
+  align-self: flex-start;
+}
+
+.tl-day-seg.past {
+  background: rgba(61, 187, 110, 0.05);
+}
+
+.tl-clock {
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  width: 0;
+  border-left: 1.5px dashed var(--accent);
+  pointer-events: none;
+}
+
+.tt-src {
+  display: inline-flex;
+  margin-left: 6px;
+}
+
+.tt-real {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #04160a;
+  background: #6fdc93;
+  border-radius: 99px;
+  padding: 1px 7px;
+}
+
+.real-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid rgba(61, 187, 110, 0.3);
+  margin-bottom: 10px;
+}
+
+.rc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.real-card p {
+  margin: 0;
+}
+
+.conf {
+  font-weight: 700;
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--line-strong);
+}
+
+.conf-high {
+  color: var(--good-text);
+  border-color: rgba(12, 163, 12, 0.5);
+}
+
+.conf-medium {
+  color: var(--warn-text);
+  border-color: rgba(250, 178, 25, 0.5);
+}
+
+.conf-low,
+.conf-none {
+  color: var(--crit-text);
+  border-color: rgba(208, 59, 59, 0.5);
+}
+
+@media (max-width: 720px) {
+  .tl-controls .src-badge,
+  .tl-day-seg.past .tl-day-lab {
+    display: none;
+  }
+}

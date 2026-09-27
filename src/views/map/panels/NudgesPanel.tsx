@@ -7,7 +7,8 @@ import { SEV_COLOUR } from '../../../lib/alerts'
 import { dayLabel, hourLabel } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
-import { DemoBadge } from '../../../components/DemoBadge'
+import { SourceBadge } from '../../../components/SourceBadge'
+import type { SourceInfo } from '../../../types/live'
 
 const SEV_LABEL = { crit: ['Critical', '重大'], serious: ['High', '高'], warn: ['Medium', '中'], info: ['Opportunity', '機会'] } as const
 
@@ -22,11 +23,12 @@ interface Props {
   activeId?: string
   onPick: (n: Nudge) => void
   tabs: ReactNode
+  source?: SourceInfo
   onClose?: () => void
 }
 
 /** The three nudge loops as an actionable list; clicking one focuses the map and timeline. */
-export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, activeId, onPick, tabs, onClose }: Props) {
+export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, activeId, onPick, tabs, source, onClose }: Props) {
   const { t, lang } = useLang()
   const [loop, setLoop] = useState<0 | 1 | 2 | 3>(0)
   const list = nudges.filter((n) => loop === 0 || n.loop === loop)
@@ -36,7 +38,7 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
     <section className="float-panel nudges-panel" aria-label={t('Nudges', 'ナッジ')}>
       <header className="fp-head">
         {tabs}
-        <DemoBadge compact />
+        <SourceBadge info={source} compact />
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />
@@ -95,10 +97,17 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
                     <span className="nc-action">{t(n.action_en, n.action_ja)}</span>
                   </div>
                   <div className="nc-foot">
-                    <span className="pill pill-illustrative">
-                      <span className="pill-dot" aria-hidden="true"></span>
-                      {t('Demo', 'デモ')}
-                    </span>
+                    {n.real ? (
+                      <span className="pill pill-modelled">
+                        <span className="pill-dot" aria-hidden="true"></span>
+                        {t('Real data + forecast', '実データ＋予測')}
+                      </span>
+                    ) : (
+                      <span className="pill pill-illustrative">
+                        <span className="pill-dot" aria-hidden="true"></span>
+                        {t('Demo', 'デモ')}
+                      </span>
+                    )}
                     <span className="nc-focus">
                       {t('Show on map', '地図で見る')} <Icon name="chevron" size={12} />
                     </span>

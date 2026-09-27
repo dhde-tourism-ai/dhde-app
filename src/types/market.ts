@@ -23,6 +23,14 @@ export interface HotelArea {
   booking_curve: { target_day: number; points: { days_ahead: number; booked_pct: number; last_year_pct: number }[] }
   /** Rakuten availability: share of hotels within radius_km with rooms left 1 / 7 / 30 days out. */
   rakuten: { radius_km: number; hotels_checked: number; share_with_rooms_pct: { d1: number; d7: number; d30: number } }
+  /* ---- Added by the real-data merge. ---- */
+  real_days?: boolean[]
+  adr_yen?: (number | null)[]
+  /** On-the-books occupancy for nights N days ahead (real hotel_forward). */
+  forward?: { days_ahead: number; occ_pct: number }[]
+  as_of?: string | null
+  /** Node whose FTAS reservation feed supplies the real values. */
+  real_feed_node?: string
 }
 
 export interface RsiArea {
@@ -36,6 +44,8 @@ export interface RsiArea {
   /** Last 14 days, oldest first; the last value is today. */
   history: number[]
   change_7d_pct: number
+  /** Real Google Maps Business Profile metrics for the node in this area (merge). */
+  gmb?: { node: string; map_views: number; search_views: number; directions: number; history: number[]; as_of: string | null }
 }
 
 export interface Share {
@@ -53,6 +63,8 @@ export interface SurveyNode {
   top_reasons: Share[]
   origin_share: Share[]
   source: string
+  /** responses_30d is real (sum of daily survey_responses); the rest stays demo. */
+  responses_real?: { as_of: string | null }
 }
 
 export interface SocialPost {
@@ -87,6 +99,8 @@ export interface ReviewsNode {
   distribution_pct: number[]
   snippets: { stars: number; en: string; ja: string; days_ago: number }[]
   source: string
+  /** rating / rating_30d_ago / new_30d are real (GMB); count and snippets stay demo. */
+  real?: { as_of: string | null; reviews_used: number }
 }
 
 export interface MarketVoiceData {

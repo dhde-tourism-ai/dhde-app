@@ -1,0 +1,4 @@
+# Python deps for scripts/build_real_data.py (the daily-data workflow also installs
+# dhde-preprocessing-model's own requirements).
+pandas>=2.2
+pyarrow>=15

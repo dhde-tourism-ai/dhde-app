@@ -43,6 +43,12 @@ export interface NodeFrame {
   weather: { temp: number; pop: number; mm: number; wind: number; cond: WeatherCondition; station: string; station_ja: string }
   alerts: LiveWeatherAlert[]
   sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[] }
+  /** Real daily figures for this node on this day (null when the day is not observed). */
+  realDay: { visitors: number | null; signal: number | null } | null
+  /** No visitor estimate exists (Fukui Station): show the raw signal only. */
+  noEstimate: boolean
+  /** Weather extras from real_data.json for the day. */
+  wxDay: { sun: number | null; humidity: number | null; snow: number | null; temp: number | null; precip: number | null; wind: number | null; real: boolean }
 }
 
 export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
@@ -74,6 +80,23 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         station_ja: n.weather.station_ja,
       },
       alerts: live.weather_alerts.filter((a) => a.nodes.includes(id) && i >= a.start && i <= a.end),
+      realDay: (() => {
+        const m = live.node_meta?.[id]
+        if (!m) return null
+        const v = m.visitors_daily[d] ?? null
+        const sg = m.signal_daily[d] ?? null
+        return v === null && sg === null ? null : { visitors: v, signal: sg }
+      })(),
+      noEstimate: Boolean(live.node_meta?.[id]?.no_estimate),
+      wxDay: {
+        sun: n.weather.sun_h?.[d] ?? null,
+        humidity: n.weather.humidity_pct?.[d] ?? null,
+        snow: n.weather.snow_cm?.[d] ?? null,
+        temp: n.weather.daily_temp_c?.[d] ?? null,
+        precip: n.weather.daily_precip_mm?.[d] ?? null,
+        wind: n.weather.daily_wind_ms?.[d] ?? null,
+        real: Boolean(n.weather.real_days?.[d]),
+      },
       sentiment: {
         score: n.sentiment.score[d],
         posts: n.sentiment.posts[d],

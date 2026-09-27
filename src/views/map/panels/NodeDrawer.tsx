@@ -16,6 +16,8 @@ import { StatusPill } from '../../../components/StatusPill'
 import { StatusTag } from '../../../components/StatusTag'
 import { DemoBadge } from '../../../components/DemoBadge'
 import { Stars } from '../../../components/Stars'
+import { SourceBadge } from '../../../components/SourceBadge'
+import { measureLabel } from '../../../lib/real'
 import type { MarketVoiceData } from '../../../types/market'
 
 const S1 = '#3987e5'
@@ -84,7 +86,22 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
         }
       })
     : []
-  const daily = live && ln ? dailyArrivals(live, node.id).map((d) => ({ ...d, label: dayLabel(live, d.d, lang, true), day: live.days[d.d].date.slice(8).replace(/^0/, '') })) : []
+  const meta = live?.node_meta?.[node.id]
+  const todayDay = live?.today_day ?? 0
+  const daily =
+    live && ln
+      ? dailyArrivals(live, node.id).map((d) => {
+          const realV = meta?.visitors_daily[d.d] ?? null
+          const isReal = realV !== null && d.d < todayDay
+          return { ...d, value: isReal ? realV : d.predicted, isReal, label: dayLabel(live, d.d, lang, true), day: live.days[d.d].date.slice(8).replace(/^0/, '') }
+        })
+      : []
+  const lastSig = (() => {
+    if (!meta) return null
+    for (let k = Math.min(day, meta.signal_daily.length - 1); k >= 0; k--) if (meta.signal_daily[k] !== null) return { v: meta.signal_daily[k] as number, date: live?.days[k]?.date }
+    return null
+  })()
+  const CONF: Record<string, [string, string]> = { high: ['High', '高'], medium: ['Medium', '中'], low: ['Low', '低'], none: ['None', 'なし'] }
 
   return (
     <section className="float-panel drawer" aria-label={tr(node.name, node.name_ja)}>
@@ -108,13 +125,53 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
           ) : (
             <span className="measure-tag est">{tr('Not measured yet', '未計測')}</span>
           )}
-          {frame && live?.demo && <DemoBadge />}
+          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} /> : <DemoBadge />)}
         </div>
 
         {!frame ? (
           <p className="muted">{tr('No live feed for this node yet. It is placed on the map from the node registry.', 'このノードのライブデータはまだありません。')}</p>
         ) : (
           <>
+            {frame.noEstimate ? (
+              <div className="real-card">
+                <div className="rc-head">
+                  <span className="eyebrow">{tr('Camera detections', 'カメラ検知数')}</span>
+                  <span className="tt-real">{tr('Real signal', '実シグナル')}</span>
+                </div>
+                <span className="dk-val">{lastSig ? Math.round(lastSig.v).toLocaleString() : '—'}</span>
+                <p className="muted small">
+                  {tr('Detections in the day', '1日の検知数')} {lastSig?.date ? `(${lastSig.date})` : ''}.{' '}
+                  {tr('Not unique visitors, and there is no official annual count for this site to scale to, so no visitor number is shown. The map keeps a simulated shape for flows only.', '延べ検知数で来訪者数ではありません。公式年間値がないため来訪者数は表示しません。')}
+                </p>
+              </div>
+            ) : meta ? (
+              <div className="real-card">
+                <div className="rc-head">
+                  <span className="eyebrow">{frame.realDay?.visitors != null ? tr('Visitors this day (modelled)', 'この日の来訪者数（推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
+                  {frame.realDay?.visitors != null ? <span className="tt-real">{tr('Real', '実データ')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
+                </div>
+                <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString()}</span>
+                <div className="tt-grid">
+                  <span className="tt-k">{tr('Method', '方法')}</span>
+                  <span className="tt-v">{tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
+                  <span className="tt-k">{tr('Official 2025', '2025年公式')}</span>
+                  <span className="tt-v num">{meta.official_2025?.toLocaleString() ?? '—'}</span>
+                  <span className="tt-k">{tr('Confidence', '信頼度')}</span>
+                  <span className="tt-v">
+                    <span className={`conf conf-${meta.confidence}`}>{tr(CONF[meta.confidence][0], CONF[meta.confidence][1])}</span>
+                  </span>
+                  {frame.realDay?.signal != null && (
+                    <>
+                      <span className="tt-k">{tr('Raw signal', '元シグナル')}</span>
+                      <span className="tt-v num">{Math.round(frame.realDay.signal).toLocaleString()}</span>
+                    </>
+                  )}
+                </div>
+                <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。')}</p>
+              </div>
+            ) : null}
+            {!frame.noEstimate && (
+            <>
             <div className="drawer-kpis">
               <div className="dk">
                 <span className="eyebrow">{frame.observed ? tr('On site now', '現在の人数') : tr('Forecast on site', '予測人数')}</span>
@@ -138,11 +195,10 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
             <p className="meter-lab muted">
               {Math.round(frame.load * 100)}% {tr('of comfortable capacity', 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString()})
             </p>
-
             <h3 className="drawer-h">{tr('Today’s rhythm, people on site', '1日の推移（現地人数）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={130}>
-                <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -18, bottom: 0 }}>
+                <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="h" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} ticks={[0, 6, 12, 18, 23]} tickFormatter={(h: number) => `${h}:00`} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
                   <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString()).join('–') : Number(v).toLocaleString(), String(n)]} />
@@ -159,21 +215,30 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
               </div>
             </div>
 
-            <h3 className="drawer-h">{tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
+            <h3 className="drawer-h">{meta ? tr('Daily visitors: last 7 days (real) and next 7 (forecast)', '1日の来訪者数：直近7日（実）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={110}>
-                <BarChart data={daily} margin={{ top: 6, right: 6, left: -18, bottom: 0 }}>
+                <BarChart data={daily} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
-                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown) => [Math.round(Number(v)).toLocaleString(), tr('Forecast arrivals', '予測来訪者数')]} />
-                  <Bar dataKey="predicted" radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false}>
+                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString(), it?.payload?.isReal ? tr('Visitors (real estimate)', '来訪者（実推計）') : tr('Forecast', '予測')]} />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false}>
                     {daily.map((d) => (
-                      <Cell key={d.d} fill={d.d === day ? '#8b9dff' : S1} fillOpacity={d.d === day ? 1 : 0.75} />
+                      <Cell key={d.d} fill={d.d === day ? '#8b9dff' : d.isReal ? S1 : '#6d86ad'} fillOpacity={d.d === day ? 1 : d.isReal ? 0.9 : 0.55} />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              {meta && (
+                <div className="chart-key">
+                  <span><i className="k-band" style={{ background: S1 }}></i>{tr('Real estimate', '実推計')}</span>
+                  <span><i className="k-band" style={{ background: '#6d86ad', opacity: 0.6 }}></i>{tr('Forecast', '予測')}</span>
+                  <span><i className="k-band" style={{ background: '#8b9dff' }}></i>{tr('Selected day', '選択日')}</span>
+                </div>
+              )}
             </div>
+            </>
+            )}
 
             <h3 className="drawer-h">{tr('Weather', '気象')}</h3>
             <div className="wx-block">
@@ -185,8 +250,16 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                 <div className="muted num">
                   {tr('Rain', '降水確率')} {frame.weather.pop}% · {frame.weather.mm} mm/h · {tr('wind', '風')} {frame.weather.wind} m/s
                 </div>
+                {frame.wxDay.real && (
+                  <div className="muted num small">
+                    {tr('Day', '日')}: {frame.wxDay.temp?.toFixed(1)}°C · {frame.wxDay.precip?.toFixed(1)} mm · {frame.wxDay.wind?.toFixed(1)} m/s
+                    {frame.wxDay.humidity !== null ? ` · ${tr('humidity', '湿度')} ${Math.round(frame.wxDay.humidity)}%` : ''}
+                    {frame.wxDay.sun !== null ? ` · ${tr('sun', '日照')} ${frame.wxDay.sun.toFixed(2)} h` : ''}
+                    {frame.wxDay.snow !== null ? ` · ${tr('snow', '積雪')} ${frame.wxDay.snow} cm` : ''}
+                  </div>
+                )}
                 <div className="muted small">
-                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)}
+                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)} · {frame.wxDay.real ? <span className="tt-real">{tr('Real daily', '実データ（日別）')}</span> : <span className="tt-demo">{tr('Demo', 'デモ')}</span>}
                 </div>
               </div>
             </div>

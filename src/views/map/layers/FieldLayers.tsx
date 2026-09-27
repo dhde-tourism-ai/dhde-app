@@ -10,7 +10,7 @@ export function DensityLayer({ nodes, frame }: { nodes: MapNode[]; frame: Record
   useEffect(() => {
     canvas.setBlobs(
       nodes
-        .filter((n) => frame[n.id])
+        .filter((n) => frame[n.id] && !frame[n.id].noEstimate)
         .map((n) => {
           const f = frame[n.id]
           return {
