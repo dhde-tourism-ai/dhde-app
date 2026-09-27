@@ -34,7 +34,7 @@ function BrandMark() {
 
 export default function App() {
   const data = useProductData()
-  const { dashboard, registry, economics, strategy, live, routes } = data
+  const { dashboard, registry, economics, strategy, live, routes, market } = data
   const [route, navigate] = useHashRoute()
   const { lang, setLang, t } = useLang()
 
@@ -90,6 +90,7 @@ export default function App() {
               live={live.data}
               liveError={live.error}
               routes={routes.data}
+              market={market.data}
               selectedId={route.node}
               onSelect={(id) => navigate({ view: 'map', node: id })}
               onOpenNode={(id) => navigate({ view: 'nodes', node: id })}

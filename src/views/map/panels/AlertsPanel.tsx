@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { AlertGroups, AlertItem } from '../../../lib/alerts'
 import { SEV_COLOUR } from '../../../lib/alerts'
 import { useLang } from '../../../lib/i18n'
@@ -61,19 +62,22 @@ interface Props {
   isDemo: boolean
   onSelect: (id: string) => void
   onClose?: () => void
+  tabs?: ReactNode
 }
 
 /** Right-hand panel when no node is selected: node board plus traffic, weather and operator alerts. */
-export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose }: Props) {
+export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs }: Props) {
   const { t } = useLang()
   const total = frame ? Object.values(frame).reduce((a, f) => a + f.onSite, 0) : 0
   return (
     <section className="float-panel alerts-panel" aria-label={t('Live board', 'ライブボード')}>
       <header className="fp-head">
-        <h2 className="fp-title">
-          <Icon name="alert" /> {t('Live board', 'ライブボード')}
-        </h2>
-        {isDemo && <DemoBadge />}
+        {tabs ?? (
+          <h2 className="fp-title">
+            <Icon name="alert" /> {t('Live board', 'ライブボード')}
+          </h2>
+        )}
+        {isDemo && <DemoBadge compact={Boolean(tabs)} />}
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />

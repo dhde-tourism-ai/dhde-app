@@ -2,15 +2,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
+import '../../styles/map-layers.css'
 import type { DashboardData } from '../../types/dashboard'
 import type { NodeRegistry } from '../../types/nodes'
 import type { RegionalEconomics } from '../../types/economics'
 import type { LiveData } from '../../types/live'
 import type { RoutesFile } from '../../types/routes'
+import type { MarketVoiceData } from '../../types/market'
 import { buildMapNodes } from '../../lib/nodes'
 import { frameAt, timeLabel } from '../../lib/live'
 import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
+import { computeNudges } from '../../lib/nudges'
+import type { Nudge } from '../../lib/nudges'
 import { useLang } from '../../lib/i18n'
+import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { DEFAULT_LAYERS, readUrlState } from './layers'
@@ -26,6 +31,9 @@ import { LayersPanel } from './panels/LayersPanel'
 import { AlertsPanel } from './panels/AlertsPanel'
 import { NodeDrawer } from './panels/NodeDrawer'
 import { Timeline } from './panels/Timeline'
+import { NudgesPanel } from './panels/NudgesPanel'
+import { NudgeLayer } from './layers/NudgeLayer'
+import { HotelsLayer, ReviewsLayer, RsiLayer, SocialLayer, SurveyLayer } from './layers/VoiceMarketLayers'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const VIEW_BOUNDS: [[number, number], [number, number]] = [
@@ -33,27 +41,25 @@ const VIEW_BOUNDS: [[number, number], [number, number]] = [
   [36.3, 136.56],
 ]
 
-function useIsNarrow() {
-  const q = '(max-width: 720px)'
-  const [narrow, setNarrow] = useState(() => window.matchMedia(q).matches)
-  useEffect(() => {
-    const m = window.matchMedia(q)
-    const on = () => setNarrow(m.matches)
-    m.addEventListener('change', on)
-    return () => m.removeEventListener('change', on)
-  }, [])
-  return narrow
-}
-
 function FitView({ narrow }: { narrow: boolean }) {
   const map = useMap()
   useEffect(() => {
     const id = window.setTimeout(() => {
       map.invalidateSize()
-      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] } : { paddingTopLeft: [330, 64], paddingBottomRight: [420, 96] })
+      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] } : { paddingTopLeft: [330, 64], paddingBottomRight: [440, 96] })
     }, 50)
     return () => window.clearTimeout(id)
   }, [map, narrow])
+  return null
+}
+
+function FlyTo({ target }: { target: { at: [number, number]; key: number } | null }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!target) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    map.flyTo(target.at, Math.max(map.getZoom(), 10.5), { animate: !reduce, duration: 0.8 })
+  }, [map, target])
   return null
 }
 
@@ -103,12 +109,13 @@ interface MapViewProps {
   live: LiveData | null
   liveError: Error | null
   routes: RoutesFile | null
+  market: MarketVoiceData | null
   selectedId?: string
   onSelect: (id: string | undefined) => void
   onOpenNode: (id: string) => void
 }
 
-export default function MapView({ registry, dashboard, economics, economicsError, live, liveError, routes, selectedId, onSelect, onOpenNode }: MapViewProps) {
+export default function MapView({ registry, dashboard, economics, economicsError, live, liveError, routes, market, selectedId, onSelect, onOpenNode }: MapViewProps) {
   const { t: tr, lang } = useLang()
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
@@ -118,7 +125,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
-  const [sheet, setSheet] = useState<'layers' | 'alerts' | null>(null)
+  const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
+  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
+  const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
+  const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
 
   const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.observed_until ?? 0))
 
@@ -146,12 +156,40 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const frame = useMemo(() => (live ? frameAt(live, t) : null), [live, t])
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
   const top = alerts ? topAlert(alerts) : null
+  const day = Math.floor(t / 24)
+  const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], 0) : []), [live, market, registry])
+  const nudgesFrom = useMemo(() => nudges.filter((n) => n.day >= day), [nudges, day])
+  const pickNudge = (n: Nudge) => {
+    setPlaying(false)
+    setT(n.start)
+    setActiveNudge(n.id)
+    setFly({ at: n.focus, key: Date.now() })
+    setActive((s) => (s.has('nudges') ? s : new Set([...s, 'nudges'])))
+    if (narrow) setSheet(null)
+  }
   const selected = allNodes.find((n) => n.id === selectedId)
   const kanazawa = registry?.nodes.find((n) => n.id === 'kanazawa')
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
   const layerOn = (l: LayerId) => active.has(l)
   const paused = false
+
+  const tabs = (
+    <div className="panel-tabs" role="tablist" aria-label={tr('Right panel', 'パネル')}>
+      <button role="tab" aria-selected={rightTab === 'board'} onClick={() => setRightTab('board')}>
+        <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
+      </button>
+      <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
+        <Icon name="flag" size={14} /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+      </button>
+    </div>
+  )
+  const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
+  const nudgeTitle = (
+    <h2 className="fp-title">
+      <Icon name="flag" /> {tr('Nudges', 'ナッジ')}
+    </h2>
+  )
 
   const rightPanel = selected ? (
     <NodeDrawer
@@ -161,15 +199,18 @@ export default function MapView({ registry, dashboard, economics, economicsError
       routes={routes}
       dashboard={dashboard}
       economics={economics}
+      market={market}
       t={t}
       onClose={() => onSelect(undefined)}
       onOpenNode={onOpenNode}
     />
+  ) : showNudges && live ? (
+    <NudgesPanel nudges={nudgesFrom} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
-    <AlertsPanel alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} />
+    <AlertsPanel alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
 
-  const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' ? 'right' : 'none') : 'none'
+  const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
 
   return (
     <section className={`mapview sheet-${sheetState}`}>
@@ -186,6 +227,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
             {layerOn('sentiment') && <SentimentLayer nodes={nodes} frame={frame} />}
           </>
         )}
+        {market && layerOn('hotels') && <HotelsLayer data={market} day={day} />}
+        {market && layerOn('rsi') && <RsiLayer data={market} />}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
         {(layerOn('people') || layerOn('flow')) && (
           <PeopleLayer
@@ -198,6 +241,11 @@ export default function MapView({ registry, dashboard, economics, economicsError
           />
         )}
         {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
+        {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
+        {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
+        {market && layerOn('social') && <SocialLayer data={market} nodes={nodes} frame={frame} />}
+        {layerOn('nudges') && <NudgeLayer nudges={nudges} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
+        <FlyTo target={fly} />
       </MapContainer>
 
       <div className="map-ui">
@@ -231,6 +279,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             setShowPrecip={setShowPrecip}
             isDemo={isDemo}
             economics={economics}
+            market={market}
             economicsError={economicsError}
             onClose={narrow ? () => setSheet(null) : undefined}
           />
@@ -245,11 +294,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
               <button className="btn" aria-pressed={sheetState === 'left'} onClick={() => { onSelect(undefined); setSheet(sheet === 'layers' ? null : 'layers') }}>
                 <Icon name="layers" /> {tr('Layers', 'レイヤー')} <span className="count-badge">{active.size}</span>
               </button>
-              <button className="btn" aria-pressed={sheetState === 'right' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'alerts' ? null : 'alerts') }}>
-                <Icon name="alert" /> {tr('Live board', 'ライブボード')}
+              <button className="btn" aria-pressed={sheet === 'alerts' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'alerts' ? null : 'alerts') }}>
+                <Icon name="alert" /> {tr('Live', 'ライブ')}
                 {alerts && alerts.traffic.length + alerts.weather.length + alerts.crowd.length > 0 && (
                   <span className="count-badge warn">{alerts.traffic.length + alerts.weather.length + alerts.crowd.length}</span>
                 )}
+              </button>
+              <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
+                <Icon name="flag" /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}

@@ -4,6 +4,9 @@ import type { EconomicsFigures, Metric, RegionalEconomics } from '../../../types
 import { fmtMetric } from '../../../lib/format'
 import { fmtLost, resolvePoint, sameNode } from '../../../lib/economics'
 import type { MapNode } from '../../../lib/nodes'
+import { StatusPill } from '../../../components/StatusPill'
+import { useLang } from '../../../lib/i18n'
+import { Tip } from './Tip'
 
 const STATUS_STROKE: Record<Metric['status'], string> = {
   real: '#3dbb6e',
@@ -12,19 +15,44 @@ const STATUS_STROKE: Record<Metric['status'], string> = {
   pending: '#8a94a6',
 }
 
-function FiguresTooltip({ title, titleJa, f }: { title: string; titleJa: string; f: EconomicsFigures }) {
+function MetricKV({ label, m, kind }: { label: string; m: Metric; kind?: 'yen' | 'count' }) {
+  return (
+    <>
+      <span className="tt-k">{label}</span>
+      <span className="tt-v">
+        <b className="num">{fmtMetric(m, kind)}</b>
+        <StatusPill status={m.status} />
+      </span>
+    </>
+  )
+}
+
+function FiguresTooltip({ title, titleJa, f, note }: { title: string; titleJa: string; f: EconomicsFigures; note?: string }) {
+  const { t } = useLang()
   const o = f.opportunity_lost_yen
   return (
     <div className="econ-tip">
-      <strong>{title}</strong> <span className="ja">{titleJa}</span>
-      <div>Visitors: {fmtMetric(f.visitors)} <em>({f.visitors.status})</em></div>
-      <div>Revenue: {fmtMetric(f.revenue_yen, 'yen')} <em>({f.revenue_yen.status})</em></div>
-      <div>
-        Opportunity lost: {fmtLost(f)}
-        <div className="econ-tip-sub">
-          overnight gap {fmtMetric(o.overnight_gap, 'yen')} · weather {fmtMetric(o.weather, 'yen')} · idle rooms {fmtMetric(o.idle_rooms, 'yen')}
-        </div>
+      <div className="tt-head">
+        <span>
+          {title} <span className="ja-sub">{titleJa}</span>
+        </span>
       </div>
+      <div className="tt-hero">
+        <b className="num">{fmtMetric(f.revenue_yen, 'yen')}</b>
+        <span>{t('tourism revenue', '観光収入')}</span>
+      </div>
+      <div className="tt-grid">
+        <MetricKV label={t('Visitors', '来訪者')} m={f.visitors} />
+        <MetricKV label={t('Revenue', '観光収入')} m={f.revenue_yen} kind="yen" />
+        <span className="tt-k">{t('Opportunity lost', '機会損失')}</span>
+        <span className="tt-v">
+          <b className="num">{fmtLost(f)}</b>
+        </span>
+        <MetricKV label={t('· overnight gap', '・宿泊ギャップ')} m={o.overnight_gap} kind="yen" />
+        <MetricKV label={t('· weather', '・天候')} m={o.weather} kind="yen" />
+        <MetricKV label={t('· idle rooms', '・空室')} m={o.idle_rooms} kind="yen" />
+      </div>
+      {note && <div className="tip-sub">{note}</div>}
     </div>
   )
 }
@@ -61,12 +89,9 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
               fillOpacity: v === null ? 0.08 : 0.16,
             }}
           >
-            <Tooltip sticky className="map-tip">
-              <FiguresTooltip title={r.name} titleJa={r.name_ja} f={r} />
-              {economics.visitor_window?.regions && (
-                <div className="econ-tip-sub">Visitors: JTA, {economics.visitor_window.regions}</div>
-              )}
-            </Tooltip>
+            <Tip sticky>
+              <FiguresTooltip title={r.name} titleJa={r.name_ja} f={r} note={economics.visitor_window?.regions ? `Visitors: JTA, ${economics.visitor_window.regions}` : undefined} />
+            </Tip>
           </Circle>
         )
       })}
@@ -87,15 +112,19 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
               opacity: 0.8,
             }}
           >
-            <Tooltip sticky className="map-tip">
-              <div className="econ-tip">
-                <strong>
+            <Tip sticky>
+              <div className="tt-head">
+                <span>
                   {a.name} → {b.name}
-                </strong>
-                <div>Visitors: {fmtMetric(f.visitors)} <em>({f.status})</em></div>
-                <div className="econ-tip-sub">{f.note}</div>
+                </span>
+                <StatusPill status={f.status} />
               </div>
-            </Tooltip>
+              <div className="tt-hero">
+                <b className="num">{fmtMetric(f.visitors)}</b>
+                <span>visitors on this flow</span>
+              </div>
+              <div className="tip-sub">{f.note}</div>
+            </Tip>
           </Polyline>
         )
       })}
@@ -112,9 +141,15 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
               radius={14}
               pathOptions={{ stroke: false, fillOpacity: 0 }}
             >
-              <Tooltip permanent={permanent} direction="bottom" offset={[0, 12]} className="econ-note map-tip">
-                {n.name}: {fmtMetric(n.visitors)} visitors · {fmtMetric(n.revenue_yen, 'yen')} · lost {fmtLost(n)}
-              </Tooltip>
+              {permanent ? (
+                <Tooltip permanent direction="bottom" offset={[0, 12]} className="econ-note map-tip">
+                  {n.name}: {fmtMetric(n.visitors)} visitors · {fmtMetric(n.revenue_yen, 'yen')} · lost {fmtLost(n)}
+                </Tooltip>
+              ) : (
+                <Tip>
+                  <FiguresTooltip title={n.name} titleJa={n.name_ja} f={n} note={n.annotation} />
+                </Tip>
+              )}
             </CircleMarker>
           )
         })}

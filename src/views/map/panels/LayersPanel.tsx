@@ -6,7 +6,10 @@ import { PillLegend } from '../../../components/StatusPill'
 import { CROWD_TIERS, TRAFFIC_TIERS } from '../../../lib/live'
 import { econCaveats } from '../../../lib/economics'
 import type { RegionalEconomics } from '../../../types/economics'
-import { BASEMAPS, LAYERS } from '../layers'
+import { BASEMAPS, GROUPS, LAYERS } from '../layers'
+import type { MarketVoiceData } from '../../../types/market'
+import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
+import { SEV_COLOUR } from '../../../lib/alerts'
 import type { BasemapId, LayerId } from '../layers'
 
 interface Props {
@@ -19,6 +22,7 @@ interface Props {
   isDemo: boolean
   economics: RegionalEconomics | null
   economicsError: Error | null
+  market?: MarketVoiceData | null
   onClose?: () => void
 }
 
@@ -38,6 +42,61 @@ export function LayersPanel(p: Props) {
   const { t } = useLang()
 
   const legend: Record<LayerId, ReactNode> = {
+    nudges: (
+      <>
+        <div className="lg-row">
+          <span className="lg-flag" style={{ background: SEV_COLOUR.crit }}></span>
+          {t('#2 Weather-route (critical)', '#2 天候・ルート（重大）')}
+        </div>
+        <div className="lg-row">
+          <span className="lg-flag" style={{ background: SEV_COLOUR.serious }}></span>
+          {t('#1 Demand high / #3 over-booked', '#1 需要増／#3 予約過多')}
+        </div>
+        <div className="lg-row">
+          <span className="lg-flag" style={{ background: SEV_COLOUR.info }}></span>
+          {t('Opportunity (quiet day, empty rooms)', '機会（閑散日・空室）')}
+        </div>
+        <div className="lg-row">
+          <span className="lg-line" style={{ borderColor: '#3fd8c4', borderTopStyle: 'dashed' }}></span>
+          {t('Suggested indoor route', '推奨する屋内への経路')}
+        </div>
+        <p className="lg-note">{t('Flags show the selected day. Full list in the Nudges tab.', '旗は選択日の分。一覧はナッジタブ。')}</p>
+      </>
+    ),
+    hotels: (
+      <>
+        <div className="lg-tiers">
+          {OCC_STEPS.map((x) => (
+            <span key={x.en} className="lg-row">
+              <span className="lg-sq" style={{ background: x.colour }}></span>
+              {t(x.en, x.ja)}
+            </span>
+          ))}
+        </div>
+        <p className="lg-note">{t('Badge: occupancy tonight (follows the timeline day) and rooms left. FTAS reservation feeds + Rakuten availability within 3 km.', 'バッジ：当日の稼働率と残室。FTAS予約データと楽天の3km圏空室。')}</p>
+      </>
+    ),
+    rsi: (
+      <>
+        <div className="lg-tiers">
+          {RSI_STEPS.map((x) => (
+            <span key={x.label} className="lg-row">
+              <span className="lg-sq" style={{ background: x.colour }}></span>
+              {x.label}
+            </span>
+          ))}
+        </div>
+        <p className="lg-note">{t('Route-search interest index per municipality; sparkline = last 7 days, ▲▼ = vs previous week.', '市町ごとのルート検索指数。線＝直近7日、▲▼＝前週比。')}</p>
+      </>
+    ),
+    survey: <p className="lg-note">{t('Badge: satisfaction (1–5) and NPS. Hover for reasons and origin share. FTAS / tourism federation survey.', 'バッジ：満足度（1〜5）とNPS。ホバーで理由と居住地。')}</p>,
+    social: (
+      <>
+        <Grad from="#e66767" to="#3987e5" left={t('Negative', '不評')} right={t('Positive', '好評')} />
+        <p className="lg-note">{t('Badge edge = average sentiment; thumbnails are abstract placeholders. Click for the feed. All posts fictional.', '縁の色＝平均感情。サムネイルは抽象的な仮画像。クリックでフィード。投稿は架空。')}</p>
+      </>
+    ),
+    reviews: <p className="lg-note">{t('Stars, average rating, review count, ▲▼ change over 30 days. Snippets are fictional.', '星・平均評価・件数・30日の変化。抜粋は架空。')}</p>,
     people: (
       <>
         <div className="lg-row">
@@ -183,32 +242,37 @@ export function LayersPanel(p: Props) {
           </div>
         </div>
 
-        <ul className="layer-list">
-          {LAYERS.map((l) => {
-            const on = p.active.has(l.id)
-            return (
-              <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
-                <label className="layer-row">
-                  <span className="layer-ic">
-                    <Icon name={l.icon} size={17} />
-                  </span>
-                  <span className="layer-text">
-                    <span className="layer-name">
-                      {t(l.en, l.ja)}
-                      {l.demo && p.isDemo && on && <DemoBadge compact />}
-                    </span>
-                    <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
-                  </span>
-                  <span className="switch">
-                    <input type="checkbox" checked={on} onChange={() => p.toggle(l.id)} aria-label={t(l.en, l.ja)} />
-                    <span className="switch-track"></span>
-                  </span>
-                </label>
-                {on && <div className="layer-legend">{legend[l.id]}</div>}
-              </li>
-            )
-          })}
-        </ul>
+        {GROUPS.map((g) => (
+          <div key={g.id} className="layer-group">
+            <h3 className="layer-group-title">{t(g.en, g.ja)}</h3>
+            <ul className="layer-list">
+              {LAYERS.filter((l) => l.group === g.id).map((l) => {
+                const on = p.active.has(l.id)
+                return (
+                  <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
+                    <label className="layer-row">
+                      <span className="layer-ic">
+                        <Icon name={l.icon} size={17} />
+                      </span>
+                      <span className="layer-text">
+                        <span className="layer-name">
+                          {t(l.en, l.ja)}
+                          {l.demo && p.isDemo && on && <DemoBadge compact />}
+                        </span>
+                        <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
+                      </span>
+                      <span className="switch">
+                        <input type="checkbox" checked={on} onChange={() => p.toggle(l.id)} aria-label={t(l.en, l.ja)} />
+                        <span className="switch-track"></span>
+                      </span>
+                    </label>
+                    {on && <div className="layer-legend">{legend[l.id]}</div>}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ))}
         <p className="fp-foot">
           {t('Visitor counts: DHDE nodes. Annual scale: Fukui Prefecture 2025 counts. Forecast model credit: FTAS.', '来訪者数：DHDEノード。年間規模：福井県2025年入込数。予測モデル：FTAS。')}
         </p>

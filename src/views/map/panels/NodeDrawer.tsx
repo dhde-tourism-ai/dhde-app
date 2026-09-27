@@ -15,6 +15,8 @@ import { Icon, WeatherIcon } from '../../../components/icons'
 import { StatusPill } from '../../../components/StatusPill'
 import { StatusTag } from '../../../components/StatusTag'
 import { DemoBadge } from '../../../components/DemoBadge'
+import { Stars } from '../../../components/Stars'
+import type { MarketVoiceData } from '../../../types/market'
 
 const S1 = '#3987e5'
 const AXIS = { fill: '#7f8ba3', fontSize: 10, fontFamily: 'IBM Plex Mono' }
@@ -27,6 +29,7 @@ interface Props {
   routes: RoutesFile | null
   dashboard: DashboardData | null
   economics: RegionalEconomics | null
+  market?: MarketVoiceData | null
   t: number
   onClose: () => void
   onOpenNode: (id: string) => void
@@ -61,7 +64,7 @@ function Econ({ f }: { f: EconomicsFigures }) {
   )
 }
 
-export function NodeDrawer({ node, frame, live, routes, dashboard, economics, t, onClose, onOpenNode }: Props) {
+export function NodeDrawer({ node, frame, live, routes, dashboard, economics, market, t, onClose, onOpenNode }: Props) {
   const { t: tr, lang } = useLang()
   const measure = node.measure
   const est = isEstimatedMeasure(measure) || measure === 'vehicles'
@@ -240,6 +243,57 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, t,
                   </span>
                 ))}
               </div>
+            </div>
+          </>
+        )}
+
+        {market && (market.reviews[node.id] || market.survey[node.id]) && (
+          <>
+            <h3 className="drawer-h">
+              {tr('Voice of visitor and market', '来訪者の声と市場')} <DemoBadge compact />
+            </h3>
+            <div className="voice-grid">
+              {market.reviews[node.id] && (
+                <div className="vg-cell">
+                  <span className="eyebrow">{tr('Reviews', 'レビュー')}</span>
+                  <span className="vg-val num">{market.reviews[node.id].rating.toFixed(1)}</span>
+                  <Stars value={market.reviews[node.id].rating} />
+                  <span className="muted small num">
+                    {market.reviews[node.id].count.toLocaleString()} {tr('reviews', '件')}
+                  </span>
+                </div>
+              )}
+              {market.survey[node.id] && (
+                <div className="vg-cell">
+                  <span className="eyebrow">{tr('Survey', 'アンケート')}</span>
+                  <span className="vg-val num">{market.survey[node.id].satisfaction.toFixed(1)}</span>
+                  <span className="muted small">
+                    NPS {market.survey[node.id].nps > 0 ? '+' : ''}
+                    {market.survey[node.id].nps} · n={market.survey[node.id].responses_30d}
+                  </span>
+                </div>
+              )}
+              {market.social[node.id] && (
+                <div className="vg-cell">
+                  <span className="eyebrow">{tr('Social, 24h', 'SNS（24時間）')}</span>
+                  <span className="vg-val num">{market.social[node.id].posts_24h}</span>
+                  <span className="muted small">
+                    {market.social[node.id].images_24h} {tr('images', '画像')}
+                  </span>
+                </div>
+              )}
+              {market.hotels
+                .filter((h) => h.node === node.id)
+                .slice(0, 1)
+                .map((h) => (
+                  <div key={h.id} className="vg-cell">
+                    <span className="eyebrow">{tr('Hotels tonight', '本日の宿泊')}</span>
+                    <span className="vg-val num">{h.occupancy_pct[Math.min(h.occupancy_pct.length - 1, day)]}%</span>
+                    <span className="muted small">
+                      {h.rooms_left[Math.min(h.rooms_left.length - 1, day)]} {tr('rooms left', '室空き')}
+                    </span>
+                  </div>
+                ))}
             </div>
           </>
         )}

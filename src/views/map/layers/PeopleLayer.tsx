@@ -133,20 +133,28 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                 fillOpacity: f.observed ? (est ? 0.55 : 0.88) : 0.22,
               }}
             >
-              <Tooltip className="map-tip" direction="top" offset={[0, -rNow]}>
-                <strong>{t(n.name, n.name_ja)}</strong>
-                <div className="tip-row">
-                  <span className="sw" style={{ background: col }}></span>
-                  {t(f.tier.label, f.tier.label_ja)} · {Math.round(f.load * 100)}% {t('of comfortable capacity', '（快適容量比）')}
+              <Tooltip className="map-tip wide" direction="top" offset={[0, -rNow]}>
+                <div className="tt-head">
+                  <span>{t(n.name, n.name_ja)}</span>
+                  <span className="tt-demo">{t('Demo', 'デモ')}</span>
                 </div>
-                <div className="tip-row">
-                  {f.observed ? t('On site', '現在') : t('Forecast', '予測')} <b className="num">{Math.round(f.onSite).toLocaleString()}</b>
-                  {f.observed && (
-                    <>
-                      {' '}
-                      · {t('forecast', '予測')} <b className="num">{Math.round(f.predicted).toLocaleString()}</b>
-                    </>
-                  )}
+                <div className="tt-hero">
+                  <b className="num">{Math.round(f.onSite).toLocaleString()}</b>
+                  <span>{f.observed ? t('people on site now', '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
+                </div>
+                <div className="tt-grid">
+                  <span className="tt-k">{t('Crowding', '混雑')}</span>
+                  <span className="tt-v">
+                    <span className="sw" style={{ background: col }}></span>
+                    {t(f.tier.label, f.tier.label_ja)} · {Math.round(f.load * 100)}%
+                  </span>
+                  <span className="tt-k">{t('Forecast', '予測')}</span>
+                  <span className="tt-v num">
+                    {Math.round(f.predicted).toLocaleString()}
+                    {f.lo !== null && f.hi !== null ? ` (${f.lo.toLocaleString()}–${f.hi.toLocaleString()})` : ''}
+                  </span>
+                  <span className="tt-k">{t('Arriving this hour', 'この1時間の到着')}</span>
+                  <span className="tt-v num">{Math.round(f.arrivals).toLocaleString()}</span>
                 </div>
                 {est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>}
               </Tooltip>

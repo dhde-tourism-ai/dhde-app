@@ -373,7 +373,7 @@
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: calc(100% - 760px);
+  max-width: calc(100% - 800px);
   min-width: 320px;
   display: flex;
   align-items: center;
