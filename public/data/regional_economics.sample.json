@@ -1,0 +1,568 @@
+{
+  "sample": true,
+  "generated_at": "2026-09-27T00:00:00Z",
+  "as_of_year": 2025,
+  "currency": "JPY",
+  "assumptions": {
+    "spend_per_day_tripper_yen": {
+      "value": 5000,
+      "status": "illustrative",
+      "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    "spend_per_overnight_guest_yen": {
+      "value": 30000,
+      "status": "illustrative",
+      "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    "overnight_share": {
+      "value": 0.1,
+      "status": "illustrative",
+      "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    "room_capacity_nights": {
+      "value": null,
+      "status": "pending",
+      "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+    }
+  },
+  "prefecture": {
+    "visitors": {
+      "value": 20000000,
+      "status": "illustrative",
+      "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    "revenue_yen": {
+      "value": 150000000000,
+      "status": "illustrative",
+      "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    "opportunity_lost_yen": {
+      "overnight_gap": {
+        "value": 20000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "weather": {
+        "value": 10000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "idle_rooms": {
+        "value": null,
+        "status": "pending",
+        "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+      }
+    }
+  },
+  "regions": [
+    {
+      "id": "sakai",
+      "name": "Sakai City",
+      "name_ja": "坂井市",
+      "level": "municipality",
+      "nodes": [
+        "tojinbo"
+      ],
+      "centroid": [
+        36.167,
+        136.231
+      ],
+      "visitors": {
+        "value": 5000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 30000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 4000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 3000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "fukui_city",
+      "name": "Fukui City",
+      "name_ja": "福井市",
+      "level": "municipality",
+      "nodes": [
+        "fukui_station"
+      ],
+      "centroid": [
+        36.064,
+        136.219
+      ],
+      "visitors": {
+        "value": 6000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 45000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 6000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": 2000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        }
+      }
+    },
+    {
+      "id": "katsuyama",
+      "name": "Katsuyama City",
+      "name_ja": "勝山市",
+      "level": "municipality",
+      "nodes": [
+        "katsuyama"
+      ],
+      "centroid": [
+        36.061,
+        136.5
+      ],
+      "visitors": {
+        "value": 2000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 15000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 2000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "mihama",
+      "name": "Mihama Town",
+      "name_ja": "美浜町",
+      "level": "municipality",
+      "nodes": [
+        "rainbow_line"
+      ],
+      "centroid": [
+        35.6,
+        135.94
+      ],
+      "visitors": {
+        "value": 1000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 5000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "awara",
+      "name": "Awara City",
+      "name_ja": "あわら市",
+      "level": "municipality",
+      "nodes": [
+        "awara"
+      ],
+      "centroid": [
+        36.211,
+        136.229
+      ],
+      "visitors": {
+        "value": 1500000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 20000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "idle_rooms": {
+          "value": 3000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        }
+      }
+    },
+    {
+      "id": "eiheiji_town",
+      "name": "Eiheiji Town",
+      "name_ja": "永平寺町",
+      "level": "municipality",
+      "nodes": [
+        "eiheiji"
+      ],
+      "centroid": [
+        36.092,
+        136.299
+      ],
+      "visitors": {
+        "value": 1000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": null,
+        "status": "pending",
+        "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "weather": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tojinbo",
+      "name": "Tojinbo",
+      "name_ja": "東尋坊",
+      "lat": 36.2345,
+      "lon": 136.1257,
+      "region": "sakai",
+      "visitors": {
+        "value": 3000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 12000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 3000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 2000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "fukui_station",
+      "name": "Fukui Station",
+      "name_ja": "福井駅",
+      "lat": 36.0606,
+      "lon": 136.2216,
+      "region": "fukui_city",
+      "visitors": {
+        "value": 4000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 20000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 4000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": 2000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        }
+      }
+    },
+    {
+      "id": "katsuyama",
+      "name": "Katsuyama",
+      "name_ja": "勝山",
+      "lat": 36.1146,
+      "lon": 136.6876,
+      "region": "katsuyama",
+      "visitors": {
+        "value": 1000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 8000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "rainbow_line",
+      "name": "Rainbow Line",
+      "name_ja": "レインボーライン",
+      "lat": 35.5859,
+      "lon": 135.8825,
+      "region": "mihama",
+      "visitors": {
+        "value": 500000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 2000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "weather": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    },
+    {
+      "id": "awara",
+      "name": "Awara Onsen",
+      "name_ja": "あわら温泉",
+      "lat": 36.2069,
+      "lon": 136.2255,
+      "region": "awara",
+      "visitors": {
+        "value": 800000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": 15000000000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": 1000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        },
+        "weather": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "idle_rooms": {
+          "value": 3000000000,
+          "status": "illustrative",
+          "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+        }
+      }
+    },
+    {
+      "id": "eiheiji",
+      "name": "Eiheiji Temple",
+      "name_ja": "永平寺",
+      "lat": 36.0554,
+      "lon": 136.3505,
+      "region": "eiheiji_town",
+      "visitors": {
+        "value": 600000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "revenue_yen": {
+        "value": null,
+        "status": "pending",
+        "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+      },
+      "opportunity_lost_yen": {
+        "overnight_gap": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "weather": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        },
+        "idle_rooms": {
+          "value": null,
+          "status": "pending",
+          "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+        }
+      }
+    }
+  ],
+  "flows": [
+    {
+      "from": "fukui_station",
+      "to": "tojinbo",
+      "visitors": {
+        "value": 400000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "status": "illustrative",
+      "note": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    {
+      "from": "fukui_station",
+      "to": "katsuyama",
+      "visitors": {
+        "value": 200000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "status": "illustrative",
+      "note": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    {
+      "from": "fukui_station",
+      "to": "eiheiji",
+      "visitors": {
+        "value": 150000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "status": "illustrative",
+      "note": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    {
+      "from": "tojinbo",
+      "to": "awara",
+      "visitors": {
+        "value": 120000,
+        "status": "illustrative",
+        "source": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+      },
+      "status": "illustrative",
+      "note": "SAMPLE: illustrative placeholder for UI development, not a real figure"
+    },
+    {
+      "from": "fukui_station",
+      "to": "rainbow_line",
+      "visitors": {
+        "value": null,
+        "status": "pending",
+        "source": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+      },
+      "status": "pending",
+      "note": "SAMPLE: pending, awaiting the regional_economics pipeline in dhde-ai-demo"
+    }
+  ]
+}

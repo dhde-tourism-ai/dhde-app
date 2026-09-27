@@ -1,0 +1,294 @@
+{
+  "generated_at": "2026-09-27T00:00:00Z",
+  "note": "Node registry for the Map view. Ids and coordinates of the six priority Fukui nodes follow dhde-preprocessing-model config/nodes/*.yaml (branch add-remaining-six-nodes). 'aliases' lists ids used elsewhere (the demo map and regional_economics.json use station, rainbow, awara). Mikuni, Maruoka and Ono coordinates are from the dhde-ai-demo map. Ishikawa/Toyama nodes are placeholders for PR #7: coordinates approximate (town/station centre), no data yet.",
+  "prefectures": [
+    {
+      "id": "fukui",
+      "name": "Fukui",
+      "name_ja": "福井県",
+      "bounds": [
+        [
+          35.4,
+          135.45
+        ],
+        [
+          36.3,
+          136.85
+        ]
+      ]
+    },
+    {
+      "id": "ishikawa",
+      "name": "Ishikawa",
+      "name_ja": "石川県",
+      "bounds": [
+        [
+          36.05,
+          136.2
+        ],
+        [
+          37.55,
+          137.4
+        ]
+      ]
+    },
+    {
+      "id": "toyama",
+      "name": "Toyama",
+      "name_ja": "富山県",
+      "bounds": [
+        [
+          36.25,
+          136.75
+        ],
+        [
+          37.0,
+          137.8
+        ]
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tojinbo",
+      "name": "Tojinbo",
+      "name_ja": "東尋坊",
+      "role": "Coastal: weather-exposed landmark",
+      "role_ja": "沿岸部：気象の影響を受けやすい名所",
+      "prefecture": "fukui",
+      "municipality": "sakai",
+      "lat": 36.2376685,
+      "lon": 136.1265737,
+      "priority": true,
+      "measure": "people",
+      "colour": "#eb6834",
+      "label_dir": "left"
+    },
+    {
+      "id": "fukui_station",
+      "name": "Fukui Station East Entrance",
+      "name_ja": "福井駅東口",
+      "role": "Urban transit hub",
+      "role_ja": "都市交通ハブ",
+      "prefecture": "fukui",
+      "municipality": "fukui_city",
+      "lat": 36.0614,
+      "lon": 136.2217,
+      "priority": true,
+      "measure": "people",
+      "colour": "#2a78d6",
+      "aliases": [
+        "station"
+      ],
+      "label_dir": "left"
+    },
+    {
+      "id": "katsuyama",
+      "name": "Katsuyama",
+      "name_ja": "勝山",
+      "role": "Mountain: dinosaur museum",
+      "role_ja": "山間部：恐竜博物館",
+      "prefecture": "fukui",
+      "municipality": "katsuyama",
+      "lat": 36.0764,
+      "lon": 136.5011,
+      "priority": true,
+      "measure": "proxy",
+      "secondary_measures": [
+        "reservations"
+      ],
+      "colour": "#1baf7a",
+      "coords_note": "approx., Fukui Prefectural Dinosaur Museum area",
+      "label_dir": "right"
+    },
+    {
+      "id": "rainbow_line",
+      "name": "Rainbow Line",
+      "name_ja": "レインボーライン",
+      "role": "Scenic drive corridor",
+      "role_ja": "景勝ドライブルート",
+      "prefecture": "fukui",
+      "municipality": "mihama",
+      "lat": 35.601189,
+      "lon": 135.8688963,
+      "priority": true,
+      "measure": "vehicles",
+      "colour": "#eda100",
+      "aliases": [
+        "rainbow"
+      ],
+      "label_dir": "right"
+    },
+    {
+      "id": "awara_onsen",
+      "name": "Awara Onsen",
+      "name_ja": "あわら温泉",
+      "role": "Hot-spring resort town",
+      "role_ja": "温泉リゾートの町",
+      "prefecture": "fukui",
+      "municipality": "awara",
+      "lat": 36.2256037,
+      "lon": 136.1941521,
+      "priority": true,
+      "measure": "proxy",
+      "colour": "#c94f7c",
+      "aliases": [
+        "awara"
+      ],
+      "label_dir": "right"
+    },
+    {
+      "id": "eiheiji",
+      "name": "Eiheiji Temple",
+      "name_ja": "永平寺",
+      "role": "Heritage site",
+      "role_ja": "文化遺産",
+      "prefecture": "fukui",
+      "municipality": "eiheiji_town",
+      "lat": 36.0567754,
+      "lon": 136.3568759,
+      "priority": true,
+      "measure": "proxy",
+      "colour": "#4a3aa7",
+      "label_dir": "bottom"
+    },
+    {
+      "id": "mikuni",
+      "name": "Mikuni Port",
+      "name_ja": "三国湊",
+      "role": "Historic port town, coastal-exposed",
+      "role_ja": "歴史的な港町、沿岸部",
+      "prefecture": "fukui",
+      "municipality": "sakai",
+      "lat": 36.2211,
+      "lon": 136.1494,
+      "priority": false,
+      "colour": "#3aa7a0",
+      "label_dir": "top"
+    },
+    {
+      "id": "maruoka",
+      "name": "Maruoka Castle",
+      "name_ja": "丸岡城",
+      "role": "Historic castle",
+      "role_ja": "歴史的な城",
+      "prefecture": "fukui",
+      "municipality": "sakai",
+      "lat": 36.1502,
+      "lon": 136.2764,
+      "priority": false,
+      "colour": "#8a6d3b",
+      "label_dir": "right"
+    },
+    {
+      "id": "ono",
+      "name": "Ono Castle Town",
+      "name_ja": "大野城下町",
+      "role": "Mountain valley castle town",
+      "role_ja": "山あいの城下町",
+      "prefecture": "fukui",
+      "municipality": "ono",
+      "lat": 35.9784,
+      "lon": 136.4874,
+      "priority": false,
+      "colour": "#6b8e23",
+      "label_dir": "bottom"
+    },
+    {
+      "id": "kanazawa",
+      "name": "Kanazawa",
+      "name_ja": "金沢",
+      "role": "Hokuriku gateway city",
+      "role_ja": "北陸の玄関口",
+      "prefecture": "ishikawa",
+      "lat": 36.578,
+      "lon": 136.648,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "kaga_onsen",
+      "name": "Kaga Onsen",
+      "name_ja": "加賀温泉",
+      "role": "Hot-spring area",
+      "role_ja": "温泉地",
+      "prefecture": "ishikawa",
+      "lat": 36.302,
+      "lon": 136.316,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "komatsu",
+      "name": "Komatsu",
+      "name_ja": "小松",
+      "role": "Airport city",
+      "role_ja": "空港のまち",
+      "prefecture": "ishikawa",
+      "lat": 36.402,
+      "lon": 136.453,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "nanao",
+      "name": "Nanao",
+      "name_ja": "七尾",
+      "role": "Noto peninsula port",
+      "role_ja": "能登半島の港町",
+      "prefecture": "ishikawa",
+      "lat": 37.043,
+      "lon": 136.967,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "toyama_station",
+      "name": "Toyama Station",
+      "name_ja": "富山駅",
+      "role": "Urban transit hub",
+      "role_ja": "都市交通ハブ",
+      "prefecture": "toyama",
+      "lat": 36.701,
+      "lon": 137.213,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "takaoka",
+      "name": "Takaoka",
+      "name_ja": "高岡",
+      "role": "Historic city",
+      "role_ja": "歴史都市",
+      "prefecture": "toyama",
+      "lat": 36.741,
+      "lon": 137.015,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "himi",
+      "name": "Himi",
+      "name_ja": "氷見",
+      "role": "Coastal fishing town",
+      "role_ja": "沿岸の漁業のまち",
+      "prefecture": "toyama",
+      "lat": 36.856,
+      "lon": 136.987,
+      "priority": false,
+      "coords_approx": true
+    },
+    {
+      "id": "tateyama",
+      "name": "Tateyama",
+      "name_ja": "立山",
+      "role": "Alpine route gateway",
+      "role_ja": "アルペンルートの玄関口",
+      "prefecture": "toyama",
+      "lat": 36.582,
+      "lon": 137.448,
+      "priority": false,
+      "coords_approx": true
+    }
+  ]
+}

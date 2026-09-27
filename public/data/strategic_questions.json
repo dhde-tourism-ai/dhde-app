@@ -1,0 +1,2039 @@
+{
+  "meta": {
+    "title": "Fukui Tourism Intelligence · five questions",
+    "subtitle": "Pilot model of the Government Intelligence dashboard",
+    "as_of": "2026-09-27",
+    "author": "Gabriella Gunarto",
+    "source_doc": "Strategic Questions Integrated Dashboard v1 (shared 27 Sep 2026). Pilot, not definitive.",
+    "footer": "Pilot for discussion with the tech team and the Fukui Prefecture Tourism Federation. Programme ends 10 Nov 2026."
+  },
+  "pills": {
+    "real": {
+      "label": "Real",
+      "description": "Published statistics"
+    },
+    "modelled": {
+      "label": "Calculated / modelled",
+      "description": "Derived from real inputs by a stated calculation or model"
+    },
+    "illustrative": {
+      "label": "Illustrative",
+      "description": "Simulated, not to be quoted"
+    },
+    "pending": {
+      "label": "Data pending",
+      "description": "Placeholder until the source arrives"
+    }
+  },
+  "equation": {
+    "status": "modelled",
+    "terms": [
+      {
+        "label": "visitors",
+        "value_text": "21.4M",
+        "op": "×"
+      },
+      {
+        "label": "stay overnight",
+        "value_text": "11.1%",
+        "op": "×"
+      },
+      {
+        "label": "nights per stay",
+        "value_text": null,
+        "op": "×"
+      },
+      {
+        "label": "spend per overnight guest",
+        "value_text": "¥30,221",
+        "op": "+"
+      },
+      {
+        "label": "per day-tripper",
+        "value_text": "¥5,546",
+        "op": "="
+      },
+      {
+        "label": "tourism spend FY2024",
+        "value_text": "¥151bn",
+        "op": null
+      }
+    ],
+    "caption": "Q2 manages visitors · Q3 raises stay rate and spend · Q4 finds where each term leaks · Q5 shows which spending moves which term · Q1 is the total. Terms come from different reports (入込数 2025; Vision progress report FY2024), not yet on one definition."
+  },
+  "todos": [
+    {
+      "for": "Gabriella",
+      "text": "Research note (27 Sep 2026): the Vision progress report gives 3.87M overnight guests and 110k foreign guests as 2025 figures, not FY2024 (2024 = 4.03M and 92k). They are labelled \"2025\" here; please confirm which year the scorecard should use. Also: 入込数 2025 spend is ¥198.7bn, already above the ¥170bn 2029 target; the scorecard still shows the FY2024 ¥151.3bn."
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "number": 1,
+      "nav": "What is tourism worth?",
+      "title": "What is tourism worth to Fukui's economy?",
+      "why": "Budget, political support, investment cases; DMOs must report economic ripple effect to JTA every three years.",
+      "subs": [
+        "How much do visitors spend?",
+        "What share of the economy and jobs?",
+        "On track for 2029 targets?",
+        "How much spend lost to neighbours?"
+      ],
+      "answer": "Spend and visitor targets ahead of pace; foreign overnight guests the one target behind (110k in 2025 vs 400k by FY2029). Economic contribution needs a fresh estimate (last uses FY2008 data).",
+      "cards": [
+        {
+          "id": "q1-spend",
+          "type": "stat",
+          "span": 3,
+          "status": "real",
+          "title": "Tourism spend FY2024",
+          "value_text": "¥151.3bn",
+          "detail": "Target ¥170bn by FY2029, 61% of the way"
+        },
+        {
+          "id": "q1-share",
+          "type": "stat",
+          "span": 3,
+          "status": "pending",
+          "title": "Share of prefecture economy",
+          "value_text": null,
+          "unit": "%",
+          "detail": "Last 1.6% of value added, FY2008",
+          "pending_on": "input-output table"
+        },
+        {
+          "id": "q1-jobs",
+          "type": "stat",
+          "span": 3,
+          "status": "pending",
+          "title": "Jobs supported",
+          "value_text": null,
+          "detail": "Last ~12,000, 2.8%, FY2008"
+        },
+        {
+          "id": "q1-leak",
+          "type": "stat",
+          "span": 3,
+          "status": "pending",
+          "title": "Spend lost to neighbouring stays",
+          "value_text": null,
+          "detail": "Visitors who sleep in Kanazawa/Kyoto × overnight spend (a range)",
+          "pending_on": "survey + KDDI"
+        },
+        {
+          "id": "q1-progress",
+          "type": "progress",
+          "span": 7,
+          "status": "real",
+          "title": "Progress to the Next Fukui Tourism Vision targets",
+          "note": "Share of the way from FY2023 baseline to FY2029 target. Tick = time elapsed (1 of 6 years = 17%). Red if behind.",
+          "elapsed_share": 0.16666666666666666,
+          "rows": [
+            {
+              "label": "Visitors",
+              "baseline": 17.6,
+              "current": 20.69,
+              "target": 21,
+              "unit": "M",
+              "prefix": "",
+              "current_year": "FY2024"
+            },
+            {
+              "label": "Tourism spend",
+              "baseline": 122.5,
+              "current": 151.3,
+              "target": 170,
+              "unit": "bn",
+              "prefix": "¥",
+              "current_year": "FY2024"
+            },
+            {
+              "label": "Spend per overnight guest",
+              "baseline": 21587,
+              "current": 24913,
+              "target": 27000,
+              "unit": "",
+              "prefix": "¥",
+              "current_year": "FY2024"
+            },
+            {
+              "label": "Overnight guests",
+              "baseline": 3.24,
+              "current": 3.87,
+              "target": 4.5,
+              "unit": "M",
+              "prefix": "",
+              "current_year": "2025",
+              "todo": "Research note: 3.87M is a 2025 figure (2024 = 4.03M). Confirm with Gabriella."
+            },
+            {
+              "label": "Foreign overnight guests",
+              "baseline": 65,
+              "current": 110,
+              "target": 400,
+              "unit": "k",
+              "prefix": "",
+              "current_year": "2025",
+              "todo": "Research note: 110k is a 2025 figure (2024 = 92k). Confirm with Gabriella."
+            }
+          ]
+        },
+        {
+          "id": "q1-moves",
+          "type": "formula_table",
+          "span": 5,
+          "status": "modelled",
+          "title": "What moves the total",
+          "note": "Extra tourism spend per year from one lever, all else equal.",
+          "rows": [
+            {
+              "lever": "Overnight share +1pt (11.1% → 12.1%)",
+              "formula": "21.44M × 0.01 × ¥24,675",
+              "terms": [
+                21440000,
+                0.01,
+                24675
+              ]
+            },
+            {
+              "lever": "Spend per overnight guest +¥1,000",
+              "formula": "2.385M × ¥1,000",
+              "terms": [
+                2385000,
+                1000
+              ]
+            },
+            {
+              "lever": "Spend per day-tripper +¥500",
+              "formula": "19.06M × ¥500",
+              "terms": [
+                19060000,
+                500
+              ]
+            },
+            {
+              "lever": "Foreign overnight +10k",
+              "formula": "10k × ¥43,000",
+              "terms": [
+                10000,
+                43000
+              ]
+            },
+            {
+              "lever": "Visitors +1% (all day-trippers)",
+              "formula": "21.44M × 0.01 × ¥5,546",
+              "terms": [
+                21440000,
+                0.01,
+                5546
+              ]
+            }
+          ]
+        }
+      ],
+      "spec": {
+        "data": "Vision KPI table; 入込数; input-output table 産業連関表; Sakura survey + KDDI.",
+        "model": "Ripple = direct spend × I-O multipliers; sensitivity; leakage as a range.",
+        "outputs": "Scorecard, ripple effect, jobs, leakage range.",
+        "acceptance": "Every figure states its definition (実人数 vs 延べ, fiscal vs calendar) and matches the Federation report.",
+        "status": "Scorecard ready; ripple needs I-O table; leakage needs survey v2 and KDDI."
+      }
+    },
+    {
+      "id": "q2",
+      "number": 2,
+      "nav": "How can we predict visitor flow?",
+      "title": "How can we predict visitor flow?",
+      "why": "Staff sites despite labour shortages, time buses and promotion, avoid peaks, fill quiet months (required DMO measure).",
+      "subs": [
+        "How many visitors tomorrow and next week?",
+        "What drives daily visits?",
+        "How even is demand across the year?"
+      ],
+      "answer": "Visits follow calendar and online interest; winter weather is where they are lost. Daily site forecast feasible now from EdgeAI cameras; route-by-route movement needs KDDI.",
+      "cards": [
+        {
+          "id": "q2-f1",
+          "type": "forecast",
+          "span": 8,
+          "status": "illustrative",
+          "title": "Daily visitors and 7-day forecast",
+          "note": "Last 8 weeks counted (line) and 7-day forecast (dashed) with shaded range. Markers under the axis = severe weather. Simulated for layout only; not counted data. Do not quote.",
+          "sites": [
+            {
+              "id": "tojinbo",
+              "label": "Tojinbo",
+              "points": [
+                {
+                  "date": "2026-08-03",
+                  "actual": 3146,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-04",
+                  "actual": 3289,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-05",
+                  "actual": 3476,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-06",
+                  "actual": 3154,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-07",
+                  "actual": 3378,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-08",
+                  "actual": 5429,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-09",
+                  "actual": 5848,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-10",
+                  "actual": 3203,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-11",
+                  "actual": 3204,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-12",
+                  "actual": 3256,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-13",
+                  "actual": 3535,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-14",
+                  "actual": 3597,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-15",
+                  "actual": 5402,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-16",
+                  "actual": 6233,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-17",
+                  "actual": 3062,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-18",
+                  "actual": 1837,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-08-19",
+                  "actual": 3268,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-20",
+                  "actual": 3089,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-21",
+                  "actual": 3026,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-22",
+                  "actual": 6324,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-23",
+                  "actual": 5400,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-24",
+                  "actual": 3333,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-25",
+                  "actual": 2995,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-26",
+                  "actual": 3172,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-27",
+                  "actual": 3233,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-28",
+                  "actual": 2919,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-29",
+                  "actual": 5921,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-30",
+                  "actual": 5828,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-31",
+                  "actual": 3304,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-01",
+                  "actual": 3272,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-02",
+                  "actual": 3257,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-03",
+                  "actual": 3143,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-04",
+                  "actual": 1630,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-09-05",
+                  "actual": 4915,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-06",
+                  "actual": 4611,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-07",
+                  "actual": 2757,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-08",
+                  "actual": 2643,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-09",
+                  "actual": 2588,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-10",
+                  "actual": 2931,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-11",
+                  "actual": 2704,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-12",
+                  "actual": 5234,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-13",
+                  "actual": 4980,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-14",
+                  "actual": 2961,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-15",
+                  "actual": 2709,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-16",
+                  "actual": 3086,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-17",
+                  "actual": 2725,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-18",
+                  "actual": 1590,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-09-19",
+                  "actual": 4960,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-20",
+                  "actual": 5524,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-21",
+                  "actual": 2722,
+                  "forecast": 2947,
+                  "lo": 2505,
+                  "hi": 3389,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-22",
+                  "actual": 2963,
+                  "forecast": 2969,
+                  "lo": 2524,
+                  "hi": 3415,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-23",
+                  "actual": 2696,
+                  "forecast": 2993,
+                  "lo": 2544,
+                  "hi": 3442,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-24",
+                  "actual": 3268,
+                  "forecast": 3019,
+                  "lo": 2566,
+                  "hi": 3472,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-25",
+                  "actual": 3129,
+                  "forecast": 3045,
+                  "lo": 2589,
+                  "hi": 3502,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-26",
+                  "actual": 5831,
+                  "forecast": 5377,
+                  "lo": 4570,
+                  "hi": 6183,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-27",
+                  "actual": 4905,
+                  "forecast": 5425,
+                  "lo": 4611,
+                  "hi": 6239,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-28",
+                  "actual": null,
+                  "forecast": 3127,
+                  "lo": 2658,
+                  "hi": 3597,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-29",
+                  "actual": null,
+                  "forecast": 3155,
+                  "lo": 2681,
+                  "hi": 3628,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-30",
+                  "actual": null,
+                  "forecast": 3181,
+                  "lo": 2704,
+                  "hi": 3658,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-01",
+                  "actual": null,
+                  "forecast": 3207,
+                  "lo": 2726,
+                  "hi": 3688,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-02",
+                  "actual": null,
+                  "forecast": 3231,
+                  "lo": 2746,
+                  "hi": 3715,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-03",
+                  "actual": null,
+                  "forecast": 5693,
+                  "lo": 4839,
+                  "hi": 6547,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-04",
+                  "actual": null,
+                  "forecast": 5730,
+                  "lo": 4870,
+                  "hi": 6589,
+                  "severe_weather": false
+                }
+              ],
+              "next7": [
+                {
+                  "day": "Mon 28 Sept",
+                  "range": "2,658–3,597",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Tue 29 Sept",
+                  "range": "2,681–3,628",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Wed 30 Sept",
+                  "range": "2,704–3,658",
+                  "action": "Push indoor sites"
+                },
+                {
+                  "day": "Thu 01 Oct",
+                  "range": "2,726–3,688",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Fri 02 Oct",
+                  "range": "2,746–3,715",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Sat 03 Oct",
+                  "range": "4,839–6,547",
+                  "action": "Extend hours"
+                },
+                {
+                  "day": "Sun 04 Oct",
+                  "range": "4,870–6,589",
+                  "action": "Extend hours"
+                }
+              ]
+            },
+            {
+              "id": "fukui_station",
+              "label": "Fukui Station",
+              "points": [
+                {
+                  "date": "2026-08-03",
+                  "actual": 8539,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-04",
+                  "actual": 7477,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-05",
+                  "actual": 8793,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-06",
+                  "actual": 8208,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-07",
+                  "actual": 8454,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-08",
+                  "actual": 10180,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-09",
+                  "actual": 10148,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-10",
+                  "actual": 7824,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-11",
+                  "actual": 8452,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-12",
+                  "actual": 7625,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-13",
+                  "actual": 8851,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-14",
+                  "actual": 8752,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-15",
+                  "actual": 11418,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-16",
+                  "actual": 10946,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-17",
+                  "actual": 7630,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-18",
+                  "actual": 4621,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-08-19",
+                  "actual": 7727,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-20",
+                  "actual": 9050,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-21",
+                  "actual": 7701,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-22",
+                  "actual": 11158,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-23",
+                  "actual": 11532,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-24",
+                  "actual": 7414,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-25",
+                  "actual": 8734,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-26",
+                  "actual": 8633,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-27",
+                  "actual": 8773,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-28",
+                  "actual": 8638,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-29",
+                  "actual": 10746,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-30",
+                  "actual": 9953,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-08-31",
+                  "actual": 7324,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-01",
+                  "actual": 7992,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-02",
+                  "actual": 8157,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-03",
+                  "actual": 7362,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-04",
+                  "actual": 4100,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-09-05",
+                  "actual": 9109,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-06",
+                  "actual": 9372,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-07",
+                  "actual": 7869,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-08",
+                  "actual": 7350,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-09",
+                  "actual": 7018,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-10",
+                  "actual": 7382,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-11",
+                  "actual": 7527,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-12",
+                  "actual": 9025,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-13",
+                  "actual": 9749,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-14",
+                  "actual": 7070,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-15",
+                  "actual": 6760,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-16",
+                  "actual": 6942,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-17",
+                  "actual": 7944,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-18",
+                  "actual": 4001,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": true
+                },
+                {
+                  "date": "2026-09-19",
+                  "actual": 10450,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-20",
+                  "actual": 9824,
+                  "forecast": null,
+                  "lo": null,
+                  "hi": null,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-21",
+                  "actual": 7966,
+                  "forecast": 7414,
+                  "lo": 6302,
+                  "hi": 8526,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-22",
+                  "actual": 8096,
+                  "forecast": 7471,
+                  "lo": 6350,
+                  "hi": 8592,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-23",
+                  "actual": 7079,
+                  "forecast": 7532,
+                  "lo": 6402,
+                  "hi": 8661,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-24",
+                  "actual": 7816,
+                  "forecast": 7596,
+                  "lo": 6456,
+                  "hi": 8735,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-25",
+                  "actual": 7104,
+                  "forecast": 7662,
+                  "lo": 6513,
+                  "hi": 8812,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-26",
+                  "actual": 10045,
+                  "forecast": 10050,
+                  "lo": 8543,
+                  "hi": 11558,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-27",
+                  "actual": 10256,
+                  "forecast": 10140,
+                  "lo": 8619,
+                  "hi": 11661,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-28",
+                  "actual": null,
+                  "forecast": 7869,
+                  "lo": 6689,
+                  "hi": 9050,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-29",
+                  "actual": null,
+                  "forecast": 7938,
+                  "lo": 6747,
+                  "hi": 9128,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-09-30",
+                  "actual": null,
+                  "forecast": 8004,
+                  "lo": 6804,
+                  "hi": 9205,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-01",
+                  "actual": null,
+                  "forecast": 8068,
+                  "lo": 6858,
+                  "hi": 9279,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-02",
+                  "actual": null,
+                  "forecast": 8129,
+                  "lo": 6910,
+                  "hi": 9348,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-03",
+                  "actual": null,
+                  "forecast": 10642,
+                  "lo": 9045,
+                  "hi": 12238,
+                  "severe_weather": false
+                },
+                {
+                  "date": "2026-10-04",
+                  "actual": null,
+                  "forecast": 10709,
+                  "lo": 9103,
+                  "hi": 12316,
+                  "severe_weather": false
+                }
+              ],
+              "next7": [
+                {
+                  "day": "Mon 28 Sept",
+                  "range": "6,689–9,050",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Tue 29 Sept",
+                  "range": "6,747–9,128",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Wed 30 Sept",
+                  "range": "6,804–9,205",
+                  "action": "Push indoor sites"
+                },
+                {
+                  "day": "Thu 01 Oct",
+                  "range": "6,858–9,279",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Fri 02 Oct",
+                  "range": "6,910–9,348",
+                  "action": "Normal"
+                },
+                {
+                  "day": "Sat 03 Oct",
+                  "range": "9,045–12,238",
+                  "action": "Extend hours"
+                },
+                {
+                  "day": "Sun 04 Oct",
+                  "range": "9,103–12,316",
+                  "action": "Extend hours"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q2-drivers",
+          "type": "bars",
+          "span": 4,
+          "status": "modelled",
+          "title": "What moves daily visits",
+          "note": "Standardised β, 397 days, 4 sites. R² 0.81 in-sample, 0.68 holdout.",
+          "source": "Khanzada & Takemoto (2026), arXiv 2603.21639",
+          "signed": true,
+          "decimals": 3,
+          "rows": [
+            {
+              "label": "Weekend / holiday",
+              "value": 0.547
+            },
+            {
+              "label": "Online interest (directions)",
+              "value": 0.456
+            },
+            {
+              "label": "Month",
+              "value": 0.331
+            },
+            {
+              "label": "Weekend × interest",
+              "value": -0.166
+            },
+            {
+              "label": "Weekend × bad weather",
+              "value": -0.159
+            },
+            {
+              "label": "Sunshine",
+              "value": 0.086
+            },
+            {
+              "label": "Weather severity",
+              "value": -0.05
+            }
+          ]
+        },
+        {
+          "id": "q2-even",
+          "type": "monthly_share",
+          "span": 12,
+          "status": "illustrative",
+          "title": "How even is demand across the year?",
+          "note": "Monthly share of annual visitors; quietest 3 consecutive months highlighted. Simulated for layout only; not counted data. Do not quote.",
+          "todo": "Swap in the JTA digital tourism statistics monthly series (per city, since 2021-01) once the pipeline publishes it (dhde-preprocessing-model PR #7).",
+          "months": [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+          ],
+          "values": [
+            5.1,
+            5.6,
+            7.4,
+            8.9,
+            10.2,
+            7.3,
+            9.6,
+            12.4,
+            8.8,
+            9.7,
+            8.2,
+            6.8
+          ],
+          "kpi": {
+            "label": "平準化率 (demand levelling rate, JTA DMO KPI 2025)",
+            "value_text": null,
+            "status": "pending"
+          }
+        }
+      ],
+      "spec": {
+        "data": "EdgeAI camera counts (daily, per site); weather-forecast archive; online interest (route searches); Ishikawa guest nights.",
+        "model": "F1 daily site forecast (regularised regression / gradient boosting, 1–7 days); F2 monthly guest-night forecast (ETS / SARIMA with Ishikawa as leading indicator).",
+        "outputs": "Next-7-day range and action per site; monthly guest-night baseline (used by Q5).",
+        "acceptance": "F1 beats \"same weekday last year\" on chronological holdout; MAPE shown; no observed weather or same-day intent in forecasts.",
+        "status": "Needs automated camera feed and weather-forecast archive."
+      }
+    },
+    {
+      "id": "q3",
+      "number": 3,
+      "nav": "Which visitors bring the most value?",
+      "title": "Which visitors bring the most value?",
+      "why": "Target promotion and products at the visitors who stay and spend.",
+      "subs": [
+        "Who spends most?",
+        "Which markets?",
+        "Who stays overnight?",
+        "How do foreign visitors travel?"
+      ],
+      "answer": "Overnight guest spends 5.4× a day-tripper, foreign visitor about 8×; 89% of visitors are day-trippers; 40% of foreign visitors on group tours vs ~10% nationally.",
+      "cards": [
+        {
+          "id": "q3-spend",
+          "type": "bars",
+          "span": 6,
+          "status": "real",
+          "title": "Spend per visitor by type",
+          "prefix": "¥",
+          "rows": [
+            {
+              "label": "Day-tripper",
+              "value": 5546
+            },
+            {
+              "label": "Overnight guest",
+              "value": 30221
+            },
+            {
+              "label": "Foreign visitor",
+              "value": 43000
+            }
+          ]
+        },
+        {
+          "id": "q3-markets",
+          "type": "bars",
+          "span": 6,
+          "status": "pending",
+          "title": "Foreign overnight guests by market",
+          "pending_on": "JTA nationality breakdown",
+          "rows": [
+            {
+              "label": "Taiwan",
+              "value": null
+            },
+            {
+              "label": "Hong Kong",
+              "value": null
+            },
+            {
+              "label": "China",
+              "value": null
+            },
+            {
+              "label": "Western",
+              "value": null
+            },
+            {
+              "label": "SE Asia",
+              "value": null
+            },
+            {
+              "label": "Other",
+              "value": null
+            }
+          ]
+        },
+        {
+          "id": "q3-heat",
+          "type": "heatmap",
+          "span": 8,
+          "status": "illustrative",
+          "title": "Who stays overnight",
+          "note": "Share staying overnight (%), travel group × origin. Cells with n < 30 hidden (model F3). Simulated for layout only; not counted data. Do not quote.",
+          "unit": "%",
+          "min_n": 30,
+          "rows": [
+            "Solo",
+            "Couple",
+            "Family",
+            "Friends",
+            "Group tour"
+          ],
+          "cols": [
+            "Fukui pref.",
+            "Hokuriku",
+            "Kansai",
+            "Chubu",
+            "Kanto",
+            "Other Japan",
+            "Overseas"
+          ],
+          "cells": [
+            [
+              {
+                "value": 4,
+                "n": 141
+              },
+              {
+                "value": 10,
+                "n": 41
+              },
+              {
+                "value": 18,
+                "n": 87
+              },
+              {
+                "value": 19,
+                "n": 117
+              },
+              {
+                "value": 26,
+                "n": 88
+              },
+              {
+                "value": 29,
+                "n": 101
+              },
+              {
+                "value": 35,
+                "n": 46
+              }
+            ],
+            [
+              {
+                "value": 10,
+                "n": 111
+              },
+              {
+                "value": 17,
+                "n": 20
+              },
+              {
+                "value": 20,
+                "n": 78
+              },
+              {
+                "value": 26,
+                "n": 125
+              },
+              {
+                "value": 24,
+                "n": 84
+              },
+              {
+                "value": 34,
+                "n": 108
+              },
+              {
+                "value": 36,
+                "n": 93
+              }
+            ],
+            [
+              {
+                "value": 17,
+                "n": 139
+              },
+              {
+                "value": 17,
+                "n": 59
+              },
+              {
+                "value": 25,
+                "n": 59
+              },
+              {
+                "value": 23,
+                "n": 54
+              },
+              {
+                "value": 29,
+                "n": 53
+              },
+              {
+                "value": 37,
+                "n": 90
+              },
+              {
+                "value": 40,
+                "n": 135
+              }
+            ],
+            [
+              {
+                "value": 13,
+                "n": 50
+              },
+              {
+                "value": 21,
+                "n": 83
+              },
+              {
+                "value": 24,
+                "n": 39
+              },
+              {
+                "value": 32,
+                "n": 20
+              },
+              {
+                "value": 32,
+                "n": 60
+              },
+              {
+                "value": 38,
+                "n": 141
+              },
+              {
+                "value": 41,
+                "n": 35
+              }
+            ],
+            [
+              {
+                "value": 19,
+                "n": 52
+              },
+              {
+                "value": 23,
+                "n": 71
+              },
+              {
+                "value": 27,
+                "n": 86
+              },
+              {
+                "value": 33,
+                "n": 45
+              },
+              {
+                "value": 39,
+                "n": 76
+              },
+              {
+                "value": 43,
+                "n": 101
+              },
+              {
+                "value": 45,
+                "n": 84
+              }
+            ]
+          ]
+        },
+        {
+          "id": "q3-tours",
+          "type": "bars",
+          "span": 4,
+          "status": "real",
+          "title": "How foreign visitors travel",
+          "unit": "%",
+          "note": "Share of foreign visitors on group tours.",
+          "rows": [
+            {
+              "label": "Fukui",
+              "value": 40,
+              "approx": true
+            },
+            {
+              "label": "Japan",
+              "value": 10,
+              "approx": true
+            }
+          ]
+        }
+      ],
+      "spec": {
+        "data": "Spend survey (Vision progress report); JTA nationality statistics; Sakura / FTAS inbound survey.",
+        "model": "F3 logistic regression of staying overnight on travel group, origin, season.",
+        "outputs": "Spend by type; market mix; overnight propensity by segment.",
+        "acceptance": "AUC reported; segments shown only where n ≥ 30.",
+        "status": "Spend by type ready; markets need JTA nationality data; F3 needs survey v2."
+      }
+    },
+    {
+      "id": "q4",
+      "number": 4,
+      "nav": "Where are we losing visitors and spend?",
+      "title": "Where are we losing visitors and spend?",
+      "why": "Fix the stage of the visitor journey that leaks the most value.",
+      "subs": [
+        "Where does the funnel leak?",
+        "Can visitors reach the sites?",
+        "Is capacity the constraint?"
+      ],
+      "answer": "Deepest leaks are awareness (search interest 12 vs Ishikawa 100) and overnight stays (11% vs ~39% Kanazawa City). Occupancy 46.5%, so rooms are not the constraint. No direct bus Fukui Station → Tojinbo.",
+      "cards": [
+        {
+          "id": "q4-funnel",
+          "type": "funnel",
+          "span": 12,
+          "status": "modelled",
+          "title": "Visitor funnel: gap vs Kanazawa and value at stake",
+          "note": "Stage gap = 1 − Fukui ÷ Kanazawa. Value at stake = visitors lost × spend difference.",
+          "stages": [
+            {
+              "stage": "Discover",
+              "gap_pct": 88,
+              "evidence": "Search interest 12 vs 100",
+              "value_text": null
+            },
+            {
+              "stage": "Decide",
+              "gap_pct": null,
+              "evidence": "Bookable products (audit pending)",
+              "value_text": null
+            },
+            {
+              "stage": "Reach / Explore",
+              "gap_pct": null,
+              "evidence": "No direct bus Fukui Station → Tojinbo",
+              "value_text": null
+            },
+            {
+              "stage": "Stay",
+              "gap_pct": 72,
+              "evidence": "Overnight share 11% vs ~39%",
+              "value_text": null
+            },
+            {
+              "stage": "Return",
+              "gap_pct": null,
+              "evidence": "78% of foreign guests are repeaters",
+              "value_text": null
+            }
+          ]
+        },
+        {
+          "id": "q4-access",
+          "type": "indicators",
+          "span": 6,
+          "status": "real",
+          "title": "Access",
+          "items": [
+            {
+              "value_text": "0",
+              "label": "Direct bus trips Fukui Stn → Tojinbo",
+              "severity": "crit",
+              "status": "real"
+            },
+            {
+              "value_text": "18:24",
+              "label": "Last Sunday bus back",
+              "severity": "warn",
+              "status": "real"
+            },
+            {
+              "value_text": "22% vs 11%",
+              "label": "Foreign visitors renting cars, Fukui vs Ishikawa",
+              "severity": "warn",
+              "status": "real"
+            },
+            {
+              "value_text": null,
+              "label": "Visitors on site after last bus",
+              "severity": "pending",
+              "status": "pending",
+              "pending_on": "EdgeAI hourly counts"
+            }
+          ]
+        },
+        {
+          "id": "q4-capacity",
+          "type": "table",
+          "span": 6,
+          "status": "real",
+          "title": "Capacity",
+          "columns": [
+            "Measure",
+            "Fukui",
+            "Benchmark",
+            "Reading",
+            "Status"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Hotel rooms",
+                "46.5% occupancy",
+                "Ishikawa 58.2%",
+                "Spare capacity"
+              ],
+              "status": "real"
+            },
+            {
+              "cells": [
+                "Bus loads",
+                null,
+                "85% threshold",
+                "Needs ridership data"
+              ],
+              "status": "pending"
+            },
+            {
+              "cells": [
+                "Tojinbo peak hour",
+                null,
+                "Site capacity",
+                "Needs hourly counts"
+              ],
+              "status": "pending"
+            }
+          ]
+        }
+      ],
+      "spec": {
+        "data": "Route-search interest (Fukui vs Ishikawa); product audit; bus timetables and ridership; occupancy statistics; EdgeAI hourly counts.",
+        "model": "Stage gap = 1 − Fukui ÷ Kanazawa; value at stake = visitors lost × spend difference; load factor = riders ÷ seats.",
+        "outputs": "Funnel with ¥ at stake per stage; access and capacity indicators.",
+        "acceptance": "Each stage cites its Fukui and Kanazawa source on the same definition.",
+        "status": "Discover and Stay gaps ready; ¥ values, ridership and hourly counts pending."
+      }
+    },
+    {
+      "id": "q5",
+      "number": 5,
+      "nav": "Which investments pay back?",
+      "title": "Which investments deliver the best return?",
+      "why": "Put limited budget where it adds the most nights and spend.",
+      "subs": [
+        "What did each programme add?",
+        "Which mix closes the gap to target?"
+      ],
+      "answer": "Not yet answerable; programmes report outputs, not extra nights.",
+      "cards": [
+        {
+          "id": "q5-returns",
+          "type": "table",
+          "span": 12,
+          "status": "illustrative",
+          "title": "Programme returns",
+          "note": "Bracketed values are placeholders. Programmes without a baseline show \"not yet measurable\", never a number.",
+          "columns": [
+            "Programme",
+            "Budget",
+            "Output reported",
+            "Extra nights",
+            "Cost per night",
+            "Pace"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Stay campaign phase 2 (Happy Coin)",
+                "¥[300]m",
+                "Coins claimed",
+                "[18,000]",
+                "¥[16,700]",
+                ".78 vs .93"
+              ],
+              "status": "illustrative"
+            },
+            {
+              "cells": [
+                "Inbound content + OTA",
+                "¥[80]m",
+                "Impressions",
+                "Not yet measurable",
+                "Not yet measurable",
+                ""
+              ],
+              "status": "illustrative"
+            },
+            {
+              "cells": [
+                "FTAS inbound survey",
+                "Enabler",
+                "Survey responses",
+                "Not yet measurable",
+                "",
+                ""
+              ],
+              "status": "illustrative"
+            },
+            {
+              "cells": [
+                "A2 one-way transfer tour",
+                "Proposed",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "status": "illustrative"
+            }
+          ]
+        },
+        {
+          "id": "q5-builder",
+          "type": "builder",
+          "span": 12,
+          "status": "illustrative",
+          "title": "Gap-to-target builder",
+          "note": "Move the levers to see how far each closes the gap to FY2029 targets. Gaps use 2025 actuals (110k foreign, 3.87M overnight; see research note). Not a forecast.",
+          "todo": "Confirm which gap A2 (one-way transfer tour riders) counts toward; here each rider counts as one converted day-tripper overnight at ¥24,675.",
+          "levers": [
+            {
+              "id": "A1",
+              "label": "A1 Visibility in Kanazawa / Kyoto",
+              "help": "Share of ~840k foreign overnight guests adding a Fukui night",
+              "min": 0,
+              "max": 10,
+              "step": 0.5,
+              "default": 3,
+              "unit": "%",
+              "base": 840000,
+              "counts": [
+                "foreign",
+                "overnight"
+              ],
+              "spend_per": 43000
+            },
+            {
+              "id": "A2",
+              "label": "A2 One-way transfer tour riders",
+              "help": "Riders per year",
+              "min": 0,
+              "max": 30000,
+              "step": 1000,
+              "default": 10000,
+              "unit": "riders",
+              "base": 1,
+              "counts": [
+                "overnight"
+              ],
+              "spend_per": 24675
+            },
+            {
+              "id": "A3",
+              "label": "A3 Loop bus timed to shinkansen",
+              "help": "Share of 19.06M day trips converted to a stay",
+              "min": 0,
+              "max": 1,
+              "step": 0.05,
+              "default": 0.3,
+              "unit": "%",
+              "base": 19060000,
+              "counts": [
+                "overnight"
+              ],
+              "spend_per": 24675
+            },
+            {
+              "id": "A4",
+              "label": "A4 Segment stay packages",
+              "help": "Share of 19.06M day trips converted to a stay",
+              "min": 0,
+              "max": 3,
+              "step": 0.1,
+              "default": 0.5,
+              "unit": "%",
+              "base": 19060000,
+              "counts": [
+                "overnight"
+              ],
+              "spend_per": 24675
+            }
+          ],
+          "gaps": [
+            {
+              "id": "foreign",
+              "label": "Foreign overnight guests",
+              "gap": 290000,
+              "formula": "400k − 110k (2025)"
+            },
+            {
+              "id": "overnight",
+              "label": "All overnight guests",
+              "gap": 630000,
+              "formula": "4.5M − 3.87M (2025)"
+            }
+          ]
+        }
+      ],
+      "spec": {
+        "data": "Programme budgets and outputs; F2 monthly guest-night baseline (Q2).",
+        "model": "Extra nights = actual − F2 baseline.",
+        "outputs": "Cost per extra night per programme; gap-to-target mix.",
+        "acceptance": "Programmes without a baseline show \"not yet measurable\", never a number.",
+        "status": "Needs F2 baseline and programme-level night counts."
+      }
+    }
+  ]
+}
