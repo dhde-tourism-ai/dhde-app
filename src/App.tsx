@@ -1,408 +1,170 @@
-import { useState } from 'react';
-import { useDashboardData } from './hooks/useDashboardData';
-import type { NodeKey } from './types/dashboard';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend
-} from 'recharts';
+import { lazy, Suspense } from 'react'
+import { useProductData } from './hooks/useProductData'
+import { useHashRoute } from './hooks/useHashRoute'
+import type { ViewId } from './hooks/useHashRoute'
+import NodeDashboard from './views/NodeDashboard'
+import { AsOf } from './components/AsOf'
+import { isEstimatedMeasure, MEASURE_LABEL, nodeSwitcherIds } from './lib/nodes'
 
-function fmtNum(n: number | null | undefined): string {
-  if (n === null || n === undefined) return '—';
-  return Math.round(n).toLocaleString('en-US');
+// Map (Leaflet) and Strategy are split into their own chunks.
+const MapView = lazy(() => import('./views/map/MapView'))
+const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
+
+const TABS: { id: ViewId; label: string; ja: string }[] = [
+  { id: 'map', label: 'Map', ja: '地図' },
+  { id: 'nodes', label: 'Nodes', ja: 'ノード' },
+  { id: 'strategy', label: 'Strategy', ja: '戦略' },
+]
+
+function Loading({ what }: { what: string }) {
+  return (
+    <div className="state-msg">
+      <p className="font-display">Loading {what}...</p>
+    </div>
+  )
 }
 
-function fmtShortDate(dateStr: any): string {
-  if (!dateStr || typeof dateStr !== 'string') return String(dateStr ?? '');
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-}
-
-function badgeLabel(b: string): string {
-  const map: Record<string, string> = { HOT: 'Superb', OK: 'Strong', WARN: 'Warning', CRIT: 'Critical' };
-  return map[b] || b;
-}
-
-function accuracyBadge(pct: number): 'OK' | 'WARN' | 'CRIT' {
-  if (pct <= 20) return 'OK';
-  if (pct <= 45) return 'WARN';
-  return 'CRIT';
+function LoadError({ file, error }: { file: string; error: Error | null }) {
+  return (
+    <div className="state-msg error">
+      <p>Could not load data/{file}. Make sure this file is served alongside index.html.</p>
+      <p className="small">{error ? error.message : 'Unknown error'}</p>
+    </div>
+  )
 }
 
 export default function App() {
-  const hookResult = useDashboardData();
-  // Support either isLoading or loading property names
-  const isLoading = 'isLoading' in hookResult ? (hookResult as any).isLoading : (hookResult as any).loading;
-  const { data, error } = hookResult as any;
-
-  const [selectedNode, setSelectedNode] = useState<NodeKey | 'all'>('all');
-
-  if (isLoading) {
-    return (
-      <div style={{ padding: '4rem', textAlign: 'center', color: '#0F2B46' }}>
-        <p style={{ fontFamily: 'Shippori Mincho, serif', fontSize: '1.4rem' }}>
-          Loading Fukui Tourism Analytics System...
-        </p>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div style={{ padding: '4rem', textAlign: 'center', color: '#9C2E2E' }}>
-        <p>Could not load data/dashboard_data.json — make sure this file is served alongside index.html.</p>
-        <p style={{ fontSize: '0.8rem', color: '#4A5C6A' }}>
-          {error instanceof Error ? error.message : String(error || 'Unknown error')}
-        </p>
-      </div>
-    );
-  }
-
-  const nodes = data.nodes || {};
-  const activeNodeKey = selectedNode !== 'all' ? (selectedNode as NodeKey) : undefined;
-  const activeNodeData = activeNodeKey ? nodes[activeNodeKey] : undefined;
-
-  // Fallback to Tojinbo or first node if in "all" view to mirror original dashboard defaults
-  const defaultNode = nodes['tojinbo' as NodeKey] || Object.values(nodes)[0];
-  const summary = activeNodeData?.summary || (data as any).summary || defaultNode?.summary || {};
-  const p30 = summary.past_30_day || {};
-  const week = summary.this_week_pacing || {};
-  const modelAccuracy = summary.model_accuracy;
-  const weatherStrip = activeNodeData?.weather_strip || (data as any).weather_strip || defaultNode?.weather_strip || [];
-  const demandForecast = activeNodeData?.demand_forecast || (data as any).demand_forecast || defaultNode?.demand_forecast || [];
-  const estimatedOutlook = activeNodeData?.estimated_outlook || (data as any).estimated_outlook || defaultNode?.estimated_outlook || [];
-  const pacingRows = activeNodeData?.weekly_pacing || (data as any).weekly_pacing || defaultNode?.weekly_pacing || [];
-  const nudges = activeNodeData?.nudges || (data as any).nudges || defaultNode?.nudges || [];
-
-  const yoy = p30.yoy_pct;
-  const yoyUp = yoy !== null && yoy !== undefined && yoy >= 0;
-  const yoyText = yoy === null || yoy === undefined ? '—' : (yoyUp ? '+' : '') + yoy + '%';
+  const { dashboard, registry, economics, strategy } = useProductData()
+  const [route, navigate] = useHashRoute()
+  const data = dashboard.data
+  const liveNodes = data?.nodes ?? {}
+  const selectedNode = route.view === 'nodes' && route.node && liveNodes[route.node] ? route.node : 'all'
+  const regNode = registry.data?.nodes.find((n) => n.id === selectedNode)
+  const activeLive = selectedNode !== 'all' ? liveNodes[selectedNode] : undefined
+  const measure = regNode?.measure ?? activeLive?.measure
 
   return (
     <>
-      {/* HEADER */}
-      <header className="hero">
+      <header className={`hero ${route.view === 'nodes' ? '' : 'hero-compact'}`}>
         <div className="grain"></div>
-        <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '2.4rem 1.5rem 2.8rem', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="hero-inner">
+          <div className="hero-top">
             <div>
               <div className="eyebrow">福井県観光データ分析システム · Fukui Tourism Analytics System</div>
-              <h1 className="font-display" style={{ fontSize: '2.1rem', margin: '.5rem 0 .3rem', color: 'var(--washi)' }}>
-                FTAS Executive Dashboard
-              </h1>
-              <p style={{ color: 'rgba(247,243,234,0.75)', fontSize: '.92rem', maxWidth: '36rem', margin: 0 }}>
-                Operational demand intelligence for DMOs, hotel operators, and municipal planners across the Reihoku and Reinan corridors.
-              </p>
+              <h1 className="font-display hero-title">FTAS Executive Dashboard</h1>
+              {route.view === 'nodes' && (
+                <p className="hero-sub">
+                  Operational demand intelligence for DMOs, hotel operators, and municipal planners across the Reihoku and Reinan corridors.
+                </p>
+              )}
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div className="hero-right">
               <span className="status-pill">
                 <span className="status-dot"></span> Live pipeline
               </span>
-              <div style={{ marginTop: '.6rem', fontSize: '.72rem', color: 'rgba(247,243,234,0.55)', fontFamily: 'JetBrains Mono, monospace' }}>
-                {data.generated_at ? 'Generated ' + new Date(data.generated_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : ''}
+              <div className="hero-generated">
+                {data?.generated_at
+                  ? 'Generated ' + new Date(data.generated_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+                  : ''}
               </div>
             </div>
           </div>
 
-          {/* Node Switcher */}
-          <div className="node-bar">
-            <button
-              className={`node-btn ${selectedNode === 'all' ? 'active' : ''}`}
-              onClick={() => setSelectedNode('all')}
-            >
-              All Nodes Overview
-            </button>
-            {(Object.keys(nodes) as NodeKey[]).map((key) => {
-              const n = nodes[key];
-              if (!n) return null;
-              return (
-                <button
-                  key={key}
-                  className={`node-btn ${selectedNode === key ? 'active' : ''}`}
-                  onClick={() => setSelectedNode(key)}
-                >
-                  {n.label}
-                </button>
-              );
-            })}
-          </div>
+          <nav className="view-tabs" aria-label="Views">
+            {TABS.map((t) => (
+              <a
+                key={t.id}
+                href={`#/${t.id}`}
+                className={`view-tab ${route.view === t.id ? 'active' : ''}`}
+                aria-current={route.view === t.id ? 'page' : undefined}
+              >
+                {t.label} <span className="ja">{t.ja}</span>
+              </a>
+            ))}
+          </nav>
+
+          {route.view === 'nodes' && data && (
+            <div className="node-bar">
+              <button className={`node-btn ${selectedNode === 'all' ? 'active' : ''}`} onClick={() => navigate({ view: 'nodes' })}>
+                All Nodes Overview
+              </button>
+              {nodeSwitcherIds(registry.data, data).map((key) => {
+                const n = liveNodes[key]
+                const reg = registry.data?.nodes.find((r) => r.id === key)
+                const label = n?.label ?? reg?.name ?? key
+                return (
+                  <button
+                    key={key}
+                    className={`node-btn ${selectedNode === key ? 'active' : ''}`}
+                    onClick={() => navigate({ view: 'nodes', node: key })}
+                    disabled={!n}
+                    title={n ? undefined : 'No data yet in dashboard_data.json'}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <svg className="wave-divider" viewBox="0 0 1200 28" preserveAspectRatio="none">
-          <path d="M0,14 C150,28 350,0 600,14 C850,28 1050,0 1200,14 L1200,28 L0,28 Z" fill="#F7F3EA"/>
+          <path d="M0,14 C150,28 350,0 600,14 C850,28 1050,0 1200,14 L1200,28 L0,28 Z" fill="#F7F3EA" />
         </svg>
       </header>
 
-      {/* SECTION 1 — Executive Summary */}
-      <section className="panel">
-        <div className="section-head">
-          <div>
-            <div className="section-title">
-              {activeNodeData ? `${activeNodeData.label} — Executive Summary` : 'Executive Summary'}
-            </div>
-          </div>
-          <div className="section-sub">
-            {activeNodeData ? activeNodeData.description : ''}
-          </div>
-        </div>
-
-        {/* Aggregate macro indicators when in Overview */}
-        {selectedNode === 'all' && data.aggregate && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.4rem' }}>
-            <div className="kpi-card" style={{ border: '1px solid var(--hairline)', borderRadius: '6px' }}>
-              <div className="kpi-label">Annual Opportunity Gap (¥)</div>
-              <div className="kpi-value" style={{ color: 'var(--torii)' }}>
-                ¥{fmtNum(data.aggregate.opportunity_gap_yen)}
-              </div>
-              <div className="kpi-delta" style={{ color: 'var(--ink-soft)' }}>weather-induced demand deficit</div>
-            </div>
-            <div className="kpi-card" style={{ border: '1px solid var(--hairline)', borderRadius: '6px' }}>
-              <div className="kpi-label">Opportunity Gap (visitors)</div>
-              <div className="kpi-value">
-                {fmtNum(data.aggregate.opportunity_gap_visitors)}
-              </div>
-              <div className="kpi-delta" style={{ color: 'var(--ink-soft)' }}>annual deficit across active nodes</div>
-            </div>
-          </div>
+      <main>
+        {route.view === 'map' && (
+          <Suspense fallback={<Loading what="map" />}>
+            <MapView
+              registry={registry.data}
+              dashboard={data}
+              economics={economics.data}
+              economicsError={economics.error}
+              selectedId={route.node}
+              onSelect={(id) => navigate({ view: 'map', node: id })}
+              onOpenNode={(id) => navigate({ view: 'nodes', node: id })}
+            />
+          </Suspense>
         )}
 
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-label">Past 30 Days</div>
-            <div className="kpi-value">{fmtNum(p30.current_total)}</div>
-            <div className={`kpi-delta ${yoyUp ? 'up' : 'down'}`}>{yoyText} YoY</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Same Period Last Year</div>
-            <div className="kpi-value">{fmtNum(p30.previous_year_total)}</div>
-            <div className="kpi-delta" style={{ color: 'var(--ink-soft)' }}>baseline</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">Net Difference</div>
-            <div className="kpi-value">{p30.diff !== undefined && p30.diff >= 0 ? '+' : ''}{fmtNum(p30.diff)}</div>
-            <div className="kpi-delta" style={{ color: 'var(--ink-soft)' }}>visitors vs. last year</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-label">This Week Pacing</div>
-            <div className="kpi-value" style={{ fontSize: '1.35rem' }}>
-              {week.rate !== undefined ? (week.rate * 100).toFixed(0) + '%' : '—'}
-            </div>
-            <div style={{ margin: '.5rem 0 0 0' }}>
-              {week.badge && <span className={`badge badge-${week.badge}`}>{badgeLabel(week.badge)}</span>}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 2 — Weather Strip */}
-      <section className="panel" style={{ paddingTop: 0 }}>
-        <div className="section-head">
-          <div>
-            <div className="section-title">14-Day Weather &amp; Pacing Strip</div>
-          </div>
-          <div className="section-sub">Rain risk ≥ 40% outlined in vermillion</div>
-        </div>
-        <div className="weather-scroll">
-          {weatherStrip.length === 0 ? (
-            <p style={{ color: 'var(--ink-soft)', fontSize: '.85rem' }}>Weather forecast unavailable.</p>
+        {route.view === 'nodes' &&
+          (dashboard.isLoading ? (
+            <Loading what="Fukui Tourism Analytics System" />
+          ) : dashboard.error || !data ? (
+            <LoadError file="dashboard_data.json" error={dashboard.error} />
           ) : (
-            weatherStrip.map((d: any, i: number) => (
-              <div key={i} className={`weather-day ${d.rain_risk ? 'rain-risk' : ''}`}>
-                <div className="weather-date">{fmtShortDate(d.date)}</div>
-                <div className="weather-desc">{d.weather || '—'}</div>
-                <div className={`weather-pop ${d.rain_risk ? 'risk' : 'safe'}`}>
-                  {d.precipitation_pct !== null && d.precipitation_pct !== undefined ? `${d.precipitation_pct}%` : '—'}
-                </div>
+            <>
+              <div className="freshness-strip">
+                <AsOf
+                  as_of={activeLive?.as_of}
+                  generated_at={data.generated_at}
+                  shared_date={activeLive?.shared_date ?? data.shared_date}
+                  is_estimated={activeLive?.is_estimated}
+                  stale={activeLive?.stale}
+                  label="Data as of"
+                />
+                {measure && (
+                  <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>
+                )}
               </div>
-            ))
-          )}
-        </div>
-      </section>
+              <NodeDashboard data={data} selectedNode={selectedNode} />
+            </>
+          ))}
 
-      {/* SECTION 3 — Demand Forecast */}
-      <section className="panel" style={{ paddingTop: 0 }}>
-        <div className="section-head">
-          <div>
-            <div className="section-title">Actual vs. Model Forecast</div>
-          </div>
-          <div className="section-sub" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
-            <span>
-              Last 60 days · Random Forest {selectedNode === ('fukui_station' as NodeKey) ? '(with Hotel Reservation Lags)' : ''}
-            </span>
-            {modelAccuracy && modelAccuracy.mae_pct_of_mean !== null && (
-              <span
-                className={`badge badge-${accuracyBadge(modelAccuracy.mae_pct_of_mean)}`}
-                title="Mean absolute error from walk-forward backtesting (expanding-window refits), as a % of the average daily count — i.e. genuine out-of-sample accuracy, not an in-sample fit."
-              >
-                Model accuracy: ±{modelAccuracy.mae_pct_of_mean.toFixed(0)}% MAE
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="chart-card">
-          <div style={{ width: '100%', height: 320 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={demandForecast} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0F2B46" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#0F2B46" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,43,70,0.06)" />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontFamily: 'JetBrains Mono', fontSize: 10 }}
-                  tickFormatter={fmtShortDate}
-                />
-                <YAxis
-                  tick={{ fontFamily: 'JetBrains Mono', fontSize: 10 }}
-                  tickFormatter={(val: any) => Number(val).toLocaleString('en-US')}
-                />
-                <Tooltip
-                  formatter={(val: any) => [Number(val).toLocaleString('en-US'), '']}
-                  labelFormatter={fmtShortDate}
-                  contentStyle={{ backgroundColor: 'var(--washi-card)', borderColor: 'var(--hairline)' }}
-                />
-                <Legend wrapperStyle={{ fontFamily: 'Inter', fontSize: 12, paddingTop: 10 }} />
-                <Area
-                  type="monotone"
-                  dataKey="actual"
-                  name="Actual Visitors"
-                  stroke="#0F2B46"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorActual)"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="forecast"
-                  name="Model Forecast"
-                  stroke="#B5432E"
-                  strokeWidth={2}
-                  strokeDasharray="4 3"
-                  dot={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </section>
+        {route.view === 'strategy' &&
+          (strategy.isLoading ? (
+            <Loading what="strategic questions" />
+          ) : strategy.error || !strategy.data ? (
+            <LoadError file="strategic_questions.json" error={strategy.error} />
+          ) : (
+            <Suspense fallback={<Loading what="strategy view" />}>
+              <StrategyView data={strategy.data} />
+            </Suspense>
+          ))}
+      </main>
 
-      {/* SECTION 3B — Estimated Outlook */}
-      {estimatedOutlook.length > 0 && (
-        <section className="panel" style={{ paddingTop: 0 }}>
-          <div className="section-head">
-            <div>
-              <div className="section-title">Near-Term Outlook (Estimated)</div>
-            </div>
-            <div className="section-sub">Based on live weather forecast</div>
-          </div>
-          <div className="outlook-banner">
-            ⚠️ The local historical weather telemetry is catching up, so these days are an approximate estimate built from the live weather forecast and recent averages — not a full model-quality prediction. Treat as directional only.
-          </div>
-          <div className="outlook-scroll">
-            {estimatedOutlook.map((d: any, i: number) => (
-              <div key={i} className="outlook-day">
-                <div className="outlook-date">{fmtShortDate(d.date)}</div>
-                <div className="outlook-desc">{d.weather || '—'}</div>
-                <div className="outlook-value">{fmtNum(d.estimated_demand)}</div>
-                <div className="outlook-tag">Estimated</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* SECTION 4 — Weekly Pacing Table */}
-      <section className="panel" style={{ paddingTop: 0 }}>
-        <div className="section-head">
-          <div>
-            <div className="section-title">Day-by-Day Pacing</div>
-          </div>
-          <div className="section-sub">Achievement rate = actual ÷ forecast</div>
-        </div>
-        <div className="chart-card" style={{ padding: 0, overflowX: 'auto' }}>
-          <table className="pacing">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Actual</th>
-                <th>Forecast</th>
-                <th>Rate</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pacingRows.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ color: 'var(--ink-soft)', fontFamily: 'Inter' }}>
-                    No pacing data available.
-                  </td>
-                </tr>
-              ) : (
-                pacingRows.slice().reverse().map((r: any, i: number) => (
-                  <tr key={i}>
-                    <td>{r.date}</td>
-                    <td>{fmtNum(r.actual)}</td>
-                    <td>{fmtNum(r.forecast)}</td>
-                    <td>{r.rate !== undefined ? `${(r.rate * 100).toFixed(0)}%` : '—'}</td>
-                    <td>{r.badge && <span className={`badge badge-${r.badge}`}>{badgeLabel(r.badge)}</span>}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* SECTION 5 — Nudges */}
-      <section className="panel" style={{ paddingTop: 0 }}>
-        <div className="section-head">
-          <div>
-            <div className="section-title">Governance &amp; Vendor Nudges</div>
-          </div>
-        </div>
-        {nudges.length === 0 ? (
-          <div style={{ color: 'var(--ink-soft)', fontSize: '.86rem' }}>
-            No active recommendations — pacing and weather are within normal range.
-          </div>
-        ) : (
-          nudges.map((n: any, i: number) => (
-            <div key={i} className={`nudge-card ${n.type}`}>
-              <div className="nudge-type">
-                {n.type === 'weather' ? 'Weather Risk' : 'Demand Signal'} · {n.date}
-              </div>
-              <div>{n.message}</div>
-            </div>
-          ))
-        )}
-      </section>
-
-      {/* SECTION 6 — Export Hub */}
-      <section className="panel" id="export-hub" style={{ paddingTop: 0 }}>
-        <div className="section-head">
-          <div>
-            <div className="section-title">Report Export Hub</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '.8rem', flexWrap: 'wrap' }}>
-          <button className="export-btn" onClick={() => window.print()}>
-            ↓ Export PDF Summary
-          </button>
-        </div>
-      </section>
-
-      <footer className="site">
-        Fukui Tourism Analytics System — Distributed Human Data Engine · React 18 Migration
-      </footer>
+      <footer className="site">Fukui Tourism Analytics System — Distributed Human Data Engine · React 18 Migration</footer>
     </>
-  );
+  )
 }
