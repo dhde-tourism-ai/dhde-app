@@ -307,6 +307,9 @@ def main() -> int:
             report = json.loads(rep_path.read_text(encoding="utf-8")) if rep_path.exists() else {}
             forecast_notes += [f"7-day forecast: {w}" for w in report.get("warnings", [])]
             fc_nodes = set(fc["node_key"])
+            if "week_ahead_missing" not in fc.columns:
+                # Without the flag every day reads as fine, so say it: a rename would hide late bookings.
+                forecast_notes.append("7-day forecast has no week_ahead_missing column; late-booking days are not flagged")
         except Exception as e:  # noqa: BLE001 - any read problem means no forecast today
             fc, fc_nodes = None, set()
             forecast_notes.append(f"7-day forecast file unreadable ({e!r}); the app uses its naive forecast")

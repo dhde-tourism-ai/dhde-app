@@ -224,17 +224,19 @@ function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind
 
 const NAIVE_METHOD = 'Mean of the same weekday over the last 4 weeks (real visitors_est), spread over the day with the demo hourly shape.'
 
-function forecastMethod(rn: RealNode): string {
+function forecastMethod(rn: RealNode, today: string): string {
   const f = rn.forecast
   if (!f) return NAIVE_METHOD
   const pct = (v: number | null) => (v === null ? '?' : `${Math.round(v * 1000) / 10}%`)
   const last = f.days[f.days.length - 1].date
-  const flagged = f.days.filter((d) => d.week_ahead_missing).map((d) => d.date)
+  // Only days still ahead: a flag on a day that has passed no longer matters to the reader.
+  const flagged = f.days.filter((d) => d.week_ahead_missing && d.date >= today).map((d) => d.date)
   const naive = `${NAIVE_METHOD.charAt(0).toLowerCase()}${NAIVE_METHOD.slice(1)}`
   return (
     `7-day model forecast (${f.model}) up to ${last}: backtest error ${pct(f.backtest_wape)} vs ` +
-    `${pct(f.baseline_wape)} for "same weekday last week"; its range held ${pct(f.range_coverage)} of unseen ` +
-    `backtest days. Scaled with the same factor as the history and spread over the day with the demo hourly shape. ` +
+    `${pct(f.baseline_wape)} for "same weekday last week"` +
+    (f.range_coverage === null ? '. ' : `; its range held ${pct(f.range_coverage)} of unseen backtest days. `) +
+    `Scaled with the same factor as the history and spread over the day with the demo hourly shape. ` +
     (flagged.length ? `${flagged.join(', ')}: the week-ahead bookings were late, so these days use the ${naive.replace(/\.$/, '')}. ` : '') +
     `Later days: ${naive}`
   )
@@ -400,7 +402,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         visitors_daily: visitorsDaily,
         signal_daily: signalDaily,
         normal_daily: normal,
-        forecast_method: forecastMethod(rn),
+        forecast_method: forecastMethod(rn, today),
       }
     }
   }
