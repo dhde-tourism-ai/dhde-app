@@ -48,6 +48,30 @@ export interface RealCalibration {
   confidence: 'high' | 'medium' | 'low' | 'none'
 }
 
+export interface RealForecastDay {
+  date: string
+  /** In the node's own signal (detections, vehicles, bookings). */
+  signal: number | null
+  signal_lo: number | null
+  signal_hi: number | null
+  /** signal × the same calibration factor as the history's visitors_est. */
+  visitors_est: number | null
+  visitors_lo: number | null
+  visitors_hi: number | null
+}
+
+/** dhde-preprocessing-model's 7-day forecast (scripts/build_forecast.py). */
+export interface RealForecast {
+  model: string
+  issued_from: string | null
+  /** Walk-forward backtest error of this model and of "same weekday last week" (0..1). */
+  backtest_wape: number | null
+  baseline_wape: number | null
+  /** Share of held-out backtest days inside the low/high range. */
+  range_coverage: number | null
+  days: RealForecastDay[]
+}
+
 export interface RealNode {
   measure: string | null
   signal_column: string | null
@@ -55,6 +79,8 @@ export interface RealNode {
   as_of: Partial<Record<'visitors' | 'weather' | 'traffic' | 'hotel' | 'survey' | 'google_maps', string | null>>
   daily: RealDaily[]
   hotel_forward: RealForward[]
+  /** Missing when no model forecast was published for the node. */
+  forecast?: RealForecast
 }
 
 export interface RealData {

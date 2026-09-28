@@ -57,6 +57,16 @@ for (const [id, n] of nodes) {
     if (typeof r?.date !== 'string' || !DATE.test(r.date)) fail(`${p}.hotel_forward[${i}].date invalid`)
     for (const f of ['hotel_occ', 'hotel_rooms_sold', 'hotel_rooms_total']) if (f in r && !isNum(r[f])) fail(`${p}.hotel_forward[${i}].${f} not a number or null`)
   }
+  if (n.forecast !== undefined) {
+    const f = n.forecast
+    if (typeof f !== 'object' || f === null || !Array.isArray(f.days)) fail(`${p}.forecast must be an object with a days array`)
+    else
+      for (const [i, r] of f.days.entries()) {
+        if (typeof r?.date !== 'string' || !DATE.test(r.date)) fail(`${p}.forecast.days[${i}].date invalid`)
+        for (const k of ['signal', 'signal_lo', 'signal_hi', 'visitors_est', 'visitors_lo', 'visitors_hi']) if (k in r && !isNum(r[k])) fail(`${p}.forecast.days[${i}].${k} not a number or null`)
+        if (typeof r.visitors_est === 'number' && r.visitors_est < 0) fail(`${p}.forecast.days[${i}].visitors_est negative`)
+      }
+  }
   const c = n.calibration
   if (typeof c !== 'object' || c === null) fail(`${p}.calibration missing`)
   else {
