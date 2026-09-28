@@ -14,6 +14,7 @@ on:
 permissions:
   contents: write
   actions: write
+  id-token: write   # OIDC login to AWS for the publish steps (no stored keys)
 
 concurrency:
   group: daily-data
@@ -91,11 +92,58 @@ jobs:
           python "$PREPROC/scripts/build_forecast.py" --input "$OUT/integrated_fukui_train.parquet" \
             --full "$OUT/integrated_fukui.parquet" --output-dir "$OUT"
 
+      # continue-on-error hides a failed step behind a near-green run; say it in the summary.
+      - name: Check the forecast came out
+        run: |
+          if [ ! -f "$OUT/forecast_fukui.csv" ]; then
+            echo "::warning::7-day forecast not built (no forecast_fukui.csv); the app keeps its naive forecast today"
+          fi
+
       - name: Build real_data.json
         run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --calibration "$OUT/calibration_check.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA"
 
       - name: Validate real_data.json
         run: node scripts/check_data.mjs
+
+      # Publish to AWS (Go-live item 5). Runs only after the data validated, and
+      # only when the repository variables are set, so nothing changes until the
+      # dhde-dev-app-publisher role exists. The role trusts this repo's main
+      # branch only. Existing steps below are unchanged: the commit to main stays
+      # as the fallback copy that Pages bundles.
+      # Both AWS steps are continue-on-error: an AWS problem must never stop the
+      # commit and Pages deploy below, which keep the site's bundled copy fresh.
+      - name: Log in to AWS (OIDC)
+        id: aws_login
+        if: vars.AWS_PUBLISH_ROLE_ARN != ''
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PUBLISH_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Publish to S3 and CloudFront
+        if: vars.AWS_PUBLISH_ROLE_ARN != '' && steps.aws_login.outcome == 'success'
+        continue-on-error: true
+        env:
+          DATA_BUCKET: ${{ vars.DATA_BUCKET }}
+          SERVING_BUCKET: ${{ vars.SERVING_BUCKET }}
+          CF_DISTRIBUTION_ID: ${{ vars.CF_DISTRIBUTION_ID }}
+        run: |
+          for v in DATA_BUCKET SERVING_BUCKET CF_DISTRIBUTION_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Repository variable $v is empty; set it in Settings > Secrets and variables > Actions > Variables."
+              exit 1
+            fi
+          done
+          day=$(TZ=Asia/Tokyo date +%F)
+          # History: the cleaned per-node tables and forecast inputs, one folder per day.
+          aws s3 sync "$OUT" "s3://$DATA_BUCKET/curated/$day/" --only-show-errors \
+            --exclude "*" --include "*.parquet" --include "*.csv" --include "*.json"
+          # Live copy the app reads: every data file (real_data.json, monthly_forecast.json, ...).
+          aws s3 sync public/data/ "s3://$SERVING_BUCKET/data/" --only-show-errors \
+            --exclude "*.sample.json" --content-type application/json --cache-control "max-age=600"
+          aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/data/*" \
+            --query 'Invalidation.Id' --output text
 
       - name: Commit if changed
         id: commit

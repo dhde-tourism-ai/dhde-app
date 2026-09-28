@@ -42,6 +42,14 @@ skipped when the model forecasts a different measure than the app's signal
 for it (only when that node's forecast column is empty in its table); the
 app then keeps its naive same-weekday forecast there.
 
+A forecast problem never stops the refresh: an unreadable file or a renamed
+column drops the forecast for every node, and a bad row (no prediction, or a
+range that doesn't contain it) drops that node's forecast; each goes into the
+notes. Days the model ran without its week-ahead bookings are flagged
+(week_ahead_missing) and the app uses its naive forecast for them. The
+low/high range is the 5th-95th percentile of past errors but held about 80%
+of unseen backtest days (range_coverage), so it is an ~80% range, not 90%.
+
 Fails loudly (non-zero exit, no file written) if the output would be empty or
 malformed, so a bad build can never replace a good file.
 """
@@ -282,8 +290,17 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: 
     }
 
 
+def flag(v) -> bool:
+    """A CSV boolean (True/False, 1/0, or blank) as a bool."""
+    return str(v).strip().lower() in ("true", "1", "yes")
+
+
 def forecast_block(node: str, block: dict, fc: pd.DataFrame, report: dict) -> tuple[dict | None, str | None]:
-    """(forecast block, reason it was skipped) for one node from forecast_fukui.csv."""
+    """(forecast block, reason it was skipped) for one node from forecast_fukui.csv.
+
+    Every check lives here, not in validate(): a bad forecast row drops this
+    node's forecast only, never the whole real_data.json.
+    """
     rows = fc[fc["node_key"] == node].sort_values("date")
     if rows.empty:
         return None, "no forecast rows"
@@ -293,11 +310,20 @@ def forecast_block(node: str, block: dict, fc: pd.DataFrame, report: dict) -> tu
     factor = block["calibration"]["factor"]
     days = []
     for _, r in rows.iterrows():
+        date = pd.Timestamp(r["date"]).date().isoformat()
         sig = [clean(r[c]) for c in ("predicted", "low", "high")]
+        est, lo_v, hi_v = sig
+        if est is None or est < 0:
+            return None, f"no usable prediction on {date} ({est})"
+        if lo_v is not None and hi_v is not None and not lo_v <= est <= hi_v:
+            return None, f"range doesn't contain the prediction on {date}: {lo_v} <= {est} <= {hi_v}"
         vis = [round(v * factor) if v is not None and factor else None for v in sig]
-        days.append({"date": pd.Timestamp(r["date"]).date().isoformat(),
+        days.append({"date": date,
                      "signal": sig[0], "signal_lo": sig[1], "signal_hi": sig[2],
-                     "visitors_est": vis[0], "visitors_lo": vis[1], "visitors_hi": vis[2]})
+                     "visitors_est": vis[0], "visitors_lo": vis[1], "visitors_hi": vis[2],
+                     # The model ran without its week-ahead bookings (late feed): its
+                     # backtest error doesn't apply, so the app uses its naive forecast.
+                     "week_ahead_missing": flag(r.get("week_ahead_missing", False))})
     first = rows.iloc[0]
     return {
         "model": str(first["model"]),
@@ -343,10 +369,6 @@ def validate(payload: dict) -> list[str]:
         lo, hi = FACTOR_BOUNDS.get(v["measure"], (0.001, 100))
         if f is not None and not (lo < f < hi):
             errs.append(f"{k}: implausible calibration factor {f} for {v['measure']}")
-        for d in (v.get("forecast") or {}).get("days", []):
-            lo_v, est, hi_v = d["signal_lo"], d["signal"], d["signal_hi"]
-            if est is None or est < 0 or (lo_v is not None and hi_v is not None and not lo_v <= est <= hi_v):
-                errs.append(f"{k}: bad forecast on {d['date']}: {lo_v} <= {est} <= {hi_v}")
     return errs
 
 
@@ -375,14 +397,25 @@ def main() -> int:
     forecast_notes = []
     fc_path = Path(a.forecast).expanduser() if a.forecast else None
     if fc_path and fc_path.exists():
-        fc = pd.read_csv(fc_path)
-        rep_path = fc_path.with_name("forecast_fukui_report.json")
-        report = json.loads(rep_path.read_text(encoding="utf-8")) if rep_path.exists() else {}
-        for node, block in nodes.items():
-            fb, why = forecast_block(node, block, fc, report)
+        # The workflow runs the model repo's main every day, so a partial file or a
+        # renamed column must drop the forecast, not the refresh.
+        try:
+            fc = pd.read_csv(fc_path)
+            rep_path = fc_path.with_name("forecast_fukui_report.json")
+            report = json.loads(rep_path.read_text(encoding="utf-8")) if rep_path.exists() else {}
+            forecast_notes += [f"7-day forecast: {w}" for w in report.get("warnings", [])]
+            fc_nodes = set(fc["node_key"])
+        except Exception as e:  # noqa: BLE001 - any read problem means no forecast today
+            fc, fc_nodes = None, set()
+            forecast_notes.append(f"7-day forecast file unreadable ({e!r}); the app uses its naive forecast")
+        for node, block in nodes.items() if fc is not None else ():
+            try:
+                fb, why = forecast_block(node, block, fc, report)
+            except Exception as e:  # noqa: BLE001 - e.g. a KeyError if a column was renamed
+                fb, why = None, f"could not read its rows: {e!r}"
             if fb:
                 block["forecast"] = fb
-            elif node in FORECAST_SIGNAL or node in set(fc["node_key"]):
+            elif node in FORECAST_SIGNAL or node in fc_nodes:
                 forecast_notes.append(f"{node}: no 7-day forecast published ({why})")
     elif fc_path:
         forecast_notes.append(f"7-day forecast file not found ({fc_path.name}); the app uses its naive forecast")
