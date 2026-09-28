@@ -11,8 +11,10 @@
  * - The timeline gains the last PAST_DAYS observed days before today.
  * - People: per-node daily visitors = visitors_est (modelled); the demo intraday
  *   shape of the same weekday is scaled so each day's total matches. Today and
- *   future days: forecast = mean visitors_est on the same weekday over the last
- *   4 weeks (a naive seasonal forecast), again spread with the demo shape.
+ *   future days: the node's 7-day model forecast (real_data.json `forecast`,
+ *   with its own low/high range) where published; after it, or for nodes
+ *   without one, mean visitors_est on the same weekday over the last 4 weeks
+ *   (a naive seasonal forecast). Either way spread with the demo shape.
  *   Nodes without an estimate (Fukui Station) keep demo shapes but are flagged
  *   no_estimate so the UI shows camera detections, never a visitor number.
  * - Weather: real daily temperature, rain, wind, sun, humidity and snow; the
@@ -24,7 +26,7 @@
  */
 import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, DataSources } from '../types/live'
 import type { MarketVoiceData } from '../types/market'
-import type { RealData, RealDaily, RealForward, RealNode } from '../types/real'
+import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 
 export const PAST_DAYS = 7
 
@@ -54,6 +56,32 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const str = (v: unknown): string | null => (typeof v === 'string' ? v : null)
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** The model forecast block, or undefined when it's missing or has no usable day. */
+function parseForecast(f: unknown): RealForecast | undefined {
+  if (!isObj(f) || !Array.isArray(f.days)) return undefined
+  const days: RealForecastDay[] = f.days
+    .filter((r): r is Record<string, unknown> => isObj(r) && typeof r.date === 'string' && DATE_RE.test(r.date))
+    .map((r) => ({
+      date: r.date as string,
+      signal: num(r.signal),
+      signal_lo: num(r.signal_lo),
+      signal_hi: num(r.signal_hi),
+      visitors_est: num(r.visitors_est),
+      visitors_lo: num(r.visitors_lo),
+      visitors_hi: num(r.visitors_hi),
+    }))
+    .filter((r) => r.visitors_est !== null && r.visitors_est >= 0)
+  if (days.length === 0) return undefined
+  return {
+    model: str(f.model) ?? 'model',
+    issued_from: str(f.issued_from),
+    backtest_wape: num(f.backtest_wape),
+    baseline_wape: num(f.baseline_wape),
+    range_coverage: num(f.range_coverage),
+    days: days.sort((a, b) => a.date.localeCompare(b.date)),
+  }
+}
 
 /** Validate and normalise real_data.json. Returns null when nothing usable is left. */
 export function parseReal(raw: unknown): RealData | null {
@@ -99,6 +127,7 @@ export function parseReal(raw: unknown): RealData | null {
       },
       daily: daily.sort((a, b) => a.date.localeCompare(b.date)),
       hotel_forward: fwd,
+      forecast: parseForecast(n.forecast),
     }
   }
   if (Object.keys(nodes).length === 0) return null
@@ -192,6 +221,20 @@ function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind
   return { temp: Math.round(temp * 10) / 10, mm: Math.round(mm * 10) / 10, wind: Math.round((r.wind_ms ?? 2) * 10) / 10, pop, cond }
 }
 
+const NAIVE_METHOD = 'Mean of the same weekday over the last 4 weeks (real visitors_est), spread over the day with the demo hourly shape.'
+
+function forecastMethod(rn: RealNode): string {
+  const f = rn.forecast
+  if (!f) return NAIVE_METHOD
+  const pct = (v: number | null) => (v === null ? '?' : `${Math.round(v * 1000) / 10}%`)
+  const last = f.days[f.days.length - 1].date
+  return (
+    `7-day model forecast (${f.model}) up to ${last}: backtest error ${pct(f.backtest_wape)} vs ` +
+    `${pct(f.baseline_wape)} for "same weekday last week", scaled with the same factor as the history ` +
+    `and spread over the day with the demo hourly shape. Later days: ${NAIVE_METHOD.charAt(0).toLowerCase()}${NAIVE_METHOD.slice(1)}`
+  )
+}
+
 export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null): Merged {
   if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
 
@@ -237,6 +280,8 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       }
       return mean(vals)
     }
+    // The model's 7-day forecast where published; the naive one covers the days after it.
+    const modelDay = (dt: string) => rn?.forecast?.days.find((x) => x.date === dt)
 
     const arrA: (number | null)[] = []
     const arrP: number[] = []
@@ -248,17 +293,21 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       const demoArr = Array.from({ length: 24 }, (_, h) => pick(dn.arrivals.predicted, d, h))
       const demoTotal = Math.max(1, sum(demoArr))
       const realV = hasPeople ? visitorsDaily[d] : null
-      const fc = hasPeople && d >= P ? sameWeekday(dates[d]) : null
+      const md = hasPeople && d >= P ? modelDay(dates[d]) : undefined
+      const fc = md?.visitors_est ?? (hasPeople && d >= P ? sameWeekday(dates[d]) : null)
       const kA = realV !== null ? realV / demoTotal : null
       const kP = fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
+      // The model's own low/high range when it has one, else the demo band scaled like the forecast.
+      const kLo = md?.visitors_lo != null ? md.visitors_lo / demoTotal : null
+      const kHi = md?.visitors_hi != null ? md.visitors_hi / demoTotal : null
       for (let h = 0; h < 24; h++) {
         const i = di(d, h)
         const pa = dn.arrivals.predicted[i]
         const po = dn.on_site.predicted[i]
         arrP.push(Math.round(pa * kP))
         osP.push(Math.round(po * kP))
-        lo.push(Math.round((dn.on_site.lo?.[i] ?? po) * kP))
-        hi.push(Math.round((dn.on_site.hi?.[i] ?? po) * kP))
+        lo.push(Math.round(kLo !== null ? po * kLo : (dn.on_site.lo?.[i] ?? po) * kP))
+        hi.push(Math.round(kHi !== null ? po * kHi : (dn.on_site.hi?.[i] ?? po) * kP))
         if (kA !== null) {
           arrA.push(Math.round(pa * kA))
           osA.push(Math.round(po * kA))
@@ -345,7 +394,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         visitors_daily: visitorsDaily,
         signal_daily: signalDaily,
         normal_daily: normal,
-        forecast_method: 'Mean of the same weekday over the last 4 weeks (real visitors_est), spread over the day with the demo hourly shape.',
+        forecast_method: forecastMethod(rn),
       }
     }
   }

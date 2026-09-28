@@ -21,6 +21,18 @@ official 2025 visitor count for that site (観光客入込数, 2025 edition):
 Status "modelled". Nodes without an official figure (Fukui Station) keep the
 raw signal only and visitors_est stays null.
 
+7-day forecast
+--------------
+With --forecast (dhde-preprocessing-model's forecast_fukui.csv, from
+scripts/build_forecast.py), each node gets a "forecast" block: the model's
+prediction and low/high range for the next 7 days, in the node's own signal
+and in visitors, plus its backtest error. Visitors use this file's own
+calibration factor (the same one as the history), so the forecast joins the
+observed line without a jump. A node is skipped when the model forecasts a
+different measure than the app's signal for it (Awara: the model forecasts
+hotel guests, the app shows the nearest-camera proxy); the app then keeps its
+naive same-weekday forecast there.
+
 Fails loudly (non-zero exit, no file written) if the output would be empty or
 malformed, so a bad build can never replace a good file.
 """
@@ -89,6 +101,17 @@ DAILY_FIELDS = {
     "directions": "gmb_directions",
     "average_rating": "gmb_rating",
     "review_count_change": "gmb_review_change",
+}
+
+# The master-table column each node's 7-day forecast predicts (forecast.TARGETS in
+# dhde-preprocessing-model, in master-table names). A forecast is published only
+# where this matches the node's signal_column, so both are in the same units.
+FORECAST_SIGNAL = {
+    "tojinbo": "count",
+    "fukui_station": "count",
+    "rainbow_line": "vehicles",
+    "katsuyama": "reserved_visitors",
+    "awara_onsen": "n_people",
 }
 
 AS_OF_GROUPS = {
@@ -185,6 +208,35 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp) -> dict:
     }
 
 
+def forecast_block(node: str, block: dict, fc: pd.DataFrame, report: dict) -> tuple[dict | None, str | None]:
+    """(forecast block, reason it was skipped) for one node from forecast_fukui.csv."""
+    rows = fc[fc["node_key"] == node].sort_values("date")
+    if rows.empty:
+        return None, "no forecast rows"
+    if FORECAST_SIGNAL.get(node) != block["signal_column"]:
+        return None, (f"forecasts {FORECAST_SIGNAL.get(node)} but the app's signal is {block['signal_column']}, "
+                      "so they can't share a scale")
+    factor = block["calibration"]["factor"]
+    days = []
+    for _, r in rows.iterrows():
+        sig = [clean(r[c]) for c in ("predicted", "low", "high")]
+        vis = [round(v * factor) if v is not None and factor else None for v in sig]
+        days.append({"date": pd.Timestamp(r["date"]).date().isoformat(),
+                     "signal": sig[0], "signal_lo": sig[1], "signal_hi": sig[2],
+                     "visitors_est": vis[0], "visitors_lo": vis[1], "visitors_hi": vis[2]})
+    first = rows.iloc[0]
+    return {
+        "model": str(first["model"]),
+        "issued_from": pd.Timestamp(first["issued_from"]).date().isoformat(),
+        "backtest_wape": clean(first["backtest_wape"]),
+        "baseline_wape": clean(first["baseline_wape"]),
+        "range_coverage": clean(first["range_coverage"]),
+        "interval": report.get("interval"),
+        "backtest_weeks": report.get("backtest_weeks"),
+        "days": days,
+    }, None
+
+
 def validate(payload: dict) -> list[str]:
     errs = []
     nodes = payload.get("nodes", {})
@@ -197,6 +249,10 @@ def validate(payload: dict) -> list[str]:
         lo, hi = FACTOR_BOUNDS.get(v["measure"], (0.001, 100))
         if f is not None and not (lo < f < hi):
             errs.append(f"{k}: implausible calibration factor {f} for {v['measure']}")
+        for d in (v.get("forecast") or {}).get("days", []):
+            lo_v, est, hi_v = d["signal_lo"], d["signal"], d["signal_hi"]
+            if est is None or est < 0 or (lo_v is not None and hi_v is not None and not lo_v <= est <= hi_v):
+                errs.append(f"{k}: bad forecast on {d['date']}: {lo_v} <= {est} <= {hi_v}")
     return errs
 
 
@@ -206,6 +262,8 @@ def main() -> int:
     ap.add_argument("--out", default="public/data/real_data.json")
     ap.add_argument("--today", help="YYYY-MM-DD (default: today, JST)")
     ap.add_argument("--source-commit", default=None, help="dhde-preprocessing-model commit the tables came from")
+    ap.add_argument("--forecast", help="forecast_fukui.csv from build_forecast.py (optional; its report JSON is read "
+                                       "from the same folder)")
     a = ap.parse_args()
 
     today = pd.Timestamp(a.today) if a.today else pd.Timestamp(datetime.now(JST).date())
@@ -214,6 +272,22 @@ def main() -> int:
     for f in files:
         node = f.name.replace("_master.parquet", "")
         nodes[node] = node_block(node, pd.read_parquet(f), today)
+
+    # A missing or unreadable forecast is not fatal: the app falls back to its naive forecast.
+    forecast_notes = []
+    fc_path = Path(a.forecast).expanduser() if a.forecast else None
+    if fc_path and fc_path.exists():
+        fc = pd.read_csv(fc_path)
+        rep_path = fc_path.with_name("forecast_fukui_report.json")
+        report = json.loads(rep_path.read_text(encoding="utf-8")) if rep_path.exists() else {}
+        for node, block in nodes.items():
+            fb, why = forecast_block(node, block, fc, report)
+            if fb:
+                block["forecast"] = fb
+            elif node in FORECAST_SIGNAL or node in set(fc["node_key"]):
+                forecast_notes.append(f"{node}: no 7-day forecast published ({why})")
+    elif fc_path:
+        forecast_notes.append(f"7-day forecast file not found ({fc_path.name}); the app uses its naive forecast")
 
     people_dates = [v["as_of"]["visitors"] for v in nodes.values() if v["as_of"]["visitors"]]
     payload = {
@@ -225,6 +299,9 @@ def main() -> int:
             "visitors_est = daily signal scaled to the prefecture's official 2025 annual count for the site (modelled).",
             "Camera 'signal' is detections, not unique visitors. Fukui Station has no official site figure, so no estimate.",
             "gmb_* fields are Google Maps Business Profile metrics (views, searches, directions, rating).",
+            "forecast = dhde-preprocessing-model's 7-day model (scripts/build_forecast.py), scaled with the same "
+            "calibration factor as visitors_est.",
+            *forecast_notes,
         ],
         "nodes": nodes,
     }
@@ -240,7 +317,11 @@ def main() -> int:
     print(f"wrote {out} ({out.stat().st_size // 1024} KB), shared_date={payload['shared_date']}")
     for k, v in nodes.items():
         c = v["calibration"]
-        print(f"  {k:13s} {v['measure'] or '-':13s} factor={c['factor']} status={c['status']} as_of={v['as_of']['visitors']}")
+        fcb = v.get("forecast")
+        fc_txt = f" forecast={fcb['model']} wape={fcb['backtest_wape']}" if fcb else ""
+        print(f"  {k:13s} {v['measure'] or '-':13s} factor={c['factor']} status={c['status']} as_of={v['as_of']['visitors']}{fc_txt}")
+    for n in forecast_notes:
+        print(f"  note: {n}")
     return 0
 
 
