@@ -30,7 +30,10 @@ jobs:
       - run: npm run lint
       # A malformed real_data.json fails the deploy here; the previous site stays up.
       - run: node scripts/check_data.mjs
+      # Live data origin (CloudFront). Empty -> the app reads the bundled public/data snapshot.
       - run: npm run build
+        env:
+          VITE_DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
       # Hash routing already works on static hosting; the 404 copy catches stray deep links.
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5

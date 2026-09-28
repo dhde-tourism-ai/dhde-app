@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { useProductData } from './hooks/useProductData'
 import { useHashRoute } from './hooks/useHashRoute'
+import { useDataFallback } from './hooks/useDataFallback'
 import type { ViewId } from './hooks/useHashRoute'
 import { useLang } from './lib/i18n'
 import { Icon } from './components/icons'
@@ -37,6 +38,7 @@ export default function App() {
   const { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading } = data
   const [route, navigate] = useHashRoute()
   const { lang, setLang, t } = useLang()
+  const fallback = useDataFallback()
 
   const shared = merged?.real?.shared_date ?? null
   const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
@@ -79,6 +81,14 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {fallback && (
+        <div className="saved-data-note" role="status">
+          {fallback.date
+            ? t(`Showing saved data from ${fmtDate(fallback.date, lang)}`, `${fmtDate(fallback.date, lang)}時点の保存データを表示中`)
+            : t('Showing saved data', '保存データを表示中')}
+        </div>
+      )}
 
       <main id="main">
         {route.view === 'map' && (live.isLoading || realLoading) && <Loading what={t('Loading map…', '地図を読み込み中…')} />}

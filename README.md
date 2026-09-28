@@ -21,7 +21,7 @@ Shareable map state: `#/map/<node>` opens a node's drawer; `?layers=people,flow,
 
 ## Data
 
-The app only reads JSON from `public/data/`. It does no data processing and makes no runtime calls except map tiles.
+The app only reads JSON from `data/`: the live CloudFront copy when configured (see Hosting), otherwise the `public/data/` snapshot. It does no data processing and makes no runtime calls except map tiles.
 
 | File | Produced by | Contents |
 |---|---|---|
@@ -143,6 +143,13 @@ Each nudge carries severity, node, time, the triggering signals, the suggested a
 ## Deploy
 
 `.github/workflows/pages.yml` builds on every push to `main` and publishes `dist/` with `actions/upload-pages-artifact` and `actions/deploy-pages` (plus a `404.html` copy). Enable Pages in the repo settings (Source: GitHub Actions) for it to go live; the workflow changes no settings.
+
+## Hosting
+
+- **App:** GitHub Pages at https://dhde-tourism-ai.github.io/dhde-app/, deployed by the workflow above.
+- **Data:** read live from CloudFront. The repo variable `DATA_BASE_URL` (Settings > Secrets and variables > Actions > Variables, e.g. `https://dxxxx.cloudfront.net`, no trailing slash) is passed to the build as `VITE_DATA_BASE_URL`; the app then fetches `${DATA_BASE_URL}/data/<file>`. The CloudFront origin must allow CORS from `https://dhde-tourism-ai.github.io`.
+- **Fallback:** the `public/data/` files are bundled into every build as a snapshot. If `DATA_BASE_URL` is empty the app reads them directly; if a live fetch fails it falls back to the bundled copy and shows "Showing saved data from <date>".
+- **Local:** `VITE_DATA_BASE_URL=https://... npm run dev` tests against the live source; without it, dev reads `public/data/`.
 
 ## Design system
 

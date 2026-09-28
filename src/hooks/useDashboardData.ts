@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { DashboardData } from '../types/dashboard'
+import { loadDataFile } from '../lib/dataSource'
 
 interface UseDashboardDataResult {
   data: DashboardData | null
@@ -8,12 +9,9 @@ interface UseDashboardDataResult {
   refetch: () => void
 }
 
-// import.meta.env.BASE_URL resolves to '/' in dev and to whatever `base` is
-// set to in the production build — since vite.config.ts's publicDir points
-// at the same repo-root public/ the Python pipeline writes to, this exact
-// path resolves correctly in both dev and build without any manual
-// dev/prod branching.
-const DASHBOARD_DATA_PATH = `${import.meta.env.BASE_URL}data/dashboard_data.json`
+// Source rules (live VITE_DATA_BASE_URL first, bundled snapshot fallback,
+// dev cache-bust) live in src/lib/dataSource.ts.
+const DASHBOARD_FILE = 'dashboard_data.json'
 
 export function useDashboardData(): UseDashboardDataResult {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -30,18 +28,7 @@ export function useDashboardData(): UseDashboardDataResult {
       setIsLoading(true)
       setError(null)
       try {
-        // Dev-only cache-bust: the pipeline overwrites dashboard_data.json
-        // in place, and a plain fetch() of a stable URL can otherwise
-        // return a stale browser-cached copy while iterating locally.
-        const url = import.meta.env.DEV
-          ? `${DASHBOARD_DATA_PATH}?t=${Date.now()}`
-          : DASHBOARD_DATA_PATH
-
-        const res = await fetch(url, { signal: controller.signal })
-        if (!res.ok) {
-          throw new Error(`Failed to load dashboard data: ${res.status} ${res.statusText}`)
-        }
-        const json = (await res.json()) as DashboardData
+        const json = await loadDataFile<DashboardData>(DASHBOARD_FILE, controller.signal)
         setData(json)
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return
