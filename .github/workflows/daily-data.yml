@@ -101,20 +101,31 @@ jobs:
       # dhde-dev-app-publisher role exists. The role trusts this repo's main
       # branch only. Existing steps below are unchanged: the commit to main stays
       # as the fallback copy that Pages bundles.
+      # Both AWS steps are continue-on-error: an AWS problem must never stop the
+      # commit and Pages deploy below, which keep the site's bundled copy fresh.
       - name: Log in to AWS (OIDC)
+        id: aws_login
         if: vars.AWS_PUBLISH_ROLE_ARN != ''
+        continue-on-error: true
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_PUBLISH_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: Publish to S3 and CloudFront
-        if: vars.AWS_PUBLISH_ROLE_ARN != ''
+        if: vars.AWS_PUBLISH_ROLE_ARN != '' && steps.aws_login.outcome == 'success'
+        continue-on-error: true
         env:
           DATA_BUCKET: ${{ vars.DATA_BUCKET }}
           SERVING_BUCKET: ${{ vars.SERVING_BUCKET }}
           CF_DISTRIBUTION_ID: ${{ vars.CF_DISTRIBUTION_ID }}
         run: |
+          for v in DATA_BUCKET SERVING_BUCKET CF_DISTRIBUTION_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Repository variable $v is empty; set it in Settings > Secrets and variables > Actions > Variables."
+              exit 1
+            fi
+          done
           day=$(TZ=Asia/Tokyo date +%F)
           # History: the cleaned per-node tables and forecast inputs, one folder per day.
           aws s3 sync "$OUT" "s3://$DATA_BUCKET/curated/$day/" --only-show-errors \
