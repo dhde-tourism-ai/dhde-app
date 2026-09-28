@@ -98,7 +98,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
       : []
   const lastSig = (() => {
     if (!meta) return null
-    for (let k = Math.min(day, meta.signal_daily.length - 1); k >= 0; k--) if (meta.signal_daily[k] !== null) return { v: meta.signal_daily[k] as number, date: live?.days[k]?.date }
+    for (let k = Math.min(day, meta.signal_daily.length - 1); k >= 0; k--) if (meta.signal_daily[k] !== null) return { v: meta.signal_daily[k] as number, date: live?.days[k]?.date, index: meta.index_daily?.[k] ?? null }
     return null
   })()
   const CONF: Record<string, [string, string]> = { high: ['High', '高'], medium: ['Medium', '中'], low: ['Low', '低'], none: ['None', 'なし'] }
@@ -139,6 +139,12 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <span className="tt-real">{tr('Real signal', '実シグナル')}</span>
                 </div>
                 <span className="dk-val">{lastSig ? Math.round(lastSig.v).toLocaleString() : '—'}</span>
+                {lastSig?.index != null && (
+                  <div className="tt-kv">
+                    <span>{tr('Busyness: % of an average 2025 day', '混雑度：2025年の平均日比')}</span>
+                    <b className="num">{lastSig.index}%</b>
+                  </div>
+                )}
                 <p className="muted small">
                   {tr('Detections in the day', '1日の検知数')} {lastSig?.date ? `(${lastSig.date})` : ''}.{' '}
                   {tr('Not unique visitors, and there is no official annual count for this site to scale to, so no visitor number is shown. The map keeps a simulated shape for flows only.', '延べ検知数で来訪者数ではありません。公式年間値がないため来訪者数は表示しません。')}
@@ -153,8 +159,8 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                 <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString()}</span>
                 <div className="tt-grid">
                   <span className="tt-k">{tr('Method', '方法')}</span>
-                  <span className="tt-v">{tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
-                  <span className="tt-k">{tr('Official 2025', '2025年公式')}</span>
+                  <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
+                  <span className="tt-k">{tr(`Official ${meta.official_period_label ?? '2025'}`, `${meta.official_period_label_ja ?? '2025年'}公式`)}</span>
                   <span className="tt-v num">{meta.official_2025?.toLocaleString() ?? '—'}</span>
                   <span className="tt-k">{tr('Confidence', '信頼度')}</span>
                   <span className="tt-v">

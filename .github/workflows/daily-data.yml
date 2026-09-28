@@ -86,11 +86,13 @@ jobs:
         continue-on-error: true
         run: |
           python "$PREPROC/scripts/build_integrated.py" --input-dir "$OUT" --output-dir "$OUT"
+          python "$PREPROC/scripts/check_calibration.py" --input "$OUT/integrated_fukui_train.parquet" --output-dir "$OUT" \
+            || echo "::warning::check_calibration failed; visitors fall back to the 2025 sum"
           python "$PREPROC/scripts/build_forecast.py" --input "$OUT/integrated_fukui_train.parquet" \
             --full "$OUT/integrated_fukui.parquet" --output-dir "$OUT"
 
       - name: Build real_data.json
-        run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA"
+        run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --calibration "$OUT/calibration_check.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA"
 
       - name: Validate real_data.json
         run: node scripts/check_data.mjs

@@ -159,12 +159,18 @@ export interface RealNodeMeta {
   factor: number | null
   official_2025: number | null
   calibration_source: string
+  method_text: string | null
+  method_text_ja: string | null
+  official_period_label: string | null
+  official_period_label_ja: string | null
   visitors_as_of: string | null
   /** No official count to scale to (Fukui Station): show the raw signal only. */
   no_estimate: boolean
   /** Per merged day. */
   visitors_daily: (number | null)[]
   signal_daily: (number | null)[]
+  /** signal_index_pct per merged day: % of the node's mean 2025 day. */
+  index_daily: (number | null)[]
   /** Mean visitors_est over the real history ("normal"). */
   normal_daily: number | null
   forecast_method: string
