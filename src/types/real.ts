@@ -58,6 +58,8 @@ export interface RealForecastDay {
   visitors_est: number | null
   visitors_lo: number | null
   visitors_hi: number | null
+  /** The model ran without its week-ahead bookings (late feed); the app uses its naive forecast that day. */
+  week_ahead_missing: boolean
 }
 
 /** dhde-preprocessing-model's 7-day forecast (scripts/build_forecast.py). */
@@ -67,7 +69,11 @@ export interface RealForecast {
   /** Walk-forward backtest error of this model and of "same weekday last week" (0..1). */
   backtest_wape: number | null
   baseline_wape: number | null
-  /** Share of held-out backtest days inside the low/high range. */
+  /**
+   * Share of held-out backtest days inside the low/high range (about 0.8). The
+   * range is the 5th-95th percentile of past errors, but it is roughly an 80%
+   * range in practice: never label it 90%.
+   */
   range_coverage: number | null
   days: RealForecastDay[]
 }

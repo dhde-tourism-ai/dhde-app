@@ -89,6 +89,13 @@ jobs:
           python "$PREPROC/scripts/build_forecast.py" --input "$OUT/integrated_fukui_train.parquet" \
             --full "$OUT/integrated_fukui.parquet" --output-dir "$OUT"
 
+      # continue-on-error hides a failed step behind a near-green run; say it in the summary.
+      - name: Check the forecast came out
+        run: |
+          if [ ! -f "$OUT/forecast_fukui.csv" ]; then
+            echo "::warning::7-day forecast not built (no forecast_fukui.csv); the app keeps its naive forecast today"
+          fi
+
       - name: Build real_data.json
         run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA"
 

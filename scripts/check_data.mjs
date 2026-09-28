@@ -65,6 +65,7 @@ for (const [id, n] of nodes) {
         if (typeof r?.date !== 'string' || !DATE.test(r.date)) fail(`${p}.forecast.days[${i}].date invalid`)
         for (const k of ['signal', 'signal_lo', 'signal_hi', 'visitors_est', 'visitors_lo', 'visitors_hi']) if (k in r && !isNum(r[k])) fail(`${p}.forecast.days[${i}].${k} not a number or null`)
         if (typeof r.visitors_est === 'number' && r.visitors_est < 0) fail(`${p}.forecast.days[${i}].visitors_est negative`)
+        if ('week_ahead_missing' in r && typeof r.week_ahead_missing !== 'boolean') fail(`${p}.forecast.days[${i}].week_ahead_missing not a boolean`)
       }
   }
   const c = n.calibration
