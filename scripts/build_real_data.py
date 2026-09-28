@@ -27,6 +27,11 @@ See docs/calibration.md there. Without it, or for a node it has no factor
 for (Eiheiji), the fallback scales the signal's 2025 total to the
 prefecture's 2025 count (観光客入込数). Status "modelled".
 
+A calibration problem never stops the refresh: an unreadable file or a
+renamed column drops the pipeline factors for every node, and a pipeline
+factor outside FACTOR_BOUNDS drops it for that node; either way those nodes
+use the 2025-sum fallback and the reason goes into the notes.
+
 Fukui Station has no official site figure, so it keeps the raw signal and
 visitors_est stays null. Every node also gets signal_index_pct: the day's
 signal as a % of the node's mean 2025 day, a unit-free "how busy" figure.
@@ -215,7 +220,8 @@ def pick_signal(node: str, m: pd.DataFrame) -> tuple[str | None, str | None]:
     return None, None
 
 
-def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: dict | None = None) -> dict:
+def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: dict | None = None,
+               notes: list[str] | None = None) -> dict:
     m = m.copy()
     m["date"] = pd.to_datetime(m["date"]).dt.normalize()
     m = m.drop_duplicates("date").sort_values("date")
@@ -235,6 +241,12 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: 
         calib["signal_days_2025"] = int(y25.notna().sum())
         typical = float(y25.mean()) if y25.notna().sum() >= 300 and y25.mean() > 0 else None
         pc = pipeline_calib or {}
+        lo, hi = FACTOR_BOUNDS.get(measure, (0.001, 100))
+        if pc.get("factor") and not lo < pc["factor"] < hi:
+            if notes is not None:
+                notes.append(f"{node}: pipeline calibration factor {pc['factor']} is outside {lo} to {hi} for "
+                             f"{measure}, so it uses the 2025-sum fallback")
+            pc = {}
         if pc.get("factor"):
             calib["factor"] = pc["factor"]
             calib["official_annual_2025"] = pc["official_visitors"]
@@ -339,21 +351,30 @@ def forecast_block(node: str, block: dict, fc: pd.DataFrame, report: dict) -> tu
 
 def load_calibration(path: Path, notes: list[str]) -> dict[str, dict]:
     """{node: factor, official visitors, period, source} from calibration_check.csv.
-    A missing file is not fatal: every node falls back to the 2025 sum."""
+
+    Never fatal: a missing, unreadable or renamed-column file gives {} with a
+    note, and every node falls back to the 2025 sum.
+    """
+    fallback = "visitors scaled to the prefecture's 2025 counts"
     if not path.exists():
-        notes.append(f"calibration file not found ({path.name}); visitors scaled to the prefecture's 2025 counts")
+        notes.append(f"calibration file not found ({path.name}); {fallback}")
         return {}
-    out = {}
-    for r in pd.read_csv(path).to_dict("records"):
-        factor, official = clean(r.get("factor")), clean(r.get("official_visitors"))
-        if not factor or not official:
-            continue
-        try:
-            period = json.loads(str(r.get("official_period")).replace("'", '"'))
-        except ValueError:
-            period = None
-        out[r["node_key"]] = {"factor": float(r["factor"]), "official_visitors": official, "official_period": period,
-                              "source": f"dhde-preprocessing-model calibration check ({r.get('measured', '')})"}
+    try:
+        rows = pd.read_csv(path).to_dict("records")
+        out = {}
+        for r in rows:
+            factor, official = clean(r.get("factor")), clean(r.get("official_visitors"))
+            if not factor or not official:
+                continue
+            try:
+                period = json.loads(str(r.get("official_period")).replace("'", '"'))
+            except ValueError:
+                period = None
+            out[str(r["node_key"])] = {"factor": float(r["factor"]), "official_visitors": official, "official_period": period,
+                                       "source": f"dhde-preprocessing-model calibration check ({r.get('measured', '')})"}
+    except Exception as e:  # noqa: BLE001 - a bad calibration file must not stop the refresh
+        notes.append(f"calibration file unreadable ({path.name}: {type(e).__name__}: {e}); {fallback}")
+        return {}
     return out
 
 
@@ -391,7 +412,7 @@ def main() -> int:
     nodes = {}
     for f in files:
         node = f.name.replace("_master.parquet", "")
-        nodes[node] = node_block(node, pd.read_parquet(f), today, pipeline_calib.get(node))
+        nodes[node] = node_block(node, pd.read_parquet(f), today, pipeline_calib.get(node), calib_notes)
 
     # A missing or unreadable forecast is not fatal: the app falls back to its naive forecast.
     forecast_notes = []
