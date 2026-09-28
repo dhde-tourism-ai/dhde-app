@@ -70,6 +70,7 @@ function parseForecast(f: unknown): RealForecast | undefined {
       visitors_est: num(r.visitors_est),
       visitors_lo: num(r.visitors_lo),
       visitors_hi: num(r.visitors_hi),
+      week_ahead_missing: r.week_ahead_missing === true,
     }))
     .filter((r) => r.visitors_est !== null && r.visitors_est >= 0)
   if (days.length === 0) return undefined
@@ -228,10 +229,14 @@ function forecastMethod(rn: RealNode): string {
   if (!f) return NAIVE_METHOD
   const pct = (v: number | null) => (v === null ? '?' : `${Math.round(v * 1000) / 10}%`)
   const last = f.days[f.days.length - 1].date
+  const flagged = f.days.filter((d) => d.week_ahead_missing).map((d) => d.date)
+  const naive = `${NAIVE_METHOD.charAt(0).toLowerCase()}${NAIVE_METHOD.slice(1)}`
   return (
     `7-day model forecast (${f.model}) up to ${last}: backtest error ${pct(f.backtest_wape)} vs ` +
-    `${pct(f.baseline_wape)} for "same weekday last week", scaled with the same factor as the history ` +
-    `and spread over the day with the demo hourly shape. Later days: ${NAIVE_METHOD.charAt(0).toLowerCase()}${NAIVE_METHOD.slice(1)}`
+    `${pct(f.baseline_wape)} for "same weekday last week"; its range held ${pct(f.range_coverage)} of unseen ` +
+    `backtest days. Scaled with the same factor as the history and spread over the day with the demo hourly shape. ` +
+    (flagged.length ? `${flagged.join(', ')}: the week-ahead bookings were late, so these days use the ${naive.replace(/\.$/, '')}. ` : '') +
+    `Later days: ${naive}`
   )
 }
 
@@ -280,8 +285,9 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       }
       return mean(vals)
     }
-    // The model's 7-day forecast where published; the naive one covers the days after it.
-    const modelDay = (dt: string) => rn?.forecast?.days.find((x) => x.date === dt)
+    // The model's 7-day forecast where published; the naive one covers the days after it,
+    // and days the model ran without its week-ahead bookings (its backtest error doesn't apply).
+    const modelDay = (dt: string) => rn?.forecast?.days.find((x) => x.date === dt && !x.week_ahead_missing)
 
     const arrA: (number | null)[] = []
     const arrP: number[] = []
