@@ -157,7 +157,7 @@
               "source": "入込数 令和7年: 1人当たり観光消費額単価, 合計 宿泊 (2024: ¥24,913). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
             },
             {
-              "label": "Overnight guest-nights",
+              "label": "Overnight guest-nights (the vision's 県内宿泊者数)",
               "baseline": 3.24,
               "current": 3.93,
               "target": 4.5,
@@ -167,7 +167,7 @@
               "source": "JTA 宿泊旅行統計調査 2025 確定: 3,929,570 guest-nights (延べ). The vision's progress report used the earlier 速報 3.87M; 2024 was 4.03M. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
             },
             {
-              "label": "Foreign guest-nights",
+              "label": "Foreign guest-nights (the vision's 外国人宿泊者数)",
               "baseline": 65,
               "current": 108.6,
               "target": 400,
@@ -2022,13 +2022,13 @@
           "gaps": [
             {
               "id": "foreign",
-              "label": "Foreign guest-nights",
+              "label": "Foreign guest-nights (the vision's 外国人宿泊者数)",
               "gap": 291450,
               "formula": "400k − 108.6k (2025)"
             },
             {
               "id": "overnight",
-              "label": "All overnight guest-nights",
+              "label": "All overnight guest-nights (the vision's 県内宿泊者数)",
               "gap": 570430,
               "formula": "4.5M − 3.93M (2025)"
             }

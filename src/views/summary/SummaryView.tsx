@@ -21,8 +21,8 @@ const TARGET_JA: Record<string, string> = {
   Visitors: '観光客入込数',
   'Tourism spend': '観光消費額',
   'Spend per overnight guest': '宿泊客1人当たり消費額',
-  'Overnight guest-nights': '延べ宿泊者数',
-  'Foreign guest-nights': '外国人延べ宿泊者数',
+  "Overnight guest-nights (the vision's 県内宿泊者数)": '県内宿泊者数（延べ宿泊者数）',
+  "Foreign guest-nights (the vision's 外国人宿泊者数)": '外国人宿泊者数（延べ宿泊者数）',
 }
 
 function fmtUnit(v: number, prefix: string, unit: string): string {
