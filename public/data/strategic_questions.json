@@ -233,6 +233,34 @@
             }
           ],
           "source": "2025 inputs from 福井県観光客入込数 令和7年: 21.44M visitors, 2.385M overnight, 19.06M day-trippers. ¥24,675 = ¥30,221 − ¥5,546, the extra spend when a day-tripper stays the night instead. ¥43,000 per foreign visitor: Bank of Japan Kanazawa Branch (Apr 2026), from the team brief, not yet checked against the source."
+        },
+        {
+          "id": "q1-sleep",
+          "type": "bars",
+          "span": 12,
+          "status": "pending",
+          "title": "Where visitors sleep",
+          "note": "Share of Fukui's visitors by where they spend the night: the overnight leakage to Kanazawa and Kyoto that drives \"Spend lost to neighbouring stays\". Filled from KDDI location data once purchased; no numbers until then.",
+          "pending_on": "KDDI location data",
+          "unit": "%",
+          "rows": [
+            {
+              "label": "Stay in Fukui",
+              "value": null
+            },
+            {
+              "label": "Kanazawa",
+              "value": null
+            },
+            {
+              "label": "Kyoto",
+              "value": null
+            },
+            {
+              "label": "Day trip, no overnight stay",
+              "value": null
+            }
+          ]
         }
       ],
       "spec": {

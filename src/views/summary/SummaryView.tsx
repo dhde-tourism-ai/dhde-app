@@ -11,10 +11,20 @@ import { useLang } from '../../lib/i18n'
 import { Icon } from '../../components/icons'
 import { SourceBadge } from '../../components/SourceBadge'
 import { Loading } from '../../components/StateMsg'
+import { KddiPending } from '../../components/KddiPending'
 import { LAYERS } from '../map/layers'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
+
+/** Screens built ahead of the KDDI purchase, and where each will appear. */
+const KDDI_SCREENS: { en: string; ja: string; where_en: string; where_ja: string }[] = [
+  { en: 'Measured daily counts for Ono, Eiheiji and Katsuyama', ja: '大野・永平寺・勝山の実測日別人数', where_en: 'This page; Eiheiji and Katsuyama site panels', where_ja: 'このページ・永平寺と勝山の地点パネル' },
+  { en: 'Visitor journeys, origin to destination', ja: '来訪者の移動（出発地→目的地）', where_en: 'Map, Economics layer', where_ja: '地図・経済レイヤー' },
+  { en: 'Where visitors come from, per site', ja: '地点ごとの来訪者の居住地', where_en: 'Map, site panel', where_ja: '地図・地点パネル' },
+  { en: 'Where visitors sleep: leakage to Kanazawa and Kyoto', ja: '宿泊地：金沢・京都への流出', where_en: 'Strategy, Q1', where_ja: '戦略・Q1' },
+  { en: 'Time on site, age and gender', ja: '滞在時間・年齢・性別', where_en: 'Map, site panel', where_ja: '地図・地点パネル' },
+]
 
 /** Japanese names for the vision KPI rows in strategic_questions.json (English only there). */
 const TARGET_JA: Record<string, string> = {
@@ -246,6 +256,20 @@ export default function SummaryView({ data }: { data: ProductData }) {
                 </li>
               )
             })}
+          </ul>
+        </section>
+
+        <section className="s-card sum-kddi" style={{ ['--span' as string]: 12 }}>
+          <h2 className="card-title">{t('Coming with KDDI data', 'KDDIデータで追加される画面')}</h2>
+          <p className="card-sub">{t('These screens are built and wait for the KDDI location data. They show no numbers until it is purchased.', '画面は作成済みで、KDDI位置情報データを待っています。購入までは数値を表示しません。')}</p>
+          <ul className="sum-list">
+            {KDDI_SCREENS.map((k) => (
+              <li key={k.en}>
+                <span className="sum-label">{t(k.en, k.ja)}</span>
+                <span className="sum-val">{t(k.where_en, k.where_ja)}</span>
+                <KddiPending />
+              </li>
+            ))}
           </ul>
         </section>
       </div>
