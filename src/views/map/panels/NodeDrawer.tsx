@@ -138,7 +138,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <span className="eyebrow">{tr('Camera detections', 'カメラ検知数')}</span>
                   <span className="tt-real">{tr('Real signal', '実シグナル')}</span>
                 </div>
-                <span className="dk-val">{lastSig ? Math.round(lastSig.v).toLocaleString() : '—'}</span>
+                <span className="dk-val">{lastSig ? Math.round(lastSig.v).toLocaleString('en-US') : '—'}</span>
                 {lastSig?.index != null && (
                   <div className="tt-kv">
                     <span>{tr('Busyness: % of an average 2025 day', '混雑度：2025年の平均日比')}</span>
@@ -156,12 +156,12 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <span className="eyebrow">{frame.realDay?.visitors != null ? tr('Visitors this day (modelled)', 'この日の来訪者数（推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
                   {frame.realDay?.visitors != null ? <span className="tt-real">{tr('Real', '実データ')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
                 </div>
-                <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString()}</span>
+                <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString('en-US')}</span>
                 <div className="tt-grid">
                   <span className="tt-k">{tr('Method', '方法')}</span>
                   <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
                   <span className="tt-k">{tr(`Official ${meta.official_period_label ?? '2025'}`, `${meta.official_period_label_ja ?? '2025年'}公式`)}</span>
-                  <span className="tt-v num">{meta.official_2025?.toLocaleString() ?? '—'}</span>
+                  <span className="tt-v num">{meta.official_2025?.toLocaleString('en-US') ?? '—'}</span>
                   <span className="tt-k">{tr('Confidence', '信頼度')}</span>
                   <span className="tt-v">
                     <span className={`conf conf-${meta.confidence}`}>{tr(CONF[meta.confidence][0], CONF[meta.confidence][1])}</span>
@@ -169,7 +169,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   {frame.realDay?.signal != null && (
                     <>
                       <span className="tt-k">{tr('Raw signal', '元シグナル')}</span>
-                      <span className="tt-v num">{Math.round(frame.realDay.signal).toLocaleString()}</span>
+                      <span className="tt-v num">{Math.round(frame.realDay.signal).toLocaleString('en-US')}</span>
                     </>
                   )}
                 </div>
@@ -181,15 +181,15 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
             <div className="drawer-kpis">
               <div className="dk">
                 <span className="eyebrow">{frame.observed ? tr('On site now', '現在の人数') : tr('Forecast on site', '予測人数')}</span>
-                <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString()}</span>
+                <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString('en-US')}</span>
                 <StatusTag tier={frame.tier} />
               </div>
               <div className="dk">
                 <span className="eyebrow">{tr('Forecast', '予測')}</span>
-                <span className="dk-val sm">{Math.round(frame.predicted).toLocaleString()}</span>
+                <span className="dk-val sm">{Math.round(frame.predicted).toLocaleString('en-US')}</span>
                 {frame.lo !== null && frame.hi !== null && (
                   <span className="muted num">
-                    {frame.lo.toLocaleString()}–{frame.hi.toLocaleString()}
+                    {frame.lo.toLocaleString('en-US')}–{frame.hi.toLocaleString('en-US')}
                   </span>
                 )}
               </div>
@@ -199,7 +199,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
               <span className="meter-cap" style={{ left: `${Math.min(100, 100 / Math.max(1, frame.load))}%` }}></span>
             </div>
             <p className="meter-lab muted">
-              {Math.round(frame.load * 100)}% {tr('of comfortable capacity', 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString()})
+              {Math.round(frame.load * 100)}% {tr('of comfortable capacity', 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
             <h3 className="drawer-h">{tr('Today’s rhythm, people on site', '1日の推移（現地人数）')}</h3>
             <div className="mini-chart">
@@ -207,7 +207,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                 <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="h" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} ticks={[0, 6, 12, 18, 23]} tickFormatter={(h: number) => `${h}:00`} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
-                  <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString()).join('–') : Number(v).toLocaleString(), String(n)]} />
+                  <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(n)]} />
                   <Area dataKey="band" name={tr('Range', '予測幅')} stroke="none" fill={S1} fillOpacity={0.12} isAnimationActive={false} />
                   <Line dataKey="forecast" name={tr('Forecast', '予測')} stroke={S1} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
                   <Line dataKey="actual" name={tr('Counted', '実測')} stroke="#e9eef8" strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
@@ -227,7 +227,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                 <BarChart data={daily} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
-                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString(), it?.payload?.isReal ? tr('Visitors (real estimate)', '来訪者（実推計）') : tr('Forecast', '予測')]} />
+                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString('en-US'), it?.payload?.isReal ? tr('Visitors (real estimate)', '来訪者（実推計）') : tr('Forecast', '予測')]} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false}>
                     {daily.map((d) => (
                       <Cell key={d.d} fill={d.d === day ? '#8b9dff' : d.isReal ? S1 : '#6d86ad'} fillOpacity={d.d === day ? 1 : d.isReal ? 0.9 : 0.55} />
@@ -338,7 +338,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <span className="vg-val num">{market.reviews[node.id].rating.toFixed(1)}</span>
                   <Stars value={market.reviews[node.id].rating} />
                   <span className="muted small num">
-                    {market.reviews[node.id].count.toLocaleString()} {tr('reviews', '件')}
+                    {market.reviews[node.id].count.toLocaleString('en-US')} {tr('reviews', '件')}
                   </span>
                 </div>
               )}

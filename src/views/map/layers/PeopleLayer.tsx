@@ -53,9 +53,9 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
       const name = escapeHtml(lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', ''))
       const sig = f?.noEstimate ? lastSignal(meta?.[n.id], day) : null
       const count = f?.noEstimate
-        ? `<span class="nt-count fc">${sig ? `${escapeHtml(t('cam', 'カメラ'))} ${Math.round(sig.v).toLocaleString()}` : escapeHtml(t('no estimate', '推計なし'))}</span>`
+        ? `<span class="nt-count fc">${sig ? `${escapeHtml(t('cam', 'カメラ'))} ${Math.round(sig.v).toLocaleString('en-US')}` : escapeHtml(t('no estimate', '推計なし'))}</span>`
         : f
-        ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString()}</span>`
+        ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}</span>`
         : `<span class="nt-count none">${escapeHtml(t('no data yet', 'データなし'))}</span>`
       const tier = f && !f.noEstimate ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
       const estTag = est ? `<span class="nt-est">${escapeHtml(t('est.', '推定'))}</span>` : ''
@@ -134,7 +134,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                   <span className="tt-real">{t('Real signal', '実シグナル')}</span>
                 </div>
                 <div className="tt-hero">
-                  <b className="num">{sig ? Math.round(sig.v).toLocaleString() : '—'}</b>
+                  <b className="num">{sig ? Math.round(sig.v).toLocaleString('en-US') : '—'}</b>
                   <span>{t('camera detections in the day (not unique visitors)', '1日のカメラ検知数（延べ、来訪者数ではない）')}</span>
                 </div>
                 <div className="tip-sub">
@@ -188,12 +188,12 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                 </div>
                 {realV !== null && (
                   <div className="tt-hero">
-                    <b className="num">{Math.round(realV).toLocaleString()}</b>
+                    <b className="num">{Math.round(realV).toLocaleString('en-US')}</b>
                     <span>{t('visitors this day (modelled)', 'この日の来訪者数（推計）')}</span>
                   </div>
                 )}
                 <div className="tt-hero">
-                  <b className="num">{Math.round(f.onSite).toLocaleString()}</b>
+                  <b className="num">{Math.round(f.onSite).toLocaleString('en-US')}</b>
                   <span>{f.observed ? t('people on site now', '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
                 </div>
                 <div className="tt-grid">
@@ -204,15 +204,15 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                   </span>
                   <span className="tt-k">{t('Forecast', '予測')}</span>
                   <span className="tt-v num">
-                    {Math.round(f.predicted).toLocaleString()}
-                    {f.lo !== null && f.hi !== null ? ` (${f.lo.toLocaleString()}–${f.hi.toLocaleString()})` : ''}
+                    {Math.round(f.predicted).toLocaleString('en-US')}
+                    {f.lo !== null && f.hi !== null ? ` (${f.lo.toLocaleString('en-US')}–${f.hi.toLocaleString('en-US')})` : ''}
                   </span>
                   <span className="tt-k">{t('Arriving this hour', 'この1時間の到着')}</span>
-                  <span className="tt-v num">{Math.round(f.arrivals).toLocaleString()}</span>
+                  <span className="tt-v num">{Math.round(f.arrivals).toLocaleString('en-US')}</span>
                 </div>
                 {m ? (
                   <div className="tip-sub">
-                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} (${m.official_2025?.toLocaleString() ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
+                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} (${m.official_2025?.toLocaleString('en-US') ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
                   </div>
                 ) : (
                   est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>
