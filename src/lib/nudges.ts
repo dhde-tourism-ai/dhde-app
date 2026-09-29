@@ -11,6 +11,25 @@ import type { RegistryNode } from '../types/nodes'
 import type { Sev } from './alerts'
 import { dailyArrivals, dayLabel, hourLabel } from './live'
 
+/**
+ * public/data/hotel_thresholds.json (scripts/build_hotel_thresholds.py): loop #3's
+ * occupancy levels per hotel area, from that area's own booking history. An area
+ * missing here keeps the demo rule (85% and demand +15%, or 40% or less).
+ */
+export interface HotelThresholds {
+  areas: Record<
+    string,
+    {
+      /** 90th percentile of past nights: at or above it the night is in the area's top 10%. */
+      tight_occ_pct: number
+      /** 10th percentile per weekday (Mon..Sun). */
+      slack_occ_pct: Record<string, number>
+      /** False where demand is the area's own hotel guests (Awara): both rules then use occupancy only. */
+      demand_check: boolean
+    }
+  >
+}
+
 export interface RouteLeg {
   id: string
   reverse?: boolean
@@ -81,7 +100,13 @@ function normalDaily(live: LiveData, id: string): number {
   return d.reduce((s, x) => s + x.predicted, 0) / Math.max(1, d.length)
 }
 
-export function computeNudges(live: LiveData, market: MarketVoiceData | null, reg: RegistryNode[], fromDay: number): Nudge[] {
+export function computeNudges(
+  live: LiveData,
+  market: MarketVoiceData | null,
+  reg: RegistryNode[],
+  fromDay: number,
+  thresholds?: HotelThresholds | null,
+): Nudge[] {
   const out: Nudge[] = []
   const pos = (id: string): [number, number] => {
     const n = reg.find((r) => r.id === id)
@@ -175,7 +200,19 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
         if (d < fromDay) return
         const ratio = (daily[d]?.predicted ?? normal) / normal
         const nights = `${dayLabel(live, d, 'en')} night`
-        if (occ >= 85 && ratio >= 1.15) {
+        // Real thresholds: the area's top 10% of nights (plus demand +35%, as loop #1), or its
+        // bottom 10% for that weekday while day visitors are at or above normal. Where demand is the
+        // area's own hotel guests (demand_check false) both rules use occupancy only.
+        const th = thresholds?.areas[h.id]
+        const dow = live.days[d]?.dow
+        const slackAt = th && dow ? th.slack_occ_pct[dow] : undefined
+        const tight = th ? occ >= th.tight_occ_pct && (!th.demand_check || ratio >= 1 + DEMAND_THRESHOLD) : occ >= 85 && ratio >= 1.15
+        const slack = th && slackAt !== undefined ? occ <= slackAt && (!th.demand_check || ratio >= 1) : occ <= 40
+        const tightWhy = th ? ` The top 10% of nights here start at ${th.tight_occ_pct}%.` : ''
+        const tightWhyJa = th ? `この地域の上位10%の夜は${th.tight_occ_pct}%以上。` : ''
+        const slackWhy = th && slackAt !== undefined ? ` The quietest 10% of ${dow} nights here are ${slackAt}% or less.` : ''
+        const slackWhyJa = th && slackAt !== undefined ? `この地域の${dow}の下位10%は${slackAt}%以下。` : ''
+        if (tight) {
           const alt = h.id === 'fukui_station' ? market.hotels.find((x) => x.id === 'awara_onsen') : fukuiHotels
           out.push({
             id: `n3-${h.id}-${d}`,
@@ -189,13 +226,17 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             end: d * 24 + 23,
             title_en: `${h.name}: ${occ}% booked for ${nights}`,
             title_ja: `${h.name_ja}：${dayLabel(live, d, 'ja')}泊は${occ}%予約済み`,
-            reason_en: `Occupancy ${occ}% (${h.rooms_left[d]} rooms left) while demand at ${nm(reg, h.node, 'en')} is ${Math.round((ratio - 1) * 100)}% above normal.`,
-            reason_ja: `稼働率${occ}%（残り${h.rooms_left[d]}室）、${nm(reg, h.node, 'ja')}の需要は平常比+${Math.round((ratio - 1) * 100)}%。`,
+            reason_en: th && !th.demand_check
+              ? `Occupancy ${occ}% (${h.rooms_left[d]} rooms left).${tightWhy}`
+              : `Occupancy ${occ}% (${h.rooms_left[d]} rooms left) while demand at ${nm(reg, h.node, 'en')} is ${Math.round((ratio - 1) * 100)}% above normal.${tightWhy}`,
+            reason_ja: th && !th.demand_check
+              ? `稼働率${occ}%（残り${h.rooms_left[d]}室）。${tightWhyJa}`
+              : `稼働率${occ}%（残り${h.rooms_left[d]}室）、${nm(reg, h.node, 'ja')}の需要は平常比+${Math.round((ratio - 1) * 100)}%。${tightWhyJa}`,
             action_en: `Raise rates; redirect overflow to ${alt?.name ?? 'nearby hotels'} (${alt ? alt.rooms_left[d] : '?'} rooms left).`,
             action_ja: `料金を引き上げ、${alt?.name_ja ?? '近隣ホテル'}（残り${alt ? alt.rooms_left[d] : '?'}室）へ誘導。`,
             focus: [h.lat, h.lon],
           })
-        } else if (occ <= 40) {
+        } else if (slack) {
           out.push({
             id: `n3u-${h.id}-${d}`,
             loop: 3,
@@ -208,8 +249,8 @@ export function computeNudges(live: LiveData, market: MarketVoiceData | null, re
             end: d * 24 + 20,
             title_en: `${h.name}: only ${occ}% booked for ${nights}`,
             title_ja: `${h.name_ja}：${dayLabel(live, d, 'ja')}泊は${occ}%のみ`,
-            reason_en: `${h.rooms_left[d]} rooms free; ${nm(reg, h.node, 'en')} expects ${Math.round(daily[d]?.predicted ?? 0).toLocaleString()} day visitors (${ratio >= 1 ? 'at or above' : 'below'} normal).`,
-            reason_ja: `空室${h.rooms_left[d]}室、${nm(reg, h.node, 'ja')}の日帰り客は${Math.round(daily[d]?.predicted ?? 0).toLocaleString()}人の見込み。`,
+            reason_en: `${h.rooms_left[d]} rooms free; ${nm(reg, h.node, 'en')} expects ${Math.round(daily[d]?.predicted ?? 0).toLocaleString()} day visitors (${ratio >= 1 ? 'at or above' : 'below'} normal).${slackWhy}`,
+            reason_ja: `空室${h.rooms_left[d]}室、${nm(reg, h.node, 'ja')}の日帰り客は${Math.round(daily[d]?.predicted ?? 0).toLocaleString()}人の見込み。${slackWhyJa}`,
             action_en: 'Promote stay packages to day visitors and Kanazawa guests (dinner + room, late checkout).',
             action_ja: '日帰り客・金沢宿泊客に宿泊パッケージ（夕食付き・レイトチェックアウト）を訴求。',
             focus: [h.lat, h.lon],

@@ -118,6 +118,12 @@ jobs:
       - name: Validate real_data.json
         run: node scripts/check_data.mjs
 
+      # Loop #3's occupancy thresholds per hotel area, from the same master tables.
+      # Not fatal: without the file the app keeps the demo rule.
+      - name: Build hotel thresholds
+        continue-on-error: true
+        run: python scripts/build_hotel_thresholds.py --input "$OUT" --out public/data/hotel_thresholds.json
+
       # Publish to AWS (Go-live item 5). Runs only after the data validated, and
       # only when the repository variables are set, so nothing changes until the
       # dhde-dev-app-publisher role exists. The role trusts this repo's main
@@ -161,14 +167,14 @@ jobs:
       - name: Commit if changed
         id: commit
         run: |
-          if git diff --quiet -- public/data/real_data.json; then
-            echo "No change in real_data.json."
+          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json; then
+            echo "No change in real_data.json or hotel_thresholds.json."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/real_data.json
+          git add public/data/real_data.json public/data/hotel_thresholds.json
           git commit -m "data: daily real data $(TZ=Asia/Tokyo date +%F) (preprocessing $PREPROC_SHA)"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

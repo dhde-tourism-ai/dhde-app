@@ -14,7 +14,8 @@ import { buildMapNodes } from '../../lib/nodes'
 import { frameAt, timeLabel } from '../../lib/live'
 import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
 import { computeNudges, topPerDay } from '../../lib/nudges'
-import type { Nudge } from '../../lib/nudges'
+import type { HotelThresholds, Nudge } from '../../lib/nudges'
+import { useJsonResource } from '../../hooks/useJsonResource'
 import { useLang } from '../../lib/i18n'
 import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
@@ -216,7 +217,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
   const top = alerts ? topAlert(alerts) : null
   const day = Math.floor(t / 24)
-  const nudges = useMemo(() => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0) : []), [live, market, registry])
+  // Optional: without hotel_thresholds.json loop #3 keeps its demo rule.
+  const hotelThresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
+  const nudges = useMemo(
+    () => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, hotelThresholds) : []),
+    [live, market, registry, hotelThresholds],
+  )
   const nudgesShown = useMemo(() => (showAllNudges ? nudges : topPerDay(nudges, 3)), [nudges, showAllNudges])
   const nudgesFrom = useMemo(() => nudgesShown.filter((n) => n.day >= day), [nudgesShown, day])
   const nudgesFromAll = useMemo(() => nudges.filter((n) => n.day >= day).length, [nudges, day])
