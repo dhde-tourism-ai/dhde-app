@@ -14,6 +14,10 @@
    "node": "fukui_station",
    "feed": "FTAS reservations: Fukui Station",
    "rooms_total": 2350,
+   "hotels_in_feed": 3,
+   "serves": [
+    "fukui_station"
+   ],
    "occupancy_pct": [
     54,
     65,
@@ -78,6 +82,10 @@
    "node": "awara_onsen",
    "feed": "FTAS reservations: Awara",
    "rooms_total": 1180,
+   "hotels_in_feed": 10,
+   "serves": [
+    "awara_onsen"
+   ],
    "occupancy_pct": [
     47,
     61,
@@ -142,6 +150,12 @@
    "node": "tojinbo",
    "feed": "FTAS reservations: Echizen coast (regional)",
    "rooms_total": 640,
+   "hotels_in_feed": 8,
+   "serves": [
+    "tojinbo",
+    "katsuyama",
+    "eiheiji"
+   ],
    "occupancy_pct": [
     28,
     36,
@@ -206,6 +220,10 @@
    "node": "rainbow_line",
    "feed": "FTAS reservations: Mikata Five Lakes",
    "rooms_total": 520,
+   "hotels_in_feed": 3,
+   "serves": [
+    "rainbow_line"
+   ],
    "occupancy_pct": [
     30,
     42,

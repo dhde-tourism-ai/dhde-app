@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { Marker, Popup, Tooltip } from 'react-leaflet'
+import { Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import type { MarketVoiceData } from '../../../types/market'
 import type { MapNode } from '../../../lib/nodes'
+import type { RegistryNode } from '../../../types/nodes'
 import type { NodeFrame } from '../../../lib/live'
 import { escapeHtml, peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
@@ -41,9 +42,22 @@ function Bars({ items, unit = '%' }: { items: { label: string; value: number }[]
 }
 
 /* ---------------- Hotels ---------------- */
-export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number }) {
+/** "Area · 8 hotels · 3 sites": each badge is a whole FTAS feed, not one hotel or one site. */
+function areaLabel(n: number | undefined, sites: number, lang: 'en' | 'ja'): string {
+  const parts = [lang === 'ja' ? 'エリア' : 'Area']
+  if (n) parts.push(lang === 'ja' ? `${n}軒` : `${n} ${n === 1 ? 'hotel' : 'hotels'}`)
+  if (sites > 1) parts.push(lang === 'ja' ? `${sites}地点` : `${sites} sites`)
+  return parts.join(' · ')
+}
+
+export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: number; nodes: RegistryNode[] }) {
   const { t, lang } = useLang()
   const d = Math.min(data.days - 1, day)
+  const byId = useMemo(() => new Map(nodes.map((n) => [n.id as string, n])), [nodes])
+  const siteName = (id: string) => {
+    const n = byId.get(id)
+    return n ? t(n.name.replace(' East Entrance', ''), n.name_ja) : id
+  }
   const icons = useMemo(
     () =>
       Object.fromEntries(
@@ -51,7 +65,7 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
           h.id,
           L.divIcon({
             className: 'map-divicon',
-            html: `<div class="ov-badge ov-hotel"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 14)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div>`,
+            html: `<div class="ov-hotel-wrap"><div class="ov-badge ov-hotel"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 14)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="ov-area">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
             iconSize: [0, 0],
           }),
         ]),
@@ -60,6 +74,27 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
   )
   return (
     <>
+      {/* An area that stands for several sites (Echizen coast) links its badge to each of them. */}
+      {data.hotels.flatMap((h) =>
+        (h.serves ?? []).length > 1
+          ? (h.serves ?? []).flatMap((id) => {
+              const n = byId.get(id)
+              return n
+                ? [
+                    <Polyline
+                      key={`${h.id}-${id}`}
+                      positions={[
+                        [h.lat, h.lon],
+                        [n.lat, n.lon],
+                      ]}
+                      pathOptions={{ color: '#c9d4ff', weight: 1.5, dashArray: '3,6', opacity: 0.7 }}
+                      interactive={false}
+                    />,
+                  ]
+                : []
+            })
+          : [],
+      )}
       {data.hotels.map((h) => (
         <Marker key={h.id} position={[h.lat, h.lon]} icon={icons[h.id]} keyboard={false}>
           <Tip>
@@ -73,6 +108,16 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
                 {t('occupied that night', 'この日の稼働率')} · {h.rooms_left[d].toLocaleString('en-US')} / {h.rooms_total.toLocaleString('en-US')} {t('rooms left', '室空き')}
               </span>
             </div>
+            <div className="tt-kv">
+              <span>{t('Area, not one hotel: hotels in this feed', 'エリア全体（1軒ではない）：フィード内の施設数')}</span>
+              <b className="num">{h.hotels_in_feed ?? '?'}</b>
+            </div>
+            {(h.serves ?? []).length > 1 && (
+              <div className="tt-kv">
+                <span>{t('One regional feed for', '1つの広域フィードで対象')}</span>
+                <b>{(h.serves ?? []).map(siteName).join(', ')}</b>
+              </div>
+            )}
             {h.adr_yen?.[d] ? (
               <div className="tt-grid">
                 <span className="tt-k">{t('Average daily rate', '平均客室単価')}</span>

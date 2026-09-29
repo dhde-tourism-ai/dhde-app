@@ -289,6 +289,30 @@
   padding-left: 3px;
 }
 
+/* Hotel badge + "Area · N hotels" caption, centred on the area's point. */
+.ov-hotel-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.ov-hotel-wrap .ov-hotel {
+  position: static;
+  transform: none;
+}
+
+.ov-area {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(10, 17, 32, 0.78);
+  color: var(--text-2);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
 .ov-rsi {
   transform: translate(-50%, -50%);
   padding-left: 3px;
