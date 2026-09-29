@@ -98,7 +98,12 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
             )}
             <div className="tt-kv">
               <span>
-                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} km {t('with rooms (1/7/30 days)', 'で空室あり（1・7・30日先）')} <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} km {t('with rooms (1/7/30 days)', 'で空室あり（1・7・30日先）')}{' '}
+                {h.rakuten.real ? (
+                  <span className="tt-real" title={h.rakuten.real.as_of ? `${t('snapshot', 'スナップショット')} ${h.rakuten.real.as_of}` : undefined}>{t('Real', '実データ')}</span>
+                ) : (
+                  <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                )}
               </span>
               <b className="num">
                 {h.rakuten.share_with_rooms_pct.d1}% / {h.rakuten.share_with_rooms_pct.d7}% / {h.rakuten.share_with_rooms_pct.d30}%

@@ -25,7 +25,7 @@
  *   mergeMarket().
  */
 import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, DataSources } from '../types/live'
-import type { MarketVoiceData } from '../types/market'
+import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 
 export const PAST_DAYS = 7
@@ -50,12 +50,30 @@ const NUM_FIELDS: (keyof RealDaily)[] = [
   'gmb_directions',
   'gmb_rating',
   'gmb_review_change',
+  'reviews_new',
+  'reviews_stars_mean',
+  'reviews_stars_1',
+  'reviews_stars_2',
+  'reviews_stars_3',
+  'reviews_stars_4',
+  'reviews_stars_5',
+  'reviews_with_text',
+  'reviews_foreign',
+  'reviews_rating_total',
+  'reviews_count_total',
 ]
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
 const str = (v: unknown): string | null => (typeof v === 'string' ? v : null)
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+function parseRakuten(v: unknown): RealNode['rakuten'] {
+  if (!isObj(v) || !isObj(v.share_with_rooms_pct)) return null
+  const s = v.share_with_rooms_pct
+  const share = { d1: num(s.d1), d7: num(s.d7), d30: num(s.d30) }
+  return share.d1 === null && share.d7 === null && share.d30 === null ? null : { as_of: str(v.as_of), share_with_rooms_pct: share }
+}
 
 /** The model forecast block, or undefined when it's missing or has no usable day. */
 function parseForecast(f: unknown): RealForecast | undefined {
@@ -128,6 +146,7 @@ export function parseReal(raw: unknown): RealData | null {
       },
       daily: daily.sort((a, b) => a.date.localeCompare(b.date)),
       hotel_forward: fwd,
+      rakuten: parseRakuten(n.rakuten),
       forecast: parseForecast(n.forecast),
     }
   }
@@ -528,7 +547,16 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
   const padDay = <T,>(arr: T[], d: number): T => (d >= P ? arr[Math.min(arr.length - 1, d - P)] : arr[Math.min(arr.length - 1, (7 + d - P) % 7)])
 
   const hotelReal: string[] = []
-  const hotels = m.hotels.map((h) => {
+  // Real Rakuten shares for the node an area serves; a missing lead keeps its demo value.
+  const withRakuten = (h: HotelArea): HotelArea => {
+    const rk = real.nodes[h.node]?.rakuten
+    if (!rk) return h
+    const demo = h.rakuten.share_with_rooms_pct
+    const s = rk.share_with_rooms_pct
+    return { ...h, rakuten: { ...h.rakuten, share_with_rooms_pct: { d1: s.d1 ?? demo.d1, d7: s.d7 ?? demo.d7, d30: s.d30 ?? demo.d30 }, real: { as_of: rk.as_of } } }
+  }
+  const hotels = m.hotels.map((h0) => {
+    const h = withRakuten(h0)
     const rn = real.nodes[HOTEL_FEED[h.id]]
     if (!rn) {
       return { ...h, occupancy_pct: Array.from({ length: D }, (_, d) => padDay(h.occupancy_pct, d)), rooms_left: Array.from({ length: D }, (_, d) => padDay(h.rooms_left, d)) }

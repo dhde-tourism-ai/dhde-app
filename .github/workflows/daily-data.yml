@@ -4,6 +4,8 @@
 # public/data/real_data.json with scripts/build_real_data.py, validates it,
 # commits it to main when it changed and triggers the Pages deploy. No secrets:
 # sources that need keys (TomTom, Rakuten) report "not set" and the build goes on.
+# The history those keys collected (Rakuten, JARTIC, TomTom, Google reviews) is
+# read from the preprocessing repo's live-data branch, which needs no key.
 name: Daily data refresh
 
 on:
@@ -51,6 +53,17 @@ jobs:
           mkdir -p "$DHDE_WORKSPACE_ROOT"
           git clone --depth 1 --branch main https://github.com/dhde-tourism-ai/dhde-preprocessing-model.git "$PREPROC"
           echo "PREPROC_SHA=$(git -C "$PREPROC" rev-parse --short HEAD)" >> "$GITHUB_ENV"
+
+      # Saved history of the sources that can't be downloaded later (collected by
+      # dhde-preprocessing-model's collector workflows). Not fatal: without it those
+      # sources are left out, as before.
+      - name: Check out live-data
+        run: |
+          if git clone --depth 1 --branch live-data https://github.com/dhde-tourism-ai/dhde-preprocessing-model.git "$RUNNER_TEMP/live"; then
+            echo "DHDE_LIVE_DATA_ROOT=$RUNNER_TEMP/live" >> "$GITHUB_ENV"
+          else
+            echo "::warning::live-data branch not checked out; Rakuten, saved traffic and Google reviews are left out"
+          fi
 
       # weather.py caches JMA hourly data at {workspace_root}/jma_cache/{node}_hourly.csv;
       # a cold run backfills about 12 minutes per node.

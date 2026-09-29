@@ -22,7 +22,13 @@ export interface HotelArea {
   /** Booking curve for the busiest upcoming night: share booked N days ahead, vs last year. */
   booking_curve: { target_day: number; points: { days_ahead: number; booked_pct: number; last_year_pct: number }[] }
   /** Rakuten availability: share of hotels within radius_km with rooms left 1 / 7 / 30 days out. */
-  rakuten: { radius_km: number; hotels_checked: number; share_with_rooms_pct: { d1: number; d7: number; d30: number } }
+  rakuten: {
+    radius_km: number
+    hotels_checked: number
+    share_with_rooms_pct: { d1: number; d7: number; d30: number }
+    /** Set by the real-data merge when the shares come from Rakuten snapshots. */
+    real?: { as_of: string | null }
+  }
   /* ---- Added by the real-data merge. ---- */
   real_days?: boolean[]
   adr_yen?: (number | null)[]
