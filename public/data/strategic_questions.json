@@ -157,7 +157,7 @@
               "source": "入込数 令和7年: 1人当たり観光消費額単価, 合計 宿泊 (2024: ¥24,913). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
             },
             {
-              "label": "Overnight guests",
+              "label": "Overnight guest-nights",
               "baseline": 3.24,
               "current": 3.93,
               "target": 4.5,
@@ -2028,7 +2028,7 @@
             },
             {
               "id": "overnight",
-              "label": "All overnight guests",
+              "label": "All overnight guest-nights",
               "gap": 570430,
               "formula": "4.5M − 3.93M (2025)"
             }
