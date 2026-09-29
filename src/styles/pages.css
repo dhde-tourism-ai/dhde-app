@@ -1883,3 +1883,25 @@
 .funnel-hint {
   margin: var(--sp-3) 0 0;
 }
+
+/* Monthly forecast card (Q2): many series wrap onto more rows. */
+.seg.seg-wrap {
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.mf-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  margin: var(--sp-3) 0;
+  font-size: 12.5px;
+}
+
+.mf-facts dt {
+  color: var(--muted);
+}
+
+.mf-facts dd {
+  margin: 0;
+}

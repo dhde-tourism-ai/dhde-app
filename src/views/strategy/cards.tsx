@@ -9,6 +9,7 @@ import type {
   FunnelCard,
   HeatmapCard,
   IndicatorsCard,
+  MonthlyForecastCard,
   MonthlyShareCard,
   ProgressCard,
   StatCard,
@@ -21,6 +22,9 @@ import { fmtCompact, fmtYen, PENDING } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
 import { storeLayers, storePanelOpen } from '../map/layers'
 import type { LayerId } from '../map/layers'
+import { useJsonResource } from '../../hooks/useJsonResource'
+import { yearTotal } from '../../lib/monthly'
+import type { MonthlyForecastFile } from '../../types/monthly'
 
 const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
 const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
@@ -86,6 +90,8 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <DataTable card={card} />
     case 'builder':
       return <Builder card={card} />
+    case 'monthly_forecast':
+      return <MonthlyForecast card={card} />
   }
 }
 
@@ -328,6 +334,120 @@ function quietestRun(values: number[]): number {
     }
   }
   return best
+}
+
+const MODEL_LABEL: Record<string, [string, string]> = {
+  seasonal_naive: ['Same month last year', '前年同月'],
+  own_growth: ['Same month last year + its own recent growth', '前年同月＋直近の伸び'],
+  neighbour_growth: ['Same month last year + Ishikawa and Toyama growth', '前年同月＋石川・富山の伸び'],
+}
+
+/** 12-month forecast (F2) from monthly_forecast.json: actual months, forecast and range, and this year's expected total. */
+function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
+  const { t } = useLang()
+  const file = useJsonResource<MonthlyForecastFile>('monthly_forecast.json')
+  const [pick, setPick] = useState(card.series[0])
+  const offered = (file.data?.series ?? []).filter((x) => card.series.includes(x.id))
+  const s = offered.find((x) => x.id === pick) ?? offered[0]
+  if (file.isLoading) return <p className="muted small">{t('Loading…', '読み込み中…')}</p>
+  if (!s) return <p className="muted small">{t('The monthly forecast is not published yet.', '月次予測はまだ公開されていません。')}</p>
+
+  const rows = [
+    ...s.actual.map((a) => ({ month: a.month, actual: a.value as number | null, forecast: null as number | null, range: null as number[] | null })),
+    ...s.forecast.map((f) => ({ month: f.month, actual: null, forecast: f.predicted, range: f.low !== null && f.high !== null ? [f.low, f.high] : null })),
+  ]
+  // Join the dashed forecast line to the last actual month.
+  const lastActual = rows[s.actual.length - 1]
+  if (lastActual && s.forecast.length) lastActual.forecast = lastActual.actual
+  const year = s.data_through.slice(0, 4)
+  const total = yearTotal(s, year)
+  const unit = s.kind === 'guest_nights' ? t('guest-nights', '延べ宿泊者') : t('visitors', '来訪者')
+  const fmtN = (v: number) => Math.round(v).toLocaleString('en-US')
+
+  return (
+    <div>
+      <div className="seg seg-wrap" role="group" aria-label={t('Series', '系列')}>
+        {offered.map((x) => (
+          <button key={x.id} aria-pressed={x.id === s.id} onClick={() => setPick(x.id)}>
+            {t(x.label, x.label_ja)}
+          </button>
+        ))}
+      </div>
+      <div className="forecast-layout">
+        <div className="forecast-chart">
+          <div className="chart-key">
+            <span>
+              <i className="k-line" style={{ borderColor: S[0] }}></i>
+              {t('Actual', '実績')}
+            </span>
+            <span>
+              <i className="k-line dash" style={{ borderColor: S[1] }}></i>
+              {t('Forecast', '予測')}
+            </span>
+            <span>
+              <i className="k-band" style={{ background: 'rgba(217,89,38,.28)' }}></i>
+              {t('Likely range', '予測範囲')}
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
+              <CartesianGrid stroke="#1f2a3f" vertical={false} />
+              <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
+              <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={TIP}
+                formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
+              />
+              <Area dataKey="range" name={t('Likely range', '予測範囲')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
+              <Line dataKey="actual" name={t('Actual', '実績')} stroke={S[0]} strokeWidth={2} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
+              <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="next7">
+          <h4 className="mini-h">{t(`Expected in ${year}`, `${year}年の見込み`)}</h4>
+          {total ? (
+            <>
+              <div className="stat-value num">{fmtN(total.total)}</div>
+              {total.low !== null && total.high !== null && (
+                <p className="muted small num">
+                  {t('Range', '範囲')} {fmtN(total.low)}–{fmtN(total.high)}
+                </p>
+              )}
+              <p className="muted small">
+                {t(
+                  `${unit}: ${total.actualMonths} actual months (${fmtN(total.actualSum)}) plus the forecast for the other ${12 - total.actualMonths}.`,
+                  `${unit}：実績${total.actualMonths}か月（${fmtN(total.actualSum)}）＋残り${12 - total.actualMonths}か月の予測。`,
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="muted small">{t('Not enough months for this year yet.', '今年の月数がまだ足りません。')}</p>
+          )}
+          <dl className="mf-facts">
+            <dt>{t('Model', 'モデル')}</dt>
+            <dd>{MODEL_LABEL[s.model] ? t(MODEL_LABEL[s.model][0], MODEL_LABEL[s.model][1]) : s.model}</dd>
+            <dt>{t('Typical error', '典型的な誤差')}</dt>
+            <dd className="num">{s.backtest_mape_pct !== null ? `${s.backtest_mape_pct}%` : PENDING}</dd>
+            <dt>{t('Data to', 'データ')}</dt>
+            <dd className="num">{s.data_through}</dd>
+          </dl>
+          {s.range_rough && <p className="muted small">{t('The range is rough: fewer than 12 months to test the model on.', '範囲は目安です：検証できる月が12か月未満。')}</p>}
+          {s.kind === 'visitors' && (
+            <p className="muted small">
+              {t(
+                "Visitor counts are comparable from Jan 2025 only (the publisher revised its method). They are JTTA's digital tourism statistics, which count differently from the prefecture's official visitor total in Q1 (21.44M in 2025), so the two don't match.",
+                '来訪者数は2025年1月以降のみ比較可能（公表元の手法改定）。日本観光振興協会のデジタル観光統計で、Q1の県公式の観光客入込数（2025年2,144万人）とは数え方が異なるため一致しません。',
+              )}
+            </p>
+          )}
+          <p className="muted small">
+            {t('Source', '出典')}: {s.kind === 'visitors' ? t('JTTA digital tourism statistics', '日本観光振興協会 デジタル観光統計') : t('JTA accommodation survey', '観光庁 宿泊旅行統計調査')}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function MonthlyShare({ card }: { card: MonthlyShareCard }) {

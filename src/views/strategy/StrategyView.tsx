@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
+import { useJsonResource } from '../../hooks/useJsonResource'
+import { withMeasuredShares } from '../../lib/monthly'
+import type { MonthlyForecastFile } from '../../types/monthly'
 import '../../styles/pages.css'
 
 /**
@@ -16,6 +19,8 @@ export default function StrategyView({ data, focus }: { data: StrategicQuestions
   const [showSpecs, setShowSpecs] = useState(false)
   const [activeQ, setActiveQ] = useState(data.questions[0]?.id)
   const { meta, equation } = data
+  const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
+  const questions = useMemo(() => withMeasuredShares(data.questions, monthly), [data.questions, monthly])
 
   // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.
   useEffect(() => {
@@ -118,7 +123,7 @@ export default function StrategyView({ data, focus }: { data: StrategicQuestions
         ))}
       </nav>
 
-      {data.questions.map((q) => (
+      {questions.map((q) => (
         <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
       ))}
 
