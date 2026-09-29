@@ -5,7 +5,7 @@ import type { SourceInfo } from '../../types/live'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { computeNudges, PRIORITY, priorityOf } from '../../lib/nudges'
 import type { HotelThresholds } from '../../lib/nudges'
-import { dailyArrivals, dayLabel } from '../../lib/live'
+import { dayLabel } from '../../lib/live'
 import { fmtDate } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
 import { Icon } from '../../components/icons'
@@ -41,26 +41,37 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const registry = data.registry.data
   const thresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
 
+  const real = data.merged?.real ?? null
+  const shared = real?.shared_date ?? null
   // The latest day every node has real data for (the map's "observed" edge), and the day after it.
   const lastDay = live ? Math.floor(live.observed_until / 24) : 0
   const nextDay = Math.min(lastDay + 1, (live?.days.length ?? 1) - 1)
+  const nextDate = live?.days[nextDay]?.date ?? null
 
+  // Only real numbers: the measured day from real_data.json and the model's own forecast
+  // for the next day. The model starts the day after the shared date, so there is no
+  // model forecast for the measured day to compare against.
   const sites = useMemo(() => {
     if (!live) return []
     return Object.keys(live.nodes).map((id) => {
       const reg = registry?.nodes.find((n) => n.id === id || n.aliases?.includes(id))
-      const days = dailyArrivals(live, id)
+      const rn = real?.nodes[id]
+      const fc = rn?.forecast?.days.find((x) => x.date === nextDate && !x.week_ahead_missing)
       return {
         id,
         name: reg?.name.replace(' East Entrance', '') ?? id,
         name_ja: reg?.name_ja ?? id,
         noEstimate: Boolean(live.node_meta?.[id]?.no_estimate),
-        actual: days[lastDay]?.actualSoFar ?? null,
-        forecast: days[lastDay]?.predicted ?? null,
-        next: days[nextDay]?.predicted ?? null,
+        measured: rn?.daily.find((r) => r.date === shared)?.visitors_est ?? null,
+        forecast: fc?.visitors_est ?? null,
+        lo: fc?.visitors_lo ?? null,
+        hi: fc?.visitors_hi ?? null,
+        wape: rn?.forecast?.backtest_wape ?? null,
+        hasModel: Boolean(rn?.forecast?.days.length),
       }
     })
-  }, [live, registry, lastDay, nextDay])
+  }, [live, registry, real, shared, nextDate])
+  const wapes = sites.filter((s) => s.forecast !== null && s.wape !== null).map((s) => s.wape as number)
 
   const actions = useMemo(() => {
     if (!live) return []
@@ -80,7 +91,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const behind = targets.filter((r) => r.behind)
 
   const sources = Object.entries(live?.sources ?? {}).filter((e): e is [string, SourceInfo] => Boolean(e[1]))
-  const shared = data.merged?.real?.shared_date ?? null
+  const fmt = (v: number | null) => (v === null ? '–' : Math.round(v).toLocaleString('en-US'))
 
   if (data.live.isLoading || data.realLoading) return <Loading what={t('Loading summary…', '概要を読み込み中…')} />
 
@@ -111,9 +122,9 @@ export default function SummaryView({ data }: { data: ProductData }) {
 
       <div className="card-grid">
         <section className="s-card sum-visitors" style={{ ['--span' as string]: 7 }}>
-          <h2 className="card-title">{t('Visitors vs forecast', '来訪者数と予測')}</h2>
+          <h2 className="card-title">{t('Visitors and forecast', '来訪者数と予測')}</h2>
           <p className="card-sub">
-            {live && t(`Latest measured day against its forecast, then the next day's forecast. Six sites.`, `直近の実測日と予測の比較、翌日の予測（6地点）。`)}
+            {t("Visitors on the latest measured day, and the FTAS model's forecast for the next day with its likely range. Six sites.", '直近の実測日の来訪者数と、翌日のFTASモデル予測（予測範囲付き）。6地点。')}
           </p>
           <div className="sum-table-wrap">
             <table className="sum-table num">
@@ -121,35 +132,46 @@ export default function SummaryView({ data }: { data: ProductData }) {
                 <tr>
                   <th>{t('Site', '地点')}</th>
                   <th>{t('Measured', '実測')} {live && dayLabel(live, lastDay, lang, true)}</th>
-                  <th>{t('Forecast', '予測')}</th>
-                  <th>{t('Difference', '差')}</th>
                   <th>{t('Forecast', '予測')} {live && dayLabel(live, nextDay, lang, true)}</th>
+                  <th>{t('Likely range', '予測範囲')}</th>
                 </tr>
               </thead>
               <tbody>
-                {sites.map((s) => {
-                  const diff = s.actual !== null && s.forecast ? (s.actual - s.forecast) / s.forecast : null
-                  return (
-                    <tr key={s.id}>
-                      <th scope="row">{t(s.name, s.name_ja)}</th>
-                      {s.noEstimate ? (
-                        <td colSpan={3} className="sum-muted" title={t('No official visitor count to scale the camera signal to.', 'カメラ信号を換算する公式来訪者数がありません。')}>
-                          {t('No official count yet', '公式値なし')}
-                        </td>
-                      ) : (
-                        <>
-                          <td>{s.actual !== null ? Math.round(s.actual).toLocaleString('en-US') : '–'}</td>
-                          <td>{s.forecast !== null ? Math.round(s.forecast).toLocaleString('en-US') : '–'}</td>
-                          <td className={diff === null ? '' : diff >= 0 ? 'sum-up' : 'sum-down'}>{diff === null ? '–' : `${diff >= 0 ? '+' : ''}${Math.round(diff * 100)}%`}</td>
-                        </>
-                      )}
-                      <td>{s.noEstimate || s.next === null ? '–' : Math.round(s.next).toLocaleString('en-US')}</td>
-                    </tr>
-                  )
-                })}
+                {sites.map((s) => (
+                  <tr key={s.id}>
+                    <th scope="row">{t(s.name, s.name_ja)}</th>
+                    {s.noEstimate ? (
+                      <td colSpan={3} className="sum-muted" title={t('No official visitor count to scale the camera signal to.', 'カメラ信号を換算する公式来訪者数がありません。')}>
+                        {t('No official count yet', '公式値なし')}
+                      </td>
+                    ) : (
+                      <>
+                        <td>{fmt(s.measured)}</td>
+                        {s.hasModel ? (
+                          <>
+                            <td>{fmt(s.forecast)}</td>
+                            <td className="sum-muted">{s.lo !== null && s.hi !== null ? `${fmt(s.lo)}–${fmt(s.hi)}` : '–'}</td>
+                          </>
+                        ) : (
+                          <td colSpan={2} className="sum-muted">
+                            {t('No model forecast yet', 'モデル予測なし')}
+                          </td>
+                        )}
+                      </>
+                    )}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+          {wapes.length > 0 && (
+            <p className="card-sub">
+              {t(
+                `In tests over past weeks the model was typically off by ${Math.round(Math.min(...wapes) * 100)}–${Math.round(Math.max(...wapes) * 100)}% a day, depending on the site.`,
+                `過去数週間のテストでは、予測の誤差は地点により1日あたり約${Math.round(Math.min(...wapes) * 100)}〜${Math.round(Math.max(...wapes) * 100)}%でした。`,
+              )}
+            </p>
+          )}
         </section>
 
         <section className="s-card sum-targets" style={{ ['--span' as string]: 5 }}>
