@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ProductData } from '../../hooks/useProductData'
-import type { ProgressCard } from '../../types/strategy'
+import type { ProgressCard, StrategyCard } from '../../types/strategy'
 import type { SourceInfo } from '../../types/live'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { computeNudges, PRIORITY, priorityOf } from '../../lib/nudges'
@@ -12,10 +12,26 @@ import { Icon } from '../../components/icons'
 import { SourceBadge } from '../../components/SourceBadge'
 import { Loading } from '../../components/StateMsg'
 import { KddiPending } from '../../components/KddiPending'
+import { StatusPill } from '../../components/StatusPill'
 import { LAYERS } from '../map/layers'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
+
+/** The five government questions: Japanese titles (strategic_questions.json is English only) and the chart each FAQ opens. */
+const FAQ: Record<string, { ja: string; chart: string }> = {
+  q1: { ja: '観光は福井の経済にどれだけの価値があるか？', chart: 'q1-progress' },
+  q2: { ja: '来訪者の流れをどう予測するか？', chart: 'q2-f1' },
+  q3: { ja: 'どの来訪者が最も価値をもたらすか？', chart: 'q3-spend' },
+  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-funnel' },
+  q5: { ja: 'どの投資が最も効果的か？', chart: 'q5-returns' },
+}
+
+/** A card's source line split into text and its first link. */
+function splitSource(src: string): { text: string; url: string | null } {
+  const url = src.match(/https?:\/\/\S+/)?.[0] ?? null
+  return { text: (url ? src.replace(url, '') : src).trim(), url }
+}
 
 /** Screens built ahead of the KDDI purchase, and where each will appear. */
 const KDDI_SCREENS: { en: string; ja: string; where_en: string; where_ja: string }[] = [
@@ -257,6 +273,57 @@ export default function SummaryView({ data }: { data: ProductData }) {
               )
             })}
           </ul>
+        </section>
+
+        <section className="s-card sum-faq" style={{ ['--span' as string]: 12 }}>
+          <h2 className="card-title">{t('Frequently asked questions', 'よくある質問')}</h2>
+          <p className="card-sub">{t("The government's five questions. Open one for today's answer, its chart and where the data comes from.", '行政の5つの質問。開くと現時点の回答、グラフ、データの出典を表示します。')}</p>
+          {(data.strategy.data?.questions ?? []).map((q) => {
+            const cards: StrategyCard[] = q.cards
+            const chart = cards.find((c) => c.id === FAQ[q.id]?.chart) ?? cards[0]
+            const src = chart?.source ?? cards.find((c) => c.source)?.source
+            const source = src ? splitSource(src) : null
+            return (
+              <details key={q.id} className="faq">
+                <summary>
+                  <span className="q-num">Q{q.number}</span>
+                  {t(q.title, FAQ[q.id]?.ja ?? q.title)}
+                </summary>
+                <div className="faq-body">
+                  <p lang="en">{q.answer}</p>
+                  {lang === 'ja' && <p className="card-sub">回答は現在英語のみです。</p>}
+                  {chart && (
+                    <div className="faq-chart">
+                      <StatusPill status={chart.status} />
+                      <span className="faq-chart-title">{chart.title}</span>
+                      <a className="btn btn-ghost" href={`#/strategy/${chart.id}`}>
+                        {t('Open the chart', 'グラフを開く')} <Icon name="chevron" size={12} />
+                      </a>
+                    </div>
+                  )}
+                  <p className="faq-source">
+                    <span className="s-k">{t('Data source', 'データ出典')}:</span>{' '}
+                    {source ? (
+                      <>
+                        {source.text}{' '}
+                        {source.url && (
+                          <a href={source.url} target="_blank" rel="noreferrer">
+                            {t('Open source', '出典を開く')} <Icon name="external" size={11} />
+                          </a>
+                        )}
+                      </>
+                    ) : chart?.pending_on ? (
+                      t(`Pending on ${chart.pending_on}.`, `${chart.pending_on}待ち。`)
+                    ) : chart?.status === 'illustrative' ? (
+                      t('No published source yet; this chart is illustrative.', '公表された出典はまだありません。このグラフは例示です。')
+                    ) : (
+                      t('See the inputs and notes on the chart.', 'グラフ上の入力値と注記を参照。')
+                    )}
+                  </p>
+                </div>
+              </details>
+            )
+          })}
         </section>
 
         <section className="s-card sum-kddi" style={{ ['--span' as string]: 12 }}>

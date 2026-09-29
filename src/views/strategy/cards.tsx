@@ -28,7 +28,7 @@ const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', b
 export function StrategyCardView({ card }: { card: StrategyCard }) {
   const { t } = useLang()
   return (
-    <article className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
+    <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
       <header className="s-card-head">
         <h3>{card.title}</h3>
         <StatusPill status={card.status} />

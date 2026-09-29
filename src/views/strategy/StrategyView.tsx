@@ -11,11 +11,22 @@ import '../../styles/pages.css'
  * The five strategic questions as dashboard components. Layout only: every
  * number comes from public/data/strategic_questions.json.
  */
-export default function StrategyView({ data }: { data: StrategicQuestions }) {
+export default function StrategyView({ data, focus }: { data: StrategicQuestions; focus?: string }) {
   const { t } = useLang()
   const [showSpecs, setShowSpecs] = useState(false)
   const [activeQ, setActiveQ] = useState(data.questions[0]?.id)
   const { meta, equation } = data
+
+  // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.
+  useEffect(() => {
+    if (!focus) return
+    const el = document.getElementById(focus)
+    if (!el) return
+    el.scrollIntoView({ block: 'center' })
+    el.classList.add('flash')
+    const id = window.setTimeout(() => el.classList.remove('flash'), 1800)
+    return () => window.clearTimeout(id)
+  }, [focus])
 
   // Scroll-spy for the sticky question nav.
   useEffect(() => {
