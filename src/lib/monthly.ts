@@ -53,3 +53,9 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
     }),
   }))
 }
+
+/** A fully measured calendar year's total, or null if a month is missing. */
+export function measuredYear(s: MonthlySeries, year: string): number | null {
+  const months = s.actual.filter((a) => a.month.startsWith(year))
+  return months.length === 12 ? months.reduce((a, b) => a + b.value, 0) : null
+}

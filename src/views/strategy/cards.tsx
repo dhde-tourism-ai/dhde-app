@@ -23,7 +23,7 @@ import { useLang } from '../../lib/i18n'
 import { storeLayers, storePanelOpen } from '../map/layers'
 import type { LayerId } from '../map/layers'
 import { useJsonResource } from '../../hooks/useJsonResource'
-import { yearTotal } from '../../lib/monthly'
+import { measuredYear, yearTotal } from '../../lib/monthly'
 import type { MonthlyForecastFile } from '../../types/monthly'
 
 const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
@@ -361,6 +361,12 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
   if (lastActual && s.forecast.length) lastActual.forecast = lastActual.actual
   const year = s.data_through.slice(0, 4)
   const total = yearTotal(s, year)
+  const prevYear = String(Number(year) - 1)
+  const prev = measuredYear(s, prevYear)
+  const pct = (v: number) => {
+    const p = Math.round(((v - prev!) / prev!) * 1000) / 10
+    return `${p >= 0 ? '+' : ''}${p}%`
+  }
   const unit = s.kind === 'guest_nights' ? t('guest-nights', '延べ宿泊者') : t('visitors', '来訪者')
   const fmtN = (v: number) => Math.round(v).toLocaleString('en-US')
 
@@ -412,6 +418,17 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
               {total.low !== null && total.high !== null && (
                 <p className="muted small num">
                   {t('Range', '範囲')} {fmtN(total.low)}–{fmtN(total.high)}
+                </p>
+              )}
+              {prev !== null && (
+                <p className="mf-vs num">
+                  {t(`vs ${prevYear}: ${fmtN(prev)}`, `${prevYear}年：${fmtN(prev)}`)} <strong className={total.total >= prev ? 'sum-up' : 'sum-down'}>{pct(total.total)}</strong>
+                  {total.low !== null && total.high !== null && (
+                    <span className="muted small">
+                      {' '}
+                      ({t('range', '範囲')} {pct(total.low)} {t('to', '〜')} {pct(total.high)})
+                    </span>
+                  )}
                 </p>
               )}
               <p className="muted small">

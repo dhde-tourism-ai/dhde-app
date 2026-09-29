@@ -1905,3 +1905,9 @@
 .mf-facts dd {
   margin: 0;
 }
+
+.mf-vs {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
