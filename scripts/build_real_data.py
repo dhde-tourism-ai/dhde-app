@@ -10,28 +10,42 @@ it replaces the demo value, everywhere else the demo stays (and keeps its
 
 Visitor estimates
 -----------------
-No node counts unique visitors directly. Camera "count" is detections (about
-9x the prefecture's official annual figure at Tojinbo), Rainbow Line counts
-vehicles, Katsuyama has museum bookings, Awara and Eiheiji only proxies. So
-each node's daily signal is scaled so its 2025 total equals the prefecture's
-official 2025 visitor count for that site (観光客入込数, 2025 edition):
+No node counts unique visitors directly: Tojinbo and Fukui Station count
+camera detections, Rainbow Line cars at the summit car parks, Katsuyama
+museum bookings, Awara Onsen hotel guests, Eiheiji only a proxy. Each node's
+signal is the measure its 7-day forecast predicts (FORECAST_SIGNAL), so
+history and forecast share one unit, and is turned into visitors with one
+factor per node:
 
-    visitors_est[d] = signal[d] * official_2025 / sum(signal over 2025)
+    visitors_est[d] = signal[d] * factor
 
-Status "modelled". Nodes without an official figure (Fukui Station) keep the
-raw signal only and visitors_est stays null.
+With --calibration (dhde-preprocessing-model's calibration_check.csv, from
+scripts/check_calibration.py) the factor is the pipeline's: official visitors
+over the node's own official period (the museum's FY2025 entries for
+Katsuyama), divided by the mean daily signal in that period times its days.
+See docs/calibration.md there. Without it, or for a node it has no factor
+for (Eiheiji), the fallback scales the signal's 2025 total to the
+prefecture's 2025 count (観光客入込数). Status "modelled".
+
+A calibration problem never stops the refresh: an unreadable file or a
+renamed column drops the pipeline factors for every node, and a pipeline
+factor outside FACTOR_BOUNDS drops it for that node; either way those nodes
+use the 2025-sum fallback and the reason goes into the notes.
+
+Fukui Station has no official site figure, so it keeps the raw signal and
+visitors_est stays null. Every node also gets signal_index_pct: the day's
+signal as a % of the node's mean 2025 day, a unit-free "how busy" figure.
 
 7-day forecast
 --------------
 With --forecast (dhde-preprocessing-model's forecast_fukui.csv, from
 scripts/build_forecast.py), each node gets a "forecast" block: the model's
 prediction and low/high range for the next 7 days, in the node's own signal
-and in visitors, plus its backtest error. Visitors use this file's own
-calibration factor (the same one as the history), so the forecast joins the
-observed line without a jump. A node is skipped when the model forecasts a
-different measure than the app's signal for it (Awara: the model forecasts
-hotel guests, the app shows the nearest-camera proxy); the app then keeps its
-naive same-weekday forecast there.
+and in visitors, plus its backtest error. Visitors use the same factor as the
+history, so the forecast joins the observed line without a jump. A node is
+skipped when the model forecasts a different measure than the app's signal
+for it (only when that node's forecast column is empty in its table); the
+app then keeps its naive same-weekday forecast there.
 
 A forecast problem never stops the refresh: an unreadable file or a renamed
 column drops the forecast for every node, and a bad row (no prediction, or a
@@ -70,7 +84,8 @@ OFFICIAL_2025 = {
 }
 OFFICIAL_SOURCE = "Fukui Pref. 観光客入込数 2025 (released 12 Jun 2026)"
 
-# Which column carries each node's daily visitor signal, in order of preference.
+# Which column carries each node's daily visitor signal, in order of preference,
+# for nodes without a FORECAST_SIGNAL (or whose forecast column is empty).
 SIGNALS = [
     ("count", "camera"),
     ("vehicles", "vehicles"),                 # derived: sum of *_vehicle_count
@@ -78,16 +93,29 @@ SIGNALS = [
     ("proxy_camera_count", "proxy_camera"),
     ("proxy_survey_count", "proxy_survey"),
 ]
+MEASURE_OF = {**dict(SIGNALS), "n_people": "hotel_guests"}
+
+# How each measure reads in a method line: (label, label_ja, unit, unit_ja).
+MEASURE_TEXT = {
+    "camera": ("camera detections", "カメラ検知数", "detection", "検知"),
+    "vehicles": ("cars at the summit car parks", "山頂駐車場の車両数", "car", "台"),
+    "reservations": ("museum bookings", "博物館の予約数", "booking", "予約"),
+    "hotel_guests": ("guests at the hotels in the feed", "対象ホテルの宿泊者数", "guest", "人"),
+    "proxy_camera": ("nearest-camera proxy", "近隣カメラの代理指標", "detection", "検知"),
+    "proxy_survey": ("survey proxy", "アンケート代理指標", "response", "件"),
+}
 
 # How far one unit of signal is from one visitor, per measure. Survey proxies
 # are sparse (a response stands for hundreds of visitors), so they get a wide
 # bound and low confidence rather than being dropped.
 FACTOR_BOUNDS = {
-    "camera": (0.01, 10), "vehicles": (0.1, 20), "reservations": (0.5, 10),
+    "camera": (0.01, 10), "vehicles": (0.1, 20), "reservations": (0.5, 10), "hotel_guests": (0.5, 10),
     "proxy_camera": (0.01, 50), "proxy_survey": (1, 5000),
 }
+# hotel_guests is low: only the 10 hotels in the Awara feed, and their season
+# follows the onsen, not the town's day trips (corr 0.55, docs/calibration.md).
 CONFIDENCE = {
-    "camera": "medium", "vehicles": "medium", "reservations": "high",
+    "camera": "medium", "vehicles": "medium", "reservations": "high", "hotel_guests": "low",
     "proxy_camera": "low", "proxy_survey": "low",
 }
 
@@ -122,8 +150,9 @@ FORECAST_SIGNAL = {
     "awara_onsen": "n_people",
 }
 
+# "visitors" is the node's own signal column (set in node_block), so a hotel
+# feed's later dates can't make a camera node look more up to date than it is.
 AS_OF_GROUPS = {
-    "visitors": ["count", "vehicles", "reserved_visitors", "proxy_camera_count", "proxy_survey_count"],
     "weather": ["temp", "precip"],
     "traffic": ["volume_total"],
     "hotel": ["occ"],
@@ -156,7 +185,43 @@ def last_date(m: pd.DataFrame, cols: list[str], today: pd.Timestamp) -> str | No
     return max(dates).date().isoformat() if dates else None
 
 
-def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp) -> dict:
+def period_label(period: list[str] | None) -> tuple[str, str]:
+    """Official period -> ("2025", "2025年") / ("FY2025", "2025年度") / a date range."""
+    if not period:
+        return "2025", "2025年"
+    start, end = period
+    if start[5:] == "01-01" and end[5:] == "12-31" and start[:4] == end[:4]:
+        return start[:4], f"{start[:4]}年"
+    if start[5:] == "04-01" and end[5:] == "03-31" and int(end[:4]) == int(start[:4]) + 1:
+        return f"FY{start[:4]}", f"{start[:4]}年度"
+    return f"{start} to {end}", f"{start}〜{end}"
+
+
+def method_text(measure: str, factor: float, official: float, period: tuple[str, str]) -> tuple[str, str]:
+    """One line saying how the signal became visitors, e.g. for Rainbow Line
+    "cars at the summit car parks x 6.98 visitors per car (official 443,000, 2025)"."""
+    label, label_ja, unit, unit_ja = MEASURE_TEXT.get(measure, (measure, measure, "unit", "単位"))
+    if factor >= 1:
+        rate, rate_ja = f"x {factor:.2f} visitors per {unit}", f"1{unit_ja}あたり{factor:.2f}人"
+    else:
+        rate, rate_ja = f"/ {1 / factor:.2f} {unit}s per visitor", f"1人あたり{1 / factor:.2f}{unit_ja}"
+    return (f"{label} {rate} (official {official:,.0f}, {period[0]})",
+            f"{label_ja}、{rate_ja}（公式値{official:,.0f}人・{period[1]}）")
+
+
+def pick_signal(node: str, m: pd.DataFrame) -> tuple[str | None, str | None]:
+    """(signal column, measure): the forecast's column where it has data, else SIGNALS in order."""
+    col = FORECAST_SIGNAL.get(node)
+    if col and col in m.columns and m[col].notna().any():
+        return col, MEASURE_OF.get(col, col)
+    for col, kind in SIGNALS:
+        if col in m.columns and m[col].notna().any():
+            return col, kind
+    return None, None
+
+
+def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: dict | None = None,
+               notes: list[str] | None = None) -> dict:
     m = m.copy()
     m["date"] = pd.to_datetime(m["date"]).dt.normalize()
     m = m.drop_duplicates("date").sort_values("date")
@@ -164,24 +229,43 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp) -> dict:
     if veh:
         m["vehicles"] = m[veh].sum(axis=1, min_count=1)
 
-    signal_col, measure = None, None
-    for col, kind in SIGNALS:
-        if col in m.columns and m[col].notna().any():
-            signal_col, measure = col, kind
-            break
+    signal_col, measure = pick_signal(node, m)
 
     calib = {"official_annual_2025": OFFICIAL_2025.get(node), "signal_sum_2025": None,
-             "factor": None, "source": OFFICIAL_SOURCE, "status": "none"}
+             "factor": None, "source": OFFICIAL_SOURCE, "status": "none", "method": "none"}
+    typical = None
     if signal_col:
         y25 = m[(m["date"] >= "2025-01-01") & (m["date"] <= "2025-12-31")][signal_col]
         total = float(y25.sum()) if y25.notna().any() else 0.0
         calib["signal_sum_2025"] = round(total)
         calib["signal_days_2025"] = int(y25.notna().sum())
-        if OFFICIAL_2025.get(node) and total > 0 and y25.notna().sum() >= 300:
-            calib["factor"] = OFFICIAL_2025[node] / total
+        typical = float(y25.mean()) if y25.notna().sum() >= 300 and y25.mean() > 0 else None
+        pc = pipeline_calib or {}
+        lo, hi = FACTOR_BOUNDS.get(measure, (0.001, 100))
+        if pc.get("factor") and not lo < pc["factor"] < hi:
+            if notes is not None:
+                notes.append(f"{node}: pipeline calibration factor {pc['factor']} is outside {lo} to {hi} for "
+                             f"{measure}, so it uses the 2025-sum fallback")
+            pc = {}
+        if pc.get("factor"):
+            calib["factor"] = pc["factor"]
+            calib["official_annual_2025"] = pc["official_visitors"]
+            calib["official_period"] = pc["official_period"]
+            calib["source"] = pc["source"]
             calib["status"] = "modelled"
+            calib["method"] = "pipeline"
+        elif OFFICIAL_2025.get(node) and total > 0 and y25.notna().sum() >= 300:
+            calib["factor"] = OFFICIAL_2025[node] / total
+            calib["official_period"] = ["2025-01-01", "2025-12-31"]
+            calib["status"] = "modelled"
+            calib["method"] = "app_2025_sum"
         elif OFFICIAL_2025.get(node):
             calib["status"] = "insufficient_2025_signal"
+    if calib["factor"]:
+        period = period_label(calib.get("official_period"))
+        calib["official_period_label"], calib["official_period_label_ja"] = period
+        calib["method_text"], calib["method_text_ja"] = method_text(
+            measure, calib["factor"], calib["official_annual_2025"], period)
 
     hist = m[(m["date"] > today - pd.Timedelta(days=HISTORY_DAYS)) & (m["date"] <= today)]
     daily = []
@@ -190,6 +274,7 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp) -> dict:
         sig = clean(r[signal_col]) if signal_col else None
         rec["signal"] = sig
         rec["visitors_est"] = (round(sig * calib["factor"]) if sig is not None and calib["factor"] else None)
+        rec["signal_index_pct"] = round(sig / typical * 100) if sig is not None and typical else None
         for src, dst in DAILY_FIELDS.items():
             if src in m.columns:
                 rec[dst] = clean(r[src])
@@ -210,7 +295,8 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp) -> dict:
         "measure": measure,
         "signal_column": signal_col,
         "calibration": {k: (round(v, 6) if isinstance(v, float) else v) for k, v in calib.items()},
-        "as_of": {g: last_date(m, cols, today) for g, cols in AS_OF_GROUPS.items()},
+        "as_of": {"visitors": last_date(m, [signal_col], today) if signal_col else None,
+                  **{g: last_date(m, cols, today) for g, cols in AS_OF_GROUPS.items()}},
         "daily": daily,
         "hotel_forward": hotel_forward,
     }
@@ -263,6 +349,35 @@ def forecast_block(node: str, block: dict, fc: pd.DataFrame, report: dict) -> tu
     }, None
 
 
+def load_calibration(path: Path, notes: list[str]) -> dict[str, dict]:
+    """{node: factor, official visitors, period, source} from calibration_check.csv.
+
+    Never fatal: a missing, unreadable or renamed-column file gives {} with a
+    note, and every node falls back to the 2025 sum.
+    """
+    fallback = "visitors scaled to the prefecture's 2025 counts"
+    if not path.exists():
+        notes.append(f"calibration file not found ({path.name}); {fallback}")
+        return {}
+    try:
+        rows = pd.read_csv(path).to_dict("records")
+        out = {}
+        for r in rows:
+            factor, official = clean(r.get("factor")), clean(r.get("official_visitors"))
+            if not factor or not official:
+                continue
+            try:
+                period = json.loads(str(r.get("official_period")).replace("'", '"'))
+            except ValueError:
+                period = None
+            out[str(r["node_key"])] = {"factor": float(r["factor"]), "official_visitors": official, "official_period": period,
+                                       "source": f"dhde-preprocessing-model calibration check ({r.get('measured', '')})"}
+    except Exception as e:  # noqa: BLE001 - a bad calibration file must not stop the refresh
+        notes.append(f"calibration file unreadable ({path.name}: {type(e).__name__}: {e}); {fallback}")
+        return {}
+    return out
+
+
 def validate(payload: dict) -> list[str]:
     errs = []
     nodes = payload.get("nodes", {})
@@ -286,14 +401,18 @@ def main() -> int:
     ap.add_argument("--source-commit", default=None, help="dhde-preprocessing-model commit the tables came from")
     ap.add_argument("--forecast", help="forecast_fukui.csv from build_forecast.py (optional; its report JSON is read "
                                        "from the same folder)")
+    ap.add_argument("--calibration", help="calibration_check.csv from check_calibration.py (optional; without it "
+                                          "visitors are scaled to the prefecture's 2025 counts)")
     a = ap.parse_args()
 
     today = pd.Timestamp(a.today) if a.today else pd.Timestamp(datetime.now(JST).date())
+    calib_notes = []
+    pipeline_calib = load_calibration(Path(a.calibration).expanduser(), calib_notes) if a.calibration else {}
     files = sorted(Path(a.input).expanduser().glob("*_master.parquet"))
     nodes = {}
     for f in files:
         node = f.name.replace("_master.parquet", "")
-        nodes[node] = node_block(node, pd.read_parquet(f), today)
+        nodes[node] = node_block(node, pd.read_parquet(f), today, pipeline_calib.get(node), calib_notes)
 
     # A missing or unreadable forecast is not fatal: the app falls back to its naive forecast.
     forecast_notes = []
@@ -329,11 +448,14 @@ def main() -> int:
         "shared_date": min(people_dates) if people_dates else None,
         "source": {"repo": "dhde-tourism-ai/dhde-preprocessing-model", "commit": a.source_commit},
         "notes": [
-            "visitors_est = daily signal scaled to the prefecture's official 2025 annual count for the site (modelled).",
+            "visitors_est = daily signal x one factor per node: the pipeline's calibration check where available, "
+            "else scaled to the prefecture's official 2025 annual count for the site (modelled).",
+            "signal_index_pct = the day's signal as a % of the node's mean 2025 day.",
             "Camera 'signal' is detections, not unique visitors. Fukui Station has no official site figure, so no estimate.",
             "gmb_* fields are Google Maps Business Profile metrics (views, searches, directions, rating).",
             "forecast = dhde-preprocessing-model's 7-day model (scripts/build_forecast.py), scaled with the same "
             "calibration factor as visitors_est.",
+            *calib_notes,
             *forecast_notes,
         ],
         "nodes": nodes,
@@ -352,8 +474,8 @@ def main() -> int:
         c = v["calibration"]
         fcb = v.get("forecast")
         fc_txt = f" forecast={fcb['model']} wape={fcb['backtest_wape']}" if fcb else ""
-        print(f"  {k:13s} {v['measure'] or '-':13s} factor={c['factor']} status={c['status']} as_of={v['as_of']['visitors']}{fc_txt}")
-    for n in forecast_notes:
+        print(f"  {k:13s} {v['measure'] or '-':13s} factor={c['factor']} ({c['method']}) as_of={v['as_of']['visitors']}{fc_txt}")
+    for n in calib_notes + forecast_notes:
         print(f"  note: {n}")
     return 0
 

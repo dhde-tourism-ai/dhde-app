@@ -30,7 +30,7 @@ interface Props {
 }
 
 const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
-  people: ['Day totals are real estimates (daily signal scaled to the 2025 official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections only.', '日合計は実推計（日次シグナルを2025年公式年間値に換算）。時間別の形は模擬で日合計に一致。将来日は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数のみ。'],
+  people: ["Day totals are real estimates (each site's daily signal times one calibration factor from its official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: the 7-day model forecast, then the same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections and busyness (% of an average 2025 day) only.", '日合計は実推計（各地点の日次シグナルに公式年間値からの換算係数を掛けたもの）。時間別の形は模擬で日合計に一致。将来日は7日間モデル予測、その後は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数と混雑度（2025年の平均日比）のみ。'],
   density: ['Follows the People layer: real day totals, simulated hourly shape.', '人数レイヤーと同じ：日合計は実データ、時間別は模擬。'],
   flow: ['Route volumes follow each destination’s real day total; the split by road and hour is simulated.', '各目的地の実日合計に比例。道路・時間の配分は模擬。'],
   traffic: ['Roads with a counter (Katsuyama, Eiheiji, Rainbow Line) follow the real daily volume; others and all future days stay demo.', '計測器のある道路（勝山・永平寺・レインボーライン）は実交通量。その他と将来日はデモ。'],

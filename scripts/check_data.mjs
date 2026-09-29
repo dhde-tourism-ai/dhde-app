@@ -11,7 +11,7 @@ const fail = (m) => errors.push(m)
 const isNum = (v) => v === null || (typeof v === 'number' && Number.isFinite(v))
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 const NUM_FIELDS = [
-  'signal', 'visitors_est', 'temp_c', 'precip_mm', 'wind_ms', 'sun_h', 'humidity_pct', 'snow_cm', 'traffic_volume',
+  'signal', 'visitors_est', 'signal_index_pct', 'temp_c', 'precip_mm', 'wind_ms', 'sun_h', 'humidity_pct', 'snow_cm', 'traffic_volume',
   'hotel_occ', 'hotel_adr_yen', 'hotel_rooms_sold', 'hotel_rooms_total', 'survey_responses',
   'gmb_map_views', 'gmb_search_views', 'gmb_directions', 'gmb_rating', 'gmb_review_change',
 ]
