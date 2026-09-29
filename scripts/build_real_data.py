@@ -137,7 +137,20 @@ DAILY_FIELDS = {
     "directions": "gmb_directions",
     "average_rating": "gmb_rating",
     "review_count_change": "gmb_review_change",
+    # Google Maps reviews (google_reviews source, from the live-data branch).
+    "reviews_new": "reviews_new",
+    "reviews_stars_mean": "reviews_stars_mean",
+    "reviews_stars_1": "reviews_stars_1",
+    "reviews_stars_2": "reviews_stars_2",
+    "reviews_stars_3": "reviews_stars_3",
+    "reviews_stars_4": "reviews_stars_4",
+    "reviews_stars_5": "reviews_stars_5",
+    "reviews_with_text": "reviews_with_text",
+    "reviews_foreign": "reviews_foreign",
+    "reviews_rating_total": "reviews_rating_total",
+    "reviews_count_total": "reviews_count_total",
 }
+RAKUTEN_LEADS = (1, 7, 30)
 
 # The master-table column each node's 7-day forecast predicts (forecast.TARGETS in
 # dhde-preprocessing-model, in master-table names). A forecast is published only
@@ -299,6 +312,7 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: 
                   **{g: last_date(m, cols, today) for g, cols in AS_OF_GROUPS.items()}},
         "daily": daily,
         "hotel_forward": hotel_forward,
+        "rakuten": rakuten_block(m, today),
     }
 
 
@@ -376,6 +390,25 @@ def load_calibration(path: Path, notes: list[str]) -> dict[str, dict]:
         notes.append(f"calibration file unreadable ({path.name}: {type(e).__name__}: {e}); {fallback}")
         return {}
     return out
+
+
+def rakuten_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
+    """Share of Rakuten hotels near the node with a room 1, 7 and 30 days ahead,
+    from the latest snapshot taken by today. The master table keys each value
+    by stay date, so the snapshot for lead k is the row k days after it.
+    None when the node has no Rakuten snapshots."""
+    shares, snaps = {}, []
+    for lead in RAKUTEN_LEADS:
+        col = f"rakuten_vacant_share_d{lead}"
+        if col not in m.columns:
+            return None
+        rows = m.loc[m[col].notna() & (m["date"] - pd.Timedelta(days=lead) <= today), ["date", col]]
+        if rows.empty:
+            return None
+        last = rows.iloc[-1]
+        shares[f"d{lead}"] = round(float(last[col]) * 100, 1)
+        snaps.append(last["date"] - pd.Timedelta(days=lead))
+    return {"share_with_rooms_pct": shares, "as_of": min(snaps).date().isoformat()}
 
 
 def validate(payload: dict) -> list[str]:

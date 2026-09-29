@@ -14,6 +14,7 @@ const NUM_FIELDS = [
   'signal', 'visitors_est', 'signal_index_pct', 'temp_c', 'precip_mm', 'wind_ms', 'sun_h', 'humidity_pct', 'snow_cm', 'traffic_volume',
   'hotel_occ', 'hotel_adr_yen', 'hotel_rooms_sold', 'hotel_rooms_total', 'survey_responses',
   'gmb_map_views', 'gmb_search_views', 'gmb_directions', 'gmb_rating', 'gmb_review_change',
+  'reviews_new', 'reviews_stars_mean', 'reviews_stars_1', 'reviews_stars_2', 'reviews_stars_3', 'reviews_stars_4', 'reviews_stars_5', 'reviews_with_text', 'reviews_foreign', 'reviews_rating_total', 'reviews_count_total',
 ]
 
 if (!existsSync(path)) {

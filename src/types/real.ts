@@ -30,6 +30,18 @@ export interface RealDaily {
   gmb_search_views: number | null
   gmb_directions: number | null
   gmb_rating: number | null
+  /** Google Maps reviews (google_reviews source): new that day, star split, text and non-Japanese counts, place totals. */
+  reviews_new: number | null
+  reviews_stars_mean: number | null
+  reviews_stars_1: number | null
+  reviews_stars_2: number | null
+  reviews_stars_3: number | null
+  reviews_stars_4: number | null
+  reviews_stars_5: number | null
+  reviews_with_text: number | null
+  reviews_foreign: number | null
+  reviews_rating_total: number | null
+  reviews_count_total: number | null
   gmb_review_change: number | null
 }
 
@@ -93,6 +105,8 @@ export interface RealNode {
   as_of: Partial<Record<'visitors' | 'weather' | 'traffic' | 'hotel' | 'survey' | 'google_maps', string | null>>
   daily: RealDaily[]
   hotel_forward: RealForward[]
+  /** Rakuten: % of hotels near the node with a room 1 / 7 / 30 days ahead, latest snapshot. Null without snapshots. */
+  rakuten: { as_of: string | null; share_with_rooms_pct: { d1: number | null; d7: number | null; d30: number | null } } | null
   /** Missing when no model forecast was published for the node. */
   forecast?: RealForecast
 }
