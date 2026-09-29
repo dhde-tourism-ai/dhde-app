@@ -347,8 +347,8 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <span className="eyebrow">{tr('Survey', 'アンケート')}</span>
                   <span className="vg-val num">{market.survey[node.id].satisfaction.toFixed(1)}</span>
                   <span className="muted small">
-                    NPS {market.survey[node.id].nps > 0 ? '+' : ''}
-                    {market.survey[node.id].nps} · n={market.survey[node.id].responses_30d}
+                    {market.survey[node.id].nps !== null && `NPS ${market.survey[node.id].nps! > 0 ? '+' : ''}${market.survey[node.id].nps} · `}
+                    n={market.survey[node.id].responses_30d}
                   </span>
                 </div>
               )}

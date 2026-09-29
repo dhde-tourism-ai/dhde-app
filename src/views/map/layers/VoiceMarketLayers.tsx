@@ -202,7 +202,7 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
             n.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-below${stackBelow ? ' ov-below2' : ''}" style="--r:${nodeR(frame, n.id)}px">${iconSvg('survey', 13)}<b class="num">${s.satisfaction.toFixed(1)}</b><span class="ov-sub">/5 · NPS ${s.nps > 0 ? '+' : ''}${s.nps}</span></div>`,
+              html: `<div class="ov-badge ov-below${stackBelow ? ' ov-below2' : ''}" style="--r:${nodeR(frame, n.id)}px">${iconSvg('survey', 13)}<b class="num">${s.satisfaction.toFixed(1)}</b><span class="ov-sub">/5${s.nps !== null ? ` · NPS ${s.nps > 0 ? '+' : ''}${s.nps}` : ''}</span></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -221,13 +221,25 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
                 <span>
                   {t(n.name, n.name_ja)} · {t('visitor survey', '来訪者アンケート')}
                 </span>
-                {s.responses_real ? <span className="tt-real">{t('Mixed', '一部実データ')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
+                {s.details_real ? (
+                  <span className="tt-real">{t('Real', '実データ')}</span>
+                ) : s.responses_real ? (
+                  <span className="tt-real">{t('Mixed', '一部実データ')}</span>
+                ) : (
+                  <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                )}
               </div>
               <div className="tt-hero">
                 <b className="num">{s.satisfaction.toFixed(1)}</b>
                 <span>
-                  {t('satisfaction (1–5)', '満足度（1〜5）')} · NPS {s.nps > 0 ? '+' : ''}
-                  {s.nps} <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                  {t('satisfaction (1–5)', '満足度（1〜5）')}
+                  {s.nps !== null && (
+                    <>
+                      {' '}
+                      · NPS {s.nps > 0 ? '+' : ''}
+                      {s.nps} <span className="tt-demo">{t('Demo', 'デモ')}</span>
+                    </>
+                  )}
                 </span>
               </div>
               <div className="tt-grid">
@@ -238,7 +250,7 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
               </div>
               <div className="tt-sec">{t('Top reasons for visiting', '主な来訪理由')}</div>
               <Bars items={s.top_reasons.map((r) => ({ label: lang === 'ja' ? r.ja : r.en, value: r.share }))} />
-              <div className="tt-sec">{t('Where visitors come from', '居住地')}</div>
+              <div className="tt-sec">{s.details_real ? t('Where visitors live (Japan)', '居住地（国内）') : t('Where visitors come from', '居住地')}</div>
               <div className="tt-stack" role="img" aria-label={s.origin_share.map((o) => `${o.en} ${o.share}%`).join(', ')}>
                 {s.origin_share.map((o, i) => (
                   <span key={o.en} style={{ width: `${o.share}%`, background: ORIGIN_COLOURS[i] }} title={`${o.en} ${o.share}%`}></span>
@@ -254,7 +266,11 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
               </div>
               <div className="tip-sub">
                 {s.source}
-                {s.responses_real ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}` : ''}
+                {s.details_real
+                  ? ` · ${t(`${s.details_real.responses} responses in the 30 days to ${s.details_real.as_of}. Reasons: share of responses (several allowed). Respondents live in Japan; the survey has no NPS question.`, `${s.details_real.as_of}までの30日間の回答${s.details_real.responses}件。理由は回答者に占める割合（複数回答）。回答者は国内在住。NPSの設問なし。`)}`
+                  : s.responses_real
+                    ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}`
+                    : ''}
               </div>
             </Tip>
           </Marker>

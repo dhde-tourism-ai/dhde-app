@@ -152,6 +152,15 @@ DAILY_FIELDS = {
 }
 RAKUTEN_LEADS = (1, 7, 30)
 
+# Survey summary (survey_block): the FTAS survey's daily columns from
+# dhde-preprocessing-model sources/survey.py, over the 30 days to its last response.
+SURVEY_DAYS = 30
+MIN_SURVEY_RESPONSES = 10
+SURVEY_ORIGINS = ["fukui", "hokuriku", "kansai", "chubu", "kanto", "other"]
+SURVEY_PURPOSES = ["relax_at_inn", "onsen", "local_food", "nature", "sightseeing", "theme_park_museum", "shopping",
+                   "events", "shows", "outdoor", "town_walk", "experiences", "ski_marine", "other_sports", "drive",
+                   "visit_friends", "business"]
+
 # The master-table column each node's 7-day forecast predicts (forecast.TARGETS in
 # dhde-preprocessing-model, in master-table names). A forecast is published only
 # where this matches the node's signal_column, so both are in the same units.
@@ -313,6 +322,7 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: 
         "daily": daily,
         "hotel_forward": hotel_forward,
         "rakuten": rakuten_block(m, today),
+        "survey": survey_block(m, today),
     }
 
 
@@ -409,6 +419,39 @@ def rakuten_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
         shares[f"d{lead}"] = round(float(last[col]) * 100, 1)
         snaps.append(last["date"] - pd.Timedelta(days=lead))
     return {"share_with_rooms_pct": shares, "as_of": min(snaps).date().isoformat()}
+
+
+def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
+    """Satisfaction, home region and purpose of visit over the SURVEY_DAYS to the
+    last response. Shares are % of responses (purposes can add up past 100).
+    None without the columns or with fewer than MIN_SURVEY_RESPONSES responses."""
+    if "survey_satisfaction_n" not in m.columns:
+        return None
+    seen = m.loc[m["survey_response_count"].notna() & (m["date"] <= today), "date"]
+    if seen.empty:
+        return None
+    as_of = seen.max()
+    w = m[(m["date"] > as_of - pd.Timedelta(days=SURVEY_DAYS)) & (m["date"] <= as_of)]
+    n = int(w["survey_response_count"].fillna(0).sum())
+    if n < MIN_SURVEY_RESPONSES:
+        return None
+    sat_n = int(w["survey_satisfaction_n"].fillna(0).sum())
+    sat = (w["survey_satisfaction_mean"] * w["survey_satisfaction_n"]).sum() / sat_n if sat_n else None
+
+    def pct(cols: dict[str, str], total: int) -> dict[str, float]:
+        return {k: round(float(w[c].fillna(0).sum()) / total * 100, 1) for k, c in cols.items() if c in w.columns}
+
+    origin_cols = {k: f"survey_origin_{k}" for k in SURVEY_ORIGINS}
+    with_origin = int(w[[c for c in origin_cols.values() if c in w.columns]].fillna(0).sum().sum())
+    return {
+        "as_of": as_of.date().isoformat(),
+        "days": SURVEY_DAYS,
+        "responses": n,
+        "satisfaction": clean(sat),
+        "satisfaction_n": sat_n,
+        "origin_pct": pct(origin_cols, with_origin) if with_origin else {},
+        "purpose_pct": pct({k: f"survey_purpose_{k}" for k in SURVEY_PURPOSES}, n),
+    }
 
 
 def validate(payload: dict) -> list[str]:

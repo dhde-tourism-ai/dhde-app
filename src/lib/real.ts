@@ -78,6 +78,45 @@ function parseRakuten(v: unknown): RealNode['rakuten'] {
   return share.d1 === null && share.d7 === null && share.d30 === null ? null : { as_of: str(v.as_of), share_with_rooms_pct: share }
 }
 
+/** FTAS survey home regions (domestic only: it has no overseas respondents) and purposes of visit. */
+const ORIGIN_LABELS: Record<string, { en: string; ja: string }> = {
+  fukui: { en: 'Fukui', ja: '福井県内' },
+  hokuriku: { en: 'Ishikawa, Toyama', ja: '石川・富山' },
+  kansai: { en: 'Kansai', ja: '関西' },
+  chubu: { en: 'Chubu', ja: '中部' },
+  kanto: { en: 'Kanto', ja: '関東' },
+  other: { en: 'Rest of Japan', ja: 'その他の地域' },
+}
+const PURPOSE_LABELS: Record<string, { en: string; ja: string }> = {
+  relax_at_inn: { en: 'Relaxing at the inn', ja: '宿でのんびり' },
+  onsen: { en: 'Onsen', ja: '温泉' },
+  local_food: { en: 'Local food', ja: '地元の食' },
+  nature: { en: 'Nature', ja: '自然鑑賞' },
+  sightseeing: { en: 'Sightseeing', ja: '名所・旧跡' },
+  theme_park_museum: { en: 'Museums, theme parks', ja: '博物館・テーマパーク' },
+  shopping: { en: 'Shopping', ja: '買い物' },
+  events: { en: 'Events', ja: '祭り・イベント' },
+  shows: { en: 'Shows, sports events', ja: '観戦・鑑賞' },
+  outdoor: { en: 'Outdoors', ja: 'アウトドア' },
+  town_walk: { en: 'Walking the town', ja: 'まちあるき' },
+  experiences: { en: 'Hands-on activities', ja: '体験' },
+  ski_marine: { en: 'Ski, marine sports', ja: 'スキー・マリン' },
+  other_sports: { en: 'Other sports', ja: 'その他スポーツ' },
+  drive: { en: 'Driving', ja: 'ドライブ' },
+  visit_friends: { en: 'Visiting friends', ja: '友人・親戚' },
+  business: { en: 'Business', ja: '仕事' },
+}
+
+function parsePct(v: unknown): Record<string, number> {
+  if (!isObj(v)) return {}
+  return Object.fromEntries(Object.entries(v).filter((e): e is [string, number] => num(e[1]) !== null))
+}
+
+function parseSurvey(v: unknown): RealNode['survey'] {
+  if (!isObj(v) || typeof v.as_of !== 'string' || num(v.responses) === null) return null
+  return { as_of: v.as_of, responses: num(v.responses) as number, satisfaction: num(v.satisfaction), origin_pct: parsePct(v.origin_pct), purpose_pct: parsePct(v.purpose_pct) }
+}
+
 /** The model forecast block, or undefined when it's missing or has no usable day. */
 function parseForecast(f: unknown): RealForecast | undefined {
   if (!isObj(f) || !Array.isArray(f.days)) return undefined
@@ -154,6 +193,7 @@ export function parseReal(raw: unknown): RealData | null {
       daily: daily.sort((a, b) => a.date.localeCompare(b.date)),
       hotel_forward: fwd,
       rakuten: parseRakuten(n.rakuten),
+      survey: parseSurvey(n.survey),
       forecast: parseForecast(n.forecast),
     }
   }
@@ -690,6 +730,23 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
     if (!rn || !asOf) continue
     const n = rn.daily.filter((x) => x.date <= asOf && x.date > addDays(asOf, -30)).reduce((a, x) => a + (x.survey_responses ?? 0), 0)
     survey[id] = { ...s, responses_30d: Math.round(n), responses_real: { as_of: asOf } }
+    const rs = rn.survey
+    if (rs && rs.satisfaction !== null) {
+      survey[id] = {
+        ...survey[id],
+        satisfaction: Math.round(rs.satisfaction * 10) / 10,
+        // The FTAS survey doesn't ask "would you recommend", so there's no real NPS.
+        nps: null,
+        top_reasons: Object.entries(rs.purpose_pct)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4)
+          .map(([k, share]) => ({ ...(PURPOSE_LABELS[k] ?? { en: k, ja: k }), share: Math.round(share) })),
+        origin_share: Object.entries(ORIGIN_LABELS)
+          .filter(([k]) => rs.origin_pct[k] !== undefined)
+          .map(([k, l]) => ({ ...l, share: Math.round(rs.origin_pct[k]) })),
+        details_real: { as_of: rs.as_of, responses: rs.responses },
+      }
+    }
     surveyReal.push(id)
   }
 
