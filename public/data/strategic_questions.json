@@ -2,7 +2,7 @@
   "meta": {
     "title": "Fukui Tourism Intelligence · five questions",
     "subtitle": "Pilot model of the Government Intelligence dashboard",
-    "as_of": "2026-09-27",
+    "as_of": "2026-09-29",
     "author": "Strategy team",
     "source_doc": "Strategic Questions Integrated Dashboard v1 (shared 27 Sep 2026). Pilot, not definitive.",
     "footer": "Pilot for discussion with the tech team and the Fukui Prefecture Tourism Federation. Programme ends 10 Nov 2026."
@@ -29,18 +29,8 @@
     "status": "modelled",
     "terms": [
       {
-        "label": "visitors",
-        "value_text": "21.4M",
-        "op": "×"
-      },
-      {
-        "label": "stay overnight",
-        "value_text": "11.1%",
-        "op": "×"
-      },
-      {
-        "label": "nights per stay",
-        "value_text": null,
+        "label": "overnight guests",
+        "value_text": "2.385M",
         "op": "×"
       },
       {
@@ -49,22 +39,27 @@
         "op": "+"
       },
       {
-        "label": "per day-tripper",
-        "value_text": "¥5,546",
-        "op": "="
+        "label": "day-trippers",
+        "value_text": "19.06M",
+        "op": "×"
       },
       {
-        "label": "tourism spend FY2024",
-        "value_text": "¥151bn",
+        "label": "spend per day-tripper",
+        "value_text": "¥5,546",
+        "op": "→"
+      },
+      {
+        "label": "tourism spend 2025",
+        "value_text": "¥198.7bn",
         "op": null
       }
     ],
-    "caption": "Q2 manages visitors · Q3 raises stay rate and spend · Q4 finds where each term leaks · Q5 shows which spending moves which term · Q1 is the total. Terms come from different reports (入込数 2025; Vision progress report FY2024), not yet on one definition."
+    "caption": "Q2 manages visitors (21.44M in 2025: 11.1% stay overnight, 88.9% day trips) · Q3 raises stay rate and spend · Q4 finds where each term leaks · Q5 shows which spending moves which term · Q1 is the total. All terms are 2025 figures from one report, 福井県観光客入込数（推計）令和7年. Multiplied out they give about ¥178bn; the official ¥198.7bn is estimated with separate unit prices for visitors from inside and outside the prefecture (e.g. ¥41,066 per out-of-prefecture overnight guest), so the arrows show the parts, not an exact sum."
   },
   "todos": [
     {
       "for": "strategy team",
-      "text": "Research note (27 Sep 2026): the Vision progress report gives 3.87M overnight guests and 110k foreign guests as 2025 figures, not FY2024 (2024 = 4.03M and 92k). They are labelled \"2025\" here; please confirm which year the scorecard should use. Also: 入込数 2025 spend is ¥198.7bn, already above the ¥170bn 2029 target; the scorecard still shows the FY2024 ¥151.3bn."
+      "text": "Figures updated 29 Sep 2026 to 2025, on the same definitions as the vision's targets (sources on each card). Still to confirm: (1) A2 transfer-tour riders count toward the all-overnight gap only, because their nationality isn't known; say if they should also count toward the foreign gap. (2) ¥43,000 spend per foreign visitor (Bank of Japan Kanazawa Branch, from the team brief) hasn't been checked against the source."
     }
   ],
   "questions": [
@@ -80,16 +75,17 @@
         "On track for 2029 targets?",
         "How much spend lost to neighbours?"
       ],
-      "answer": "Spend and visitor targets ahead of pace; foreign overnight guests the one target behind (110k in 2025 vs 400k by FY2029). Economic contribution needs a fresh estimate (last uses FY2008 data).",
+      "answer": "On 2025 figures, three of the five 2029 vision targets are already met: tourism spend ¥198.7bn (target ¥170bn), visitors 21.44M (21M) and spend per overnight guest ¥30,221 (¥27,000). Overnight guest-nights are on pace (3.93M vs 4.5M) but fell 2.4% in 2025; foreign guest-nights are the one target behind (108.6k vs 400k). Economic contribution needs a fresh estimate (last uses FY2008 data).",
       "cards": [
         {
           "id": "q1-spend",
           "type": "stat",
           "span": 3,
           "status": "real",
-          "title": "Tourism spend FY2024",
-          "value_text": "¥151.3bn",
-          "detail": "Target ¥170bn by FY2029, 61% of the way"
+          "title": "Tourism spend 2025",
+          "value_text": "¥198.7bn",
+          "detail": "Target ¥170bn by 2029: already met (2024: ¥151.3bn)",
+          "source": "Fukui Pref. 観光客入込数（推計）令和7年 観光消費額 1,987億円 (2025, calendar year; visitors counted once each, 実人数). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
         },
         {
           "id": "q1-share",
@@ -127,57 +123,63 @@
           "span": 7,
           "status": "real",
           "title": "Progress to the Next Fukui Tourism Vision targets",
-          "note": "Share of the way from FY2023 baseline to FY2029 target. Tick = time elapsed (1 of 6 years = 17%). Red if behind.",
-          "elapsed_share": 0.16666666666666666,
+          "note": "Share of the way from the 2023 baseline to the 2029 target. Both are calendar years, as in the vision's KPI table. Tick = time elapsed to 2025 (2 of 6 years = 33%). Red if behind.",
+          "elapsed_share": 0.3333333333333333,
           "rows": [
             {
               "label": "Visitors",
               "baseline": 17.6,
-              "current": 20.69,
+              "current": 21.44,
               "target": 21,
               "unit": "M",
               "prefix": "",
-              "current_year": "FY2024"
+              "current_year": "2025",
+              "source": "入込数 令和7年: 21,443千人, 実人数 (2024: 20.69M). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
             },
             {
               "label": "Tourism spend",
               "baseline": 122.5,
-              "current": 151.3,
+              "current": 198.7,
               "target": 170,
               "unit": "bn",
               "prefix": "¥",
-              "current_year": "FY2024"
+              "current_year": "2025",
+              "source": "入込数 令和7年: 観光消費額 1,987億円 (2024: ¥151.3bn). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
             },
             {
               "label": "Spend per overnight guest",
               "baseline": 21587,
-              "current": 24913,
+              "current": 30221,
               "target": 27000,
               "unit": "",
               "prefix": "¥",
-              "current_year": "FY2024"
+              "current_year": "2025",
+              "source": "入込数 令和7年: 1人当たり観光消費額単価, 合計 宿泊 (2024: ¥24,913). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
             },
             {
-              "label": "Overnight guests",
+              "label": "Overnight guest-nights",
               "baseline": 3.24,
-              "current": 3.87,
+              "current": 3.93,
               "target": 4.5,
               "unit": "M",
               "prefix": "",
               "current_year": "2025",
-              "todo": "Research note: 3.87M is a 2025 figure (2024 = 4.03M). Confirm with the strategy team."
+              "source": "JTA 宿泊旅行統計調査 2025 確定: 3,929,570 guest-nights (延べ). The vision's progress report used the earlier 速報 3.87M; 2024 was 4.03M. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
             },
             {
               "label": "Foreign overnight guests",
               "baseline": 65,
-              "current": 110,
+              "current": 108.6,
               "target": 400,
               "unit": "k",
               "prefix": "",
               "current_year": "2025",
-              "todo": "Research note: 110k is a 2025 figure (2024 = 92k). Confirm with the strategy team."
+              "source": "JTA 宿泊旅行統計調査 2025 確定: 108,550 guest-nights (延べ). The vision's progress report used the earlier 速報 110k; 2024 was 92k. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
             }
-          ]
+          ],
+          "baseline_year": "2023",
+          "target_year": "2029",
+          "source": "ネクストふくい観光ビジョン (Mar 2025), KPI table p.9: baseline 2023, target 2029, both calendar years. https://www.pref.fukui.lg.jp/doc/kankou/newvision_d/fil/4_02.pdf"
         },
         {
           "id": "q1-moves",
@@ -229,7 +231,8 @@
                 5546
               ]
             }
-          ]
+          ],
+          "source": "2025 inputs from 福井県観光客入込数 令和7年: 21.44M visitors, 2.385M overnight, 19.06M day-trippers. ¥24,675 = ¥30,221 − ¥5,546, the extra spend when a day-tripper stays the night instead. ¥43,000 per foreign visitor: Bank of Japan Kanazawa Branch (Apr 2026), from the team brief, not yet checked against the source."
         }
       ],
       "spec": {
@@ -1483,7 +1486,8 @@
               "label": "Foreign visitor",
               "value": 43000
             }
-          ]
+          ],
+          "source": "Day-tripper and overnight guest: 福井県観光客入込数 令和7年 (2025), 1人当たり観光消費額単価, 合計. Foreign visitor: Bank of Japan Kanazawa Branch (Apr 2026), from the team brief, not yet checked against the source."
         },
         {
           "id": "q3-markets",
@@ -1720,7 +1724,7 @@
         }
       ],
       "spec": {
-        "data": "Spend survey (Vision progress report); JTA nationality statistics; Sakura / FTAS inbound survey.",
+        "data": "Spend per visitor (福井県観光客入込数 令和7年); JTA nationality statistics; Sakura / FTAS inbound survey.",
         "model": "F3 logistic regression of staying overnight on travel group, origin, season.",
         "outputs": "Spend by type; market mix; overnight propensity by segment.",
         "acceptance": "AUC reported; segments shown only where n ≥ 30.",
@@ -1951,8 +1955,7 @@
           "span": 12,
           "status": "illustrative",
           "title": "Gap-to-target builder",
-          "note": "Move the levers to see how far each closes the gap to FY2029 targets. Gaps use 2025 actuals (110k foreign, 3.87M overnight; see research note). Not a forecast.",
-          "todo": "Confirm which gap A2 (one-way transfer tour riders) counts toward; here each rider counts as one converted day-tripper overnight at ¥24,675.",
+          "note": "Move the levers to see how far each closes the gap to the 2029 vision targets. Gaps use 2025 actuals: 108.6k foreign and 3.93M total guest-nights (JTA 宿泊旅行統計調査 2025 確定). A2 riders count toward all overnight guests only: each rider is a day-tripper who stays a night instead (¥24,675 extra), and their nationality isn't known, so they aren't counted toward the foreign gap. Not a forecast.",
           "levers": [
             {
               "id": "A1",
@@ -2020,16 +2023,17 @@
             {
               "id": "foreign",
               "label": "Foreign overnight guests",
-              "gap": 290000,
-              "formula": "400k − 110k (2025)"
+              "gap": 291450,
+              "formula": "400k − 108.6k (2025)"
             },
             {
               "id": "overnight",
-              "label": "All overnight guests",
-              "gap": 630000,
-              "formula": "4.5M − 3.87M (2025)"
+              "label": "All overnight guest-nights",
+              "gap": 570430,
+              "formula": "4.5M − 3.93M (2025)"
             }
-          ]
+          ],
+          "source": "ネクストふくい観光ビジョン (Mar 2025), KPI table p.9: baseline 2023, target 2029, both calendar years. https://www.pref.fukui.lg.jp/doc/kankou/newvision_d/fil/4_02.pdf Actuals: JTA 宿泊旅行統計調査 2025 確定 (6 Jul 2026), guest-nights (延べ宿泊者数), calendar year. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
         }
       ],
       "spec": {
