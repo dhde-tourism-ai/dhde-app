@@ -19,6 +19,8 @@ import { StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { fmtCompact, fmtYen, PENDING } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
+import { storeLayers, storePanelOpen } from '../map/layers'
+import type { LayerId } from '../map/layers'
 
 const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
 const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
@@ -440,28 +442,67 @@ function Heatmap({ card }: { card: HeatmapCard }) {
   )
 }
 
+/** Where each funnel stage's leak shows on the map, keyed by the stage's first word. */
+const FUNNEL_MAP: Record<string, { ja: string; layers: LayerId[]; node?: string; en: string; ja_where: string }> = {
+  discover: { ja: '認知', layers: ['rsi'], en: 'Search intent: how often people search routes to each town. Low interest means few people hear of Fukui.', ja_where: '検索関心：各市町へのルート検索の多さ。関心が低いと福井を知る人が少ない。' },
+  decide: { ja: '検討', layers: ['reviews', 'hotels'], en: 'Reviews and hotels: what visitors see when they choose. The bookable-products audit is still pending.', ja_where: 'レビューとホテル：来訪者が選ぶ時に見る情報。予約可能な商品の調査は未実施。' },
+  reach: { ja: '移動・周遊', layers: ['traffic', 'flow'], node: 'tojinbo', en: 'Traffic and people flow around Tojinbo, which has no direct bus from Fukui Station.', ja_where: '東尋坊周辺の交通と人流。福井駅からの直通バスがない。' },
+  stay: { ja: '宿泊', layers: ['hotels', 'economics'], en: 'Hotels and economics: how full hotels are and the overnight spend lost to neighbouring areas.', ja_where: 'ホテルと経済：ホテルの稼働率と、近隣地域に流出した宿泊消費。' },
+  return: { ja: '再訪', layers: ['survey'], en: 'Survey: satisfaction and how likely visitors are to come back or recommend Fukui.', ja_where: 'アンケート：満足度と、再訪・推奨の意向。' },
+}
+
+const stageKey = (stage: string) => stage.split(/[\s/]/)[0].toLowerCase()
+
+/** Opens the map with the stage's layers on (and its site, if any) through the saved layer choice. */
+function showOnMap(where: { layers: LayerId[]; node?: string }) {
+  storeLayers(where.layers)
+  storePanelOpen(true)
+  window.location.hash = `/map${where.node ? `/${where.node}` : ''}`
+}
+
 function Funnel({ card }: { card: FunnelCard }) {
   const { t } = useLang()
+  const [picked, setPicked] = useState<string | null>(null)
+  const sel = card.stages.find((s) => s.stage === picked)
+  const where = sel ? FUNNEL_MAP[stageKey(sel.stage)] : undefined
   return (
-    <ol className="funnel">
-      {card.stages.map((s, i) => (
-        <li key={s.stage} className="funnel-stage">
-          <div className="funnel-step">{i + 1}</div>
-          <div className="funnel-name">{s.stage}</div>
-          <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
-            {s.gap_pct === null ? PENDING : `${s.gap_pct}%`}
-            <span className="funnel-gap-lab">{t('gap vs Kanazawa', '金沢との差')}</span>
-          </div>
-          <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? PENDING : `${s.gap_pct}%`}>
-            {s.gap_pct === null ? <span className="pending" style={{ width: '100%' }}></span> : <span style={{ width: `${s.gap_pct}%` }}></span>}
-          </div>
-          <div className="funnel-evidence">{s.evidence}</div>
-          <div className="funnel-value">
-            <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? '¥[x]bn'}</strong>
-          </div>
-        </li>
-      ))}
-    </ol>
+    <>
+      <ol className="funnel">
+        {card.stages.map((s, i) => (
+          <li key={s.stage} className={`funnel-stage ${picked === s.stage ? 'on' : ''}`} onClick={() => setPicked(picked === s.stage ? null : s.stage)}>
+            <div className="funnel-step">{i + 1}</div>
+            <div className="funnel-name">
+              <button className="funnel-pick" aria-pressed={picked === s.stage} onClick={(e) => { e.stopPropagation(); setPicked(picked === s.stage ? null : s.stage) }}>
+                {t(s.stage, FUNNEL_MAP[stageKey(s.stage)]?.ja ?? s.stage)}
+              </button>
+            </div>
+            <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
+              {s.gap_pct === null ? PENDING : `${s.gap_pct}%`}
+              <span className="funnel-gap-lab">{t('gap vs Kanazawa', '金沢との差')}</span>
+            </div>
+            <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? PENDING : `${s.gap_pct}%`}>
+              {s.gap_pct === null ? <span className="pending" style={{ width: '100%' }}></span> : <span style={{ width: `${s.gap_pct}%` }}></span>}
+            </div>
+            <div className="funnel-evidence">{s.evidence}</div>
+            <div className="funnel-value">
+              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? '¥[x]bn'}</strong>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {sel && where ? (
+        <div className="funnel-where" role="status">
+          <span className="funnel-where-text">
+            <strong>{t(sel.stage, where.ja)}:</strong> {t(where.en, where.ja_where)}
+          </span>
+          <button className="btn btn-accent" onClick={() => showOnMap(where)}>
+            <Icon name="map" /> {t('Show on map', '地図で見る')}
+          </button>
+        </div>
+      ) : (
+        <p className="funnel-hint muted small">{t('Click a stage to see where its leak shows on the map.', '段階をクリックすると、地図上のどこで流出が見えるかを表示します。')}</p>
+      )}
+    </>
   )
 }
 
