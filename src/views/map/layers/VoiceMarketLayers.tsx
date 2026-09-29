@@ -221,7 +221,7 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
                 <span>
                   {t(n.name, n.name_ja)} · {t('visitor survey', '来訪者アンケート')}
                 </span>
-                {s.responses_real ? <span className="tt-real">{t('Mixed', '一部実データ')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
+                {s.responses_real ? <span className="tt-real">{t('Partly estimated', '一部推計')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
               </div>
               <div className="tt-hero">
                 <b className="num">{s.satisfaction.toFixed(1)}</b>

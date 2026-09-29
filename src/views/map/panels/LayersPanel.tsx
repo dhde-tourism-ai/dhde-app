@@ -9,7 +9,7 @@ import { PillLegend } from '../../../components/StatusPill'
 import { CROWD_TIERS, TRAFFIC_TIERS } from '../../../lib/live'
 import { econCaveats } from '../../../lib/economics'
 import type { RegionalEconomics } from '../../../types/economics'
-import { BASEMAPS, GROUPS, LAYERS, readPanelOpen, storePanelOpen } from '../layers'
+import { BASEMAPS, GROUPS, LAYERS, OVERVIEW_NOTE, readPanelOpen, storePanelOpen } from '../layers'
 import type { MarketVoiceData } from '../../../types/market'
 import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
 import { PRIORITY } from '../../../lib/nudges'
@@ -72,7 +72,7 @@ export function LayersPanel(p: Props) {
     if (!i || i.status === 'demo') return null
     return (
       <div className="lg-src">
-        <SourceBadge info={i} />
+        <SourceBadge info={i} note={REAL_NOTE[id]} />
         <span className="lg-note">{REAL_NOTE[id] ? t(REAL_NOTE[id]![0], REAL_NOTE[id]![1]) : ''}</span>
       </div>
     )
@@ -268,7 +268,7 @@ export function LayersPanel(p: Props) {
             </>
           )}
         </h2>
-        {p.isDemo && (anyReal ? <SourceBadge info={{ status: 'mixed', as_of: null, real: [] }} compact /> : <DemoBadge />)}
+        {p.isDemo && (anyReal ? <SourceBadge info={{ status: 'mixed', as_of: null, real: [] }} compact note={OVERVIEW_NOTE} /> : <DemoBadge />)}
         {p.onClose && (
           <button className="icon-btn fp-close" onClick={p.onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />
@@ -303,7 +303,7 @@ export function LayersPanel(p: Props) {
                       <span className="layer-text">
                         <span className="layer-name">
                           {t(l.en, l.ja)}
-                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact />}
+                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact note={REAL_NOTE[l.id]} />}
                         </span>
                         <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
                       </span>

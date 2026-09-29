@@ -5,20 +5,24 @@ import { DemoBadge } from './DemoBadge'
 
 /**
  * Provenance of a layer or panel: "Demo data", "Real · as of <date>", or
- * "Mixed · real to <date>" when only some nodes / roads / areas are real.
+ * "Partly estimated · <date>" when only some values are real. `note` (EN, JA)
+ * says which part is estimated; without it the tooltip gives the count.
  */
-export function SourceBadge({ info, compact = false }: { info?: SourceInfo | null; compact?: boolean }) {
+export function SourceBadge({ info, compact = false, note }: { info?: SourceInfo | null; compact?: boolean; note?: readonly [string, string] }) {
   const { t, lang } = useLang()
   if (!info || info.status === 'demo') return <DemoBadge compact={compact} />
   const date = info.as_of ? fmtDate(info.as_of, lang).replace(/ \d{4}$/, '').replace(/^\d{4}年/, '') : ''
   const real = info.status === 'real'
+  const latest = info.as_of ? t(` Latest real data: ${info.as_of}.`, `最新の実データ：${info.as_of}。`) : ''
   const title = real
     ? t(`Real data, latest ${info.as_of ?? ''}`, `実データ（最新 ${info.as_of ?? ''}）`)
-    : t(`Real for ${info.real.length} item(s), demo for the rest. Latest real: ${info.as_of ?? ''}`, `一部実データ（${info.real.length}件）、残りはデモ。最新 ${info.as_of ?? ''}`)
+    : (note
+        ? t(note[0], note[1])
+        : t(`Partly estimated: real data for ${info.real.length} item(s), the rest is estimated or demo.`, `一部推計：${info.real.length}件は実データ、残りは推計またはデモ。`)) + latest
   return (
     <span className={`src-badge ${real ? 'real' : 'mixed'}`} title={title}>
       <span className="src-dot" aria-hidden="true"></span>
-      {real ? t('Real', '実データ') : t('Mixed', '一部実データ')}
+      {real ? t('Real', '実データ') : t('Partly estimated', '一部推計')}
       {!compact && date && <span className="src-date">· {date}</span>}
     </span>
   )

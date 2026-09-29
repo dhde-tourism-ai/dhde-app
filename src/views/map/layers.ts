@@ -53,6 +53,12 @@ export const LAYERS: LayerDef[] = [
   { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失' },
 ]
 
+/** Tooltip for a "Partly estimated" badge that covers several layers. */
+export const OVERVIEW_NOTE = [
+  'Some layers use real data; the rest is estimated or demo. Turn a layer on to see which part is estimated.',
+  '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計の部分を確認できます。',
+] as const
+
 export const DEFAULT_LAYERS: LayerId[] = []
 
 /** The viewer's last layer choice, or null on a first visit. */
