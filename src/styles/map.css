@@ -495,6 +495,42 @@
   flex: none;
 }
 
+/* Layer panel header doubles as the collapse bar. */
+.fp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.fp-arrow {
+  display: flex;
+  margin-inline-start: auto;
+  color: var(--muted);
+  transform: rotate(-90deg);
+  transition: transform 0.15s;
+}
+
+.fp-title .fp-arrow svg {
+  color: inherit;
+}
+
+.float-panel.collapsed .fp-arrow {
+  transform: rotate(90deg);
+}
+
+.float-panel.collapsed .fp-head {
+  border-bottom: 0;
+  padding-bottom: 12px;
+}
+
 .fp-body {
   overflow-y: auto;
   padding: 12px 14px 14px;

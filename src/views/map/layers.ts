@@ -67,6 +67,23 @@ export function readStoredLayers(): LayerId[] | null {
   }
 }
 
+/** Whether the layer panel was left open; it starts collapsed. */
+export function readPanelOpen(): boolean {
+  try {
+    return window.localStorage.getItem('dhde.layersPanel') === 'open'
+  } catch {
+    return false
+  }
+}
+
+export function storePanelOpen(open: boolean) {
+  try {
+    window.localStorage.setItem('dhde.layersPanel', open ? 'open' : 'closed')
+  } catch {
+    /* storage blocked: the panel still toggles for this visit */
+  }
+}
+
 export function storeLayers(layers: Iterable<LayerId>) {
   try {
     window.localStorage.setItem('dhde.layers', [...layers].join(','))
