@@ -33,6 +33,7 @@ export const PAST_DAYS = 7
 const NUM_FIELDS: (keyof RealDaily)[] = [
   'signal',
   'visitors_est',
+  'signal_index_pct',
   'temp_c',
   'precip_mm',
   'wind_ms',
@@ -135,6 +136,10 @@ export function parseReal(raw: unknown): RealData | null {
         source: str(c.source) ?? '',
         status: str(c.status) ?? 'none',
         confidence: conf,
+        method_text: str(c.method_text),
+        method_text_ja: str(c.method_text_ja),
+        official_period_label: str(c.official_period_label),
+        official_period_label_ja: str(c.official_period_label_ja),
       },
       as_of: {
         visitors: str(asOf.visitors),
@@ -196,6 +201,7 @@ const MEASURE_LABEL: Record<string, string> = {
   camera: 'camera detections',
   vehicles: 'vehicle counts',
   reservations: 'museum bookings',
+  hotel_guests: 'hotel guests',
   proxy_camera: 'nearest-camera proxy',
   proxy_survey: 'survey proxy',
 }
@@ -414,10 +420,15 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         factor: rn.calibration.factor,
         official_2025: rn.calibration.official_annual_2025,
         calibration_source: rn.calibration.source,
+        method_text: rn.calibration.method_text,
+        method_text_ja: rn.calibration.method_text_ja,
+        official_period_label: rn.calibration.official_period_label,
+        official_period_label_ja: rn.calibration.official_period_label_ja,
         visitors_as_of: rn.as_of.visitors ?? null,
         no_estimate: noEstimate,
         visitors_daily: visitorsDaily,
         signal_daily: signalDaily,
+        index_daily: dates.map((dt) => rowOn(rn, dt)?.signal_index_pct ?? null),
         normal_daily: normal,
         forecast_method: forecastMethod(rn),
       }

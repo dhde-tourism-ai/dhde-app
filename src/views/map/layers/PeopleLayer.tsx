@@ -212,7 +212,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
                 </div>
                 {m ? (
                   <div className="tip-sub">
-                    {t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} ({m.official_2025?.toLocaleString() ?? '—'}) · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
+                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} (${m.official_2025?.toLocaleString() ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
                   </div>
                 ) : (
                   est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>

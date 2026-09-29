@@ -11,6 +11,8 @@ export interface RealDaily {
   signal: number | null
   /** signal × calibration factor: visitors scaled to the 2025 official count (modelled). */
   visitors_est: number | null
+  /** The day's signal as a % of the node's mean 2025 day (unit-free, every node). */
+  signal_index_pct: number | null
   temp_c: number | null
   precip_mm: number | null
   wind_ms: number | null
@@ -58,6 +60,12 @@ export interface RealCalibration {
   status: string
   signal_days_2025?: number
   confidence: 'high' | 'medium' | 'low' | 'none'
+  /** How the signal became visitors, e.g. "cars at the summit car parks x 6.98 visitors per car (official 443,000, 2025)". */
+  method_text: string | null
+  method_text_ja: string | null
+  /** Period of the official count: "2025", "FY2025". */
+  official_period_label: string | null
+  official_period_label_ja: string | null
 }
 
 export interface RealForecastDay {
