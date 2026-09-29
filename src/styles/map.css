@@ -610,8 +610,9 @@
 
 .layer-name {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 3px 6px;
   font-weight: 600;
   font-size: 13px;
 }

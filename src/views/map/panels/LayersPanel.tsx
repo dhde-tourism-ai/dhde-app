@@ -12,7 +12,7 @@ import type { RegionalEconomics } from '../../../types/economics'
 import { BASEMAPS, GROUPS, LAYERS, readPanelOpen, storePanelOpen } from '../layers'
 import type { MarketVoiceData } from '../../../types/market'
 import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
-import { SEV_COLOUR } from '../../../lib/alerts'
+import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
 
 interface Props {
@@ -40,7 +40,7 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
   reviews: ['Rating and new reviews in 30 days are real (GMB). Total count and snippets are fictional demo.', '評価と30日の新規件数は実データ。総件数と抜粋は架空のデモ。'],
   survey: ['Response counts are real; satisfaction, NPS, reasons and origin are demo.', '回答数は実データ。満足度・NPS・理由・居住地はデモ。'],
-  nudges: ['Demand and booking nudges use real visitor history and forward bookings where available.', '需要・予約ナッジは実データ（来訪者履歴・先行予約）を使用。'],
+  nudges: ['Demand and booking action nudges use real visitor history and forward bookings where available.', '需要・予約の推奨アクションは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
 function Grad({ from, to, left, right }: { from: string; to: string; left: string; right: string }) {
@@ -81,23 +81,20 @@ export function LayersPanel(p: Props) {
   const legend: Record<LayerId, ReactNode> = {
     nudges: (
       <>
-        <div className="lg-row">
-          <span className="lg-flag" style={{ background: SEV_COLOUR.crit }}></span>
-          {t('#2 Weather-route (critical)', '#2 天候・ルート（重大）')}
-        </div>
-        <div className="lg-row">
-          <span className="lg-flag" style={{ background: SEV_COLOUR.serious }}></span>
-          {t('#1 Demand high / #3 over-booked', '#1 需要増／#3 予約過多')}
-        </div>
-        <div className="lg-row">
-          <span className="lg-flag" style={{ background: SEV_COLOUR.info }}></span>
-          {t('Opportunity (quiet day, empty rooms)', '機会（閑散日・空室）')}
-        </div>
+        {(['high', 'medium', 'low'] as const).map((k) => (
+          <div key={k} className="lg-row lg-priority">
+            <span className="lg-flag" style={{ background: PRIORITY[k].colour }}></span>
+            <span>
+              <strong>{t(PRIORITY[k].en, PRIORITY[k].ja)}</strong>
+              <span className="lg-note">{t(PRIORITY[k].hint_en, PRIORITY[k].hint_ja)}</span>
+            </span>
+          </div>
+        ))}
         <div className="lg-row">
           <span className="lg-line" style={{ borderColor: '#3fd8c4', borderTopStyle: 'dashed' }}></span>
           {t('Suggested indoor route', '推奨する屋内への経路')}
         </div>
-        <p className="lg-note">{t('Flags show the selected day. Full list in the Nudges tab.', '旗は選択日の分。一覧はナッジタブ。')}</p>
+        <p className="lg-note">{t('Flags show the selected day. Full list in the Action nudges tab.', '旗は選択日の分。一覧は推奨アクションタブ。')}</p>
       </>
     ),
     hotels: (

@@ -248,14 +248,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
       </button>
       <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
-        <Icon name="flag" size={14} /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+        <Icon name="flag" size={14} /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
       </button>
     </div>
   )
   const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
   const nudgeTitle = (
     <h2 className="fp-title">
-      <Icon name="flag" /> {tr('Nudges', 'ナッジ')}
+      <Icon name="flag" /> {tr('Action nudges', '推奨アクション')}
     </h2>
   )
 
@@ -373,7 +373,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 )}
               </button>
               <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
-                <Icon name="flag" /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+                <Icon name="flag" /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}

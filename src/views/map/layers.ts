@@ -38,7 +38,7 @@ export const GROUPS: { id: GroupId; en: string; ja: string }[] = [
 ]
 
 export const LAYERS: LayerDef[] = [
-  { id: 'nudges', group: 'actions', en: 'Nudges', ja: 'ナッジ', icon: 'flag', demo: true, hint_en: 'Demand, weather-route and booking alerts on the map', hint_ja: '需要・天候ルート・予約のアラート' },
+  { id: 'nudges', group: 'actions', en: 'Action nudges', ja: '推奨アクション', icon: 'flag', demo: true, hint_en: 'Demand, weather-route and booking alerts on the map', hint_ja: '需要・天候ルート・予約のアラート' },
   { id: 'people', group: 'movement', en: 'People', ja: '人数', icon: 'people', demo: true, hint_en: 'Visitors on site, actual vs forecast', hint_ja: '現地の来訪者数（実測と予測）' },
   { id: 'density', group: 'movement', en: 'Regional density', ja: '地域の密度', icon: 'density', demo: true, hint_en: 'Where visitors concentrate', hint_ja: '来訪者が集中する地域' },
   { id: 'flow', group: 'movement', en: 'People flow', ja: '人流', icon: 'flow', demo: true, hint_en: 'Arrivals and departures on real roads', hint_ja: '実際の道路上の到着・出発' },
