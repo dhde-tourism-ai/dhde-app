@@ -24,7 +24,7 @@ export interface HotelThresholds {
       tight_occ_pct: number
       /** 10th percentile per weekday (Mon..Sun). */
       slack_occ_pct: Record<string, number>
-      /** False where demand is the area's own hotel guests (Awara), so only occupancy counts. */
+      /** False where demand is the area's own hotel guests (Awara): both rules then use occupancy only. */
       demand_check: boolean
     }
   >
@@ -201,12 +201,13 @@ export function computeNudges(
         const ratio = (daily[d]?.predicted ?? normal) / normal
         const nights = `${dayLabel(live, d, 'en')} night`
         // Real thresholds: the area's top 10% of nights (plus demand +35%, as loop #1), or its
-        // bottom 10% for that weekday while day visitors are at or above normal.
+        // bottom 10% for that weekday while day visitors are at or above normal. Where demand is the
+        // area's own hotel guests (demand_check false) both rules use occupancy only.
         const th = thresholds?.areas[h.id]
         const dow = live.days[d]?.dow
         const slackAt = th && dow ? th.slack_occ_pct[dow] : undefined
         const tight = th ? occ >= th.tight_occ_pct && (!th.demand_check || ratio >= 1 + DEMAND_THRESHOLD) : occ >= 85 && ratio >= 1.15
-        const slack = th && slackAt !== undefined ? occ <= slackAt && ratio >= 1 : occ <= 40
+        const slack = th && slackAt !== undefined ? occ <= slackAt && (!th.demand_check || ratio >= 1) : occ <= 40
         const tightWhy = th ? ` The top 10% of nights here start at ${th.tight_occ_pct}%.` : ''
         const tightWhyJa = th ? `この地域の上位10%の夜は${th.tight_occ_pct}%以上。` : ''
         const slackWhy = th && slackAt !== undefined ? ` The quietest 10% of ${dow} nights here are ${slackAt}% or less.` : ''

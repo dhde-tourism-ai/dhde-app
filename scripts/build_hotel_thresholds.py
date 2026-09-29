@@ -21,7 +21,9 @@ node's master-table `occ`):
   demand at or above normal (there are visitors to sell stays to).
 
 Awara Onsen has demand_check false: its visitor signal is its own hotel
-guests, so "demand is high" would only repeat "the hotels are full".
+guests, so a demand check would only repeat the occupancy (busy nights
+always look busy, quiet nights always look quiet). Both rules then use
+occupancy only.
 
 On-the-books occupancy for the next 7 nights is already 92 to 96% of the
 final count at these feeds, so the same thresholds apply to future nights.
