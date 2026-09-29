@@ -167,7 +167,7 @@
               "source": "JTA 宿泊旅行統計調査 2025 確定: 3,929,570 guest-nights (延べ). The vision's progress report used the earlier 速報 3.87M; 2024 was 4.03M. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
             },
             {
-              "label": "Foreign overnight guests",
+              "label": "Foreign guest-nights",
               "baseline": 65,
               "current": 108.6,
               "target": 400,
@@ -2022,7 +2022,7 @@
           "gaps": [
             {
               "id": "foreign",
-              "label": "Foreign overnight guests",
+              "label": "Foreign guest-nights",
               "gap": 291450,
               "formula": "400k − 108.6k (2025)"
             },
