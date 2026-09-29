@@ -29,6 +29,8 @@ import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 
 export const PAST_DAYS = 7
+/** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
+const MIN_STAR_REVIEWS = 10
 
 const NUM_FIELDS: (keyof RealDaily)[] = [
   'signal',
@@ -635,10 +637,30 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
 
   const reviewsReal: string[] = []
   const reviews = { ...m.reviews }
-  for (const [id, r] of Object.entries(m.reviews)) {
+  for (const id of Object.keys(m.reviews)) {
     const rn = real.nodes[id]
-    const asOf = rn?.as_of.google_maps ?? null
-    if (!rn || !asOf) continue
+    if (!rn) continue
+    // Star split and place total from the Google reviews log (weekly), when the
+    // 30 days to its last covered day hold enough reviews to be a distribution.
+    const covered = rn.daily.filter((x) => x.reviews_new !== null)
+    const starsAsOf = covered.length ? covered[covered.length - 1].date : null
+    if (starsAsOf) {
+      const recent = covered.filter((x) => x.date > addDays(starsAsOf, -30))
+      const counts = ([5, 4, 3, 2, 1] as const).map((s) => recent.reduce((a, x) => a + (x[`reviews_stars_${s}`] ?? 0), 0))
+      const n = counts.reduce((a, b) => a + b, 0)
+      const total = covered.map((x) => x.reviews_count_total).filter((v): v is number => v !== null).pop()
+      if (n >= MIN_STAR_REVIEWS) {
+        reviews[id] = {
+          ...reviews[id],
+          distribution_pct: counts.map((c) => Math.round((c / n) * 100)),
+          count: total ?? reviews[id].count,
+          stars_real: { as_of: starsAsOf, n },
+        }
+        reviewsReal.push(id)
+      }
+    }
+    const asOf = rn.as_of.google_maps ?? null
+    if (!asOf) continue
     // gmb_rating is the day's average of new reviews (0 = none that day); weight by new reviews.
     const win = (from: number, to: number) => rn.daily.filter((x) => x.date <= addDays(asOf, -from) && x.date > addDays(asOf, -to) && (x.gmb_rating ?? 0) > 0)
     const wavg = (rows: RealDaily[]) => {
@@ -651,13 +673,13 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
     if (rating === null) continue
     const newReviews = rn.daily.filter((x) => x.date <= asOf && x.date > addDays(asOf, -30)).reduce((s, x) => s + (x.gmb_review_change ?? 0), 0)
     reviews[id] = {
-      ...r,
+      ...reviews[id],
       rating: Math.round(rating * 10) / 10,
       rating_30d_ago: Math.round((wavg(prev) ?? rating) * 10) / 10,
       new_30d: Math.round(newReviews),
       real: { as_of: asOf, reviews_used: Math.round(newReviews) },
     }
-    reviewsReal.push(id)
+    if (!reviewsReal.includes(id)) reviewsReal.push(id)
   }
 
   const surveyReal: string[] = []
@@ -673,7 +695,7 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
 
   sources.hotels = { status: statusOf(hotelReal.length, m.hotels.length), as_of: maxDate(hotels.map((h) => h.as_of ?? null)), real: hotelReal }
   sources.rsi = { status: statusOf(rsiReal.length, m.rsi.length), as_of: maxDate(rsi.map((a) => a.gmb?.as_of ?? null)), real: rsiReal }
-  sources.reviews = { status: reviewsReal.length ? 'mixed' : 'demo', as_of: maxDate(reviewsReal.map((id) => real.nodes[id].as_of.google_maps)), real: reviewsReal }
+  sources.reviews = { status: reviewsReal.length ? 'mixed' : 'demo', as_of: maxDate(reviewsReal.map((id) => real.nodes[id].as_of.google_maps ?? reviews[id].stars_real?.as_of ?? null)), real: reviewsReal }
   sources.survey = { status: surveyReal.length ? 'mixed' : 'demo', as_of: maxDate(surveyReal.map((id) => real.nodes[id].as_of.survey)), real: surveyReal }
 
   return { ...m, start: dates[0], days: D, hotels, rsi, reviews, survey }
