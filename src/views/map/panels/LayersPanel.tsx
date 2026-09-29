@@ -296,7 +296,7 @@ export function LayersPanel(p: Props) {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
-                    <label className="layer-row">
+                    <label className="layer-row" title={t(l.tip_en, l.tip_ja)}>
                       <span className="layer-ic">
                         <Icon name={l.icon} size={17} />
                       </span>
