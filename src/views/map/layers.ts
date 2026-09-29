@@ -53,7 +53,27 @@ export const LAYERS: LayerDef[] = [
   { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失' },
 ]
 
-export const DEFAULT_LAYERS: LayerId[] = ['nudges', 'people', 'density', 'flow']
+export const DEFAULT_LAYERS: LayerId[] = []
+
+/** The viewer's last layer choice, or null on a first visit. */
+export function readStoredLayers(): LayerId[] | null {
+  try {
+    const raw = window.localStorage.getItem('dhde.layers')
+    if (raw === null) return null
+    const valid = new Set(LAYERS.map((l) => l.id))
+    return raw.split(',').filter((x): x is LayerId => valid.has(x as LayerId))
+  } catch {
+    return null
+  }
+}
+
+export function storeLayers(layers: Iterable<LayerId>) {
+  try {
+    window.localStorage.setItem('dhde.layers', [...layers].join(','))
+  } catch {
+    /* storage blocked: the choice still holds for this visit */
+  }
+}
 
 export const BASEMAPS: { id: BasemapId; en: string; ja: string }[] = [
   { id: 'hybrid', en: 'Hybrid', ja: '航空写真' },

@@ -21,7 +21,7 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, readUrlState } from './layers'
+import { DEFAULT_LAYERS, readStoredLayers, readUrlState, storeLayers } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { FlowLayer } from './layers/FlowLayer'
@@ -179,7 +179,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? DEFAULT_LAYERS))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers() ?? DEFAULT_LAYERS))
+  useEffect(() => storeLayers(active), [active])
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
