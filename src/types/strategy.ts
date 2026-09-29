@@ -99,6 +99,9 @@ export interface MonthlyShareCard extends CardBase {
   type: 'monthly_share'
   months: string[]
   values: number[]
+  /** When set, the values are replaced by this monthly_forecast.json series' shares for `year`, once all 12 months are measured. */
+  series?: string
+  year?: string
   kpi?: { label: string; value_text: string | null; status: PillStatus }
 }
 
@@ -159,6 +162,12 @@ export interface BuilderCard extends CardBase {
   gaps: { id: string; label: string; gap: number; formula: string }[]
 }
 
+/** Fed from public/data/monthly_forecast.json, not from this file: `series` lists the ids to offer. */
+export interface MonthlyForecastCard extends CardBase {
+  type: 'monthly_forecast'
+  series: string[]
+}
+
 export type StrategyCard =
   | StatCard
   | ProgressCard
@@ -171,6 +180,7 @@ export type StrategyCard =
   | IndicatorsCard
   | TableCard
   | BuilderCard
+  | MonthlyForecastCard
 
 export interface BuildSpec {
   data: string

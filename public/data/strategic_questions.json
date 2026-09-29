@@ -1430,6 +1430,26 @@
           ]
         },
         {
+          "id": "q2-monthly",
+          "type": "monthly_forecast",
+          "span": 12,
+          "status": "modelled",
+          "title": "Monthly visitors and guest-nights: 12-month forecast",
+          "note": "F2 monthly forecast from dhde-preprocessing-model, refreshed daily. Each series uses whichever model had the lowest backtest error (same month last year, its own recent growth, or Ishikawa and Toyama's growth). The range is the 10th-90th percentile of that model's backtest errors. This year's expected total adds the actual months to the forecast for the rest.",
+          "series": [
+            "fukui_pref",
+            "tojinbo",
+            "fukui_station",
+            "katsuyama",
+            "rainbow_line",
+            "eiheiji",
+            "awara_onsen",
+            "fukui_guest_nights",
+            "fukui_guest_nights_japanese",
+            "fukui_guest_nights_foreign"
+          ]
+        },
+        {
           "id": "q2-even",
           "type": "monthly_share",
           "span": 12,
@@ -1469,7 +1489,9 @@
             "label": "平準化率 (demand levelling rate, JTA DMO KPI 2025)",
             "value_text": null,
             "status": "pending"
-          }
+          },
+          "series": "fukui_pref",
+          "year": "2025"
         }
       ],
       "spec": {
