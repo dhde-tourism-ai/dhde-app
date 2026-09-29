@@ -120,7 +120,8 @@ function Progress({ card }: { card: ProgressCard }) {
       </div>
       {card.rows.map((r) => {
         const share = Math.max(0, Math.min(1, (r.current - r.baseline) / (r.target - r.baseline)))
-        const behind = share < card.elapsed_share
+        const met = r.current >= r.target
+        const behind = !met && share < card.elapsed_share
         const pct = Math.round(share * 100)
         return (
           <div key={r.label} className="progress-row">
@@ -130,7 +131,7 @@ function Progress({ card }: { card: ProgressCard }) {
                 {pct}%
                 <span className={`pace-flag ${behind ? 'behind' : 'ahead'}`}>
                   <Icon name={behind ? 'alert' : 'chevron'} size={11} />
-                  {behind ? t('Behind pace', '遅れ') : t('On pace', '順調')}
+                  {met ? t('Target met', '目標達成') : behind ? t('Behind pace', '遅れ') : t('On pace', '順調')}
                 </span>
               </span>
             </div>
@@ -139,12 +140,17 @@ function Progress({ card }: { card: ProgressCard }) {
               <div className="progress-tick" style={{ left: `${card.elapsed_share * 100}%` }}></div>
             </div>
             <div className="progress-meta num">
-              FY2023 {fmtUnit(r.baseline, r.prefix, r.unit)} → <strong>{fmtUnit(r.current, r.prefix, r.unit)}</strong>{' '}
+              {card.baseline_year ?? 'FY2023'} {fmtUnit(r.baseline, r.prefix, r.unit)} → <strong>{fmtUnit(r.current, r.prefix, r.unit)}</strong>{' '}
               <span className={`year-tag ${r.todo ? 'flag' : ''}`} title={r.todo}>
                 {r.current_year}
               </span>{' '}
-              → FY2029 {fmtUnit(r.target, r.prefix, r.unit)}
+              → {card.target_year ?? 'FY2029'} {fmtUnit(r.target, r.prefix, r.unit)}
             </div>
+            {r.source && (
+              <div className="progress-source">
+                {t('Source', '出典')}: {r.source}
+              </div>
+            )}
             {r.todo && <div className="s-todo small">{r.todo}</div>}
           </div>
         )

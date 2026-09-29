@@ -34,12 +34,17 @@ export interface ProgressRow {
   unit: string
   prefix: string
   current_year: string
+  /** Where this row's current value comes from, and on which definition. */
+  source?: string
   todo?: string
 }
 
 export interface ProgressCard extends CardBase {
   type: 'progress'
   elapsed_share: number
+  /** Year labels for the baseline and target, e.g. "2023" and "2029". */
+  baseline_year?: string
+  target_year?: string
   rows: ProgressRow[]
 }
 
