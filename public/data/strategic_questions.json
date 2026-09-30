@@ -66,8 +66,9 @@
     {
       "id": "q1",
       "number": 1,
-      "nav": "What is tourism worth?",
-      "title": "What is tourism worth to Fukui's economy?",
+      "nav": "Fukui Tourism Economy",
+      "title": "Fukui Tourism Economy",
+      "question": "What is tourism worth to Fukui's economy?",
       "why": "Budget, political support, investment cases; DMOs must report economic ripple effect to JTA every three years.",
       "subs": [
         "How much do visitors spend?",
@@ -233,6 +234,34 @@
             }
           ],
           "source": "2025 inputs from 福井県観光客入込数 令和7年: 21.44M visitors, 2.385M overnight, 19.06M day-trippers. ¥24,675 = ¥30,221 − ¥5,546, the extra spend when a day-tripper stays the night instead. ¥43,000 per foreign visitor: Bank of Japan Kanazawa Branch (Apr 2026), from the team brief, not yet checked against the source."
+        },
+        {
+          "id": "q1-sleep",
+          "type": "bars",
+          "span": 12,
+          "status": "pending",
+          "title": "Where visitors sleep",
+          "note": "Share of Fukui's visitors by where they spend the night: the overnight leakage to Kanazawa and Kyoto that drives \"Spend lost to neighbouring stays\". Filled from KDDI location data once purchased; no numbers until then.",
+          "pending_on": "KDDI location data",
+          "unit": "%",
+          "rows": [
+            {
+              "label": "Stay in Fukui",
+              "value": null
+            },
+            {
+              "label": "Kanazawa",
+              "value": null
+            },
+            {
+              "label": "Kyoto",
+              "value": null
+            },
+            {
+              "label": "Day trip, no overnight stay",
+              "value": null
+            }
+          ]
         }
       ],
       "spec": {
@@ -246,8 +275,9 @@
     {
       "id": "q2",
       "number": 2,
-      "nav": "How can we predict visitor flow?",
-      "title": "How can we predict visitor flow?",
+      "nav": "Visitor Flow and Forecast",
+      "title": "Visitor Flow and Forecast",
+      "question": "How can we predict visitor flow?",
       "why": "Staff sites despite labour shortages, time buses and promotion, avoid peaks, fill quiet months (required DMO measure).",
       "subs": [
         "How many visitors tomorrow and next week?",
@@ -1358,7 +1388,8 @@
                 }
               ]
             }
-          ]
+          ],
+          "live": true
         },
         {
           "id": "q2-drivers",
@@ -1402,6 +1433,55 @@
           ]
         },
         {
+          "id": "q2-monthly",
+          "type": "monthly_forecast",
+          "span": 12,
+          "status": "modelled",
+          "title": "Monthly visitors and guest-nights: 12-month forecast",
+          "note": "F2 monthly forecast from dhde-preprocessing-model, refreshed daily. Each series uses whichever model had the lowest backtest error (same month last year, its own recent growth, or Ishikawa and Toyama's growth). The range is the 10th-90th percentile of that model's backtest errors. This year's expected total adds the actual months to the forecast for the rest.",
+          "series": [
+            "fukui_pref",
+            "tojinbo",
+            "fukui_station",
+            "katsuyama",
+            "rainbow_line",
+            "eiheiji",
+            "awara_onsen",
+            "fukui_guest_nights",
+            "fukui_guest_nights_japanese",
+            "fukui_guest_nights_foreign"
+          ]
+        },
+        {
+          "id": "q2-pace",
+          "type": "target_pace",
+          "span": 12,
+          "status": "real",
+          "title": "Guest-nights this year: running total vs target",
+          "note": "The vision sets 2029 targets from a 2023 baseline (calendar years). This year's target is the point on a steady-growth path between them; each month's share of the year comes from last year's months. Actuals are JTA monthly figures, refreshed daily; the latest months are preliminary.",
+          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model). Targets: ネクストふくい観光ビジョン (Mar 2025), KPI table p.9.",
+          "items": [
+            {
+              "series": "fukui_guest_nights",
+              "label": "All guest-nights",
+              "label_ja": "延べ宿泊者数",
+              "baseline": 3240000,
+              "baseline_year": 2023,
+              "target": 4500000,
+              "target_year": 2029
+            },
+            {
+              "series": "fukui_guest_nights_foreign",
+              "label": "Foreign guest-nights",
+              "label_ja": "外国人延べ宿泊者数",
+              "baseline": 65000,
+              "baseline_year": 2023,
+              "target": 400000,
+              "target_year": 2029
+            }
+          ]
+        },
+        {
           "id": "q2-even",
           "type": "monthly_share",
           "span": 12,
@@ -1441,7 +1521,9 @@
             "label": "平準化率 (demand levelling rate, JTA DMO KPI 2025)",
             "value_text": null,
             "status": "pending"
-          }
+          },
+          "series": "fukui_pref",
+          "year": "2025"
         }
       ],
       "spec": {
@@ -1455,8 +1537,9 @@
     {
       "id": "q3",
       "number": 3,
-      "nav": "Which visitors bring the most value?",
-      "title": "Which visitors bring the most value?",
+      "nav": "Visitor Value",
+      "title": "Visitor Value",
+      "question": "Which visitors bring the most value?",
       "why": "Target promotion and products at the visitors who stay and spend.",
       "subs": [
         "Who spends most?",
@@ -1721,6 +1804,18 @@
               "approx": true
             }
           ]
+        },
+        {
+          "id": "q3-nights",
+          "type": "guest_nights_months",
+          "span": 12,
+          "status": "real",
+          "title": "Guest-nights by month: domestic and foreign",
+          "note": "Guest-nights (延べ), not people. Domestic = Japanese guests. Last year faded, this year solid; the % above each month is the foreign share. The latest months are preliminary.",
+          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model), refreshed daily.",
+          "total": "fukui_guest_nights",
+          "domestic": "fukui_guest_nights_japanese",
+          "foreign": "fukui_guest_nights_foreign"
         }
       ],
       "spec": {
@@ -1734,8 +1829,9 @@
     {
       "id": "q4",
       "number": 4,
-      "nav": "Where are we losing visitors and spend?",
-      "title": "Where are we losing visitors and spend?",
+      "nav": "Visitor Journey",
+      "title": "Visitor Journey",
+      "question": "Where are we losing visitors and spend?",
       "why": "Fix the stage of the visitor journey that leaks the most value.",
       "subs": [
         "Where does the funnel leak?",
@@ -1873,8 +1969,9 @@
     {
       "id": "q5",
       "number": 5,
-      "nav": "Which investments pay back?",
-      "title": "Which investments deliver the best return?",
+      "nav": "Program Evaluation",
+      "title": "Program Evaluation",
+      "question": "Which investments deliver the best return?",
       "why": "Put limited budget where it adds the most nights and spend.",
       "subs": [
         "What did each programme add?",

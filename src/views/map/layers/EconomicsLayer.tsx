@@ -5,6 +5,7 @@ import { fmtMetric } from '../../../lib/format'
 import { fmtLost, resolvePoint, sameNode } from '../../../lib/economics'
 import type { MapNode } from '../../../lib/nodes'
 import { StatusPill } from '../../../components/StatusPill'
+import { KddiPending } from '../../../components/KddiPending'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
 
@@ -63,6 +64,7 @@ function FiguresTooltip({ title, titleJa, f, note }: { title: string; titleJa: s
  * and labelled "[pending]"; nothing is sized from a missing number.
  */
 export function EconomicsLayer({ economics, nodes, selectedId }: { economics: RegionalEconomics; nodes: MapNode[]; selectedId?: string }) {
+  const { t } = useLang()
   // Annotations are permanent when zoomed in (or for the selected node); at
   // prefecture zoom the close northern nodes would overlap, so they show on hover.
   const [zoom, setZoom] = useState<number | null>(null)
@@ -119,10 +121,17 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
                 </span>
                 <StatusPill status={f.status} />
               </div>
-              <div className="tt-hero">
-                <b className="num">{fmtMetric(f.visitors)}</b>
-                <span>visitors on this flow</span>
-              </div>
+              {v === null ? (
+                <div className="tt-hero">
+                  <KddiPending />
+                  <span>{t('Measured journeys from KDDI location data will replace this line.', 'KDDI位置情報による実測の移動がこの線に置き換わります。')}</span>
+                </div>
+              ) : (
+                <div className="tt-hero">
+                  <b className="num">{fmtMetric(f.visitors)}</b>
+                  <span>{t('visitors on this flow', 'この経路の来訪者')}</span>
+                </div>
+              )}
               <div className="tip-sub">{f.note}</div>
             </Tip>
           </Polyline>

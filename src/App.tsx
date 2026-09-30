@@ -131,7 +131,7 @@ export default function App() {
             <LoadError file="strategic_questions.json" error={strategy.error} />
           ) : (
             <Suspense fallback={<Loading what={t('Loading strategy view…', '読み込み中…')} />}>
-              <StrategyView data={strategy.data} />
+              <StrategyView data={strategy.data} focus={route.node} />
             </Suspense>
           ))}
       </main>
