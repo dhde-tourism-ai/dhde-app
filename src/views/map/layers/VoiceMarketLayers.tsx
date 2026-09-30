@@ -400,14 +400,6 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
                 </span>
               </div>
               {(!r.real || r.stars_real) && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
-              {r.stars_real && (
-                <div className="tip-sub">
-                  {t(
-                    `Stars: the ${r.stars_real.n} Google reviews in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString()} reviews in total.`,
-                    `星の内訳：${r.stars_real.as_of}までの30日間のGoogleレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString()}件。`,
-                  )}
-                </div>
-              )}
               <div className="tt-sec">
                 {t('Sample snippets', 'サンプル抜粋')} <span className="tt-demo">{t('Fictional', '架空')}</span>
               </div>
@@ -418,7 +410,16 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
                   </li>
                 ))}
               </ul>
-              <div className="tip-sub">{r.real ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`) : r.source}</div>
+              <div className="tip-sub">
+                {r.stars_real
+                  ? t(
+                      `Rating, new reviews and stars: the ${r.stars_real.n} Google Maps reviews of this place in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString('en-US')} reviews in total. Snippets are fictional.`,
+                      `評価・新規件数・星の内訳：${r.stars_real.as_of}までの30日間のこの場所のGoogleマップレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString('en-US')}件。抜粋は架空。`,
+                    )
+                  : r.real
+                    ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`)
+                    : r.source}
+              </div>
             </Tip>
           </Marker>
         )
