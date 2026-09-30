@@ -1486,7 +1486,7 @@
           "type": "monthly_share",
           "span": 12,
           "status": "illustrative",
-          "title": "Demand trend across the year (2025, actual)",
+          "title": "Demand trend across the year",
           "note": "Monthly share of annual visitors; quietest 3 consecutive months highlighted. Simulated for layout only; not counted data. Do not quote.",
           "todo": "Swap in the JTA digital tourism statistics monthly series (per city, since 2021-01) once the pipeline publishes it (dhde-preprocessing-model PR #7).",
           "months": [
