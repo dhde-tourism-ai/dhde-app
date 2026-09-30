@@ -17,6 +17,8 @@ interface CardBase {
   source?: string
   todo?: string
   pending_on?: string
+  /** Kept in the file but not shown, e.g. the Q4 funnel until the final report. */
+  hidden?: boolean
 }
 
 export interface StatCard extends CardBase {

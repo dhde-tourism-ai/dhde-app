@@ -1834,7 +1834,7 @@
       "question": "Where are we losing visitors and spend?",
       "why": "Fix the stage of the visitor journey that leaks the most value.",
       "subs": [
-        "Where does the funnel leak?",
+        "Which stage loses the most visitors?",
         "Can visitors reach the sites?",
         "Is capacity the constraint?"
       ],
@@ -1843,6 +1843,7 @@
         {
           "id": "q4-funnel",
           "type": "funnel",
+          "hidden": true,
           "span": 12,
           "status": "modelled",
           "title": "Visitor funnel: gap vs Kanazawa and value at stake",

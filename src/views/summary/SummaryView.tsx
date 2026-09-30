@@ -30,7 +30,8 @@ const FAQ: Record<string, { ja: string; chart: string }> = {
   q1: { ja: '観光は福井の経済にどれだけの価値があるか？', chart: 'q1-progress' },
   q2: { ja: '来訪者の流れをどう予測するか？', chart: 'q2-f1' },
   q3: { ja: 'どの来訪者が最も価値をもたらすか？', chart: 'q3-spend' },
-  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-funnel' },
+  // The funnel (q4-funnel) is hidden until the final report; Access answers Q4 meanwhile.
+  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-access' },
   q5: { ja: 'どの投資が最も効果的か？', chart: 'q5-returns' },
 }
 
@@ -290,7 +291,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
           <h2 className="card-title">{t('Frequently asked questions', 'よくある質問')}</h2>
           <p className="card-sub">{t("The government's five questions. Open one for today's answer, its chart and where the data comes from.", '行政の5つの質問。開くと現時点の回答、グラフ、データの出典を表示します。')}</p>
           {(lang === 'ja' ? localize(data.strategy.data?.questions ?? [], JA as Record<string, string>) : (data.strategy.data?.questions ?? [])).map((q) => {
-            const cards: StrategyCard[] = q.cards
+            const cards: StrategyCard[] = q.cards.filter((c) => !c.hidden)
             const chart = cards.find((c) => c.id === FAQ[q.id]?.chart) ?? cards[0]
             // The chart's own source only: another card's source would be shown as the
             // source of a chart that is illustrative.
