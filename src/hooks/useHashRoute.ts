@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type ViewId = 'map' | 'nodes' | 'strategy'
+export type ViewId = 'summary' | 'map' | 'nodes' | 'strategy'
 
 export interface Route {
   view: ViewId
@@ -8,15 +8,16 @@ export interface Route {
   node?: string
 }
 
-const VIEWS: ViewId[] = ['map', 'nodes', 'strategy']
+const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'strategy']
 
 function parse(hash: string): Route {
   const [, view, node] = hash.replace(/^#/, '').split('/')
-  const v = VIEWS.includes(view as ViewId) ? (view as ViewId) : 'map'
+  // No or unknown hash opens the executive summary.
+  const v = VIEWS.includes(view as ViewId) ? (view as ViewId) : 'summary'
   return { view: v, node: node ? decodeURIComponent(node) : undefined }
 }
 
-/** Tiny hash router (#/map, #/nodes/<id>, #/strategy): works on static hosting with no server rewrites. */
+/** Tiny hash router (#/summary, #/map, #/nodes/<id>, #/strategy): works on static hosting with no server rewrites. */
 export function useHashRoute(): [Route, (r: Route) => void] {
   const [route, setRoute] = useState<Route>(() => parse(window.location.hash))
 

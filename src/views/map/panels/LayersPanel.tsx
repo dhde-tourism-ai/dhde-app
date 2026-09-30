@@ -175,7 +175,7 @@ export function LayersPanel(p: Props) {
           <span className="lg-line" style={{ borderColor: '#c9d4ff', borderTopStyle: 'dotted' }}></span>
           {t('Hokuriku Shinkansen (approx. line)', '北陸新幹線（概略）')}
         </div>
-        <p className="lg-note">{t('Denser, faster dots = more people per hour. Roads from OSRM / OpenStreetMap.', '点が密で速いほど人数が多い。道路はOSRM／OpenStreetMap。')}</p>
+        <p className="lg-note">{t('Denser, faster dots = more people per hour. Roads from OSRM / OpenStreetMap. The dots follow each site’s daily total; measured origin-to-destination journeys are Pending: KDDI data.', '点が密で速いほど人数が多い。道路はOSRM／OpenStreetMap。点は各地点の日合計に沿った表示で、出発地から目的地までの実測の移動はKDDIデータ待ち。')}</p>
       </>
     ),
     traffic: (
@@ -226,7 +226,7 @@ export function LayersPanel(p: Props) {
     ),
     economics: (
       <>
-        <p className="lg-note">{t('Circle = municipal revenue · dashed line = visitor flow · grey dashed = pending.', '円＝市町の観光収入・破線＝来訪者の流れ・灰色破線＝データ待ち。')}</p>
+        <p className="lg-note">{t('Circle = municipal revenue · dashed line = visitor flow · grey dashed = Pending: KDDI data (journeys not measured yet).', '円＝市町の観光収入・破線＝来訪者の流れ・灰色破線＝KDDIデータ待ち（移動は未計測）。')}</p>
         <PillLegend />
         {p.economics?.sample && (
           <div className="banner banner-warn">
@@ -296,7 +296,7 @@ export function LayersPanel(p: Props) {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
-                    <label className="layer-row">
+                    <label className="layer-row" title={t(l.tip_en, l.tip_ja)}>
                       <span className="layer-ic">
                         <Icon name={l.icon} size={17} />
                       </span>

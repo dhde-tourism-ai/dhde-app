@@ -124,6 +124,15 @@ jobs:
         continue-on-error: true
         run: python scripts/build_hotel_thresholds.py --input "$OUT" --out public/data/hotel_thresholds.json
 
+      # The 12-month forecast (dhde-preprocessing-model scripts/forecast_monthly.py) for the
+      # Strategy view's Q2. It downloads its own two sources (JTTA visitors, JTA guest-nights).
+      # Not fatal: if it fails, yesterday's monthly_forecast.json stays.
+      - name: Build monthly forecast
+        continue-on-error: true
+        run: |
+          python "$PREPROC/scripts/forecast_monthly.py" --output-dir "$OUT"
+          python scripts/build_monthly_forecast.py --input "$OUT" --out public/data/monthly_forecast.json --source-commit "$PREPROC_SHA"
+
       # Publish to AWS (Go-live item 5). Runs only after the data validated, and
       # only when the repository variables are set, so nothing changes until the
       # dhde-dev-app-publisher role exists. The role trusts this repo's main
@@ -167,14 +176,14 @@ jobs:
       - name: Commit if changed
         id: commit
         run: |
-          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json; then
-            echo "No change in real_data.json or hotel_thresholds.json."
+          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json; then
+            echo "No change in real_data.json, hotel_thresholds.json or monthly_forecast.json."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/real_data.json public/data/hotel_thresholds.json
+          git add public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json
           git commit -m "data: daily real data $(TZ=Asia/Tokyo date +%F) (preprocessing $PREPROC_SHA)"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

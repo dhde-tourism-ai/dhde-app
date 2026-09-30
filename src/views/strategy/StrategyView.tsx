@@ -1,21 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
+import { useJsonResource } from '../../hooks/useJsonResource'
+import { withMeasuredShares } from '../../lib/monthly'
+import { localize } from '../../lib/localize'
+import { withRealForecast } from '../../lib/dailyForecast'
+import type { RealDailyFile } from '../../lib/dailyForecast'
+import JA from '../../i18n/strategy.ja.json'
+import type { MonthlyForecastFile } from '../../types/monthly'
 import '../../styles/pages.css'
 
 /**
  * The five strategic questions as dashboard components. Layout only: every
  * number comes from public/data/strategic_questions.json.
  */
-export default function StrategyView({ data }: { data: StrategicQuestions }) {
-  const { t } = useLang()
+export default function StrategyView({ data: raw, focus }: { data: StrategicQuestions; focus?: string }) {
+  const { t, lang } = useLang()
   const [showSpecs, setShowSpecs] = useState(false)
-  const [activeQ, setActiveQ] = useState(data.questions[0]?.id)
-  const { meta, equation } = data
+  const [activeQ, setActiveQ] = useState(raw.questions[0]?.id)
+  const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
+  const real = useJsonResource<RealDailyFile>('real_data.json').data
+  // Real 2025 shares and the real 7-day forecast first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
+  const data = useMemo(() => {
+    const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly), real, lang) }
+    return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
+  }, [raw, monthly, real, lang])
+  const { meta, equation, questions } = data
+
+  // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.
+  useEffect(() => {
+    if (!focus) return
+    const el = document.getElementById(focus)
+    if (!el) return
+    // A whole question is taller than the screen: bring its top into view.
+    el.scrollIntoView({ block: el.classList.contains('q-section') ? 'start' : 'center' })
+    el.classList.add('flash')
+    const id = window.setTimeout(() => el.classList.remove('flash'), 1800)
+    return () => window.clearTimeout(id)
+  }, [focus])
 
   // Scroll-spy for the sticky question nav.
   useEffect(() => {
@@ -107,7 +133,7 @@ export default function StrategyView({ data }: { data: StrategicQuestions }) {
         ))}
       </nav>
 
-      {data.questions.map((q) => (
+      {questions.map((q) => (
         <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
       ))}
 
