@@ -13,7 +13,7 @@
  *   shape of the same weekday is scaled so each day's total matches. Today and
  *   future days: the node's 7-day model forecast (real_data.json `forecast`,
  *   with its own low/high range) where published; after it, or for nodes
- *   without one, the median visitors_est of recent same weekdays (up to 4, looking
+ *   without one, the mean visitors_est of recent same weekdays (up to 4, looking
  *   back up to 8 weeks; holidays and Obon skipped for a normal day): a naive
  *   seasonal forecast. Either way spread with the
  *   demo shape. forecast_source_daily says which one each day used.
@@ -234,12 +234,6 @@ function dowOf(iso: string): string {
 }
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
-const median = (xs: number[]) => {
-  if (!xs.length) return null
-  const s = [...xs].sort((a, b) => a - b)
-  const m = Math.floor(s.length / 2)
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
-}
 const sum = (xs: (number | null)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0)
 
 function rowOn(n: RealNode | undefined, date: string): RealDaily | undefined {
@@ -306,7 +300,7 @@ function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind
   return { temp: Math.round(temp * 10) / 10, mm: Math.round(mm * 10) / 10, wind: Math.round((r.wind_ms ?? 2) * 10) / 10, pop, cond }
 }
 
-const NAIVE_METHOD = 'Median of recent same weekdays (up to 4 in the last 8 weeks; holidays skipped for a normal day), real visitors_est, spread over the day with the demo hourly shape.'
+const NAIVE_METHOD = 'Mean of recent same weekdays (up to 4 in the last 8 weeks; holidays skipped for a normal day), real visitors_est, spread over the day with the demo hourly shape.'
 
 function forecastMethod(rn: RealNode): string {
   const f = rn.forecast
@@ -355,11 +349,12 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const noEstimate = !!rn && rn.calibration.factor === null
     const hasPeople = !!rn && hist.length > 0
 
-    // Naive seasonal forecast: median visitors_est of the last 4 same weekdays found.
+    // Naive seasonal forecast: mean visitors_est of the last 4 same weekdays found.
     // For a normal day, holidays and Obon are skipped (a holiday Tuesday would overstate
     // a normal one) and the search goes back up to 8 weeks to still find 4 normal days.
-    // A median, since a site like Eiheiji swings a lot between weeks (253 to 2,526): one
-    // spike shouldn't move it.
+    // A mean, not a median: the demand alerts compare it with the node's normal day, which
+    // is a mean too, and busy days pull that up, so a median would read low by default
+    // (Eiheiji's ordinary Tuesday as -35%). Switch both at once if medians are wanted.
     const sameWeekday = (dt: string) => {
       const skip = (day: string) => !isHoliday(dt) && isHoliday(day)
       const vals: number[] = []
@@ -373,7 +368,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         const dow = dowOf(dt)
         for (const r of rn?.daily ?? []) if (r.visitors_est !== null && dowOf(r.date) === dow && !skip(r.date)) vals.push(r.visitors_est)
       }
-      return median(vals)
+      return mean(vals)
     }
     // The model's 7-day forecast where published; the naive one covers the days after it,
     // and days the model ran without its week-ahead bookings (its backtest error doesn't apply).
