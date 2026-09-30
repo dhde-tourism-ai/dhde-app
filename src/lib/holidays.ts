@@ -19,8 +19,12 @@ const HOLIDAYS = new Set([
   '2027-09-20', '2027-09-23', '2027-10-11', '2027-11-03', '2027-11-23',
 ])
 
-/** A public holiday or the New Year break (29 Dec to 3 Jan), as in the pipeline's day_off. */
+/**
+ * A public holiday, the New Year break (29 Dec to 3 Jan, as in the pipeline's
+ * day_off) or Obon (13 to 16 Aug, the pipeline's is_obon): not public holidays,
+ * but busy like one, so a normal day shouldn't average them in.
+ */
 export function isHoliday(iso: string): boolean {
   const md = iso.slice(5)
-  return HOLIDAYS.has(iso) || md >= '12-29' || md <= '01-03'
+  return HOLIDAYS.has(iso) || md >= '12-29' || md <= '01-03' || (md >= '08-13' && md <= '08-16')
 }
