@@ -138,6 +138,8 @@ export function computeNudges(
       const day = live.days[d]
       const up = pct > 0
       const p = `${up ? '+' : ''}${Math.round(pct * 100)}%`
+      // No model forecast for this day (Eiheiji, or past the model's 7 days): say it's rough.
+      const rough = live.node_meta?.[id]?.forecast_source_daily?.[d] === 'naive'
       out.push({
         id: `n1-${id}-${d}`,
         loop: 1,
@@ -148,10 +150,10 @@ export function computeNudges(
         day: d,
         start: d * 24 + 9,
         end: d * 24 + 17,
-        title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal`,
-        title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}`,
-        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).`,
-        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。`,
+        title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal${rough ? ' (rough estimate)' : ''}`,
+        title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}${rough ? '（概算）' : ''}`,
+        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).${rough ? ' Rough estimate: no forecast model here, only the median of recent same weekdays.' : ''}`,
+        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。${rough ? '概算：予測モデルがなく、最近の同じ曜日の中央値です。' : ''}`,
         action_en: up ? 'Add staff, extend parking and shop hours; push timed entry.' : 'Run a same-week offer and promote to nearby overnight guests.',
         action_ja: up ? '増員、駐車場・営業時間の延長、時間指定入場の案内を。' : '今週限りの特典で近隣宿泊客へ告知を。',
         focus: pos(id),

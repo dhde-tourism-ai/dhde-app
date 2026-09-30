@@ -13,8 +13,10 @@
  *   shape of the same weekday is scaled so each day's total matches. Today and
  *   future days: the node's 7-day model forecast (real_data.json `forecast`,
  *   with its own low/high range) where published; after it, or for nodes
- *   without one, mean visitors_est on the same weekday over the last 4 weeks
- *   (a naive seasonal forecast). Either way spread with the demo shape.
+ *   without one, the median visitors_est of recent same weekdays (up to 4, looking
+ *   back up to 8 weeks; holidays and Obon skipped for a normal day): a naive
+ *   seasonal forecast. Either way spread with the
+ *   demo shape. forecast_source_daily says which one each day used.
  *   Nodes without an estimate (Fukui Station) keep demo shapes but are flagged
  *   no_estimate so the UI shows camera detections, never a visitor number.
  * - Weather: real daily temperature, rain, wind, sun, humidity and snow; the
@@ -27,6 +29,7 @@
 import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, DataSources } from '../types/live'
 import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
+import { isHoliday } from './holidays'
 
 export const PAST_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
@@ -183,6 +186,12 @@ function dowOf(iso: string): string {
 }
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
+const median = (xs: number[]) => {
+  if (!xs.length) return null
+  const s = [...xs].sort((a, b) => a - b)
+  const m = Math.floor(s.length / 2)
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+}
 const sum = (xs: (number | null)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0)
 
 function rowOn(n: RealNode | undefined, date: string): RealDaily | undefined {
@@ -249,7 +258,7 @@ function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind
   return { temp: Math.round(temp * 10) / 10, mm: Math.round(mm * 10) / 10, wind: Math.round((r.wind_ms ?? 2) * 10) / 10, pop, cond }
 }
 
-const NAIVE_METHOD = 'Mean of the same weekday over the last 4 weeks (real visitors_est), spread over the day with the demo hourly shape.'
+const NAIVE_METHOD = 'Median of recent same weekdays (up to 4 in the last 8 weeks; holidays skipped for a normal day), real visitors_est, spread over the day with the demo hourly shape.'
 
 function forecastMethod(rn: RealNode): string {
   const f = rn.forecast
@@ -298,19 +307,25 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const noEstimate = !!rn && rn.calibration.factor === null
     const hasPeople = !!rn && hist.length > 0
 
-    // Naive seasonal forecast: mean visitors_est on the same weekday over the last 4 weeks.
+    // Naive seasonal forecast: median visitors_est of the last 4 same weekdays found.
+    // For a normal day, holidays and Obon are skipped (a holiday Tuesday would overstate
+    // a normal one) and the search goes back up to 8 weeks to still find 4 normal days.
+    // A median, since a site like Eiheiji swings a lot between weeks (253 to 2,526): one
+    // spike shouldn't move it.
     const sameWeekday = (dt: string) => {
+      const skip = (day: string) => !isHoliday(dt) && isHoliday(day)
       const vals: number[] = []
-      for (let w = 1; w <= 4; w++) {
-        const v = rowOn(rn, addDays(dt, -7 * w))?.visitors_est
-        if (v !== null && v !== undefined) vals.push(v)
+      for (let w = 1; w <= 8 && vals.length < 4; w++) {
+        const day = addDays(dt, -7 * w)
+        const v = rowOn(rn, day)?.visitors_est
+        if (v !== null && v !== undefined && !skip(day)) vals.push(v)
       }
       if (vals.length < 2) {
         // Fall back to any same-weekday values in the history window.
         const dow = dowOf(dt)
-        for (const r of rn?.daily ?? []) if (r.visitors_est !== null && dowOf(r.date) === dow) vals.push(r.visitors_est)
+        for (const r of rn?.daily ?? []) if (r.visitors_est !== null && dowOf(r.date) === dow && !skip(r.date)) vals.push(r.visitors_est)
       }
-      return mean(vals)
+      return median(vals)
     }
     // The model's 7-day forecast where published; the naive one covers the days after it,
     // and days the model ran without its week-ahead bookings (its backtest error doesn't apply).
@@ -322,12 +337,14 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const osP: number[] = []
     const lo: number[] = []
     const hi: number[] = []
+    const fcSource: RealNodeMeta['forecast_source_daily'] = []
     for (let d = 0; d < D; d++) {
       const demoArr = Array.from({ length: 24 }, (_, h) => pick(dn.arrivals.predicted, d, h))
       const demoTotal = Math.max(1, sum(demoArr))
       const realV = hasPeople ? visitorsDaily[d] : null
       const md = hasPeople && d >= P ? modelDay(dates[d]) : undefined
       const fc = md?.visitors_est ?? (hasPeople && d >= P ? sameWeekday(dates[d]) : null)
+      fcSource.push(md?.visitors_est != null ? 'model' : fc !== null ? 'naive' : null)
       const kA = realV !== null ? realV / demoTotal : null
       const kP = fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
       // The model's own low/high range when it has one, else the demo band scaled like the forecast.
@@ -433,6 +450,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         index_daily: dates.map((dt) => rowOn(rn, dt)?.signal_index_pct ?? null),
         normal_daily: normal,
         forecast_method: forecastMethod(rn),
+        forecast_source_daily: fcSource,
       }
     }
   }
