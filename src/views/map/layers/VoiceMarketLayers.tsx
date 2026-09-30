@@ -108,10 +108,13 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
                 {t('occupied that night', 'この日の稼働率')} · {h.rooms_left[d].toLocaleString('en-US')} / {h.rooms_total.toLocaleString('en-US')} {t('rooms left', '室空き')}
               </span>
             </div>
-            <div className="tt-kv">
-              <span>{t('Area, not one hotel: hotels in this feed', 'エリア全体（1軒ではない）：フィード内の施設数')}</span>
-              <b className="num">{h.hotels_in_feed ?? '?'}</b>
-            </div>
+            {/* Hidden without a count, as the caption does, rather than showing "?". */}
+            {typeof h.hotels_in_feed === 'number' && (
+              <div className="tt-kv">
+                <span>{t('Area, not one hotel: hotels in this feed', 'エリア全体（1軒ではない）：フィード内の施設数')}</span>
+                <b className="num">{h.hotels_in_feed}</b>
+              </div>
+            )}
             {(h.serves ?? []).length > 1 && (
               <div className="tt-kv">
                 <span>{t('One regional feed for', '1つの広域フィードで対象')}</span>
