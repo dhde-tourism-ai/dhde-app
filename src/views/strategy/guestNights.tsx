@@ -5,7 +5,7 @@ import { useJsonResource } from '../../hooks/useJsonResource'
 import { measuredYear, monthsOf, pathTarget } from '../../lib/monthly'
 import { fmtCompact } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
-import { AXIS, S, TIP } from './chartTheme'
+import { AXIS, S, TIP, TIP_ITEM, TIP_LABEL } from './chartTheme'
 
 const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const MONTHS_JA = MONTHS_EN.map((_, i) => `${i + 1}月`)
@@ -68,7 +68,7 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
           <CartesianGrid stroke="#1f2a3f" vertical={false} />
           <XAxis dataKey="m" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} />
           <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
+          <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} cursor={{ fill: 'rgba(139,157,255,.08)' }} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
           <Bar dataKey="d0" name={t(`Domestic ${prev}`, `国内 ${prev}`)} stackId="prev" fill={S[0]} fillOpacity={0.35} isAnimationActive={false} />
           <Bar dataKey="f0" name={t(`Foreign ${prev}`, `外国人 ${prev}`)} stackId="prev" fill={S[1]} fillOpacity={0.35} isAnimationActive={false}>
             <LabelList dataKey="lab0" position="top" fill="#aeb9cd" fontSize={10} formatter={label} />
@@ -149,7 +149,7 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
                 <XAxis dataKey="m" tick={{ ...AXIS, fontSize: 9.5 }} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
                 <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={TIP} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
+                <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
                 <Line dataKey="target" name={t('Target', '目標')} stroke="#aeb9cd" strokeDasharray="5 4" strokeWidth={1.5} dot={false} isAnimationActive={false} />
                 <Line
                   dataKey="actual"

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Fukui Tourism Intelligence · five questions",
+    "title": "Fukui Tourism Intelligence",
     "subtitle": "Pilot model of the Government Intelligence dashboard",
     "as_of": "2026-09-29",
     "author": "Strategy team",
@@ -282,7 +282,7 @@
       "subs": [
         "How many visitors tomorrow and next week?",
         "What drives daily visits?",
-        "How even is demand across the year?"
+        "Demand trend across the year"
       ],
       "answer": "Visits follow calendar and online interest; winter weather is where they are lost. Daily site forecast feasible now from EdgeAI cameras; route-by-route movement needs KDDI.",
       "cards": [
@@ -1486,7 +1486,7 @@
           "type": "monthly_share",
           "span": 12,
           "status": "illustrative",
-          "title": "How even is demand across the year?",
+          "title": "Demand trend across the year (2025, actual)",
           "note": "Monthly share of annual visitors; quietest 3 consecutive months highlighted. Simulated for layout only; not counted data. Do not quote.",
           "todo": "Swap in the JTA digital tourism statistics monthly series (per city, since 2021-01) once the pipeline publishes it (dhde-preprocessing-model PR #7).",
           "months": [
@@ -1544,10 +1544,9 @@
       "subs": [
         "Who spends most?",
         "Which markets?",
-        "Who stays overnight?",
-        "How do foreign visitors travel?"
+        "Who stays overnight?"
       ],
-      "answer": "Overnight guest spends 5.4× a day-tripper, foreign visitor about 8×; 89% of visitors are day-trippers; 40% of foreign visitors on group tours vs ~10% nationally.",
+      "answer": "Overnight guest spends 5.4× a day-tripper, foreign visitor about 8×; 89% of visitors are day-trippers.",
       "cards": [
         {
           "id": "q3-spend",
@@ -1609,7 +1608,7 @@
         {
           "id": "q3-heat",
           "type": "heatmap",
-          "span": 8,
+          "span": 12,
           "status": "illustrative",
           "title": "Who stays overnight",
           "note": "Share staying overnight (%), travel group × origin. Cells with n < 30 hidden (model F3). Simulated for layout only; not counted data. Do not quote.",
@@ -1782,27 +1781,6 @@
                 "n": 84
               }
             ]
-          ]
-        },
-        {
-          "id": "q3-tours",
-          "type": "bars",
-          "span": 4,
-          "status": "real",
-          "title": "How foreign visitors travel",
-          "unit": "%",
-          "note": "Share of foreign visitors on group tours.",
-          "rows": [
-            {
-              "label": "Fukui",
-              "value": 40,
-              "approx": true
-            },
-            {
-              "label": "Japan",
-              "value": 10,
-              "approx": true
-            }
           ]
         },
         {

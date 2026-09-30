@@ -26,7 +26,7 @@ import { useJsonResource } from '../../hooks/useJsonResource'
 import { measuredYear, yearTotal } from '../../lib/monthly'
 import type { MonthlyForecastFile } from '../../types/monthly'
 
-import { AXIS, S, TIP } from './chartTheme'
+import { AXIS, S, TIP, TIP_ITEM, TIP_LABEL } from './chartTheme'
 import { GuestNightsMonths, TargetPace } from './guestNights'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
@@ -286,7 +286,7 @@ function Forecast({ card }: { card: ForecastCard }) {
               <XAxis dataKey="date" tick={AXIS} tickFormatter={(d: string) => d.slice(5).replace('-', '/')} minTickGap={28} tickLine={false} axisLine={{ stroke: '#34425e' }} />
               <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={44} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={TIP}
+                contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
                 formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(name)]}
               />
               <Area dataKey="range" name={t('Forecast range', '予測幅')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
@@ -407,7 +407,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
               <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
               <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={TIP}
+                contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
                 formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
               />
               <Area dataKey="range" name={t('Likely range', '予測範囲')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
@@ -496,7 +496,7 @@ function MonthlyShare({ card }: { card: MonthlyShareCard }) {
             <CartesianGrid stroke="#1f2a3f" vertical={false} />
             <XAxis dataKey="month" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} />
             <YAxis tick={AXIS} unit="%" width={40} tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} formatter={(v: unknown) => [`${v}%`, t('Share of year', '年間比')]} />
+            <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} cursor={{ fill: 'rgba(139,157,255,.08)' }} formatter={(v: unknown) => [`${v}%`, t('Share of year', '年間比')]} />
             <Bar dataKey="share" radius={[4, 4, 0, 0]} maxBarSize={24} isAnimationActive={false} label={{ position: 'top', fill: '#aeb9cd', fontSize: 10, formatter: (v: unknown) => `${v}` }}>
               {rows.map((r) => (
                 <Cell key={r.month} fill={r.quiet ? S[1] : S[0]} fillOpacity={r.quiet ? 1 : 0.7} />
