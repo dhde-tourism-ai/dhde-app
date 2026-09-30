@@ -147,11 +147,20 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
-                <XAxis dataKey="m" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={2} />
+                <XAxis dataKey="m" tick={{ ...AXIS, fontSize: 9.5 }} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
                 <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TIP} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
                 <Line dataKey="target" name={t('Target', '目標')} stroke="#aeb9cd" strokeDasharray="5 4" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                <Line dataKey="actual" name={t('Actual', '実績')} stroke={S[0]} strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
+                <Line
+                  dataKey="actual"
+                  name={t('Actual', '実績')}
+                  stroke={S[0]}
+                  strokeWidth={2.5}
+                  connectNulls={false}
+                  isAnimationActive={false}
+                  // A dot on the latest actual month, so it doesn't read as the next month's tick.
+                  dot={(p: { cx?: number; cy?: number; index?: number }) => (p.index === last && p.cx !== undefined && p.cy !== undefined ? <circle key="end" cx={p.cx} cy={p.cy} r={4.5} fill={S[0]} stroke="#121c2f" strokeWidth={2} /> : <g key={`d${p.index}`} />)}
+                />
               </LineChart>
             </ResponsiveContainer>
             {pct !== null && (
@@ -159,6 +168,10 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
                 <strong>{fmtFig(rows[last].actual!)}</strong> {t('nights', '泊')} ·{' '}
                 <span className={behind ? 'sum-down' : ''}>
                   {t(`${Math.round(pct)}% of the ${fmtFig(rows[last].target)} target to ${MONTHS_EN[last]}`, `${last + 1}月までの目標${fmtFig(rows[last].target)}の${Math.round(pct)}%`)}
+                </span>
+                <span className="muted small">
+                  {' '}
+                  · {t(`${MONTHS_EN[last]} ${year} is the latest month JTA has published`, `観光庁の最新公表月は${year}年${last + 1}月`)}
                 </span>
               </p>
             )}
