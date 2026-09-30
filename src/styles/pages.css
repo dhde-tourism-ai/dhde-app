@@ -1911,3 +1911,36 @@
   font-size: 13px;
   color: var(--text-2);
 }
+
+/* Guest-night cards (Q1 pace, Q3 months). */
+.gn-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+.gn-tile {
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.gn-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.gn-pace {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--sp-5);
+}
+
+.gn-pace-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-2);
+}

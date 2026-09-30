@@ -235,6 +235,35 @@
           "source": "2025 inputs from 福井県観光客入込数 令和7年: 21.44M visitors, 2.385M overnight, 19.06M day-trippers. ¥24,675 = ¥30,221 − ¥5,546, the extra spend when a day-tripper stays the night instead. ¥43,000 per foreign visitor: Bank of Japan Kanazawa Branch (Apr 2026), from the team brief, not yet checked against the source."
         },
         {
+          "id": "q1-pace",
+          "type": "target_pace",
+          "span": 12,
+          "status": "real",
+          "title": "Guest-nights this year: running total vs target",
+          "note": "The vision sets 2029 targets from a 2023 baseline (calendar years). This year's target is the point on a steady-growth path between them; each month's share of the year comes from last year's months. Actuals are JTA monthly figures, refreshed daily; the latest months are preliminary.",
+          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model). Targets: ネクストふくい観光ビジョン (Mar 2025), KPI table p.9.",
+          "items": [
+            {
+              "series": "fukui_guest_nights",
+              "label": "All guest-nights",
+              "label_ja": "延べ宿泊者数",
+              "baseline": 3240000,
+              "baseline_year": 2023,
+              "target": 4500000,
+              "target_year": 2029
+            },
+            {
+              "series": "fukui_guest_nights_foreign",
+              "label": "Foreign guest-nights",
+              "label_ja": "外国人延べ宿泊者数",
+              "baseline": 65000,
+              "baseline_year": 2023,
+              "target": 400000,
+              "target_year": 2029
+            }
+          ]
+        },
+        {
           "id": "q1-sleep",
           "type": "bars",
           "span": 12,
@@ -1771,6 +1800,18 @@
               "approx": true
             }
           ]
+        },
+        {
+          "id": "q3-nights",
+          "type": "guest_nights_months",
+          "span": 12,
+          "status": "real",
+          "title": "Guest-nights by month: domestic and foreign",
+          "note": "Guest-nights (延べ), not people. Domestic = Japanese guests. Last year faded, this year solid; the % above each month is the foreign share. The latest months are preliminary.",
+          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model), refreshed daily.",
+          "total": "fukui_guest_nights",
+          "domestic": "fukui_guest_nights_japanese",
+          "foreign": "fukui_guest_nights_foreign"
         }
       ],
       "spec": {

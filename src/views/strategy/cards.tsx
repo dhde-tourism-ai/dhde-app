@@ -26,9 +26,8 @@ import { useJsonResource } from '../../hooks/useJsonResource'
 import { measuredYear, yearTotal } from '../../lib/monthly'
 import type { MonthlyForecastFile } from '../../types/monthly'
 
-const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
-const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
-const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12, color: '#e9eef8' }
+import { AXIS, S, TIP } from './chartTheme'
+import { GuestNightsMonths, TargetPace } from './guestNights'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
@@ -92,6 +91,10 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <Builder card={card} />
     case 'monthly_forecast':
       return <MonthlyForecast card={card} />
+    case 'guest_nights_months':
+      return <GuestNightsMonths card={card} />
+    case 'target_pace':
+      return <TargetPace card={card} />
   }
 }
 

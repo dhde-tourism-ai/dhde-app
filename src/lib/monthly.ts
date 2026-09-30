@@ -59,3 +59,13 @@ export function measuredYear(s: MonthlySeries, year: string): number | null {
   const months = s.actual.filter((a) => a.month.startsWith(year))
   return months.length === 12 ? months.reduce((a, b) => a + b.value, 0) : null
 }
+
+/** A series' actual values for Jan..Dec of `year` (null where not published). */
+export function monthsOf(s: MonthlySeries | undefined, year: string): (number | null)[] {
+  return Array.from({ length: 12 }, (_, i) => s?.actual.find((a) => a.month === `${year}-${String(i + 1).padStart(2, '0')}`)?.value ?? null)
+}
+
+/** A year's point on a steady-growth path from a baseline year to a target year. */
+export function pathTarget(baseline: number, baselineYear: number, target: number, targetYear: number, year: number): number {
+  return baseline * Math.pow(target / baseline, (year - baselineYear) / (targetYear - baselineYear))
+}
