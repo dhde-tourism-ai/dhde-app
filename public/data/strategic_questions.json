@@ -66,7 +66,7 @@
     {
       "id": "q1",
       "number": 1,
-      "nav": "What is tourism worth?",
+      "nav": "Fukui Tourism Economy",
       "title": "What is tourism worth to Fukui's economy?",
       "why": "Budget, political support, investment cases; DMOs must report economic ripple effect to JTA every three years.",
       "subs": [
@@ -303,7 +303,7 @@
     {
       "id": "q2",
       "number": 2,
-      "nav": "How can we predict visitor flow?",
+      "nav": "Visitor Flow and Forecast",
       "title": "How can we predict visitor flow?",
       "why": "Staff sites despite labour shortages, time buses and promotion, avoid peaks, fill quiet months (required DMO measure).",
       "subs": [
@@ -1534,7 +1534,7 @@
     {
       "id": "q3",
       "number": 3,
-      "nav": "Which visitors bring the most value?",
+      "nav": "Visitor Value",
       "title": "Which visitors bring the most value?",
       "why": "Target promotion and products at the visitors who stay and spend.",
       "subs": [
@@ -1825,7 +1825,7 @@
     {
       "id": "q4",
       "number": 4,
-      "nav": "Where are we losing visitors and spend?",
+      "nav": "Visitor Journey",
       "title": "Where are we losing visitors and spend?",
       "why": "Fix the stage of the visitor journey that leaks the most value.",
       "subs": [
@@ -2121,7 +2121,7 @@
     {
       "id": "q5",
       "number": 5,
-      "nav": "Which investments pay back?",
+      "nav": "Program Evaluation",
       "title": "Which investments deliver the best return?",
       "why": "Put limited budget where it adds the most nights and spend.",
       "subs": [
