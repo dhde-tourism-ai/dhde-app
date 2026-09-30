@@ -1,5 +1,5 @@
 /** Keys whose values are code, ids or sources, never display text. */
-const SKIP = new Set(['id', 'type', 'status', 'series', 'total', 'domestic', 'foreign', 'unit', 'source', 'spec', 'formula', 'prefix', 'links', 'nodes', 'severity', 'counts', 'layers', 'node', 'year'])
+const SKIP = new Set(['id', 'type', 'status', 'series', 'total', 'domestic', 'foreign', 'unit', 'source', 'spec', 'formula', 'prefix', 'links', 'nodes', 'severity', 'counts', 'layers', 'node', 'year', 'kind', 'gdp_kind'])
 
 /**
  * A copy of `value` with every display string swapped for its entry in

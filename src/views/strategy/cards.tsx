@@ -28,6 +28,7 @@ import type { MonthlyForecastFile } from '../../types/monthly'
 
 import { AXIS, S, TIP } from './chartTheme'
 import { GuestNightsMonths, TargetPace } from './guestNights'
+import { GdpTrend, Ripple, TourismTrend, WhatIf } from './economy'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
@@ -35,7 +36,10 @@ export function StrategyCardView({ card }: { card: StrategyCard }) {
   return (
     <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
       <header className="s-card-head">
-        <h3>{card.title}</h3>
+        <h3>
+          {card.title}
+          {card.badge && <span className="card-badge">{card.badge}</span>}
+        </h3>
         <StatusPill status={card.status} />
       </header>
       <div className="s-card-body">
@@ -95,6 +99,14 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <GuestNightsMonths card={card} />
     case 'target_pace':
       return <TargetPace card={card} />
+    case 'gdp_trend':
+      return <GdpTrend card={card} />
+    case 'tourism_trend':
+      return <TourismTrend card={card} />
+    case 'ripple':
+      return <Ripple card={card} />
+    case 'what_if':
+      return <WhatIf card={card} />
   }
 }
 

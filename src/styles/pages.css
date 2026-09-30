@@ -1957,3 +1957,401 @@
   font-size: 13px;
   color: var(--text-2);
 }
+
+/* ---- Q1 economy block: GDP trend, tourism's contribution, ripple, what-if ---- */
+.card-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.eco-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.eco-kpi,
+.whatif-tile {
+  min-width: 0;
+  padding: 8px 11px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.eco-kpi-label {
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.eco-kpi-value {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.eco-kpi-detail {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.eco-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.k-sw {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.k-range {
+  position: relative;
+  display: inline-block;
+  width: 9px;
+  height: 12px;
+}
+
+.k-range::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 4px;
+  width: 1.5px;
+  background: var(--s2);
+}
+
+.k-range::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 2.25px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--s2);
+  box-shadow: 0 7px 0 var(--s2);
+}
+
+.k-ring {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--text);
+  background: var(--surface);
+}
+
+.eco-tip {
+  min-width: 190px;
+  max-width: 300px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-float);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.eco-tip-title {
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.eco-tip-row {
+  display: grid;
+  grid-template-columns: 14px auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  line-height: 1.6;
+}
+
+.eco-tip-key {
+  width: 12px;
+  border-top: 2.5px solid;
+}
+
+.eco-tip-key.none {
+  border-color: transparent;
+}
+
+.eco-tip-val {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.eco-tip-row.strong .eco-tip-val {
+  font-weight: 700;
+}
+
+.eco-tip-lab {
+  color: var(--text-2);
+}
+
+.eco-tip-foot {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ripple-flow {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(170px, 1fr);
+  align-items: stretch;
+}
+
+.ripple-seq {
+  display: contents;
+}
+
+.ripple-op {
+  display: grid;
+  place-items: center;
+  padding: 0 7px;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
+.ripple-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+}
+
+.ripple-box.tier {
+  border-top: 3px solid var(--tier);
+}
+
+.ripple-box.total {
+  background: var(--accent-soft);
+  border-color: rgba(139, 157, 255, 0.45);
+}
+
+.ripple-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.ripple-sw {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.ripple-what {
+  min-height: 2.9em;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ripple-big {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.ripple-mid {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ripple-lab,
+.ripple-sub {
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.ripple-sub.muted {
+  color: var(--muted);
+}
+
+.ripple-figs {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  align-items: end;
+  gap: 8px;
+  margin: 2px 0 6px;
+}
+
+.ripple-figs .ripple-mid {
+  margin-top: 0;
+}
+
+.ripple-top {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 4px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.ripple-top li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'name name name'
+    'bar val jobs';
+  align-items: center;
+  gap: 3px 6px;
+  font-size: 11.5px;
+}
+
+.ripple-top .rt-name {
+  grid-area: name;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.ripple-top .rt-bar {
+  grid-area: bar;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.ripple-top .rt-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.ripple-top .rt-val {
+  grid-area: val;
+  text-align: right;
+}
+
+.ripple-top .rt-jobs {
+  grid-area: jobs;
+  min-width: 64px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.ripple-split {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  margin-top: 10px;
+}
+
+.ripple-split span {
+  border-radius: 2px;
+}
+
+.ripple-split-key {
+  font-size: 11px;
+}
+
+.ripple-legend {
+  margin-top: 8px;
+  font-size: 11.5px;
+}
+
+.whatif {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.whatif-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-btn {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip-btn:hover {
+  color: var(--text);
+}
+
+.chip-btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.whatif-out {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.whatif-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.whatif-rule {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .ripple-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ripple-op {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .eco-kpis,
+  .ripple-flow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
