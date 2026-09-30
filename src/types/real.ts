@@ -107,8 +107,21 @@ export interface RealNode {
   hotel_forward: RealForward[]
   /** Rakuten: % of hotels near the node with a room 1 / 7 / 30 days ahead, latest snapshot. Null without snapshots. */
   rakuten: { as_of: string | null; share_with_rooms_pct: { d1: number | null; d7: number | null; d30: number | null } } | null
+  /** FTAS survey over the 30 days to as_of: satisfaction (1-5), home region and purpose of visit, as % of responses. Null under 10 responses. */
+  survey: RealSurvey | null
   /** Missing when no model forecast was published for the node. */
   forecast?: RealForecast
+}
+
+export interface RealSurvey {
+  as_of: string
+  responses: number
+  satisfaction: number | null
+  /** -100..100 from the survey's 0-10 "would you recommend" question; null under 10 answers. */
+  nps: number | null
+  nps_n: number
+  origin_pct: Record<string, number>
+  purpose_pct: Record<string, number>
 }
 
 export interface RealData {

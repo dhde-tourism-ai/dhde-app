@@ -81,6 +81,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
   const est = isEstimatedMeasure(measure) || measure === 'vehicles'
   const hasDashboard = Boolean(dashboard?.nodes[node.id])
   const econ = econNodeFor(node, economics)
+  const survey = market?.survey[node.id]
   const day = Math.floor(t / 24)
   const ln = live?.nodes[node.id]
 
@@ -351,13 +352,13 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   </span>
                 </div>
               )}
-              {market.survey[node.id] && (
+              {survey && (
                 <div className="vg-cell">
                   <span className="eyebrow">{tr('Survey', 'アンケート')}</span>
-                  <span className="vg-val num">{market.survey[node.id].satisfaction.toFixed(1)}</span>
+                  <span className="vg-val num">{survey.satisfaction.toFixed(1)}</span>
                   <span className="muted small">
-                    NPS {market.survey[node.id].nps > 0 ? '+' : ''}
-                    {market.survey[node.id].nps} · n={market.survey[node.id].responses_30d}
+                    {survey.nps !== null && `NPS ${survey.nps > 0 ? '+' : ''}${survey.nps} · `}
+                    n={survey.responses_30d}
                   </span>
                 </div>
               )}
