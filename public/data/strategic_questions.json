@@ -807,6 +807,7 @@
           "type": "progress",
           "span": 7,
           "status": "real",
+          "hidden": true,
           "title": "Progress to the Next Fukui Tourism Vision targets",
           "note": "Share of the way from the 2023 baseline to the 2029 target. Both are calendar years, as in the vision's KPI table. Tick = time elapsed to 2025 (2 of 6 years = 33%). Red if behind.",
           "elapsed_share": 0.3333333333333333,
@@ -871,6 +872,7 @@
           "type": "formula_table",
           "span": 5,
           "status": "modelled",
+          "hidden": true,
           "title": "What moves the total",
           "note": "Extra tourism spend per year from one lever, all else equal.",
           "rows": [
@@ -924,6 +926,7 @@
           "type": "bars",
           "span": 12,
           "status": "pending",
+          "hidden": true,
           "title": "Where visitors sleep",
           "note": "Share of Fukui's visitors by where they spend the night: the overnight leakage to Kanazawa and Kyoto that drives \"Spend lost to neighbouring stays\". Filled from KDDI location data once purchased; no numbers until then.",
           "pending_on": "KDDI location data",
