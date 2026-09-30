@@ -155,6 +155,7 @@ export interface BuilderLever {
   default: number
   /** '%' means the slider value is a percentage of `base`. */
   unit: string
+  unit_ja?: string
   base: number
   counts: string[]
   spend_per: number

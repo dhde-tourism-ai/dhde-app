@@ -2475,7 +2475,8 @@
               "counts": [
                 "overnight"
               ],
-              "spend_per": 24675
+              "spend_per": 24675,
+              "unit_ja": "人"
             },
             {
               "id": "A3",

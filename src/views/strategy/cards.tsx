@@ -31,6 +31,12 @@ import { GuestNightsMonths, TargetPace } from './guestNights'
 import { FlowSankey } from './flowSankey'
 import { SearchTrends } from './searchTrends'
 
+/** "[pending]" in the current language, for values not measured yet. */
+function usePending() {
+  const { t } = useLang()
+  return t(PENDING, '[未取得]')
+}
+
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
   const { t } = useLang()
@@ -105,10 +111,11 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
 }
 
 function Stat({ card }: { card: StatCard }) {
+  const pending = usePending()
   return (
     <div className="stat">
       <div className={`stat-value ${card.value_text === null ? 'pending' : ''}`}>
-        {card.value_text ?? PENDING}
+        {card.value_text ?? pending}
         {card.value_text !== null && card.unit}
       </div>
       {card.detail && <div className="stat-detail">{card.detail}</div>}
@@ -210,6 +217,7 @@ function FormulaTable({ card }: { card: FormulaTableCard }) {
 }
 
 function Bars({ card }: { card: BarsCard }) {
+  const pending = usePending()
   const values = card.rows.map((r) => Math.abs(r.value ?? 0))
   const max = Math.max(1e-9, ...values)
   const fmt = (v: number) => {
@@ -219,7 +227,7 @@ function Bars({ card }: { card: BarsCard }) {
   return (
     <div className={`hbars ${card.signed ? 'signed' : ''}`} role="list">
       {card.rows.map((r) => (
-        <div key={r.label} role="listitem" className="hbar-row" title={r.value === null ? `${r.label}: ${PENDING}` : `${r.label}: ${fmt(r.value)}`}>
+        <div key={r.label} role="listitem" className="hbar-row" title={r.value === null ? `${r.label}: ${pending}` : `${r.label}: ${fmt(r.value)}`}>
           <span className="hbar-label">{r.label}</span>
           <span className="hbar-track">
             {card.signed && <span className="hbar-zero"></span>}
@@ -236,7 +244,7 @@ function Bars({ card }: { card: BarsCard }) {
               ></span>
             )}
           </span>
-          <span className={`hbar-value num ${r.value === null ? 'pending' : ''}`}>{r.value === null ? PENDING : (r.approx ? '~' : '') + fmt(r.value)}</span>
+          <span className={`hbar-value num ${r.value === null ? 'pending' : ''}`}>{r.value === null ? pending : (r.approx ? '~' : '') + fmt(r.value)}</span>
         </div>
       ))}
     </div>
@@ -356,6 +364,7 @@ const MODEL_LABEL: Record<string, [string, string]> = {
 
 /** 12-month forecast (F2) from monthly_forecast.json: actual months, forecast and range, and this year's expected total. */
 function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
+  const pending = usePending()
   const { t } = useLang()
   const file = useJsonResource<MonthlyForecastFile>('monthly_forecast.json')
   const [pick, setPick] = useState(card.series[0])
@@ -457,7 +466,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
             <dt>{t('Model', 'モデル')}</dt>
             <dd>{MODEL_LABEL[s.model] ? t(MODEL_LABEL[s.model][0], MODEL_LABEL[s.model][1]) : s.model}</dd>
             <dt>{t('Typical error', '典型的な誤差')}</dt>
-            <dd className="num">{s.backtest_mape_pct !== null ? `${s.backtest_mape_pct}%` : PENDING}</dd>
+            <dd className="num">{s.backtest_mape_pct !== null ? `${s.backtest_mape_pct}%` : pending}</dd>
             <dt>{t('Data to', 'データ')}</dt>
             <dd className="num">{s.data_through}</dd>
           </dl>
@@ -480,6 +489,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
 }
 
 function MonthlyShare({ card }: { card: MonthlyShareCard }) {
+  const pending = usePending()
   const { t } = useLang()
   const start = quietestRun(card.values)
   const quiet = new Set([start, (start + 1) % 12, (start + 2) % 12])
@@ -514,7 +524,7 @@ function MonthlyShare({ card }: { card: MonthlyShareCard }) {
       {card.kpi && (
         <div className="kpi-side">
           <div className="eyebrow">{card.kpi.label}</div>
-          <div className={`stat-value ${card.kpi.value_text === null ? 'pending' : ''}`}>{card.kpi.value_text ?? PENDING}</div>
+          <div className={`stat-value ${card.kpi.value_text === null ? 'pending' : ''}`}>{card.kpi.value_text ?? pending}</div>
           <StatusPill status={card.kpi.status} />
           <p className="muted small">
             {t('Quietest run', '最も少ない期間')}: {rows.filter((r) => r.quiet).map((r) => r.month).join(' · ')} ={' '}
@@ -610,6 +620,7 @@ function showOnMap(where: { layers: LayerId[]; node?: string }) {
 }
 
 function Funnel({ card }: { card: FunnelCard }) {
+  const pending = usePending()
   const { t } = useLang()
   const [picked, setPicked] = useState<string | null>(null)
   const sel = card.stages.find((s) => s.stage === picked)
@@ -626,10 +637,10 @@ function Funnel({ card }: { card: FunnelCard }) {
               </button>
             </div>
             <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
-              {s.gap_pct === null ? PENDING : `${s.gap_pct}%`}
+              {s.gap_pct === null ? pending : `${s.gap_pct}%`}
               <span className="funnel-gap-lab">{t('gap vs Kanazawa', '金沢との差')}</span>
             </div>
-            <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? PENDING : `${s.gap_pct}%`}>
+            <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? pending : `${s.gap_pct}%`}>
               {s.gap_pct === null ? <span className="pending" style={{ width: '100%' }}></span> : <span style={{ width: `${s.gap_pct}%` }}></span>}
             </div>
             <div className="funnel-evidence">{s.evidence}</div>
@@ -663,12 +674,13 @@ const SEV = {
 }
 
 function Indicators({ card }: { card: IndicatorsCard }) {
+  const pending = usePending()
   const { t } = useLang()
   return (
     <div className="indicators">
       {card.items.map((it) => (
         <div key={it.label} className={`indicator sev-${it.severity}`}>
-          <div className={`indicator-value ${it.value_text === null ? 'pending' : ''}`}>{it.value_text ?? PENDING}</div>
+          <div className={`indicator-value ${it.value_text === null ? 'pending' : ''}`}>{it.value_text ?? pending}</div>
           <div className="indicator-label">{it.label}</div>
           <div className="indicator-foot">
             <span className={`sev-tag sev-${it.severity}`}>
@@ -704,6 +716,7 @@ function PaceBar({ pace }: { pace: { value: number; expected: number; label?: st
 }
 
 function DataTable({ card }: { card: TableCard }) {
+  const pending = usePending()
   const hasStatusCol = card.columns.length > (card.rows[0]?.cells.length ?? 0)
   const paceCol = card.columns.findIndex((c) => c.toLowerCase() === 'pace')
   return (
@@ -721,7 +734,7 @@ function DataTable({ card }: { card: TableCard }) {
             <tr key={i}>
               {r.cells.map((c, j) => (
                 <td key={j} className={c === null ? 'pending-cell' : c === 'Not yet measurable' ? 'muted' : ''}>
-                  {j === paceCol && r.pace ? <PaceBar pace={r.pace} /> : (c ?? PENDING)}
+                  {j === paceCol && r.pace ? <PaceBar pace={r.pace} /> : (c ?? pending)}
                 </td>
               ))}
               {hasStatusCol && (
@@ -756,7 +769,7 @@ function Builder({ card }: { card: BuilderCard }) {
                 <i className="lever-sw" style={{ background: S[k % S.length] }}></i>
                 {l.label}
               </span>
-              <span className="num lever-val">{l.unit === '%' ? `${vals[l.id]}%` : `${(vals[l.id] ?? 0).toLocaleString('en-US')} ${l.unit}`}</span>
+              <span className="num lever-val">{l.unit === '%' ? `${vals[l.id]}%` : `${(vals[l.id] ?? 0).toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`}</span>
             </span>
             <input
               type="range"
