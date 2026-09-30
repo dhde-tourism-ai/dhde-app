@@ -21,9 +21,10 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, readUrlState } from './layers'
+import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
+import { SiteMarkers } from './layers/SiteMarkers'
 import { FlowLayer } from './layers/FlowLayer'
 import { TrafficLayer } from './layers/TrafficLayer'
 import { WeatherLayer } from './layers/WeatherLayer'
@@ -179,7 +180,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? DEFAULT_LAYERS))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers() ?? DEFAULT_LAYERS))
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
@@ -203,13 +204,15 @@ export default function MapView({ registry, dashboard, economics, economicsError
     return () => window.clearInterval(id)
   }, [playing, speed, live])
 
-  const toggle = (l: LayerId) =>
-    setActive((s) => {
-      const n = new Set(s)
-      if (n.has(l)) n.delete(l)
-      else n.add(l)
-      return n
-    })
+  // Saved only when the viewer toggles a layer: a ?layers= link or a picked
+  // nudge turning a layer on doesn't replace the viewer's own choice.
+  const toggle = (l: LayerId) => {
+    const n = new Set(active)
+    if (n.has(l)) n.delete(l)
+    else n.add(l)
+    setActive(n)
+    storeLayers(n)
+  }
 
   const allNodes = useMemo(() => buildMapNodes(registry, dashboard), [registry, dashboard])
   const nodes = useMemo(() => allNodes.filter((n) => n.prefecture === 'fukui'), [allNodes])
@@ -247,14 +250,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
       </button>
       <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
-        <Icon name="flag" size={14} /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+        <Icon name="flag" size={14} /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
       </button>
     </div>
   )
   const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
   const nudgeTitle = (
     <h2 className="fp-title">
-      <Icon name="flag" /> {tr('Nudges', 'ナッジ')}
+      <Icon name="flag" /> {tr('Action nudges', '推奨アクション')}
     </h2>
   )
 
@@ -309,6 +312,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
           />
         )}
+        {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}
         {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
         {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
         {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
@@ -334,7 +338,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 {tr('All conditions normal.', 'すべて平常です。')}
               </span>
             )}
-            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} /> : <DemoBadge />)}
+            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} note={OVERVIEW_NOTE} /> : <DemoBadge />)}
           </div>
         )}
         {liveError && <div className="banner banner-warn status-strip">live_demo.json: {liveError.message}</div>}
@@ -372,7 +376,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 )}
               </button>
               <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
-                <Icon name="flag" /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+                <Icon name="flag" /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}

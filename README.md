@@ -2,7 +2,7 @@
 
 **DHDE · Fukui Tourism Intelligence**: one app with three views that share one data layer. Dark theme, EN/JA.
 
-- **Map**: full-screen layered map of the six priority nodes. Layer groups: Actions (Nudges) · Movement (People, Regional density, People flow, Traffic flow) · Conditions (Weather) · Voice of visitor (Survey, Social media, Reviews, Sentiment) · Market (Hotels, Search intent) · Economics. A timeline covers today (hourly) and the next 7 days; a Nudges panel runs the three nudge loops.
+- **Map**: full-screen layered map of the six priority nodes. Layer groups: Actions (Action nudges) · Movement (People, Regional density, People flow, Traffic flow) · Conditions (Weather) · Voice of visitor (Survey, Social media, Reviews, Sentiment) · Market (Hotels, Search intent) · Economics. A timeline covers today (hourly) and the next 7 days; an Action nudges panel runs the three nudge loops, each nudge labelled High, Medium or Low priority.
 - **Nodes**: per-node dashboards with the daily forecast (Dina Belay's dashboard logic, carried over from dhde-fukui-tourism-dashboard). Priority nodes without published data stay selectable with a "data on its way" panel.
 - **Strategy**: the strategy team's five strategic questions (what tourism is worth, visitor flow, visitor value, leaks, returns) as dashboard components.
 
@@ -89,7 +89,7 @@ Built by `scripts/build_real_data.py` (the lead's adapter; its docstring has the
 | Reviews | rating (30-day average of new Google reviews, weighted by count) and new reviews in 30 days | total count, snippets (fictional) |
 | Survey | responses in 30 days (sum of `survey_responses`) | satisfaction, NPS, reasons, origin |
 | Social, sentiment | | all |
-| Nudges | demand vs normal = real 90-day mean `visitors_est`; booking balance from real occupancy and forward bookings | weather-route (future weather is demo) |
+| Action nudges | demand vs normal = real 90-day mean `visitors_est`; booking balance from real occupancy and forward bookings | weather-route (future weather is demo) |
 
 The header chip shows `shared_date` (the latest day every node has data for).
 
@@ -138,7 +138,7 @@ Computed in the app (`src/lib/nudges.ts`) from the two files above, so the real 
 2. **Weather-route**: rain ≥ 8 mm/h or wind ≥ 13 m/s at a coastal node (Tojinbo, Rainbow Line) → recommend an indoor site and draw the inland route.
 3. **Booking balance**: hotel occupancy ≥ 85% while the served node's demand is ≥ 15% above normal → raise rates and redirect to the nearest area with rooms; occupancy ≤ 40% → promote stay packages.
 
-Each nudge carries severity, node, time, the triggering signals, the suggested action and a Demo pill; clicking one moves the timeline and flies the map to it.
+Each nudge carries a priority (High, Medium or Low, from its severity), node, time, the triggering signals, the suggested action and a Demo pill; clicking one moves the timeline and flies the map to it.
 
 ## Deploy
 

@@ -68,6 +68,19 @@ export const LOOP_LABEL: Record<Nudge['loop'], { en: string; ja: string }> = {
   3: { en: 'Booking balance', ja: '予約バランス' },
 }
 
+export type Priority = 'high' | 'medium' | 'low'
+
+/** Three urgency levels for government users; the map flag takes the priority's colour. */
+export const PRIORITY: Record<Priority, { colour: string; en: string; ja: string; hint_en: string; hint_ja: string }> = {
+  high: { colour: '#d03b3b', en: 'High priority', ja: '優先度：高', hint_en: 'Act today: visitor safety or access is at risk (severe weather, route problem).', hint_ja: '本日対応：来訪者の安全や交通に影響（荒天・ルートの問題）。' },
+  medium: { colour: '#ec835a', en: 'Medium priority', ja: '優先度：中', hint_en: 'Plan ahead: demand well above normal or hotels close to full.', hint_ja: '事前に準備：需要が平常より大幅に多い、またはホテルが満室に近い。' },
+  low: { colour: '#3987e5', en: 'Low priority', ja: '優先度：低', hint_en: 'Opportunity: a quiet day or empty rooms worth promoting.', hint_ja: '機会：閑散日や空室をPRできる。' },
+}
+
+export function priorityOf(sev: Sev): Priority {
+  return sev === 'crit' ? 'high' : sev === 'info' ? 'low' : 'medium'
+}
+
 const DEMAND_THRESHOLD = 0.35
 const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; route: RouteLeg[] }> = {
   tojinbo: {

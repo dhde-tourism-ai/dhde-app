@@ -1588,3 +1588,372 @@
   }
 }
 .data-table td.mono { white-space: nowrap; }
+
+/* ---------------- Executive summary ---------------- */
+.sum-jump {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.summary .s-card {
+  gap: 10px;
+}
+
+.sum-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.sum-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.sum-table th,
+.sum-table td {
+  padding: 7px 8px;
+  text-align: end;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.sum-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sum-table th:first-child {
+  text-align: start;
+  font-weight: 600;
+}
+
+.sum-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.sum-muted {
+  color: var(--muted);
+}
+
+.sum-up {
+  color: var(--good-text);
+}
+
+.sum-down {
+  color: var(--crit-text);
+}
+
+.sum-big {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.sum-big strong {
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--text);
+  margin-inline-end: 4px;
+}
+
+.sum-warn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--warn-text);
+  font-size: 13px;
+}
+
+.sum-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sum-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+.sum-list li:last-child {
+  border-bottom: 0;
+}
+
+.sum-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.sum-val {
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+
+.sum-state {
+  width: 64px;
+  text-align: end;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sum-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.sum-dot.met {
+  background: var(--good);
+}
+
+.sum-dot.pace {
+  background: var(--accent);
+}
+
+.sum-dot.behind {
+  background: var(--warn);
+}
+
+.sum-actions-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sum-actions-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+.sum-pr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.sum-pr i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.sum-act-title {
+  font-size: 14px;
+}
+
+.sum-act-do {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.sum-more {
+  align-self: flex-start;
+}
+
+/* Narrow screens scroll the table sideways instead of the page. */
+.sum-table-wrap {
+  overflow-x: auto;
+}
+
+/* A card or question opened from an FAQ link. */
+.s-card.flash,
+.q-section.flash {
+  box-shadow: 0 0 0 2px var(--accent);
+  transition: box-shadow 0.4s;
+}
+
+.q-section.flash {
+  border-radius: var(--r-md);
+}
+
+/* Executive summary FAQ */
+.faq {
+  border-top: 1px solid var(--line);
+}
+
+.faq summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  margin-inline-start: auto;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.faq[open] summary::after {
+  content: '−';
+}
+
+.faq-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 0 14px 38px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+
+.faq-body p {
+  margin: 0;
+}
+
+.faq-chart {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.faq-chart-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.faq-source {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Interactive funnel (Q4): a picked stage and where its leak shows on the map. */
+.funnel-stage {
+  cursor: pointer;
+}
+
+.funnel-stage.on {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.funnel-pick {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.funnel-where {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: var(--sp-3);
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-size: 13.5px;
+}
+
+.funnel-where-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.funnel-hint {
+  margin: var(--sp-3) 0 0;
+}
+
+/* Monthly forecast card (Q2): many series wrap onto more rows. */
+.seg.seg-wrap {
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.mf-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  margin: var(--sp-3) 0;
+  font-size: 12.5px;
+}
+
+.mf-facts dt {
+  color: var(--muted);
+}
+
+.mf-facts dd {
+  margin: 0;
+}
+
+.mf-vs {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* Guest-night cards (Q1 pace, Q3 months). */
+.gn-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+.gn-tile {
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.gn-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.gn-pace {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--sp-5);
+}
+
+.gn-pace-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-2);
+}

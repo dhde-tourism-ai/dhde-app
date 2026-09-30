@@ -495,6 +495,42 @@
   flex: none;
 }
 
+/* Layer panel header doubles as the collapse bar. */
+.fp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.fp-arrow {
+  display: flex;
+  margin-inline-start: auto;
+  color: var(--muted);
+  transform: rotate(-90deg);
+  transition: transform 0.15s;
+}
+
+.fp-title .fp-arrow svg {
+  color: inherit;
+}
+
+.float-panel.collapsed .fp-arrow {
+  transform: rotate(90deg);
+}
+
+.float-panel.collapsed .fp-head {
+  border-bottom: 0;
+  padding-bottom: 12px;
+}
+
 .fp-body {
   overflow-y: auto;
   padding: 12px 14px 14px;
@@ -574,8 +610,9 @@
 
 .layer-name {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 3px 6px;
   font-weight: 600;
   font-size: 13px;
 }
@@ -1446,5 +1483,31 @@ button.al-item:hover {
 
 .basemap-row .seg button {
   padding: 5px 9px;
+  white-space: nowrap;
+}
+
+/* Site panel rows waiting for KDDI location data. */
+.kddi-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.kddi-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.kddi-list li:last-child {
+  border-bottom: 0;
+}
+
+.kddi-pending {
+  flex: none;
   white-space: nowrap;
 }
