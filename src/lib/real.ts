@@ -114,7 +114,15 @@ function parsePct(v: unknown): Record<string, number> {
 
 function parseSurvey(v: unknown): RealNode['survey'] {
   if (!isObj(v) || typeof v.as_of !== 'string' || num(v.responses) === null) return null
-  return { as_of: v.as_of, responses: num(v.responses) as number, satisfaction: num(v.satisfaction), origin_pct: parsePct(v.origin_pct), purpose_pct: parsePct(v.purpose_pct) }
+  return {
+    as_of: v.as_of,
+    responses: num(v.responses) as number,
+    satisfaction: num(v.satisfaction),
+    nps: num(v.nps),
+    nps_n: num(v.nps_n) ?? 0,
+    origin_pct: parsePct(v.origin_pct),
+    purpose_pct: parsePct(v.purpose_pct),
+  }
 }
 
 /** The model forecast block, or undefined when it's missing or has no usable day. */
@@ -735,8 +743,8 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
       survey[id] = {
         ...survey[id],
         satisfaction: Math.round(rs.satisfaction * 10) / 10,
-        // The FTAS survey doesn't ask "would you recommend", so there's no real NPS.
-        nps: null,
+        // Hidden (null) rather than demo when too few answered the NPS question.
+        nps: rs.nps === null ? null : Math.round(rs.nps),
         top_reasons: Object.entries(rs.purpose_pct)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 4)
@@ -744,7 +752,7 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
         origin_share: Object.entries(ORIGIN_LABELS)
           .filter(([k]) => rs.origin_pct[k] !== undefined)
           .map(([k, l]) => ({ ...l, share: Math.round(rs.origin_pct[k]) })),
-        details_real: { as_of: rs.as_of, responses: rs.responses },
+        details_real: { as_of: rs.as_of, responses: rs.responses, nps_n: rs.nps_n },
       }
     }
     surveyReal.push(id)

@@ -64,15 +64,15 @@ export interface SurveyNode {
   responses_30d: number
   /** Mean satisfaction, 1-5. */
   satisfaction: number
-  /** Net promoter score, -100..100. Null when the survey doesn't ask it (the real FTAS survey). */
+  /** Net promoter score, -100..100. Null (hidden) when fewer than 10 real answers to the NPS question. */
   nps: number | null
   top_reasons: Share[]
   origin_share: Share[]
   source: string
   /** responses_30d is real (sum of daily survey_responses). */
   responses_real?: { as_of: string | null }
-  /** satisfaction, top_reasons (purpose of visit) and origin_share (home region, domestic only) are real. */
-  details_real?: { as_of: string; responses: number }
+  /** satisfaction, nps (nps_n answers), top_reasons (purpose of visit) and origin_share (home region, domestic only) are real. */
+  details_real?: { as_of: string; responses: number; nps_n: number }
 }
 
 export interface SocialPost {

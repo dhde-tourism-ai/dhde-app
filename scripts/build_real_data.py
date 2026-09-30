@@ -422,8 +422,9 @@ def rakuten_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
 
 
 def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
-    """Satisfaction, home region and purpose of visit over the SURVEY_DAYS to the
-    last response. Shares are % of responses (purposes can add up past 100).
+    """Satisfaction, NPS, home region and purpose of visit over the SURVEY_DAYS to
+    the last response. Shares are % of responses (purposes can add up past 100).
+    NPS is None with fewer than MIN_SURVEY_RESPONSES answers to its question.
     None without the columns or with fewer than MIN_SURVEY_RESPONSES responses."""
     if "survey_satisfaction_n" not in m.columns:
         return None
@@ -437,6 +438,10 @@ def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
         return None
     sat_n = int(w["survey_satisfaction_n"].fillna(0).sum())
     sat = (w["survey_satisfaction_mean"] * w["survey_satisfaction_n"]).sum() / sat_n if sat_n else None
+    # NPS = (promoters 9-10 minus detractors 0-6) / answers x 100, from the daily counts.
+    nps_n = int(w["survey_nps_n"].fillna(0).sum()) if "survey_nps_n" in w.columns else 0
+    nps = (round((w["survey_nps_promoters"].fillna(0).sum() - w["survey_nps_detractors"].fillna(0).sum()) / nps_n * 100, 1)
+           if nps_n >= MIN_SURVEY_RESPONSES else None)
 
     def pct(cols: dict[str, str], total: int) -> dict[str, float]:
         return {k: round(float(w[c].fillna(0).sum()) / total * 100, 1) for k, c in cols.items() if c in w.columns}
@@ -449,6 +454,8 @@ def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
         "responses": n,
         "satisfaction": clean(sat),
         "satisfaction_n": sat_n,
+        "nps": clean(nps),
+        "nps_n": nps_n,
         "origin_pct": pct(origin_cols, with_origin) if with_origin else {},
         "purpose_pct": pct({k: f"survey_purpose_{k}" for k in SURVEY_PURPOSES}, n),
     }

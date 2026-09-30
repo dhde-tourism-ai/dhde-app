@@ -38,7 +38,7 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   hotels: ['Occupancy, ADR and rooms from FTAS reservation feeds, forward bookings up to 90 days (real). Rakuten availability (share of hotels within 3 km with rooms 1/7/30 days ahead) is real where there is a daily snapshot, demo elsewhere.', '稼働率・客室単価・室数はFTAS予約データ、90日先までの予約（実データ）。楽天の空室（3km以内で1・7・30日先に空室がある施設の割合）は日次スナップショットがある地域は実データ、それ以外はデモ。'],
   rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
   reviews: ['Rating, new reviews, star split and total count are real (Google). Snippets are fictional demo.', '評価・新規件数・星の内訳・総件数は実データ（Google）。抜粋は架空のデモ。'],
-  survey: ['Responses, satisfaction, reasons for visiting and home region (Japan) are real (FTAS survey). The survey has no NPS question.', '回答数・満足度・来訪理由・居住地（国内）は実データ（FTASアンケート）。NPSの設問なし。'],
+  survey: ['Responses, satisfaction, NPS, reasons for visiting and home region (Japan) are real (FTAS survey).', '回答数・満足度・NPS・来訪理由・居住地（国内）は実データ（FTASアンケート）。'],
   nudges: ['Demand and booking nudges use real visitor history and forward bookings where available.', '需要・予約ナッジは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
