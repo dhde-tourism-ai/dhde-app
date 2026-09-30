@@ -172,9 +172,11 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
         <p>{q.answer}</p>
       </div>
       <div className="card-grid">
-        {q.cards.map((c) => (
-          <StrategyCardView key={c.id} card={c} />
-        ))}
+        {q.cards
+          .filter((c) => !c.hidden)
+          .map((c) => (
+            <StrategyCardView key={c.id} card={c} />
+          ))}
       </div>
       {showSpecs && (
         <div className="spec">
