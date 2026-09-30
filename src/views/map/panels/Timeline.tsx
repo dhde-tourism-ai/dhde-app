@@ -168,7 +168,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed }
         >
           <Icon name="now" /> {tr('Now', '現在')}
         </button>
-        {live.demo && <SourceBadge info={live.sources?.people} compact />}
+        {live.demo && <SourceBadge info={live.sources?.people} compact note={['Past days: real daily visitor totals with a simulated hourly shape. Future days: forecast.', '過去日：来訪者の日合計は実データ、時間別は模擬。将来日：予測。']} />}
       </div>
     </div>
   )

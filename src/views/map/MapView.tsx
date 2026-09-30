@@ -21,7 +21,7 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, readStoredLayers, readUrlState, storeLayers } from './layers'
+import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { FlowLayer } from './layers/FlowLayer'
@@ -335,7 +335,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 {tr('All conditions normal.', 'すべて平常です。')}
               </span>
             )}
-            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} /> : <DemoBadge />)}
+            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} note={OVERVIEW_NOTE} /> : <DemoBadge />)}
           </div>
         )}
         {liveError && <div className="banner banner-warn status-strip">live_demo.json: {liveError.message}</div>}
