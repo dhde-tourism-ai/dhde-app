@@ -174,4 +174,6 @@ export interface RealNodeMeta {
   /** Mean visitors_est over the real history ("normal"). */
   normal_daily: number | null
   forecast_method: string
+  /** Per merged day: 'model' (7-day forecast), 'naive' (same-weekday mean, a rough estimate) or null (no forecast). */
+  forecast_source_daily: ('model' | 'naive' | null)[]
 }
