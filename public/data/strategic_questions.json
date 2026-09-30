@@ -1819,176 +1819,6 @@
       "answer": "Deepest leaks are awareness (search interest 12 vs Ishikawa 100) and overnight stays (11% vs ~39% Kanazawa City). Occupancy 46.5%, so rooms are not the constraint. No direct bus Fukui Station → Tojinbo.",
       "cards": [
         {
-          "id": "q4-flow",
-          "type": "sankey",
-          "span": 12,
-          "status": "real",
-          "title": "Where visitors come from, whether they stay the night, and what they spend (2025)",
-          "unit": "k visitors",
-          "nodes": [
-            {
-              "id": "fukui",
-              "label": "Fukui",
-              "label_ja": "福井県内"
-            },
-            {
-              "id": "kansai",
-              "label": "Kansai",
-              "label_ja": "関西"
-            },
-            {
-              "id": "chukyo",
-              "label": "Chukyo",
-              "label_ja": "中京"
-            },
-            {
-              "id": "hokuriku",
-              "label": "Hokuriku",
-              "label_ja": "北陸"
-            },
-            {
-              "id": "kanto",
-              "label": "Kanto",
-              "label_ja": "関東"
-            },
-            {
-              "id": "other",
-              "label": "Other",
-              "label_ja": "その他"
-            },
-            {
-              "id": "res",
-              "label": "Fukui residents",
-              "label_ja": "県内客"
-            },
-            {
-              "id": "out",
-              "label": "From outside Fukui",
-              "label_ja": "県外客"
-            },
-            {
-              "id": "day",
-              "label": "Day trip",
-              "label_ja": "日帰り"
-            },
-            {
-              "id": "night",
-              "label": "Overnight",
-              "label_ja": "宿泊"
-            }
-          ],
-          "links": [
-            [
-              "fukui",
-              "res",
-              12592
-            ],
-            [
-              "kansai",
-              "out",
-              3363
-            ],
-            [
-              "chukyo",
-              "out",
-              2289
-            ],
-            [
-              "hokuriku",
-              "out",
-              1584
-            ],
-            [
-              "kanto",
-              "out",
-              952
-            ],
-            [
-              "other",
-              "out",
-              663
-            ],
-            [
-              "res",
-              "day",
-              12168
-            ],
-            [
-              "res",
-              "night",
-              424
-            ],
-            [
-              "out",
-              "day",
-              6890
-            ],
-            [
-              "out",
-              "night",
-              1961
-            ]
-          ],
-          "insight": "The leak is the stay, not the arrival: 8.85M visitors came from outside Fukui in 2025, but only 1.96M (22%) stayed the night. Foreign visitors aren't split out in Fukui's counts, so they're shown on their own below, not added.",
-          "insight_ja": "流出は来訪ではなく宿泊：2025年、県外から885万人が訪れたが、宿泊したのは196万人（22%）のみ。県の統計は外国人を分けていないため、外国人は下に別に示し、合計には加えない。",
-          "zoom": {
-            "label": "Foreign visitors, 2025 (JTA inbound survey, estimated split): shown apart, not added",
-            "label_ja": "外国人来訪者 2025年（観光庁の訪日調査、内訳は推計）：別に表示し、合計には加えない",
-            "total": 86,
-            "parts": [
-              {
-                "label": "Day trip",
-                "label_ja": "日帰り",
-                "value": 14,
-                "low": 2,
-                "high": 32
-              },
-              {
-                "label": "Overnight",
-                "label_ja": "宿泊",
-                "value": 72,
-                "low": 54,
-                "high": 84
-              }
-            ]
-          },
-          "note": "Visitors counted once each (Hokuriku = Ishikawa and Toyama) (実人数), in thousands; the total is Fukui's 21.44M. Answers Q3 (who stays) and Q4 (where the stay leaks). Foreign visitors come from another source and are shown separately; their day-trip/overnight split is estimated.",
-          "source": "Fukui Pref. 観光客入込数（推計）令和7年: day trip / overnight by 県内 / 県外 (p.3) and 県外客 by region of origin (p.8), and 観光消費額 by 県内 / 県外 × day trip / overnight (p.10). Foreign: JTA インバウンド消費動向調査 2025 (86k visitors); stay split estimated. Kansai = 県外客 minus the other regions.",
-          "alt": {
-            "label": "Spend",
-            "label_ja": "消費額",
-            "base_label": "Visitors",
-            "base_label_ja": "来訪者数",
-            "unit": "oku_yen",
-            "links": [
-              [
-                "res",
-                "day",
-                439
-              ],
-              [
-                "res",
-                "night",
-                125
-              ],
-              [
-                "out",
-                "day",
-                618
-              ],
-              [
-                "out",
-                "night",
-                805
-              ]
-            ],
-            "insight": "Visitors from outside Fukui who stay the night are 9% of visitors but bring 40% of all tourism spend (¥80.5bn of ¥198.7bn). Each extra overnight guest from outside is worth far more than a day trip.",
-            "insight_ja": "県外からの宿泊客は来訪者の9%だが、観光消費額の40%（1,987億円のうち805億円）を占める。県外宿泊客が1人増える価値は日帰り客よりはるかに大きい。",
-            "note": "Spend by region of origin isn't published, so this view starts at the groups. Fukui's ¥198.7bn doesn't separate foreign spend; JTA's inbound survey puts it at about ¥3.7bn (86k visitors × about ¥43k), a different source that isn't added here and isn't verified yet.",
-            "note_ja": "発地別の消費額は公表されていないため、この表示は区分から始まる。県の1,987億円は外国人の消費を分けていない。観光庁の訪日調査では約37億円（8.6万人×約4.3万円）だが、別の出典のためここには加えず、未確認。"
-          }
-        },
-        {
           "id": "q4-discover",
           "type": "search_trends",
           "span": 12,
@@ -2226,10 +2056,215 @@
               }
             ]
           },
-          "insight": "Fukui is found by Kansai and Chukyo, not by Tokyo or abroad. Searchers in Osaka and Aichi look for Fukui as much as for Ishikawa + Kanazawa (1.01× and 1.05×); in Tokyo it is 0.55×, and abroad Fukui barely registers. For Kansai and Chukyo the gap is the stay (see the chart above); for Tokyo and abroad it is being found at all.",
+          "insight": "Fukui is found by Kansai and Chukyo, not by Tokyo or abroad. Searchers in Osaka and Aichi look for Fukui as much as for Ishikawa + Kanazawa (1.01× and 1.05×); in Tokyo it is 0.55×, and abroad Fukui barely registers. For Kansai and Chukyo the gap is the stay (see the visitor flow below); for Tokyo and abroad it is being found at all.",
           "as_of": "Fixed snapshot: Google Trends pulled 29 Sep 2026. It will update weekly after the interim presentation.",
           "note": "A search index (0–100 within each query), not a number of people, so it sits beside the visitor flow rather than feeding it. Monthly averages of weekly values; topics, not keywords (福井県 + 福井市 vs 石川県 + 金沢市).",
           "source": "Google Trends (trends.google.com), pulled 29 Sep 2026; research by Gabriella."
+        },
+        {
+          "id": "q4-decide",
+          "type": "indicators",
+          "span": 12,
+          "status": "real",
+          "title": "Decide: can an interested traveller book Fukui?",
+          "items": [
+            {
+              "value_text": "5 vs 56",
+              "label": "Fukui vs Himeji in \"day trip from Kyoto / Osaka\" listings",
+              "severity": "crit",
+              "status": "real"
+            },
+            {
+              "value_text": "5 vs 23",
+              "label": "Fukui vs Shirakawa-go in day trips from Kanazawa, 25 minutes away",
+              "severity": "warn",
+              "status": "real"
+            },
+            {
+              "value_text": "7 vs 68",
+              "label": "Products that include a night, Fukui vs Shirakawa-go",
+              "severity": "crit",
+              "status": "real"
+            },
+            {
+              "value_text": "0 of 27",
+              "label": "Fukui products on Viator with a stay (Kanazawa: 132)",
+              "severity": "warn",
+              "status": "real"
+            }
+          ],
+          "note": "Fukui is bookable, but not where travellers decide. Its 60 products match its low search interest, so more listings alone won't fix it. The gaps are the gateway shelf (day trips from Kyoto, Osaka and Kanazawa) and the stay. Snapshot: one check per platform, 25–27 Sep 2026; Fukui is the whole prefecture, the others are cities or a village.",
+          "source": "Team audit of GetYourGuide, Klook, KKday and Viator, 25–27 Sep 2026; research by Gabriella."
+        },
+        {
+          "id": "q4-flow",
+          "type": "sankey",
+          "span": 12,
+          "status": "real",
+          "title": "Where visitors come from, whether they stay the night, and what they spend (2025)",
+          "unit": "k visitors",
+          "nodes": [
+            {
+              "id": "fukui",
+              "label": "Fukui",
+              "label_ja": "福井県内"
+            },
+            {
+              "id": "kansai",
+              "label": "Kansai",
+              "label_ja": "関西"
+            },
+            {
+              "id": "chukyo",
+              "label": "Chukyo",
+              "label_ja": "中京"
+            },
+            {
+              "id": "hokuriku",
+              "label": "Hokuriku",
+              "label_ja": "北陸"
+            },
+            {
+              "id": "kanto",
+              "label": "Kanto",
+              "label_ja": "関東"
+            },
+            {
+              "id": "other",
+              "label": "Other",
+              "label_ja": "その他"
+            },
+            {
+              "id": "res",
+              "label": "Fukui residents",
+              "label_ja": "県内客"
+            },
+            {
+              "id": "out",
+              "label": "From outside Fukui",
+              "label_ja": "県外客"
+            },
+            {
+              "id": "day",
+              "label": "Day trip",
+              "label_ja": "日帰り"
+            },
+            {
+              "id": "night",
+              "label": "Overnight",
+              "label_ja": "宿泊"
+            }
+          ],
+          "links": [
+            [
+              "fukui",
+              "res",
+              12592
+            ],
+            [
+              "kansai",
+              "out",
+              3363
+            ],
+            [
+              "chukyo",
+              "out",
+              2289
+            ],
+            [
+              "hokuriku",
+              "out",
+              1584
+            ],
+            [
+              "kanto",
+              "out",
+              952
+            ],
+            [
+              "other",
+              "out",
+              663
+            ],
+            [
+              "res",
+              "day",
+              12168
+            ],
+            [
+              "res",
+              "night",
+              424
+            ],
+            [
+              "out",
+              "day",
+              6890
+            ],
+            [
+              "out",
+              "night",
+              1961
+            ]
+          ],
+          "insight": "The leak is the stay, not the arrival: 8.85M visitors came from outside Fukui in 2025, but only 1.96M (22%) stayed the night. Foreign visitors aren't split out in Fukui's counts, so they're shown on their own below, not added.",
+          "insight_ja": "流出は来訪ではなく宿泊：2025年、県外から885万人が訪れたが、宿泊したのは196万人（22%）のみ。県の統計は外国人を分けていないため、外国人は下に別に示し、合計には加えない。",
+          "zoom": {
+            "label": "Foreign visitors, 2025 (JTA inbound survey, estimated split): shown apart, not added",
+            "label_ja": "外国人来訪者 2025年（観光庁の訪日調査、内訳は推計）：別に表示し、合計には加えない",
+            "total": 86,
+            "parts": [
+              {
+                "label": "Day trip",
+                "label_ja": "日帰り",
+                "value": 14,
+                "low": 2,
+                "high": 32
+              },
+              {
+                "label": "Overnight",
+                "label_ja": "宿泊",
+                "value": 72,
+                "low": 54,
+                "high": 84
+              }
+            ]
+          },
+          "note": "Visitors counted once each (Hokuriku = Ishikawa and Toyama) (実人数), in thousands; the total is Fukui's 21.44M. Answers Q3 (who stays) and Q4 (where the stay leaks). Foreign visitors come from another source and are shown separately; their day-trip/overnight split is estimated.",
+          "source": "Fukui Pref. 観光客入込数（推計）令和7年: day trip / overnight by 県内 / 県外 (p.3) and 県外客 by region of origin (p.8), and 観光消費額 by 県内 / 県外 × day trip / overnight (p.10). Foreign: JTA インバウンド消費動向調査 2025 (86k visitors); stay split estimated. Kansai = 県外客 minus the other regions.",
+          "alt": {
+            "label": "Spend",
+            "label_ja": "消費額",
+            "base_label": "Visitors",
+            "base_label_ja": "来訪者数",
+            "unit": "oku_yen",
+            "links": [
+              [
+                "res",
+                "day",
+                439
+              ],
+              [
+                "res",
+                "night",
+                125
+              ],
+              [
+                "out",
+                "day",
+                618
+              ],
+              [
+                "out",
+                "night",
+                805
+              ]
+            ],
+            "insight": "Visitors from outside Fukui who stay the night are 9% of visitors but bring 40% of all tourism spend (¥80.5bn of ¥198.7bn). Each extra overnight guest from outside is worth far more than a day trip.",
+            "insight_ja": "県外からの宿泊客は来訪者の9%だが、観光消費額の40%（1,987億円のうち805億円）を占める。県外宿泊客が1人増える価値は日帰り客よりはるかに大きい。",
+            "note": "Spend by region of origin isn't published, so this view starts at the groups. Fukui's ¥198.7bn doesn't separate foreign spend; JTA's inbound survey puts it at about ¥3.7bn (86k visitors × about ¥43k), a different source that isn't added here and isn't verified yet.",
+            "note_ja": "発地別の消費額は公表されていないため、この表示は区分から始まる。県の1,987億円は外国人の消費を分けていない。観光庁の訪日調査では約37億円（8.6万人×約4.3万円）だが、別の出典のためここには加えず、未確認。"
+          }
         },
         {
           "id": "q4-funnel",
