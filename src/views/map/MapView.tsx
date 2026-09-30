@@ -24,6 +24,7 @@ import { SourceBadge } from '../../components/SourceBadge'
 import { DEFAULT_LAYERS, readStoredLayers, readUrlState, storeLayers } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
+import { SiteMarkers } from './layers/SiteMarkers'
 import { FlowLayer } from './layers/FlowLayer'
 import { TrafficLayer } from './layers/TrafficLayer'
 import { WeatherLayer } from './layers/WeatherLayer'
@@ -180,7 +181,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
   const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers() ?? DEFAULT_LAYERS))
-  useEffect(() => storeLayers(active), [active])
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
@@ -204,13 +204,15 @@ export default function MapView({ registry, dashboard, economics, economicsError
     return () => window.clearInterval(id)
   }, [playing, speed, live])
 
-  const toggle = (l: LayerId) =>
-    setActive((s) => {
-      const n = new Set(s)
-      if (n.has(l)) n.delete(l)
-      else n.add(l)
-      return n
-    })
+  // Saved only when the viewer toggles a layer: a ?layers= link or a picked
+  // nudge turning a layer on doesn't replace the viewer's own choice.
+  const toggle = (l: LayerId) => {
+    const n = new Set(active)
+    if (n.has(l)) n.delete(l)
+    else n.add(l)
+    setActive(n)
+    storeLayers(n)
+  }
 
   const allNodes = useMemo(() => buildMapNodes(registry, dashboard), [registry, dashboard])
   const nodes = useMemo(() => allNodes.filter((n) => n.prefecture === 'fukui'), [allNodes])
@@ -310,6 +312,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
           />
         )}
+        {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}
         {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
         {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
         {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
