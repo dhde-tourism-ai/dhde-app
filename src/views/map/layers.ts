@@ -26,6 +26,9 @@ export interface LayerDef {
   demo: boolean
   hint_en: string
   hint_ja: string
+  /** Hover text for government users: what the layer shows and how to read it. */
+  tip_en: string
+  tip_ja: string
 }
 
 export const GROUPS: { id: GroupId; en: string; ja: string }[] = [
@@ -38,20 +41,26 @@ export const GROUPS: { id: GroupId; en: string; ja: string }[] = [
 ]
 
 export const LAYERS: LayerDef[] = [
-  { id: 'nudges', group: 'actions', en: 'Nudges', ja: 'ナッジ', icon: 'flag', demo: true, hint_en: 'Demand, weather-route and booking alerts on the map', hint_ja: '需要・天候ルート・予約のアラート' },
-  { id: 'people', group: 'movement', en: 'People', ja: '人数', icon: 'people', demo: true, hint_en: 'Visitors on site, actual vs forecast', hint_ja: '現地の来訪者数（実測と予測）' },
-  { id: 'density', group: 'movement', en: 'Regional density', ja: '地域の密度', icon: 'density', demo: true, hint_en: 'Where visitors concentrate', hint_ja: '来訪者が集中する地域' },
-  { id: 'flow', group: 'movement', en: 'People flow', ja: '人流', icon: 'flow', demo: true, hint_en: 'Arrivals and departures on real roads', hint_ja: '実際の道路上の到着・出発' },
-  { id: 'traffic', group: 'movement', en: 'Traffic flow', ja: '交通状況', icon: 'traffic', demo: true, hint_en: 'Road congestion and reroutes', hint_ja: '道路の混雑と迂回推奨' },
-  { id: 'weather', group: 'conditions', en: 'Weather', ja: '気象', icon: 'weather', demo: true, hint_en: 'Per-node conditions and JMA-style advisories', hint_ja: 'ノードごとの天気と注意報' },
-  { id: 'survey', group: 'voice', en: 'Survey', ja: 'アンケート', icon: 'survey', demo: true, hint_en: 'Satisfaction, NPS, reasons, origin', hint_ja: '満足度・NPS・来訪理由・居住地' },
-  { id: 'social', group: 'voice', en: 'Social media', ja: 'SNS', icon: 'social', demo: true, hint_en: 'Posts and images near each node (fictional)', hint_ja: '各ノード周辺の投稿（架空）' },
-  { id: 'reviews', group: 'voice', en: 'Reviews', ja: 'レビュー', icon: 'star', demo: true, hint_en: 'Rating, count, 30-day change (fictional snippets)', hint_ja: '評価・件数・30日の変化（架空）' },
-  { id: 'sentiment', group: 'voice', en: 'Sentiment', ja: '感情', icon: 'sentiment', demo: true, hint_en: 'Hotspots from reviews and posts', hint_ja: 'レビュー・投稿のホットスポット' },
-  { id: 'hotels', group: 'market', en: 'Hotels', ja: 'ホテル', icon: 'bed', demo: true, hint_en: 'Occupancy, rooms left, booking curve', hint_ja: '稼働率・残室・予約カーブ' },
-  { id: 'rsi', group: 'market', en: 'Search intent', ja: '検索関心', icon: 'search', demo: true, hint_en: 'Route-search index per municipality, 7-day trend', hint_ja: '市町ごとのルート検索指数と推移' },
-  { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失' },
+  { id: 'nudges', group: 'actions', en: 'Action nudges', ja: '推奨アクション', icon: 'flag', demo: true, hint_en: 'Demand, weather-route and booking alerts on the map', hint_ja: '需要・天候ルート・予約のアラート', tip_en: 'Suggested actions for staff: where to act, why, and what to do. The flag colour shows the priority.', tip_ja: '職員向けの推奨アクション：どこで、なぜ、何をするか。旗の色は優先度。' },
+  { id: 'people', group: 'movement', en: 'People', ja: '人数', icon: 'people', demo: true, hint_en: 'Visitors on site, actual vs forecast', hint_ja: '現地の来訪者数（実測と予測）', tip_en: 'How many people are at each site, measured and forecast. A bigger circle means more people; the colour shows how crowded it is.', tip_ja: '各地点の人数（実測と予測）。円が大きいほど人が多く、色は混雑度。' },
+  { id: 'density', group: 'movement', en: 'Regional density', ja: '地域の密度', icon: 'density', demo: true, hint_en: 'Where visitors concentrate', hint_ja: '来訪者が集中する地域', tip_en: 'Shading shows where visitors gather across the region.', tip_ja: '地域内で来訪者が集まる場所を色の濃さで表示。' },
+  { id: 'flow', group: 'movement', en: 'People flow', ja: '人流', icon: 'flow', demo: true, hint_en: 'Arrivals and departures on real roads', hint_ja: '実際の道路上の到着・出発', tip_en: 'Moving dots show visitors travelling to and from each site on the main roads.', tip_ja: '動く点は主要道路で各地点へ行き来する来訪者。' },
+  { id: 'traffic', group: 'movement', en: 'Traffic flow', ja: '交通状況', icon: 'traffic', demo: true, hint_en: 'Road congestion and reroutes', hint_ja: '道路の混雑と迂回推奨', tip_en: 'Road colour shows congestion. Green lines are suggested detours.', tip_ja: '道路の色は混雑度。緑の線は推奨迂回路。' },
+  { id: 'weather', group: 'conditions', en: 'Weather', ja: '気象', icon: 'weather', demo: true, hint_en: 'Weather and warnings at each site', hint_ja: '各地点の天気と注意報', tip_en: 'Weather at each site and any weather warnings in force.', tip_ja: '各地点の天気と発表中の気象注意報・警報。' },
+  { id: 'survey', group: 'voice', en: 'Survey', ja: 'アンケート', icon: 'survey', demo: true, hint_en: 'Satisfaction, recommendation, reasons, home area', hint_ja: '満足度・推奨意向・来訪理由・居住地', tip_en: 'Visitor survey results: satisfaction, how likely visitors are to recommend the site, why they came and where they live.', tip_ja: '来訪者アンケート：満足度、人に勧めたいか、来訪理由、居住地。' },
+  { id: 'social', group: 'voice', en: 'Social media', ja: 'SNS', icon: 'social', demo: true, hint_en: 'Posts and images near each site (fictional)', hint_ja: '各地点周辺の投稿（架空）', tip_en: 'Example social media posts near each site. Fictional, to show the layout only.', tip_ja: '各地点周辺のSNS投稿の例。架空で、表示確認用です。' },
+  { id: 'reviews', group: 'voice', en: 'Reviews', ja: 'レビュー', icon: 'star', demo: true, hint_en: 'Rating, count, 30-day change (fictional snippets)', hint_ja: '評価・件数・30日の変化（架空）', tip_en: 'Online review rating for each site and how it changed in the last 30 days.', tip_ja: '各地点のオンラインレビュー評価と直近30日の変化。' },
+  { id: 'sentiment', group: 'voice', en: 'Sentiment', ja: '感情', icon: 'sentiment', demo: true, hint_en: 'Hotspots from reviews and posts', hint_ja: 'レビュー・投稿のホットスポット', tip_en: 'Where visitors write positively (blue) or negatively (red) in reviews and posts.', tip_ja: 'レビューや投稿で評価が良い（青）・悪い（赤）場所。' },
+  { id: 'hotels', group: 'market', en: 'Hotels', ja: 'ホテル', icon: 'bed', demo: true, hint_en: 'How full hotels are, rooms left', hint_ja: 'ホテルの稼働率と残室', tip_en: 'How full hotels are on the selected night and how many rooms are left.', tip_ja: '選択日のホテルの稼働率と残室数。' },
+  { id: 'rsi', group: 'market', en: 'Search intent', ja: '検索関心', icon: 'search', demo: true, hint_en: 'Google Maps views per town, last 7 days', hint_ja: '市町ごとのGoogleマップ閲覧（直近7日）', tip_en: 'How often people look up each place on Google Maps (profile views, searches and directions). A rise usually means more visitors soon.', tip_ja: 'Googleマップで各地点が見られた回数（プロフィール表示・検索・経路）。増えると近いうちに来訪者が増える目安。' },
+  { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失', tip_en: 'Tourism revenue per town, and revenue missed from day-trips instead of overnight stays, bad weather and empty rooms.', tip_ja: '市町ごとの観光収入と、宿泊せず日帰りになった分・悪天候・空室による取りこぼし。' },
 ]
+
+/** Tooltip for a "Partly estimated or demo" badge that covers several layers. */
+export const OVERVIEW_NOTE = [
+  'Some layers use real data; the rest is estimated or demo. Turn a layer on to see which part is estimated or demo.',
+  '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
+] as const
 
 export const DEFAULT_LAYERS: LayerId[] = []
 

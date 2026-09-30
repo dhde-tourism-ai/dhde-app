@@ -21,7 +21,7 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, readStoredLayers, readUrlState, storeLayers } from './layers'
+import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { SiteMarkers } from './layers/SiteMarkers'
@@ -250,14 +250,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
       </button>
       <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
-        <Icon name="flag" size={14} /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+        <Icon name="flag" size={14} /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
       </button>
     </div>
   )
   const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
   const nudgeTitle = (
     <h2 className="fp-title">
-      <Icon name="flag" /> {tr('Nudges', 'ナッジ')}
+      <Icon name="flag" /> {tr('Action nudges', '推奨アクション')}
     </h2>
   )
 
@@ -338,7 +338,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 {tr('All conditions normal.', 'すべて平常です。')}
               </span>
             )}
-            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} /> : <DemoBadge />)}
+            {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} note={OVERVIEW_NOTE} /> : <DemoBadge />)}
           </div>
         )}
         {liveError && <div className="banner banner-warn status-strip">live_demo.json: {liveError.message}</div>}
@@ -376,7 +376,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 )}
               </button>
               <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
-                <Icon name="flag" /> {tr('Nudges', 'ナッジ')} <span className="count-badge">{nudgesFrom.length}</span>
+                <Icon name="flag" /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}

@@ -610,8 +610,9 @@
 
 .layer-name {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 3px 6px;
   font-weight: 600;
   font-size: 13px;
 }
@@ -1482,5 +1483,31 @@ button.al-item:hover {
 
 .basemap-row .seg button {
   padding: 5px 9px;
+  white-space: nowrap;
+}
+
+/* Site panel rows waiting for KDDI location data. */
+.kddi-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.kddi-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.kddi-list li:last-child {
+  border-bottom: 0;
+}
+
+.kddi-pending {
+  flex: none;
   white-space: nowrap;
 }

@@ -80,7 +80,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
             <Icon name="alert" /> {t('Live board', 'ライブボード')}
           </h2>
         )}
-        {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} />}
+        {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} note={['Crowding uses real daily visitor totals with a simulated hourly shape; weather advisories are demo.', '混雑は来訪者の日合計が実データ（時間別は模擬）。気象注意報はデモ。']} />}
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />

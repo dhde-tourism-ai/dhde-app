@@ -278,7 +278,7 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
         {/* Nudges */}
         <section className="nd-section card">
           <div className="nd-head row">
-            <h3 className="card-title">{t('Governance and vendor nudges', '行政・事業者向けナッジ')}</h3>
+            <h3 className="card-title">{t('Action nudges for government and vendors', '行政・事業者向け推奨アクション')}</h3>
           </div>
           {nudges.length === 0 ? (
             <p className="muted">{t('No active recommendations: pacing and weather are within normal range.', '推奨事項はありません。')}</p>
