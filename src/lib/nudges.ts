@@ -81,7 +81,8 @@ export function priorityOf(sev: Sev): Priority {
   return sev === 'crit' ? 'high' : sev === 'info' ? 'low' : 'medium'
 }
 
-const DEMAND_THRESHOLD = 0.35
+/** A day this far above (or below) the node's normal day is a demand alert (loop #1). Shared with the Strategy 7-day card. */
+export const DEMAND_THRESHOLD = 0.35
 const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; route: RouteLeg[] }> = {
   tojinbo: {
     site_en: 'Fukui Prefectural Dinosaur Museum (indoor)',
