@@ -156,10 +156,9 @@ RAKUTEN_LEADS = (1, 7, 30)
 # dhde-preprocessing-model sources/survey.py, over the 30 days to its last response.
 SURVEY_DAYS = 30
 MIN_SURVEY_RESPONSES = 10
-SURVEY_ORIGINS = ["fukui", "hokuriku", "kansai", "chubu", "kanto", "other"]
-SURVEY_PURPOSES = ["relax_at_inn", "onsen", "local_food", "nature", "sightseeing", "theme_park_museum", "shopping",
-                   "events", "shows", "outdoor", "town_walk", "experiences", "ski_marine", "other_sports", "drive",
-                   "visit_friends", "business"]
+# A survey whose last response is older than this is stale: no summary, so the app
+# drops the "Real" badge instead of showing old numbers as current.
+SURVEY_MAX_AGE_DAYS = 14
 
 # The master-table column each node's 7-day forecast predicts (forecast.TARGETS in
 # dhde-preprocessing-model, in master-table names). A forecast is published only
@@ -425,13 +424,17 @@ def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
     """Satisfaction, NPS, home region and purpose of visit over the SURVEY_DAYS to
     the last response. Shares are % of responses (purposes can add up past 100).
     NPS is None with fewer than MIN_SURVEY_RESPONSES answers to its question.
-    None without the columns or with fewer than MIN_SURVEY_RESPONSES responses."""
+    None without the columns, with fewer than MIN_SURVEY_RESPONSES responses, or
+    when the last response is over SURVEY_MAX_AGE_DAYS old. Origin and purpose
+    columns are picked up by their survey_origin_ / survey_purpose_ prefix."""
     if "survey_satisfaction_n" not in m.columns:
         return None
     seen = m.loc[m["survey_response_count"].notna() & (m["date"] <= today), "date"]
     if seen.empty:
         return None
     as_of = seen.max()
+    if as_of < today - pd.Timedelta(days=SURVEY_MAX_AGE_DAYS):
+        return None
     w = m[(m["date"] > as_of - pd.Timedelta(days=SURVEY_DAYS)) & (m["date"] <= as_of)]
     n = int(w["survey_response_count"].fillna(0).sum())
     if n < MIN_SURVEY_RESPONSES:
@@ -443,11 +446,14 @@ def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
     nps = (round((w["survey_nps_promoters"].fillna(0).sum() - w["survey_nps_detractors"].fillna(0).sum()) / nps_n * 100, 1)
            if nps_n >= MIN_SURVEY_RESPONSES else None)
 
-    def pct(cols: dict[str, str], total: int) -> dict[str, float]:
-        return {k: round(float(w[c].fillna(0).sum()) / total * 100, 1) for k, c in cols.items() if c in w.columns}
+    def by_prefix(prefix: str) -> dict[str, str]:
+        return {c[len(prefix):]: c for c in w.columns if c.startswith(prefix)}
 
-    origin_cols = {k: f"survey_origin_{k}" for k in SURVEY_ORIGINS}
-    with_origin = int(w[[c for c in origin_cols.values() if c in w.columns]].fillna(0).sum().sum())
+    def pct(cols: dict[str, str], total: int) -> dict[str, float]:
+        return {k: round(float(w[c].fillna(0).sum()) / total * 100, 1) for k, c in cols.items()}
+
+    origin_cols = by_prefix("survey_origin_")
+    with_origin = int(w[list(origin_cols.values())].fillna(0).sum().sum())
     return {
         "as_of": as_of.date().isoformat(),
         "days": SURVEY_DAYS,
@@ -457,7 +463,7 @@ def survey_block(m: pd.DataFrame, today: pd.Timestamp) -> dict | None:
         "nps": clean(nps),
         "nps_n": nps_n,
         "origin_pct": pct(origin_cols, with_origin) if with_origin else {},
-        "purpose_pct": pct({k: f"survey_purpose_{k}" for k in SURVEY_PURPOSES}, n),
+        "purpose_pct": pct(by_prefix("survey_purpose_"), n),
     }
 
 
