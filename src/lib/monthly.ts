@@ -88,6 +88,9 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
         ...c,
         values: exact.map((v) => Math.round(v * 10) / 10),
         status: 'real' as const,
+        // "actual" only once the measured shares are in: the file's own title stays neutral,
+        // so a failed load never reads "actual" over the simulated placeholder.
+        title: `${c.title} (${c.year}, actual)`,
         kpi: c.kpi && { ...c.kpi, value_text: `${rate.toFixed(1)}%`, status: 'real' as const },
         note: `Monthly share of ${s.label} visitors in ${c.year}; quietest 3 consecutive months highlighted.${fcNote}`,
         source: 'JTTA digital tourism statistics (日本観光振興協会 デジタル観光統計), via dhde-preprocessing-model monthly_actuals.csv.',
