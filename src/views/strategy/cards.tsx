@@ -26,9 +26,8 @@ import { useJsonResource } from '../../hooks/useJsonResource'
 import { measuredYear, yearTotal } from '../../lib/monthly'
 import type { MonthlyForecastFile } from '../../types/monthly'
 
-const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
-const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
-const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12, color: '#e9eef8' }
+import { AXIS, S, TIP } from './chartTheme'
+import { GuestNightsMonths, TargetPace } from './guestNights'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
@@ -92,6 +91,10 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <Builder card={card} />
     case 'monthly_forecast':
       return <MonthlyForecast card={card} />
+    case 'guest_nights_months':
+      return <GuestNightsMonths card={card} />
+    case 'target_pace':
+      return <TargetPace card={card} />
   }
 }
 
@@ -234,7 +237,8 @@ function Bars({ card }: { card: BarsCard }) {
   )
 }
 
-const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn' }
+// English and Japanese (strategy.ja.json) action names.
+const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn', 通常: 'ok', 営業時間を延長: 'up', 屋内施設を案内: 'warn' }
 
 function Forecast({ card }: { card: ForecastCard }) {
   const { t } = useLang()
@@ -268,10 +272,12 @@ function Forecast({ card }: { card: ForecastCard }) {
               <i className="k-band" style={{ background: 'rgba(217,89,38,.28)' }}></i>
               {t('Forecast range', '予測幅')}
             </span>
-            <span>
-              <i className="k-dot"></i>
-              {t('Severe weather', '荒天')}
-            </span>
+            {site.points.some((p) => p.severe_weather) && (
+              <span>
+                <i className="k-dot"></i>
+                {t('Severe weather', '荒天')}
+              </span>
+            )}
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>

@@ -93,6 +93,8 @@ export interface ForecastSite {
 export interface ForecastCard extends CardBase {
   type: 'forecast'
   sites: ForecastSite[]
+  /** Replace the sites with the real 7-day forecast from real_data.json when it loads. */
+  live?: boolean
 }
 
 export interface MonthlyShareCard extends CardBase {
@@ -168,6 +170,29 @@ export interface MonthlyForecastCard extends CardBase {
   series: string[]
 }
 
+/** Guest-nights by month, domestic (Japanese) vs foreign, last year vs this year, from monthly_forecast.json. */
+export interface GuestNightsMonthsCard extends CardBase {
+  type: 'guest_nights_months'
+  /** monthly_forecast.json series ids. */
+  total: string
+  domestic: string
+  foreign: string
+}
+
+/** Running total this year vs the year's point on a steady-growth path to the vision target. */
+export interface TargetPaceCard extends CardBase {
+  type: 'target_pace'
+  items: {
+    series: string
+    label: string
+    label_ja?: string
+    baseline: number
+    baseline_year: number
+    target: number
+    target_year: number
+  }[]
+}
+
 export type StrategyCard =
   | StatCard
   | ProgressCard
@@ -181,6 +206,8 @@ export type StrategyCard =
   | TableCard
   | BuilderCard
   | MonthlyForecastCard
+  | GuestNightsMonthsCard
+  | TargetPaceCard
 
 export interface BuildSpec {
   data: string
@@ -195,6 +222,8 @@ export interface StrategicQuestion {
   number: number
   nav: string
   title: string
+  /** The government's question behind the section (the FAQ shows it). */
+  question?: string
   why: string
   subs: string[]
   answer: string
