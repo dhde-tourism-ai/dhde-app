@@ -164,6 +164,29 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/data/*" \
             --query 'Invalidation.Id' --output text
 
+      # Training history (Monday: "Keep all training history in S3"). The live-data
+      # branch and the JMA cache only live in git and the Actions cache, which can be
+      # rewritten or evicted; copying them to raw/ keeps every day for model training.
+      # sync only adds or updates files, so nothing already in raw/ is deleted.
+      # Its own step, so a problem here never stops the publish above. Needs the
+      # raw/ write permission from dhde-terraform-aws #10.
+      - name: Save training history to S3
+        if: vars.AWS_PUBLISH_ROLE_ARN != '' && steps.aws_login.outcome == 'success' && vars.DATA_BUCKET != ''
+        continue-on-error: true
+        env:
+          DATA_BUCKET: ${{ vars.DATA_BUCKET }}
+        run: |
+          if [ -n "$DHDE_LIVE_DATA_ROOT" ]; then
+            aws s3 sync "$DHDE_LIVE_DATA_ROOT" "s3://$DATA_BUCKET/raw/live-data/" --only-show-errors --exclude ".git/*"
+          else
+            echo "::warning::no live-data checkout; raw/live-data/ not updated today"
+          fi
+          if [ -d "$DHDE_WORKSPACE_ROOT/jma_cache" ]; then
+            aws s3 sync "$DHDE_WORKSPACE_ROOT/jma_cache" "s3://$DATA_BUCKET/raw/weather/jma/" --only-show-errors
+          else
+            echo "::warning::no JMA cache; raw/weather/jma/ not updated today"
+          fi
+
       - name: Commit if changed
         id: commit
         run: |
