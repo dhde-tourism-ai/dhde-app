@@ -30,8 +30,8 @@ const FAQ: Record<string, { ja: string; chart: string }> = {
   q1: { ja: '観光は福井の経済にどれだけの価値があるか？', chart: 'q1-progress' },
   q2: { ja: '来訪者の流れをどう予測するか？', chart: 'q2-f1' },
   q3: { ja: 'どの来訪者が最も価値をもたらすか？', chart: 'q3-spend' },
-  // The funnel (q4-funnel) is hidden until the final report; Access answers Q4 meanwhile.
-  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-access' },
+  // The funnel (q4-funnel) is hidden until the final report; the visitor-flow Sankey answers Q4 meanwhile.
+  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-flow' },
   q5: { ja: 'どの投資が最も効果的か？', chart: 'q5-returns' },
 }
 
