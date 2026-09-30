@@ -93,6 +93,8 @@ export interface ForecastSite {
 export interface ForecastCard extends CardBase {
   type: 'forecast'
   sites: ForecastSite[]
+  /** Replace the sites with the real 7-day forecast from real_data.json when it loads. */
+  live?: boolean
 }
 
 export interface MonthlyShareCard extends CardBase {

@@ -8,6 +8,8 @@ import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { withMeasuredShares } from '../../lib/monthly'
 import { localize } from '../../lib/localize'
+import { withRealForecast } from '../../lib/dailyForecast'
+import type { RealDailyFile } from '../../lib/dailyForecast'
 import JA from '../../i18n/strategy.ja.json'
 import type { MonthlyForecastFile } from '../../types/monthly'
 import '../../styles/pages.css'
@@ -21,11 +23,12 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
   const [showSpecs, setShowSpecs] = useState(false)
   const [activeQ, setActiveQ] = useState(raw.questions[0]?.id)
   const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
-  // Real 2025 shares first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
+  const real = useJsonResource<RealDailyFile>('real_data.json').data
+  // Real 2025 shares and the real 7-day forecast first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
   const data = useMemo(() => {
-    const measured = { ...raw, questions: withMeasuredShares(raw.questions, monthly) }
+    const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly), real, lang) }
     return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
-  }, [raw, monthly, lang])
+  }, [raw, monthly, real, lang])
   const { meta, equation, questions } = data
 
   // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.

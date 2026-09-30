@@ -275,10 +275,12 @@ function Forecast({ card }: { card: ForecastCard }) {
               <i className="k-band" style={{ background: 'rgba(217,89,38,.28)' }}></i>
               {t('Forecast range', '予測幅')}
             </span>
-            <span>
-              <i className="k-dot"></i>
-              {t('Severe weather', '荒天')}
-            </span>
+            {site.points.some((p) => p.severe_weather) && (
+              <span>
+                <i className="k-dot"></i>
+                {t('Severe weather', '荒天')}
+              </span>
+            )}
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
