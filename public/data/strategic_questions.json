@@ -2,7 +2,7 @@
   "meta": {
     "title": "Fukui Tourism Intelligence",
     "subtitle": "Pilot model of the Government Intelligence dashboard",
-    "as_of": "2026-09-29",
+    "as_of": "2026-09-30",
     "author": "Strategy team",
     "source_doc": "Strategic Questions Integrated Dashboard v1 (shared 27 Sep 2026). Pilot, not definitive.",
     "footer": "Pilot for discussion with the tech team and the Fukui Prefecture Tourism Federation. Programme ends 10 Nov 2026."
@@ -13,7 +13,7 @@
       "description": "Published statistics"
     },
     "modelled": {
-      "label": "Calculated / modelled",
+      "label": "Estimated",
       "description": "Derived from real inputs by a stated calculation or model"
     },
     "illustrative": {
@@ -60,6 +60,10 @@
     {
       "for": "strategy team",
       "text": "Figures updated 29 Sep 2026 to 2025, on the same definitions as the vision's targets (sources on each card). Still to confirm: (1) A2 transfer-tour riders count toward the all-overnight gap only, because their nationality isn't known; say if they should also count toward the foreign gap. (2) ¥43,000 spend per foreign visitor (Bank of Japan Kanazawa Branch, from the team brief) hasn't been checked against the source."
+    },
+    {
+      "for": "strategy team (economy block, prototype)",
+      "text": "To confirm before this goes live: (1) the split of 'meals, admissions and local transport' (assumed 75% hospitality / 25% transport; JTA 旅行・観光消費動向調査 shares can replace it); (2) how much of souvenir goods are Fukui-made (the IO default counts about 30%; 50% adds ¥4bn of GDP); (3) jobs use 2020 coefficients from a pandemic year and may run high."
     }
   ],
   "questions": [
@@ -73,15 +77,14 @@
       "subs": [
         "How much do visitors spend?",
         "What share of the economy and jobs?",
-        "On track for 2029 targets?",
-        "How much spend lost to neighbours?"
+        "On track for 2029 targets?"
       ],
-      "answer": "On 2025 figures, three of the five 2029 vision targets are already met: tourism spend ¥198.7bn (target ¥170bn), visitors 21.44M (21M) and spend per overnight guest ¥30,221 (¥27,000). Overnight guest-nights are on pace (3.93M vs 4.5M) but fell 2.4% in 2025; foreign guest-nights are the one target behind (108.6k vs 400k). Economic contribution needs a fresh estimate (last uses FY2008 data).",
+      "answer": "On 2025 figures, three of the five 2029 vision targets are already met: tourism spend ¥198.7bn (target ¥170bn), visitors 21.44M (21M) and spend per overnight guest ¥30,221 (¥27,000). Overnight guest-nights are on pace (3.93M vs 4.5M) but fell 2.4% in 2025; foreign guest-nights are the one target behind (108.6k vs 400k). Run through the prefecture's 2020 input-output table, that spend supports about ¥139bn of GDP, 3.4% of the economy (2.1% direct), and about 33,900 jobs (7.9% of workers), up from 2.6% and 23,300 jobs in 2019 on the same method (the prefecture's own 2019 estimate: 2.8%). Every extra ¥1bn of spend adds about ¥0.70bn of GDP and 171 jobs.",
       "cards": [
         {
           "id": "q1-spend",
           "type": "stat",
-          "span": 3,
+          "span": 4,
           "status": "real",
           "title": "Tourism spend 2025",
           "value_text": "¥198.7bn",
@@ -91,38 +94,720 @@
         {
           "id": "q1-share",
           "type": "stat",
-          "span": 3,
-          "status": "pending",
+          "span": 4,
+          "status": "modelled",
+          "badge": "Updated",
           "title": "Share of prefecture economy",
-          "value_text": null,
-          "unit": "%",
-          "detail": "Last 1.6% of value added, FY2008",
-          "pending_on": "input-output table"
+          "value_text": "3.4%",
+          "detail": "2025: ¥139bn of GDP incl. suppliers and wage spending; 2.1% direct. FY2008: 1.6%; 2019 (prefecture): 2.8%",
+          "source": "Fukui R2 (2020) input-output tool, 37 sectors, on 2025 spend of ¥198.7bn (入込数 令和7年). GDP FY2025 estimate ¥4.08tn = FY2023 ¥3.95tn (ESRI) grown at Fukui's own FY2011–23 trend (+1.55% a year). https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx"
         },
         {
           "id": "q1-jobs",
           "type": "stat",
-          "span": 3,
-          "status": "pending",
+          "span": 4,
+          "status": "modelled",
+          "badge": "Updated",
           "title": "Jobs supported",
-          "value_text": null,
-          "detail": "Last ~12,000, 2.8%, FY2008"
+          "value_text": "33,900",
+          "detail": "7.9% of workers; 26,800 in the businesses visitors pay. FY2008: ~12,000 (2.8%); 2019 (prefecture): 23,320 (5.5%)",
+          "note": "People in work, part-time included (就業者), not new hires. 2020 was a pandemic year, so jobs per yen may run high.",
+          "source": "Same model: output × jobs per yen by sector (就業係数, 2020). Workers FY2023: 427,326 (ESRI). https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx"
         },
         {
-          "id": "q1-leak",
-          "type": "stat",
-          "span": 3,
-          "status": "pending",
-          "title": "Spend lost to neighbouring stays",
-          "value_text": null,
-          "detail": "Visitors who sleep in Kanazawa/Kyoto × overnight spend (a range)",
-          "pending_on": "survey + KDDI"
+          "id": "q1-gdp",
+          "type": "gdp_trend",
+          "span": 5,
+          "status": "modelled",
+          "badge": "New",
+          "title": "Fukui's GDP and tourism's part of it, FY2014–FY2029",
+          "points": [
+            {
+              "fy": 2014,
+              "actual": 3191.6,
+              "tourism_va": 63.4
+            },
+            {
+              "fy": 2015,
+              "actual": 3390,
+              "tourism_va": 67.5
+            },
+            {
+              "fy": 2016,
+              "actual": 3299.9,
+              "tourism_va": 88.2
+            },
+            {
+              "fy": 2017,
+              "actual": 3442.5,
+              "tourism_va": 88.5
+            },
+            {
+              "fy": 2018,
+              "actual": 3638.8,
+              "tourism_va": 92.5
+            },
+            {
+              "fy": 2019,
+              "actual": 3676.2,
+              "tourism_va": 95.2
+            },
+            {
+              "fy": 2020,
+              "actual": 3599.1,
+              "tourism_va": 58.6
+            },
+            {
+              "fy": 2021,
+              "actual": 3757.4,
+              "tourism_va": 59.6
+            },
+            {
+              "fy": 2022,
+              "actual": 3547.8,
+              "tourism_va": 74.2
+            },
+            {
+              "fy": 2023,
+              "actual": 3954.2,
+              "tourism_va": 85.6
+            },
+            {
+              "fy": 2024,
+              "base": 4015.7,
+              "kind": "nowcast",
+              "tourism_va": 106.6
+            },
+            {
+              "fy": 2025,
+              "base": 4078,
+              "kind": "nowcast",
+              "tourism_va": 139
+            },
+            {
+              "fy": 2026,
+              "base": 4141.4,
+              "kind": "forecast",
+              "tourism_va": 142.9
+            },
+            {
+              "fy": 2027,
+              "base": 4205.7,
+              "kind": "forecast",
+              "tourism_va": 147.2
+            },
+            {
+              "fy": 2028,
+              "base": 4271,
+              "kind": "forecast",
+              "tourism_va": 151.6
+            },
+            {
+              "fy": 2029,
+              "base": 4337.4,
+              "kind": "forecast",
+              "tourism_va": 156.2
+            }
+          ],
+          "kpis": [
+            {
+              "label": "FY2023, published",
+              "value_text": "¥3.95tn",
+              "detail": "Tourism ¥86bn = 2.2% of it",
+              "status": "real"
+            },
+            {
+              "label": "FY2025, estimate",
+              "value_text": "¥4.08tn",
+              "detail": "Tourism ¥139bn = 3.4% of it",
+              "status": "modelled"
+            },
+            {
+              "label": "FY2029, estimate",
+              "value_text": "¥4.34tn",
+              "detail": "Tourism ¥156bn = 3.6% of it",
+              "status": "modelled"
+            }
+          ],
+          "note": "Nominal GDP (県内総生産): FY2014–FY2023 as published; from FY2024 estimated by growing FY2023 at Fukui's own FY2011–23 trend, +1.55% a year. Orange = GDP added by tourism in that year (direct + indirect ① + indirect ②), from the model below. Power-sector value added swings Fukui's GDP: FY2022 −5.6%, FY2023 +11.5% (of which power +9.9pt).",
+          "source": "ESRI 県民経済計算 FY2011–FY2023 (released 7 Aug 2026), soukatu1.xlsx, https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/main_2023.html; tourism contribution: Fukui R2 input-output tool."
+        },
+        {
+          "id": "q1-contrib",
+          "type": "tourism_trend",
+          "span": 7,
+          "status": "modelled",
+          "badge": "New",
+          "title": "Tourism's contribution to GDP and jobs, 2014–2029",
+          "points": [
+            {
+              "year": 2014,
+              "kind": "modelled",
+              "spend_bn": 87.6,
+              "gdp_bn": 3191.6,
+              "gdp_kind": "actual",
+              "va_direct": 38.4,
+              "jobs_direct": 12564,
+              "share_direct": 1.2,
+              "va_indirect1": 14.6,
+              "jobs_indirect1": 2036,
+              "share_indirect1": 0.46,
+              "va_indirect2": 10.4,
+              "jobs_indirect2": 1216,
+              "share_indirect2": 0.33,
+              "va_total": 63.4,
+              "jobs_total": 15817,
+              "share_total": 1.99,
+              "jobs_share_total": 3.8
+            },
+            {
+              "year": 2015,
+              "kind": "modelled",
+              "spend_bn": 93.7,
+              "gdp_bn": 3390,
+              "gdp_kind": "actual",
+              "va_direct": 40.9,
+              "jobs_direct": 13322,
+              "share_direct": 1.21,
+              "va_indirect1": 15.5,
+              "jobs_indirect1": 2165,
+              "share_indirect1": 0.46,
+              "va_indirect2": 11.1,
+              "jobs_indirect2": 1295,
+              "share_indirect2": 0.33,
+              "va_total": 67.5,
+              "jobs_total": 16782,
+              "share_total": 1.99,
+              "jobs_share_total": 4
+            },
+            {
+              "year": 2016,
+              "kind": "modelled",
+              "spend_bn": 125.5,
+              "gdp_bn": 3299.9,
+              "gdp_kind": "actual",
+              "va_direct": 53.5,
+              "jobs_direct": 17099,
+              "share_direct": 1.62,
+              "va_indirect1": 20.2,
+              "jobs_indirect1": 2821,
+              "share_indirect1": 0.61,
+              "va_indirect2": 14.5,
+              "jobs_indirect2": 1701,
+              "share_indirect2": 0.44,
+              "va_total": 88.2,
+              "jobs_total": 21621,
+              "share_total": 2.67,
+              "jobs_share_total": 5.2
+            },
+            {
+              "year": 2017,
+              "kind": "modelled",
+              "spend_bn": 125.7,
+              "gdp_bn": 3442.5,
+              "gdp_kind": "actual",
+              "va_direct": 53.7,
+              "jobs_direct": 17183,
+              "share_direct": 1.56,
+              "va_indirect1": 20.3,
+              "jobs_indirect1": 2831,
+              "share_indirect1": 0.59,
+              "va_indirect2": 14.6,
+              "jobs_indirect2": 1706,
+              "share_indirect2": 0.42,
+              "va_total": 88.5,
+              "jobs_total": 21720,
+              "share_total": 2.57,
+              "jobs_share_total": 5.2
+            },
+            {
+              "year": 2018,
+              "kind": "modelled",
+              "spend_bn": 131.3,
+              "gdp_bn": 3638.8,
+              "gdp_kind": "actual",
+              "va_direct": 56.1,
+              "jobs_direct": 17962,
+              "share_direct": 1.54,
+              "va_indirect1": 21.2,
+              "jobs_indirect1": 2959,
+              "share_indirect1": 0.58,
+              "va_indirect2": 15.2,
+              "jobs_indirect2": 1783,
+              "share_indirect2": 0.42,
+              "va_total": 92.5,
+              "jobs_total": 22703,
+              "share_total": 2.54,
+              "jobs_share_total": 5.4
+            },
+            {
+              "year": 2019,
+              "kind": "modelled",
+              "spend_bn": 135.7,
+              "gdp_bn": 3676.2,
+              "gdp_kind": "actual",
+              "va_direct": 57.7,
+              "jobs_direct": 18409,
+              "share_direct": 1.57,
+              "va_indirect1": 21.8,
+              "jobs_indirect1": 3042,
+              "share_indirect1": 0.59,
+              "va_indirect2": 15.7,
+              "jobs_indirect2": 1836,
+              "share_indirect2": 0.43,
+              "va_total": 95.2,
+              "jobs_total": 23286,
+              "share_total": 2.59,
+              "jobs_share_total": 5.5
+            },
+            {
+              "year": 2020,
+              "kind": "modelled",
+              "spend_bn": 83.4,
+              "gdp_bn": 3599.1,
+              "gdp_kind": "actual",
+              "va_direct": 35.6,
+              "jobs_direct": 11357,
+              "share_direct": 0.99,
+              "va_indirect1": 13.4,
+              "jobs_indirect1": 1875,
+              "share_indirect1": 0.37,
+              "va_indirect2": 9.7,
+              "jobs_indirect2": 1131,
+              "share_indirect2": 0.27,
+              "va_total": 58.6,
+              "jobs_total": 14362,
+              "share_total": 1.63,
+              "jobs_share_total": 3.4
+            },
+            {
+              "year": 2021,
+              "kind": "modelled",
+              "spend_bn": 84.9,
+              "gdp_bn": 3757.4,
+              "gdp_kind": "actual",
+              "va_direct": 36.1,
+              "jobs_direct": 11527,
+              "share_direct": 0.96,
+              "va_indirect1": 13.6,
+              "jobs_indirect1": 1905,
+              "share_indirect1": 0.36,
+              "va_indirect2": 9.8,
+              "jobs_indirect2": 1150,
+              "share_indirect2": 0.26,
+              "va_total": 59.6,
+              "jobs_total": 14582,
+              "share_total": 1.59,
+              "jobs_share_total": 3.5
+            },
+            {
+              "year": 2022,
+              "kind": "modelled",
+              "spend_bn": 105.8,
+              "gdp_bn": 3547.8,
+              "gdp_kind": "actual",
+              "va_direct": 45,
+              "jobs_direct": 14329,
+              "share_direct": 1.27,
+              "va_indirect1": 17,
+              "jobs_indirect1": 2370,
+              "share_indirect1": 0.48,
+              "va_indirect2": 12.2,
+              "jobs_indirect2": 1431,
+              "share_indirect2": 0.34,
+              "va_total": 74.2,
+              "jobs_total": 18129,
+              "share_total": 2.09,
+              "jobs_share_total": 4.3
+            },
+            {
+              "year": 2023,
+              "kind": "modelled",
+              "spend_bn": 122.5,
+              "gdp_bn": 3954.2,
+              "gdp_kind": "actual",
+              "va_direct": 51.9,
+              "jobs_direct": 16509,
+              "share_direct": 1.31,
+              "va_indirect1": 19.6,
+              "jobs_indirect1": 2735,
+              "share_indirect1": 0.5,
+              "va_indirect2": 14.1,
+              "jobs_indirect2": 1653,
+              "share_indirect2": 0.36,
+              "va_total": 85.6,
+              "jobs_total": 20897,
+              "share_total": 2.17,
+              "jobs_share_total": 4.9
+            },
+            {
+              "year": 2024,
+              "kind": "modelled",
+              "spend_bn": 151.3,
+              "gdp_bn": 4015.7,
+              "gdp_kind": "nowcast",
+              "va_direct": 64.6,
+              "jobs_direct": 20698,
+              "share_direct": 1.61,
+              "va_indirect1": 24.4,
+              "jobs_indirect1": 3410,
+              "share_indirect1": 0.61,
+              "va_indirect2": 17.6,
+              "jobs_indirect2": 2055,
+              "share_indirect2": 0.44,
+              "va_total": 106.6,
+              "jobs_total": 26163,
+              "share_total": 2.66,
+              "jobs_share_total": 6.1
+            },
+            {
+              "year": 2025,
+              "kind": "modelled",
+              "spend_bn": 198.7,
+              "gdp_bn": 4078,
+              "gdp_kind": "nowcast",
+              "va_direct": 84.3,
+              "jobs_direct": 26820,
+              "share_direct": 2.07,
+              "va_indirect1": 31.8,
+              "jobs_indirect1": 4440,
+              "share_indirect1": 0.78,
+              "va_indirect2": 22.9,
+              "jobs_indirect2": 2683,
+              "share_indirect2": 0.56,
+              "va_total": 139,
+              "jobs_total": 33943,
+              "share_total": 3.41,
+              "jobs_share_total": 7.9
+            },
+            {
+              "year": 2026,
+              "kind": "forecast",
+              "spend_bn": 204.3,
+              "gdp_bn": 4141.4,
+              "gdp_kind": "forecast",
+              "va_direct": 86.7,
+              "jobs_direct": 27577,
+              "share_direct": 2.09,
+              "va_indirect1": 32.7,
+              "jobs_indirect1": 4566,
+              "share_indirect1": 0.79,
+              "va_indirect2": 23.6,
+              "jobs_indirect2": 2758,
+              "share_indirect2": 0.57,
+              "va_total": 142.9,
+              "jobs_total": 34900,
+              "share_total": 3.45,
+              "jobs_share_total": 8.2,
+              "range": {
+                "va": [
+                  136.2,
+                  148.2
+                ],
+                "share": [
+                  3.29,
+                  3.58
+                ],
+                "jobs": [
+                  33264,
+                  36184
+                ],
+                "spend_bn": [
+                  194.7,
+                  211.8
+                ]
+              }
+            },
+            {
+              "year": 2027,
+              "kind": "forecast",
+              "spend_bn": 210.4,
+              "gdp_bn": 4205.7,
+              "gdp_kind": "forecast",
+              "va_direct": 89.3,
+              "jobs_direct": 28404,
+              "share_direct": 2.12,
+              "va_indirect1": 33.7,
+              "jobs_indirect1": 4703,
+              "share_indirect1": 0.8,
+              "va_indirect2": 24.3,
+              "jobs_indirect2": 2841,
+              "share_indirect2": 0.58,
+              "va_total": 147.2,
+              "jobs_total": 35947,
+              "share_total": 3.5,
+              "jobs_share_total": 8.4,
+              "range": {
+                "va": [
+                  137.6,
+                  158
+                ],
+                "share": [
+                  3.27,
+                  3.76
+                ],
+                "jobs": [
+                  33597,
+                  38572
+                ],
+                "spend_bn": [
+                  196.7,
+                  225.8
+                ]
+              }
+            },
+            {
+              "year": 2028,
+              "kind": "forecast",
+              "spend_bn": 216.7,
+              "gdp_bn": 4271,
+              "gdp_kind": "forecast",
+              "va_direct": 91.9,
+              "jobs_direct": 29256,
+              "share_direct": 2.15,
+              "va_indirect1": 34.7,
+              "jobs_indirect1": 4844,
+              "share_indirect1": 0.81,
+              "va_indirect2": 25,
+              "jobs_indirect2": 2926,
+              "share_indirect2": 0.59,
+              "va_total": 151.6,
+              "jobs_total": 37026,
+              "share_total": 3.55,
+              "jobs_share_total": 8.7,
+              "range": {
+                "va": [
+                  139,
+                  168.4
+                ],
+                "share": [
+                  3.25,
+                  3.94
+                ],
+                "jobs": [
+                  33933,
+                  41117
+                ],
+                "spend_bn": [
+                  198.6,
+                  240.7
+                ]
+              }
+            },
+            {
+              "year": 2029,
+              "kind": "forecast",
+              "spend_bn": 223.2,
+              "gdp_bn": 4337.4,
+              "gdp_kind": "forecast",
+              "va_direct": 94.7,
+              "jobs_direct": 30134,
+              "share_direct": 2.18,
+              "va_indirect1": 35.7,
+              "jobs_indirect1": 4989,
+              "share_indirect1": 0.82,
+              "va_indirect2": 25.8,
+              "jobs_indirect2": 3014,
+              "share_indirect2": 0.59,
+              "va_total": 156.2,
+              "jobs_total": 38137,
+              "share_total": 3.6,
+              "jobs_share_total": 8.9,
+              "range": {
+                "va": [
+                  140.3,
+                  179.5
+                ],
+                "share": [
+                  3.24,
+                  4.14
+                ],
+                "jobs": [
+                  34272,
+                  43831
+                ],
+                "spend_bn": [
+                  200.6,
+                  256.6
+                ]
+              }
+            }
+          ],
+          "benchmarks": [
+            {
+              "year": 2019,
+              "label": "prefecture's own 2019 estimate",
+              "va": 101.8,
+              "share": 2.8,
+              "jobs": 23320
+            }
+          ],
+          "note": "Each year's visitor spend (calendar year) run through the same 2020 model and split into the three rounds; share = GDP added ÷ that fiscal year's Fukui GDP (from FY2024 estimated at Fukui's own FY2011–23 trend). The spend series steps up in 2016 when its estimate changed, so compare earlier years with care. Projection: base 2026 = visitors +2.9% and guest-nights −2.0% (the team's monthly forecast) plus 2.2% prices = +2.8%, then +3% a year; low −2% then +1% a year; high +6.6% a year, the 2019–25 pace. White ring: the prefecture's own 2019 estimate, made with the 2015 table and higher local sourcing.",
+          "source": "福井県観光客入込数（推計）令和7年, table 8 (spend 2014–2025), https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf; Fukui R2 IO tool; 観光を取り巻く状況 p.18 (2019 estimate), https://www.pref.fukui.lg.jp/doc/kankou/visionsakutei_d/fil/1_04.pdf"
+        },
+        {
+          "id": "q1-ripple",
+          "type": "ripple",
+          "span": 12,
+          "status": "modelled",
+          "badge": "New",
+          "title": "How ¥198.7bn of visitor spend ripples through Fukui, 2025",
+          "year": "2025",
+          "spend_bn": 198.7,
+          "retained_bn": 158.7,
+          "leak_bn": 40,
+          "tiers": [
+            {
+              "id": "direct",
+              "what": "Visitors pay hotels, restaurants, shops, transport and attractions in Fukui.",
+              "output_bn": 158.7,
+              "va_bn": 84.3,
+              "income_bn": 50.3,
+              "jobs": 26820,
+              "top": [
+                {
+                  "sector": "Hotels, restaurants & leisure",
+                  "va_bn": 61.8,
+                  "jobs": 22176
+                },
+                {
+                  "sector": "Transport & post",
+                  "va_bn": 11.8,
+                  "jobs": 1642
+                },
+                {
+                  "sector": "Wholesale & retail",
+                  "va_bn": 6.7,
+                  "jobs": 1354
+                },
+                {
+                  "sector": "Farming & fishing",
+                  "va_bn": 1.4,
+                  "jobs": 959
+                },
+                {
+                  "sector": "Food & beverages",
+                  "va_bn": 1.2,
+                  "jobs": 414
+                }
+              ]
+            },
+            {
+              "id": "indirect1",
+              "what": "Those businesses buy supplies and services from other Fukui firms, and so on down the chain.",
+              "output_bn": 54.5,
+              "va_bn": 31.8,
+              "income_bn": 15.8,
+              "jobs": 4440,
+              "top": [
+                {
+                  "sector": "Business services",
+                  "va_bn": 5.2,
+                  "jobs": 806
+                },
+                {
+                  "sector": "Real estate (incl. housing)",
+                  "va_bn": 4.9,
+                  "jobs": 52
+                },
+                {
+                  "sector": "Wholesale & retail",
+                  "va_bn": 4.8,
+                  "jobs": 976
+                },
+                {
+                  "sector": "Transport & post",
+                  "va_bn": 4.4,
+                  "jobs": 607
+                },
+                {
+                  "sector": "Finance & insurance",
+                  "va_bn": 2.1,
+                  "jobs": 138
+                }
+              ]
+            },
+            {
+              "id": "indirect2",
+              "what": "Wages from the first two rounds (¥66.1bn, 57% spent) buy housing, shopping, health care and more.",
+              "output_bn": 35.3,
+              "va_bn": 22.9,
+              "income_bn": 10.1,
+              "jobs": 2683,
+              "top": [
+                {
+                  "sector": "Real estate (incl. housing)",
+                  "va_bn": 7.8,
+                  "jobs": 82
+                },
+                {
+                  "sector": "Wholesale & retail",
+                  "va_bn": 3,
+                  "jobs": 599
+                },
+                {
+                  "sector": "Finance & insurance",
+                  "va_bn": 2.2,
+                  "jobs": 142
+                },
+                {
+                  "sector": "Health & welfare",
+                  "va_bn": 2.1,
+                  "jobs": 369
+                },
+                {
+                  "sector": "Hotels, restaurants & leisure",
+                  "va_bn": 1.7,
+                  "jobs": 626
+                }
+              ]
+            }
+          ],
+          "total": {
+            "output_bn": 248.5,
+            "va_bn": 139,
+            "income_bn": 76.2,
+            "jobs": 33943,
+            "share_pct": 3.41,
+            "jobs_share_pct": 7.9,
+            "multiplier_spend": 1.25,
+            "multiplier_direct": 1.57
+          },
+          "note": "Direct = spend that becomes output of Fukui businesses; indirect ① = what they buy from other Fukui firms, round after round (第1次間接波及効果); indirect ② = the part of the extra wages households spend in Fukui (第2次間接波及効果). Spend is split by the 2025 unit-spend mix (table 7): accommodation ¥48.7bn → hotels; souvenirs ¥47.0bn → food and drink 60%, fresh seafood and produce 15%, crafts and eyewear 15%, textiles 5%, knives 5%; meals, admissions and local transport ¥103.1bn → hotels, restaurants and leisure 75%, transport 25% (assumed split). Purchaser prices with trade and freight margins moved to commerce and transport, as the tool does; the table's self-sufficiency rates decide what stays in Fukui (souvenirs made in Fukui at 50% instead: GDP ¥143.4bn, 35,200 jobs). Second round: employee income × 0.572 (Fukui City households' propensity to consume, 2024) × household spending mix.",
+          "source": "Fukui Prefecture 経済波及効果分析ツール (令和2年福井県産業連関表, 37 sectors, [I−(I−M)A]⁻¹ inverse), https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx. Replica checked against the tool's published ¥10bn construction example (02.pdf): same result to within 0.01%."
+        },
+        {
+          "id": "q1-whatif",
+          "type": "what_if",
+          "span": 12,
+          "status": "modelled",
+          "badge": "New",
+          "title": "If tourism spend changes",
+          "base_year": "2025",
+          "base_spend_bn": 198.7,
+          "base_va_bn": 139,
+          "base_jobs": 33943,
+          "gdp_bn": 4078,
+          "workers": 427326,
+          "per_bn": {
+            "va_bn": 0.6995,
+            "jobs": 170.8,
+            "output_bn": 1.2508,
+            "income_bn": 0.3835
+          },
+          "min_pct": -30,
+          "max_pct": 50,
+          "step_pct": 1,
+          "default_pct": 10,
+          "note": "Linear, as input-output models are: it assumes rooms, staff and suppliers can keep up, and holds 2025 prices and GDP (FY2025 estimate). A yen spent on stays adds more GDP (≈¥0.74) than a day-trip yen (≈¥0.66), because day trips put more into souvenirs, many made outside Fukui.",
+          "source": "Same model; per ¥1bn effects from the 2025 spend mix."
         },
         {
           "id": "q1-progress",
           "type": "progress",
           "span": 7,
           "status": "real",
+          "hidden": true,
           "title": "Progress to the Next Fukui Tourism Vision targets",
           "note": "Share of the way from the 2023 baseline to the 2029 target. Both are calendar years, as in the vision's KPI table. Tick = time elapsed to 2025 (2 of 6 years = 33%). Red if behind.",
           "elapsed_share": 0.3333333333333333,
@@ -187,6 +872,7 @@
           "type": "formula_table",
           "span": 5,
           "status": "modelled",
+          "hidden": true,
           "title": "What moves the total",
           "note": "Extra tourism spend per year from one lever, all else equal.",
           "rows": [
@@ -240,6 +926,7 @@
           "type": "bars",
           "span": 12,
           "status": "pending",
+          "hidden": true,
           "title": "Where visitors sleep",
           "note": "Share of Fukui's visitors by where they spend the night: the overnight leakage to Kanazawa and Kyoto that drives \"Spend lost to neighbouring stays\". Filled from KDDI location data once purchased; no numbers until then.",
           "pending_on": "KDDI location data",
@@ -265,11 +952,11 @@
         }
       ],
       "spec": {
-        "data": "Vision KPI table; 入込数; input-output table 産業連関表; Sakura survey + KDDI.",
-        "model": "Ripple = direct spend × I-O multipliers; sensitivity; leakage as a range.",
-        "outputs": "Scorecard, ripple effect, jobs, leakage range.",
-        "acceptance": "Every figure states its definition (実人数 vs 延べ, fiscal vs calendar) and matches the Federation report.",
-        "status": "Scorecard ready; ripple needs I-O table; leakage needs survey v2 and KDDI."
+        "data": "Vision KPI table; 入込数 (spend 2014–2025, 2025 unit-spend mix); input-output table 産業連関表 (R2 tool, 37 sectors); ESRI prefectural GDP FY2011–23; Sakura survey + KDDI.",
+        "model": "Ripple = spend by category → sectors (purchaser prices, margins stripped) × [I−(I−M)A]⁻¹ for suppliers; wage spending = employee income × 0.572 × household mix, × inverse. Share = GDP added ÷ prefectural GDP; Fukui GDP after FY2023 grown at its own FY2011–23 trend.",
+        "outputs": "Fukui GDP vs tourism contribution FY2014–2029; tourism share of GDP and jobs 2014–2029; ripple by round and sector; what-if slider.",
+        "acceptance": "Every figure states its definition (実人数 vs 延べ, fiscal vs calendar) and matches the Federation report; the IO replica reproduces the prefecture's published tool example.",
+        "status": "Share, jobs and ripple estimated with the prefecture's R2 tool (prototype)."
       }
     },
     {
