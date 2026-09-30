@@ -173,6 +173,53 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/data/*" \
             --query 'Invalidation.Id' --output text
 
+      # Training history (Monday: "Keep all training history in S3"). The live-data
+      # branch and the JMA cache only live in git and the Actions cache, which can be
+      # rewritten or evicted; copying them to raw/ keeps every day for model training.
+      # Their files grow in place, so each day goes to its own date=YYYY-MM-DD/ folder
+      # and is uploaded create-only (If-None-Match: *): a key is never overwritten, and
+      # a re-run of the same day gets a 412, treated as "already saved". aws s3 sync
+      # can't send that header, and the raw/ policy denies a PutObject without it.
+      # Its own step, so a problem here never stops the publish above. Needs the
+      # raw/ write permission from dhde-terraform-aws #11.
+      - name: Save training history to S3
+        if: vars.AWS_PUBLISH_ROLE_ARN != '' && steps.aws_login.outcome == 'success' && vars.DATA_BUCKET != ''
+        continue-on-error: true
+        env:
+          DATA_BUCKET: ${{ vars.DATA_BUCKET }}
+        run: |
+          day=$(TZ=Asia/Tokyo date +%F)
+          failed=0
+          # save_new DIR PREFIX: create-only upload of every file in DIR to raw/PREFIX/date=$day/.
+          save_new() {
+            local src=$1 prefix=$2 f key err
+            while IFS= read -r -d '' f; do
+              key="raw/$prefix/date=$day/${f#"$src"/}"
+              if ! err=$(aws s3api put-object --bucket "$DATA_BUCKET" --key "$key" --body "$f" \
+                  --if-none-match '*' 2>&1 >/dev/null); then
+                case $err in
+                  *PreconditionFailed*) ;;  # already saved by an earlier run today
+                  *) echo "::warning::could not save $key: $err"; failed=1 ;;
+                esac
+              fi
+            done < <(find "$src" -type f -not -path "$src/.git/*" -print0)
+          }
+          if [ -n "$DHDE_LIVE_DATA_ROOT" ]; then
+            save_new "$DHDE_LIVE_DATA_ROOT" live-data
+          else
+            echo "::warning::no live-data checkout; raw/live-data/ not saved today"
+          fi
+          if [ -d "$DHDE_WORKSPACE_ROOT/jma_cache" ]; then
+            save_new "$DHDE_WORKSPACE_ROOT/jma_cache" weather/jma
+          else
+            echo "::warning::no JMA cache; raw/weather/jma/ not saved today"
+          fi
+          # continue-on-error hides a failed step behind a near-green run; fail it visibly.
+          if [ "$failed" -ne 0 ]; then
+            echo "::warning::training history not fully saved to s3://$DATA_BUCKET/raw/ for $day"
+            exit 1
+          fi
+
       - name: Commit if changed
         id: commit
         run: |
