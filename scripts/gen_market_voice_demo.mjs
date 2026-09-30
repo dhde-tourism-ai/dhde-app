@@ -33,10 +33,10 @@ const dayRain = (id, d) => Math.max(...live.nodes[id].weather.precip_mm.slice(d 
 // Four FTAS reservation feeds, each with the Rakuten availability check (share of
 // hotels within 3 km with rooms left 1 / 7 / 30 days out).
 const HOTEL_AREAS = [
-  { id: 'fukui_station', name: 'Fukui Station hotels', name_ja: '福井駅周辺ホテル', lat: 36.0585, lon: 136.2135, node: 'fukui_station', feed: 'FTAS reservations: Fukui Station', rooms: 2350, base: 0.66, wkd: 0.14, rakuten_hotels: 38 },
-  { id: 'awara_onsen', name: 'Awara Onsen ryokan', name_ja: 'あわら温泉旅館', lat: 36.2215, lon: 136.2045, node: 'awara_onsen', feed: 'FTAS reservations: Awara', rooms: 1180, base: 0.6, wkd: 0.27, rakuten_hotels: 21 },
-  { id: 'echizen_coast', name: 'Echizen coast inns', name_ja: '越前海岸の宿', lat: 35.99, lon: 135.975, node: 'tojinbo', feed: 'FTAS reservations: Echizen coast (regional)', rooms: 640, base: 0.38, wkd: 0.2, rakuten_hotels: 17 },
-  { id: 'mikata_five_lakes', name: 'Mikata Five Lakes lodgings', name_ja: '三方五湖周辺の宿', lat: 35.565, lon: 135.905, node: 'rainbow_line', feed: 'FTAS reservations: Mikata Five Lakes', rooms: 520, base: 0.44, wkd: 0.22, rakuten_hotels: 14 },
+  { id: 'fukui_station', name: 'Fukui Station hotels', name_ja: '福井駅周辺ホテル', lat: 36.0585, lon: 136.2135, node: 'fukui_station', feed: 'FTAS reservations: Fukui Station', rooms: 2350, base: 0.66, wkd: 0.14, rakuten_hotels: 38, hotels: 3, serves: ['fukui_station'] },
+  { id: 'awara_onsen', name: 'Awara Onsen ryokan', name_ja: 'あわら温泉旅館', lat: 36.2215, lon: 136.2045, node: 'awara_onsen', feed: 'FTAS reservations: Awara', rooms: 1180, base: 0.6, wkd: 0.27, rakuten_hotels: 21, hotels: 10, serves: ['awara_onsen'] },
+  { id: 'echizen_coast', name: 'Echizen coast inns', name_ja: '越前海岸の宿', lat: 35.99, lon: 135.975, node: 'tojinbo', feed: 'FTAS reservations: Echizen coast (regional)', rooms: 640, base: 0.38, wkd: 0.2, rakuten_hotels: 17, hotels: 8, serves: ['tojinbo', 'katsuyama', 'eiheiji'] },
+  { id: 'mikata_five_lakes', name: 'Mikata Five Lakes lodgings', name_ja: '三方五湖周辺の宿', lat: 35.565, lon: 135.905, node: 'rainbow_line', feed: 'FTAS reservations: Mikata Five Lakes', rooms: 520, base: 0.44, wkd: 0.22, rakuten_hotels: 14, hotels: 3, serves: ['rainbow_line'] },
 ]
 
 const hotels = HOTEL_AREAS.map((a) => {
@@ -65,6 +65,8 @@ const hotels = HOTEL_AREAS.map((a) => {
     node: a.node,
     feed: a.feed,
     rooms_total: a.rooms,
+    hotels_in_feed: a.hotels,
+    serves: a.serves,
     occupancy_pct: occ,
     rooms_left: left,
     booking_curve: { target_day: target, points: curve },

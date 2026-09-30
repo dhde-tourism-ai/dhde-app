@@ -16,6 +16,10 @@ export interface HotelArea {
   /** FTAS reservation feed name. */
   feed: string
   rooms_total: number
+  /** Hotels in the area's FTAS feed (its latest_hotel.csv). The badge is the whole area, not one hotel. */
+  hotels_in_feed?: number
+  /** Nodes this area's feed stands for (Echizen coast: one regional feed for three sites). */
+  serves?: string[]
   /** Occupancy per night, one per day. */
   occupancy_pct: number[]
   rooms_left: number[]
