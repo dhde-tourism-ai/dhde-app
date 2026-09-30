@@ -1944,3 +1944,61 @@
   font-size: 13px;
   color: var(--text-2);
 }
+
+/* Visitor-flow Sankey (Q4). */
+.flow-lbl {
+  fill: var(--text);
+  font-size: 12px;
+}
+
+.flow-num {
+  fill: var(--text-2);
+  font-weight: 400;
+}
+
+.flow-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.flow-dash {
+  width: 22px;
+  border-top: 2px dashed var(--s3, #199e70);
+}
+
+.flow-insight {
+  margin: var(--sp-3) 0 0;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+  font-size: 13.5px;
+}
+
+.flow-zoom {
+  margin-top: var(--sp-4);
+}
+
+.flow-zoom-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  font-size: 13px;
+}
+
+.flow-zoom-track {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.flow-zoom-fill {
+  display: block;
+  height: 100%;
+  opacity: 0.85;
+}

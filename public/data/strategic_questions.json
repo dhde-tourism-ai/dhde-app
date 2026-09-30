@@ -1876,6 +1876,203 @@
           ]
         },
         {
+          "id": "q4-flow",
+          "type": "sankey",
+          "span": 12,
+          "status": "real",
+          "title": "Where visitors come from, whether they stay the night, and what they spend (2025)",
+          "unit": "k visitors",
+          "nodes": [
+            {
+              "id": "fukui",
+              "label": "Fukui",
+              "label_ja": "福井県内"
+            },
+            {
+              "id": "kansai",
+              "label": "Kansai",
+              "label_ja": "関西"
+            },
+            {
+              "id": "chukyo",
+              "label": "Chukyo",
+              "label_ja": "中京"
+            },
+            {
+              "id": "hokuriku",
+              "label": "Hokuriku",
+              "label_ja": "北陸"
+            },
+            {
+              "id": "kanto",
+              "label": "Kanto",
+              "label_ja": "関東"
+            },
+            {
+              "id": "other",
+              "label": "Other",
+              "label_ja": "その他"
+            },
+            {
+              "id": "abroad",
+              "label": "Abroad",
+              "label_ja": "海外"
+            },
+            {
+              "id": "res",
+              "label": "Fukui residents",
+              "label_ja": "県内客"
+            },
+            {
+              "id": "out",
+              "label": "From outside Fukui",
+              "label_ja": "県外客"
+            },
+            {
+              "id": "for",
+              "label": "Foreign visitors",
+              "label_ja": "外国人"
+            },
+            {
+              "id": "day",
+              "label": "Day trip",
+              "label_ja": "日帰り"
+            },
+            {
+              "id": "night",
+              "label": "Overnight",
+              "label_ja": "宿泊"
+            }
+          ],
+          "links": [
+            [
+              "fukui",
+              "res",
+              12592
+            ],
+            [
+              "kansai",
+              "out",
+              3363
+            ],
+            [
+              "chukyo",
+              "out",
+              2289
+            ],
+            [
+              "hokuriku",
+              "out",
+              1584
+            ],
+            [
+              "kanto",
+              "out",
+              952
+            ],
+            [
+              "other",
+              "out",
+              663
+            ],
+            [
+              "abroad",
+              "for",
+              86
+            ],
+            [
+              "res",
+              "day",
+              12168
+            ],
+            [
+              "res",
+              "night",
+              424
+            ],
+            [
+              "out",
+              "day",
+              6890
+            ],
+            [
+              "out",
+              "night",
+              1961
+            ],
+            [
+              "for",
+              "day",
+              14,
+              true
+            ],
+            [
+              "for",
+              "night",
+              72,
+              true
+            ]
+          ],
+          "insight": "The leak is the stay, not the arrival: 8.85M visitors came from outside Fukui in 2025, but only 1.96M (22%) stayed the night. Foreign visitors are barely visible at this scale (86k, 0.4% of visitors).",
+          "insight_ja": "流出は来訪ではなく宿泊：2025年、県外から885万人が訪れたが、宿泊したのは196万人（22%）のみ。外国人はこの尺度ではほぼ見えない（8.6万人、来訪者の0.4%）。",
+          "zoom": {
+            "label": "Foreign visitors, 2025 (estimated split)",
+            "label_ja": "外国人来訪者 2025年（内訳は推計）",
+            "total": 86,
+            "parts": [
+              {
+                "label": "Day trip",
+                "label_ja": "日帰り",
+                "value": 14,
+                "low": 2,
+                "high": 32
+              },
+              {
+                "label": "Overnight",
+                "label_ja": "宿泊",
+                "value": 72,
+                "low": 54,
+                "high": 84
+              }
+            ]
+          },
+          "note": "Visitors counted once each (Hokuriku = Ishikawa and Toyama) (実人数), in thousands. Answers Q3 (who stays) and Q4 (where the stay leaks). Only the foreign day-trip/overnight split is estimated (dashed).",
+          "source": "Fukui Pref. 観光客入込数（推計）令和7年: day trip / overnight by 県内 / 県外 (p.3) and 県外客 by region of origin (p.8), and 観光消費額 by 県内 / 県外 × day trip / overnight (p.10). Foreign: JTA インバウンド消費動向調査 2025 (86k visitors); stay split estimated. Kansai = 県外客 minus the other regions.",
+          "alt": {
+            "label": "Spend",
+            "label_ja": "消費額",
+            "base_label": "Visitors",
+            "base_label_ja": "来訪者数",
+            "unit": "oku_yen",
+            "links": [
+              [
+                "res",
+                "day",
+                439
+              ],
+              [
+                "res",
+                "night",
+                125
+              ],
+              [
+                "out",
+                "day",
+                618
+              ],
+              [
+                "out",
+                "night",
+                805
+              ]
+            ],
+            "insight": "Visitors from outside Fukui who stay the night are 9% of visitors but bring 40% of all tourism spend (¥80.5bn of ¥198.7bn). Each extra overnight guest from outside is worth far more than a day trip.",
+            "insight_ja": "県外からの宿泊客は来訪者の9%だが、観光消費額の40%（1,987億円のうち805億円）を占める。県外宿泊客が1人増える価値は日帰り客よりはるかに大きい。",
+            "note": "Spend by region of origin isn't published, so this view starts at the groups. Foreign spend (about ¥3.7bn: 86k visitors × about ¥43k, JTA inbound survey 2025) isn't part of the ¥198.7bn and isn't verified yet.",
+            "note_ja": "発地別の消費額は公表されていないため、この表示は区分から始まる。外国人の消費額（約37億円：8.6万人×約4.3万円、観光庁インバウンド消費動向調査2025）は1,987億円に含まれず、未確認。"
+          }
+        },
+        {
           "id": "q4-access",
           "type": "indicators",
           "span": 6,
