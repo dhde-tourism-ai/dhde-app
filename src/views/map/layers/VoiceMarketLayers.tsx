@@ -399,7 +399,15 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
                   {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
                 </span>
               </div>
-              {!r.real && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
+              {(!r.real || r.stars_real) && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
+              {r.stars_real && (
+                <div className="tip-sub">
+                  {t(
+                    `Stars: the ${r.stars_real.n} Google reviews in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString()} reviews in total.`,
+                    `星の内訳：${r.stars_real.as_of}までの30日間のGoogleレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString()}件。`,
+                  )}
+                </div>
+              )}
               <div className="tt-sec">
                 {t('Sample snippets', 'サンプル抜粋')} <span className="tt-demo">{t('Fictional', '架空')}</span>
               </div>
