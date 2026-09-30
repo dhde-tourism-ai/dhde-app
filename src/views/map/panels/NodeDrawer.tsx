@@ -17,11 +17,20 @@ import { StatusTag } from '../../../components/StatusTag'
 import { DemoBadge } from '../../../components/DemoBadge'
 import { Stars } from '../../../components/Stars'
 import { SourceBadge } from '../../../components/SourceBadge'
+import { KddiPending } from '../../../components/KddiPending'
 import { measureLabel } from '../../../lib/real'
 import type { MarketVoiceData } from '../../../types/market'
 
 const S1 = '#3987e5'
 const AXIS = { fill: '#7f8ba3', fontSize: 10, fontFamily: 'IBM Plex Mono' }
+
+/** Screens waiting for KDDI location data; `only` limits a row to the sites it covers. */
+const KDDI_ROWS: { en: string; ja: string; only?: string[] }[] = [
+  { en: 'Measured daily count', ja: '実測の日別人数', only: ['eiheiji', 'katsuyama'] },
+  { en: 'Where visitors come from (home prefecture or country)', ja: '来訪者の居住地（都道府県・国）' },
+  { en: 'Time spent on site', ja: '滞在時間' },
+  { en: 'Age and gender', ja: '年齢・性別' },
+]
 const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12, color: '#e9eef8' }
 
 interface Props {
@@ -126,7 +135,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
           ) : (
             <span className="measure-tag est">{tr('Not measured yet', '未計測')}</span>
           )}
-          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} /> : <DemoBadge />)}
+          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} note={['Daily visitor totals for this site are real estimates; the hourly shape is simulated.', 'この地点の日別来訪者数は実推計。時間別の形は模擬。']} /> : <DemoBadge />)}
         </div>
 
         {!frame ? (
@@ -377,6 +386,16 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
             </div>
           </>
         )}
+
+        <h3 className="drawer-h">{tr('Visitor profile', '来訪者の特徴')}</h3>
+        <ul className="kddi-list">
+          {KDDI_ROWS.filter((r) => !r.only || r.only.includes(node.id)).map((r) => (
+            <li key={r.en}>
+              <span>{tr(r.en, r.ja)}</span>
+              <KddiPending />
+            </li>
+          ))}
+        </ul>
 
         {econ && (
           <>

@@ -68,7 +68,21 @@ export const LOOP_LABEL: Record<Nudge['loop'], { en: string; ja: string }> = {
   3: { en: 'Booking balance', ja: '予約バランス' },
 }
 
-const DEMAND_THRESHOLD = 0.35
+export type Priority = 'high' | 'medium' | 'low'
+
+/** Three urgency levels for government users; the map flag takes the priority's colour. */
+export const PRIORITY: Record<Priority, { colour: string; en: string; ja: string; hint_en: string; hint_ja: string }> = {
+  high: { colour: '#d03b3b', en: 'High priority', ja: '優先度：高', hint_en: 'Act today: visitor safety or access is at risk (severe weather, route problem).', hint_ja: '本日対応：来訪者の安全や交通に影響（荒天・ルートの問題）。' },
+  medium: { colour: '#ec835a', en: 'Medium priority', ja: '優先度：中', hint_en: 'Plan ahead: demand well above normal or hotels close to full.', hint_ja: '事前に準備：需要が平常より大幅に多い、またはホテルが満室に近い。' },
+  low: { colour: '#3987e5', en: 'Low priority', ja: '優先度：低', hint_en: 'Opportunity: a quiet day or empty rooms worth promoting.', hint_ja: '機会：閑散日や空室をPRできる。' },
+}
+
+export function priorityOf(sev: Sev): Priority {
+  return sev === 'crit' ? 'high' : sev === 'info' ? 'low' : 'medium'
+}
+
+/** A day this far above (or below) the node's normal day is a demand alert (loop #1). Shared with the Strategy 7-day card. */
+export const DEMAND_THRESHOLD = 0.35
 const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; route: RouteLeg[] }> = {
   tojinbo: {
     site_en: 'Fukui Prefectural Dinosaur Museum (indoor)',
@@ -124,6 +138,8 @@ export function computeNudges(
       const day = live.days[d]
       const up = pct > 0
       const p = `${up ? '+' : ''}${Math.round(pct * 100)}%`
+      // No model forecast for this day (Eiheiji, or past the model's 7 days): say it's rough.
+      const rough = live.node_meta?.[id]?.forecast_source_daily?.[d] === 'naive'
       out.push({
         id: `n1-${id}-${d}`,
         loop: 1,
@@ -134,10 +150,10 @@ export function computeNudges(
         day: d,
         start: d * 24 + 9,
         end: d * 24 + 17,
-        title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal`,
-        title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}`,
-        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).`,
-        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。`,
+        title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal${rough ? ' (rough estimate)' : ''}`,
+        title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}${rough ? '（概算）' : ''}`,
+        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).${rough ? ' Rough estimate: no forecast model here, only the median of recent same weekdays.' : ''}`,
+        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。${rough ? '概算：予測モデルがなく、最近の同じ曜日の中央値です。' : ''}`,
         action_en: up ? 'Add staff, extend parking and shop hours; push timed entry.' : 'Run a same-week offer and promote to nearby overnight guests.',
         action_ja: up ? '増員、駐車場・営業時間の延長、時間指定入場の案内を。' : '今週限りの特典で近隣宿泊客へ告知を。',
         focus: pos(id),

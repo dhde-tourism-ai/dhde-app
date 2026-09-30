@@ -13,8 +13,10 @@ import { Loading, LoadError } from './components/StateMsg'
 const MapView = lazy(() => import('./views/map/MapView'))
 const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
 const NodesView = lazy(() => import('./views/nodes/NodesView'))
+const SummaryView = lazy(() => import('./views/summary/SummaryView'))
 
 const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
+  { id: 'summary', en: 'Summary', ja: '概要', icon: 'home' },
   { id: 'map', en: 'Map', ja: '地図', icon: 'map' },
   { id: 'nodes', en: 'Nodes', ja: 'ノード', icon: 'nodes' },
   { id: 'strategy', en: 'Strategy', ja: '戦略', icon: 'strategy' },
@@ -47,7 +49,7 @@ export default function App() {
   return (
     <div className={`app view-${route.view}`}>
       <header className="appbar">
-        <a className="brand" href="#/map" aria-label="DHDE · Fukui Tourism Intelligence">
+        <a className="brand" href="#/summary" aria-label="DHDE · Fukui Tourism Intelligence">
           <BrandMark />
           <span className="brand-name">
             DHDE<span className="dot">·</span>
@@ -91,6 +93,12 @@ export default function App() {
       )}
 
       <main id="main">
+        {route.view === 'summary' && (
+          <Suspense fallback={<Loading what={t('Loading summary…', '概要を読み込み中…')} />}>
+            <SummaryView data={data} />
+          </Suspense>
+        )}
+
         {route.view === 'map' && (live.isLoading || realLoading) && <Loading what={t('Loading map…', '地図を読み込み中…')} />}
         {route.view === 'map' && !live.isLoading && !realLoading && (
           <Suspense fallback={<Loading what={t('Loading map…', '地図を読み込み中…')} />}>
@@ -123,7 +131,7 @@ export default function App() {
             <LoadError file="strategic_questions.json" error={strategy.error} />
           ) : (
             <Suspense fallback={<Loading what={t('Loading strategy view…', '読み込み中…')} />}>
-              <StrategyView data={strategy.data} />
+              <StrategyView data={strategy.data} focus={route.node} />
             </Suspense>
           ))}
       </main>

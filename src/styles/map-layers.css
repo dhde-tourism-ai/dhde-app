@@ -289,6 +289,30 @@
   padding-left: 3px;
 }
 
+/* Hotel badge + "Area · N hotels" caption, centred on the area's point. */
+.ov-hotel-wrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.ov-hotel-wrap .ov-hotel {
+  position: static;
+  transform: none;
+}
+
+.ov-area {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(10, 17, 32, 0.78);
+  color: var(--text-2);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
 .ov-rsi {
   transform: translate(-50%, -50%);
   padding-left: 3px;
@@ -484,12 +508,21 @@
   border-radius: var(--r-md);
   background: var(--bg-2);
   border: 1px solid var(--line);
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
+/* Longer tab names (Japanese) push the source badge onto its own line instead of overlapping. */
+.fp-head:has(> .panel-tabs) {
+  flex-wrap: wrap;
+}
+
+.fp-head > .panel-tabs + * {
+  margin-inline-start: auto;
+}
+
 .panel-tabs button {
-  flex: 1;
+  flex: 1 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -533,6 +566,19 @@
   height: 11px;
   border-radius: 3px 3px 1px 3px;
   flex: none;
+}
+
+/* Priority rows: label with its one-line explanation underneath. */
+.lg-priority {
+  align-items: flex-start;
+}
+
+.lg-priority .lg-flag {
+  margin-top: 3px;
+}
+
+.lg-priority .lg-note {
+  display: block;
 }
 
 .lg-sq {

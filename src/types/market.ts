@@ -16,6 +16,10 @@ export interface HotelArea {
   /** FTAS reservation feed name. */
   feed: string
   rooms_total: number
+  /** Hotels in the area's FTAS feed (its latest_hotel.csv). The badge is the whole area, not one hotel. */
+  hotels_in_feed?: number
+  /** Nodes this area's feed stands for (Echizen coast: one regional feed for three sites). */
+  serves?: string[]
   /** Occupancy per night, one per day. */
   occupancy_pct: number[]
   rooms_left: number[]
@@ -107,9 +111,9 @@ export interface ReviewsNode {
   distribution_pct: number[]
   snippets: { stars: number; en: string; ja: string; days_ago: number }[]
   source: string
-  /** rating / rating_30d_ago / new_30d are real (GMB); snippets stay demo. */
+  /** rating / rating_30d_ago / new_30d are real: from stars_real's reviews when set, else Business Profile (GMB). Snippets stay demo. */
   real?: { as_of: string | null; reviews_used: number }
-  /** distribution_pct and count are real (Google reviews): the n reviews in the 30 days to as_of, and the place total. */
+  /** Everything but the snippets is from the node's own Google Maps reviews: the n in the 30 days to as_of, and the place total. */
   stars_real?: { as_of: string; n: number }
 }
 

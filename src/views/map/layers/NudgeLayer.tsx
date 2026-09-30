@@ -3,8 +3,7 @@ import { Marker, Polyline, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import type { RoutesFile } from '../../../types/routes'
 import type { Nudge } from '../../../lib/nudges'
-import { LOOP_LABEL } from '../../../lib/nudges'
-import { SEV_COLOUR } from '../../../lib/alerts'
+import { LOOP_LABEL, PRIORITY, priorityOf } from '../../../lib/nudges'
 import { routeById, reversePath } from '../../../lib/routes'
 import { escapeHtml } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
@@ -12,12 +11,12 @@ import { useLang } from '../../../lib/i18n'
 
 const ROUTE_COLOUR = '#3fd8c4'
 
-/** Map annotations for the nudges on the selected day: a flag per nudge and the suggested route for weather-route nudges. */
+/** Map annotations for the action nudges on the selected day: a flag per nudge and the suggested route for weather-route nudges. */
 export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: Nudge[]; routes: RoutesFile | null; day: number; activeId?: string; onPick: (n: Nudge) => void }) {
   const { t, lang } = useLang()
   const today = nudges.filter((n) => n.day === day)
 
-  // One flag per location: stack the count, colour by the most severe.
+  // One flag per location: stack the count, colour by the most urgent.
   const groups = useMemo(() => {
     const m = new Map<string, Nudge[]>()
     for (const n of today) {
@@ -62,7 +61,7 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
         const active = g.some((n) => n.id === activeId)
         const icon = L.divIcon({
           className: 'map-divicon',
-          html: `<div class="nudge-flag${active ? ' on' : ''}" style="--c:${SEV_COLOUR[worst.sev]}">${iconSvg('flag', 13)}<span class="num">${g.length}</span></div>`,
+          html: `<div class="nudge-flag${active ? ' on' : ''}" style="--c:${PRIORITY[priorityOf(worst.sev)].colour}">${iconSvg('flag', 13)}<span class="num">${g.length}</span></div>`,
           iconSize: [0, 0],
         })
         return (
@@ -71,7 +70,8 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
               {g.map((n) => (
                 <div key={n.id} className="tt-nudge">
                   <div className="tt-nudge-h">
-                    <i style={{ background: SEV_COLOUR[n.sev] }}></i>#{n.loop} {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja)}
+                    <i style={{ background: PRIORITY[priorityOf(n.sev)].colour }}></i>
+                    {t(PRIORITY[priorityOf(n.sev)].en, PRIORITY[priorityOf(n.sev)].ja)} · {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja)}
                   </div>
                   <div className="tt-nudge-t">{t(n.title_en, n.title_ja)}</div>
                   <div className="tip-row">{t(n.action_en, n.action_ja)}</div>

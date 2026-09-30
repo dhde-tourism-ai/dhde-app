@@ -17,6 +17,8 @@ interface CardBase {
   source?: string
   todo?: string
   pending_on?: string
+  /** Kept in the file but not shown, e.g. the Q4 funnel until the final report. */
+  hidden?: boolean
 }
 
 export interface StatCard extends CardBase {
@@ -93,12 +95,17 @@ export interface ForecastSite {
 export interface ForecastCard extends CardBase {
   type: 'forecast'
   sites: ForecastSite[]
+  /** Replace the sites with the real 7-day forecast from real_data.json when it loads. */
+  live?: boolean
 }
 
 export interface MonthlyShareCard extends CardBase {
   type: 'monthly_share'
   months: string[]
   values: number[]
+  /** When set, the values are replaced by this monthly_forecast.json series' shares for `year`, once all 12 months are measured. */
+  series?: string
+  year?: string
   kpi?: { label: string; value_text: string | null; status: PillStatus }
 }
 
@@ -159,6 +166,35 @@ export interface BuilderCard extends CardBase {
   gaps: { id: string; label: string; gap: number; formula: string }[]
 }
 
+/** Fed from public/data/monthly_forecast.json, not from this file: `series` lists the ids to offer. */
+export interface MonthlyForecastCard extends CardBase {
+  type: 'monthly_forecast'
+  series: string[]
+}
+
+/** Guest-nights by month, domestic (Japanese) vs foreign, last year vs this year, from monthly_forecast.json. */
+export interface GuestNightsMonthsCard extends CardBase {
+  type: 'guest_nights_months'
+  /** monthly_forecast.json series ids. */
+  total: string
+  domestic: string
+  foreign: string
+}
+
+/** Running total this year vs the year's point on a steady-growth path to the vision target. */
+export interface TargetPaceCard extends CardBase {
+  type: 'target_pace'
+  items: {
+    series: string
+    label: string
+    label_ja?: string
+    baseline: number
+    baseline_year: number
+    target: number
+    target_year: number
+  }[]
+}
+
 export type StrategyCard =
   | StatCard
   | ProgressCard
@@ -171,6 +207,9 @@ export type StrategyCard =
   | IndicatorsCard
   | TableCard
   | BuilderCard
+  | MonthlyForecastCard
+  | GuestNightsMonthsCard
+  | TargetPaceCard
 
 export interface BuildSpec {
   data: string
@@ -185,6 +224,8 @@ export interface StrategicQuestion {
   number: number
   nav: string
   title: string
+  /** The government's question behind the section (the FAQ shows it). */
+  question?: string
   why: string
   subs: string[]
   answer: string
