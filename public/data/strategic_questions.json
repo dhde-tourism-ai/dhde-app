@@ -1836,46 +1836,6 @@
       "answer": "Deepest leaks are awareness (search interest 12 vs Ishikawa 100) and overnight stays (11% vs ~39% Kanazawa City). Occupancy 46.5%, so rooms are not the constraint. No direct bus Fukui Station → Tojinbo.",
       "cards": [
         {
-          "id": "q4-funnel",
-          "type": "funnel",
-          "span": 12,
-          "status": "modelled",
-          "title": "Visitor funnel: gap vs Kanazawa and value at stake",
-          "note": "Stage gap = 1 − Fukui ÷ Kanazawa. Value at stake = visitors lost × spend difference.",
-          "stages": [
-            {
-              "stage": "Discover",
-              "gap_pct": 88,
-              "evidence": "Search interest 12 vs 100",
-              "value_text": null
-            },
-            {
-              "stage": "Decide",
-              "gap_pct": null,
-              "evidence": "Bookable products (audit pending)",
-              "value_text": null
-            },
-            {
-              "stage": "Reach / Explore",
-              "gap_pct": null,
-              "evidence": "No direct bus Fukui Station → Tojinbo",
-              "value_text": null
-            },
-            {
-              "stage": "Stay",
-              "gap_pct": 72,
-              "evidence": "Overnight share 11% vs ~39%",
-              "value_text": null
-            },
-            {
-              "stage": "Return",
-              "gap_pct": null,
-              "evidence": "78% of foreign guests are repeaters",
-              "value_text": null
-            }
-          ]
-        },
-        {
           "id": "q4-flow",
           "type": "sankey",
           "span": 12,
