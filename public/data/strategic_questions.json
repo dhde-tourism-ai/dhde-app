@@ -13,7 +13,7 @@
       "description": "Published statistics"
     },
     "modelled": {
-      "label": "Calculated / modelled",
+      "label": "Estimated",
       "description": "Derived from real inputs by a stated calculation or model"
     },
     "illustrative": {

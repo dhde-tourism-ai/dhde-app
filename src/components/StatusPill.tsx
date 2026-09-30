@@ -3,7 +3,7 @@ import { useLang } from '../lib/i18n'
 
 const LABELS: Record<MetricStatus, [string, string]> = {
   real: ['Real', '実データ'],
-  modelled: ['Calculated / modelled', '算出・推計'],
+  modelled: ['Estimated', '推計'],
   illustrative: ['Illustrative', '例示'],
   pending: ['Data pending', 'データ待ち'],
 }
