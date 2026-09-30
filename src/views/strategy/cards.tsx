@@ -9,6 +9,7 @@ import type {
   FunnelCard,
   HeatmapCard,
   IndicatorsCard,
+  MonthlyForecastCard,
   MonthlyShareCard,
   ProgressCard,
   StatCard,
@@ -19,10 +20,14 @@ import { StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { fmtCompact, fmtYen, PENDING } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
+import { storeLayers, storePanelOpen } from '../map/layers'
+import type { LayerId } from '../map/layers'
+import { useJsonResource } from '../../hooks/useJsonResource'
+import { measuredYear, yearTotal } from '../../lib/monthly'
+import type { MonthlyForecastFile } from '../../types/monthly'
 
-const S = ['#3987e5', '#d95926', '#199e70', '#c98500'] // categorical slots 1-4 (dark steps)
-const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
-const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12, color: '#e9eef8' }
+import { AXIS, S, TIP } from './chartTheme'
+import { GuestNightsMonths, TargetPace } from './guestNights'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
@@ -84,6 +89,12 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <DataTable card={card} />
     case 'builder':
       return <Builder card={card} />
+    case 'monthly_forecast':
+      return <MonthlyForecast card={card} />
+    case 'guest_nights_months':
+      return <GuestNightsMonths card={card} />
+    case 'target_pace':
+      return <TargetPace card={card} />
   }
 }
 
@@ -226,7 +237,8 @@ function Bars({ card }: { card: BarsCard }) {
   )
 }
 
-const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn' }
+// English and Japanese (strategy.ja.json) action names.
+const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn', 通常: 'ok', 営業時間を延長: 'up', 屋内施設を案内: 'warn' }
 
 function Forecast({ card }: { card: ForecastCard }) {
   const { t } = useLang()
@@ -260,10 +272,12 @@ function Forecast({ card }: { card: ForecastCard }) {
               <i className="k-band" style={{ background: 'rgba(217,89,38,.28)' }}></i>
               {t('Forecast range', '予測幅')}
             </span>
-            <span>
-              <i className="k-dot"></i>
-              {t('Severe weather', '荒天')}
-            </span>
+            {site.points.some((p) => p.severe_weather) && (
+              <span>
+                <i className="k-dot"></i>
+                {t('Severe weather', '荒天')}
+              </span>
+            )}
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
@@ -326,6 +340,137 @@ function quietestRun(values: number[]): number {
     }
   }
   return best
+}
+
+const MODEL_LABEL: Record<string, [string, string]> = {
+  seasonal_naive: ['Same month last year', '前年同月'],
+  own_growth: ['Same month last year + its own recent growth', '前年同月＋直近の伸び'],
+  neighbour_growth: ['Same month last year + Ishikawa and Toyama growth', '前年同月＋石川・富山の伸び'],
+}
+
+/** 12-month forecast (F2) from monthly_forecast.json: actual months, forecast and range, and this year's expected total. */
+function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
+  const { t } = useLang()
+  const file = useJsonResource<MonthlyForecastFile>('monthly_forecast.json')
+  const [pick, setPick] = useState(card.series[0])
+  const offered = (file.data?.series ?? []).filter((x) => card.series.includes(x.id))
+  const s = offered.find((x) => x.id === pick) ?? offered[0]
+  if (file.isLoading) return <p className="muted small">{t('Loading…', '読み込み中…')}</p>
+  if (!s) return <p className="muted small">{t('The monthly forecast is not published yet.', '月次予測はまだ公開されていません。')}</p>
+
+  const rows = [
+    ...s.actual.map((a) => ({ month: a.month, actual: a.value as number | null, forecast: null as number | null, range: null as number[] | null })),
+    ...s.forecast.map((f) => ({ month: f.month, actual: null, forecast: f.predicted, range: f.low !== null && f.high !== null ? [f.low, f.high] : null })),
+  ]
+  // Join the dashed forecast line to the last actual month.
+  const lastActual = rows[s.actual.length - 1]
+  if (lastActual && s.forecast.length) lastActual.forecast = lastActual.actual
+  const year = s.data_through.slice(0, 4)
+  const total = yearTotal(s, year)
+  const prevYear = String(Number(year) - 1)
+  const prev = measuredYear(s, prevYear)
+  const pct = (v: number) => {
+    const p = Math.round(((v - prev!) / prev!) * 1000) / 10
+    return `${p >= 0 ? '+' : ''}${p}%`
+  }
+  const unit = s.kind === 'guest_nights' ? t('guest-nights', '延べ宿泊者') : t('visitors', '来訪者')
+  const fmtN = (v: number) => Math.round(v).toLocaleString('en-US')
+
+  return (
+    <div>
+      <div className="seg seg-wrap" role="group" aria-label={t('Series', '系列')}>
+        {offered.map((x) => (
+          <button key={x.id} aria-pressed={x.id === s.id} onClick={() => setPick(x.id)}>
+            {t(x.label, x.label_ja)}
+          </button>
+        ))}
+      </div>
+      <div className="forecast-layout">
+        <div className="forecast-chart">
+          <div className="chart-key">
+            <span>
+              <i className="k-line" style={{ borderColor: S[0] }}></i>
+              {t('Actual', '実績')}
+            </span>
+            <span>
+              <i className="k-line dash" style={{ borderColor: S[1] }}></i>
+              {t('Forecast', '予測')}
+            </span>
+            <span>
+              <i className="k-band" style={{ background: 'rgba(217,89,38,.28)' }}></i>
+              {t('Likely range', '予測範囲')}
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
+              <CartesianGrid stroke="#1f2a3f" vertical={false} />
+              <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
+              <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={TIP}
+                formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
+              />
+              <Area dataKey="range" name={t('Likely range', '予測範囲')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
+              <Line dataKey="actual" name={t('Actual', '実績')} stroke={S[0]} strokeWidth={2} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
+              <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="next7">
+          <h4 className="mini-h">{t(`Expected in ${year}`, `${year}年の見込み`)}</h4>
+          {total ? (
+            <>
+              <div className="stat-value num">{fmtN(total.total)}</div>
+              {total.low !== null && total.high !== null && (
+                <p className="muted small num">
+                  {t('Range', '範囲')} {fmtN(total.low)}–{fmtN(total.high)}
+                </p>
+              )}
+              {prev !== null && (
+                <p className="mf-vs num">
+                  {t(`vs ${prevYear}: ${fmtN(prev)}`, `${prevYear}年：${fmtN(prev)}`)} <strong className={total.total >= prev ? 'sum-up' : 'sum-down'}>{pct(total.total)}</strong>
+                  {total.low !== null && total.high !== null && (
+                    <span className="muted small">
+                      {' '}
+                      ({t('range', '範囲')} {pct(total.low)} {t('to', '〜')} {pct(total.high)})
+                    </span>
+                  )}
+                </p>
+              )}
+              <p className="muted small">
+                {t(
+                  `${unit}: ${total.actualMonths} actual months (${fmtN(total.actualSum)}) plus the forecast for the other ${12 - total.actualMonths}.`,
+                  `${unit}：実績${total.actualMonths}か月（${fmtN(total.actualSum)}）＋残り${12 - total.actualMonths}か月の予測。`,
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="muted small">{t('Not enough months for this year yet.', '今年の月数がまだ足りません。')}</p>
+          )}
+          <dl className="mf-facts">
+            <dt>{t('Model', 'モデル')}</dt>
+            <dd>{MODEL_LABEL[s.model] ? t(MODEL_LABEL[s.model][0], MODEL_LABEL[s.model][1]) : s.model}</dd>
+            <dt>{t('Typical error', '典型的な誤差')}</dt>
+            <dd className="num">{s.backtest_mape_pct !== null ? `${s.backtest_mape_pct}%` : PENDING}</dd>
+            <dt>{t('Data to', 'データ')}</dt>
+            <dd className="num">{s.data_through}</dd>
+          </dl>
+          {s.range_rough && <p className="muted small">{t('The range is rough: fewer than 12 months to test the model on.', '範囲は目安です：検証できる月が12か月未満。')}</p>}
+          {s.kind === 'visitors' && (
+            <p className="muted small">
+              {t(
+                "Visitor counts are comparable from Jan 2025 only (the publisher revised its method). They are JTTA's digital tourism statistics, which count differently from the prefecture's official visitor total in Q1 (21.44M in 2025), so the two don't match.",
+                '来訪者数は2025年1月以降のみ比較可能（公表元の手法改定）。日本観光振興協会のデジタル観光統計で、Q1の県公式の観光客入込数（2025年2,144万人）とは数え方が異なるため一致しません。',
+              )}
+            </p>
+          )}
+          <p className="muted small">
+            {t('Source', '出典')}: {s.kind === 'visitors' ? t('JTTA digital tourism statistics', '日本観光振興協会 デジタル観光統計') : t('JTA accommodation survey', '観光庁 宿泊旅行統計調査')}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function MonthlyShare({ card }: { card: MonthlyShareCard }) {
@@ -440,28 +585,67 @@ function Heatmap({ card }: { card: HeatmapCard }) {
   )
 }
 
+/** Where each funnel stage's leak shows on the map, keyed by the stage's first word. */
+const FUNNEL_MAP: Record<string, { ja: string; layers: LayerId[]; node?: string; en: string; ja_where: string }> = {
+  discover: { ja: '認知', layers: ['rsi'], en: 'Search intent: how often people search routes to each town. Low interest means few people hear of Fukui.', ja_where: '検索関心：各市町へのルート検索の多さ。関心が低いと福井を知る人が少ない。' },
+  decide: { ja: '検討', layers: ['reviews', 'hotels'], en: 'Reviews and hotels: what visitors see when they choose. The bookable-products audit is still pending.', ja_where: 'レビューとホテル：来訪者が選ぶ時に見る情報。予約可能な商品の調査は未実施。' },
+  reach: { ja: '移動・周遊', layers: ['traffic', 'flow'], node: 'tojinbo', en: 'Traffic and people flow around Tojinbo, which has no direct bus from Fukui Station.', ja_where: '東尋坊周辺の交通と人流。福井駅からの直通バスがない。' },
+  stay: { ja: '宿泊', layers: ['hotels', 'economics'], en: 'Hotels and economics: how full hotels are and the overnight spend lost to neighbouring areas.', ja_where: 'ホテルと経済：ホテルの稼働率と、近隣地域に流出した宿泊消費。' },
+  return: { ja: '再訪', layers: ['survey'], en: 'Survey: satisfaction and how likely visitors are to come back or recommend Fukui.', ja_where: 'アンケート：満足度と、再訪・推奨の意向。' },
+}
+
+const stageKey = (stage: string) => stage.split(/[\s/]/)[0].toLowerCase()
+
+/** Opens the map with the stage's layers on (and its site, if any) through the saved layer choice. */
+function showOnMap(where: { layers: LayerId[]; node?: string }) {
+  storeLayers(where.layers)
+  storePanelOpen(true)
+  window.location.hash = `/map${where.node ? `/${where.node}` : ''}`
+}
+
 function Funnel({ card }: { card: FunnelCard }) {
   const { t } = useLang()
+  const [picked, setPicked] = useState<string | null>(null)
+  const sel = card.stages.find((s) => s.stage === picked)
+  const where = sel ? FUNNEL_MAP[stageKey(sel.stage)] : undefined
   return (
-    <ol className="funnel">
-      {card.stages.map((s, i) => (
-        <li key={s.stage} className="funnel-stage">
-          <div className="funnel-step">{i + 1}</div>
-          <div className="funnel-name">{s.stage}</div>
-          <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
-            {s.gap_pct === null ? PENDING : `${s.gap_pct}%`}
-            <span className="funnel-gap-lab">{t('gap vs Kanazawa', '金沢との差')}</span>
-          </div>
-          <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? PENDING : `${s.gap_pct}%`}>
-            {s.gap_pct === null ? <span className="pending" style={{ width: '100%' }}></span> : <span style={{ width: `${s.gap_pct}%` }}></span>}
-          </div>
-          <div className="funnel-evidence">{s.evidence}</div>
-          <div className="funnel-value">
-            <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? '¥[x]bn'}</strong>
-          </div>
-        </li>
-      ))}
-    </ol>
+    <>
+      <ol className="funnel">
+        {card.stages.map((s, i) => (
+          <li key={s.stage} className={`funnel-stage ${picked === s.stage ? 'on' : ''}`} onClick={() => setPicked(picked === s.stage ? null : s.stage)}>
+            <div className="funnel-step">{i + 1}</div>
+            <div className="funnel-name">
+              <button className="funnel-pick" aria-pressed={picked === s.stage} onClick={(e) => { e.stopPropagation(); setPicked(picked === s.stage ? null : s.stage) }}>
+                {t(s.stage, FUNNEL_MAP[stageKey(s.stage)]?.ja ?? s.stage)}
+              </button>
+            </div>
+            <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
+              {s.gap_pct === null ? PENDING : `${s.gap_pct}%`}
+              <span className="funnel-gap-lab">{t('gap vs Kanazawa', '金沢との差')}</span>
+            </div>
+            <div className="funnel-track" role="img" aria-label={s.gap_pct === null ? PENDING : `${s.gap_pct}%`}>
+              {s.gap_pct === null ? <span className="pending" style={{ width: '100%' }}></span> : <span style={{ width: `${s.gap_pct}%` }}></span>}
+            </div>
+            <div className="funnel-evidence">{s.evidence}</div>
+            <div className="funnel-value">
+              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? '¥[x]bn'}</strong>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {sel && where ? (
+        <div className="funnel-where" role="status">
+          <span className="funnel-where-text">
+            <strong>{t(sel.stage, where.ja)}:</strong> {t(where.en, where.ja_where)}
+          </span>
+          <button className="btn btn-accent" onClick={() => showOnMap(where)}>
+            <Icon name="map" /> {t('Show on map', '地図で見る')}
+          </button>
+        </div>
+      ) : (
+        <p className="funnel-hint muted small">{t('Click a stage to see where its leak shows on the map.', '段階をクリックすると、地図上のどこで流出が見えるかを表示します。')}</p>
+      )}
+    </>
   )
 }
 
