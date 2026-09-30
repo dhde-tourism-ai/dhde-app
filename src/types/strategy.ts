@@ -235,6 +235,8 @@ export interface StrategicQuestion {
   number: number
   nav: string
   title: string
+  /** The government's question behind the section (the FAQ shows it). */
+  question?: string
   why: string
   subs: string[]
   answer: string

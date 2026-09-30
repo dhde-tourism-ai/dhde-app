@@ -287,7 +287,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
               <details key={q.id} className="faq">
                 <summary>
                   <span className="q-num">Q{q.number}</span>
-                  {t(q.title, FAQ[q.id]?.ja ?? q.title)}
+                  {t(q.question ?? q.title, FAQ[q.id]?.ja ?? q.question ?? q.title)}
                 </summary>
                 <div className="faq-body">
                   <p lang="en">{q.answer}</p>
