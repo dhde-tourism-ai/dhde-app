@@ -92,7 +92,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
           <div className="board">
             <div className="board-total">
               <span className="eyebrow">{withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`)}</span>
-              <span className="board-num">{Math.round(total).toLocaleString()}</span>
+              <span className="board-num">{Math.round(total).toLocaleString('en-US')}</span>
             </div>
             <ul className="board-list">
               {nodes
@@ -106,7 +106,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
                         <span className="board-name">{t(n.name.replace(' East Entrance', ''), n.name_ja)}</span>
                         <span className="board-tier">{f.noEstimate ? t('no estimate', '推計なし') : t(f.tier.label, f.tier.label_ja)}</span>
                         <span className="board-val num">
-                          {f.noEstimate ? '—' : `${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString()}`}
+                          {f.noEstimate ? '—' : `${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}`}
                         </span>
                       </button>
                     </li>

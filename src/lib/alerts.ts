@@ -82,8 +82,8 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
         id: `cr-${id}`,
         sev: f.tier.key,
         node: id,
-        en: `${nm(reg, id, 'en')}: ${f.tier.label.toLowerCase()}, ${Math.round(f.onSite).toLocaleString()} on site (${Math.round(f.load * 100)}% of comfortable capacity)`,
-        ja: `${nm(reg, id, 'ja')}：${f.tier.label_ja}、現地${Math.round(f.onSite).toLocaleString()}人（快適容量の${Math.round(f.load * 100)}%）`,
+        en: `${nm(reg, id, 'en')}: ${f.tier.label.toLowerCase()}, ${Math.round(f.onSite).toLocaleString('en-US')} on site (${Math.round(f.load * 100)}% of comfortable capacity)`,
+        ja: `${nm(reg, id, 'ja')}：${f.tier.label_ja}、現地${Math.round(f.onSite).toLocaleString('en-US')}人（快適容量の${Math.round(f.load * 100)}%）`,
       })
     }
     // Operator insight: counts running ahead of forecast (the demo's "extend hours, staff up" nudge).

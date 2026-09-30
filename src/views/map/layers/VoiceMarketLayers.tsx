@@ -51,7 +51,7 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
           h.id,
           L.divIcon({
             className: 'map-divicon',
-            html: `<div class="ov-badge ov-hotel"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 14)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString()} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div>`,
+            html: `<div class="ov-badge ov-hotel"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 14)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div>`,
             iconSize: [0, 0],
           }),
         ]),
@@ -70,13 +70,13 @@ export function HotelsLayer({ data, day }: { data: MarketVoiceData; day: number 
             <div className="tt-hero">
               <b className="num">{h.occupancy_pct[d]}%</b>
               <span>
-                {t('occupied that night', 'この日の稼働率')} · {h.rooms_left[d].toLocaleString()} / {h.rooms_total.toLocaleString()} {t('rooms left', '室空き')}
+                {t('occupied that night', 'この日の稼働率')} · {h.rooms_left[d].toLocaleString('en-US')} / {h.rooms_total.toLocaleString('en-US')} {t('rooms left', '室空き')}
               </span>
             </div>
             {h.adr_yen?.[d] ? (
               <div className="tt-grid">
                 <span className="tt-k">{t('Average daily rate', '平均客室単価')}</span>
-                <span className="tt-v num">¥{Math.round(h.adr_yen[d]!).toLocaleString()}</span>
+                <span className="tt-v num">¥{Math.round(h.adr_yen[d]!).toLocaleString('en-US')}</span>
               </div>
             ) : null}
             {h.forward && h.forward.length > 0 ? (
@@ -132,7 +132,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             m.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-rsi${m.gmb ? ' gmb' : ''}"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><span class="ov-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString() : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div>`,
+              html: `<div class="ov-badge ov-rsi${m.gmb ? ' gmb' : ''}"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><span class="ov-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -152,7 +152,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             {m.gmb ? (
               <>
                 <div className="tt-hero">
-                  <b className="num">{m.gmb.map_views.toLocaleString()}</b>
+                  <b className="num">{m.gmb.map_views.toLocaleString('en-US')}</b>
                   <span>
                     {t('Google Maps views of the', 'Googleマップでの表示（')} {m.gmb.node.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} {t('profile', 'のプロフィール）')} · {m.change_7d_pct >= 0 ? '+' : ''}
                     {m.change_7d_pct}% {t('week on week', '（前週比）')}
@@ -160,9 +160,9 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
                 </div>
                 <div className="tt-grid">
                   <span className="tt-k">{t('Search views', '検索での表示')}</span>
-                  <span className="tt-v num">{m.gmb.search_views.toLocaleString()}</span>
+                  <span className="tt-v num">{m.gmb.search_views.toLocaleString('en-US')}</span>
                   <span className="tt-k">{t('Direction requests', '経路検索')}</span>
-                  <span className="tt-v num">{m.gmb.directions.toLocaleString()}</span>
+                  <span className="tt-v num">{m.gmb.directions.toLocaleString('en-US')}</span>
                 </div>
               </>
             ) : (
@@ -233,7 +233,7 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
               <div className="tt-grid">
                 <span className="tt-k">{t('Responses, last 30 days', '回答数（30日）')}</span>
                 <span className="tt-v num">
-                  {s.responses_30d.toLocaleString()} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
+                  {s.responses_30d.toLocaleString('en-US')} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
                 </span>
               </div>
               <div className="tt-sec">{t('Top reasons for visiting', '主な来訪理由')}</div>
@@ -370,7 +370,7 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
             n.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-below" style="--r:${nodeR(frame, n.id)}px">${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString()})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span></div>`,
+              html: `<div class="ov-badge ov-below" style="--r:${nodeR(frame, n.id)}px">${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString('en-US')})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -395,7 +395,7 @@ export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; no
               <div className="tt-hero">
                 <b className="num">{r.rating.toFixed(1)}</b>
                 <span>
-                  <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString()} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
+                  <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
                   {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
                 </span>
               </div>

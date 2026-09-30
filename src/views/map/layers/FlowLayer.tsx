@@ -86,11 +86,11 @@ export function FlowLayer({ live, routes, t, paused }: { live: LiveData; routes:
               <strong>{tr(r.label, r.label_ja)}</strong>
               <div className="tip-row">
                 <i className="k-line" style={{ borderColor: ARRIVE }}></i>
-                {tr('Arriving', '到着')} <b className="num">{(f.forward[t] ?? 0).toLocaleString()}</b> {tr('people/h', '人/時')}
+                {tr('Arriving', '到着')} <b className="num">{(f.forward[t] ?? 0).toLocaleString('en-US')}</b> {tr('people/h', '人/時')}
               </div>
               <div className="tip-row">
                 <i className="k-line" style={{ borderColor: DEPART }}></i>
-                {tr('Departing', '出発')} <b className="num">{(f.reverse[t] ?? 0).toLocaleString()}</b> {tr('people/h', '人/時')}
+                {tr('Departing', '出発')} <b className="num">{(f.reverse[t] ?? 0).toLocaleString('en-US')}</b> {tr('people/h', '人/時')}
               </div>
               <div className="tip-sub">
                 {rail ? tr('Hokuriku Shinkansen, line approximate', '北陸新幹線（線形は概略）') : `${r.distance_km} km · ${r.duration_min} min ${tr('by road', '（道路）')}`}

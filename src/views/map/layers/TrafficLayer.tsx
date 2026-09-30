@@ -113,12 +113,12 @@ export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; rout
                   {tr(tier.label, tier.label_ja)} · {tr('congestion', '混雑度')} <b className="num">{Math.round(c * 100)}%</b>
                 </div>
                 <div className="tip-sub">
-                  {tr('Segment', '区間')} {i + 1}/{traffic.segments.length} · ~{(traffic.vehicles_per_hour[t] ?? 0).toLocaleString()} {tr('vehicles/h on the corridor', '台/時')}
+                  {tr('Segment', '区間')} {i + 1}/{traffic.segments.length} · ~{(traffic.vehicles_per_hour[t] ?? 0).toLocaleString('en-US')} {tr('vehicles/h on the corridor', '台/時')}
                 </div>
                 {traffic.real_days?.[Math.floor(t / 24)] ? (
                   <div className="tip-row">
                     <span className="tt-real">{tr('Real', '実データ')}</span>
-                    {tr('Counter', '計測器')} ({traffic.counter_node}): <b className="num">{(traffic.real_volume?.[Math.floor(t / 24)] ?? 0).toLocaleString()}</b> {tr('vehicles that day; hourly split simulated', '台/日（時間配分は模擬）')}
+                    {tr('Counter', '計測器')} ({traffic.counter_node}): <b className="num">{(traffic.real_volume?.[Math.floor(t / 24)] ?? 0).toLocaleString('en-US')}</b> {tr('vehicles that day; hourly split simulated', '台/日（時間配分は模擬）')}
                   </div>
                 ) : (
                   <div className="tip-row">
