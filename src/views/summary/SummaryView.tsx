@@ -25,7 +25,7 @@ const FAQ: Record<string, { ja: string; chart: string }> = {
   q1: { ja: '観光は福井の経済にどれだけの価値があるか？', chart: 'q1-progress' },
   q2: { ja: '来訪者の流れをどう予測するか？', chart: 'q2-f1' },
   q3: { ja: 'どの来訪者が最も価値をもたらすか？', chart: 'q3-spend' },
-  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-flow' },
+  q4: { ja: 'どこで来訪者と消費を失っているか？', chart: 'q4-funnel' },
   q5: { ja: 'どの投資が最も効果的か？', chart: 'q5-returns' },
 }
 

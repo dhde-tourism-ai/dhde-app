@@ -193,20 +193,6 @@ export interface TargetPaceCard extends CardBase {
   }[]
 }
 
-/** Flows between stages (origin → group → stay). A link's 4th value marks it as estimated (drawn dashed). */
-export interface SankeyCard extends CardBase {
-  type: 'sankey'
-  unit: string
-  nodes: { id: string; label: string; label_ja?: string }[]
-  links: [string, string, number, boolean?][]
-  insight?: string
-  insight_ja?: string
-  /** A second measure on the same nodes (e.g. spend), switched with a toggle. */
-  alt?: { label: string; label_ja?: string; base_label: string; base_label_ja?: string; unit: string; links: [string, string, number, boolean?][]; insight?: string; insight_ja?: string; note?: string; note_ja?: string }
-  /** A group too small to see at true scale, shown on its own. */
-  zoom?: { label: string; label_ja?: string; total: number; parts: { label: string; label_ja?: string; value: number; low: number; high: number }[] }
-}
-
 export type StrategyCard =
   | StatCard
   | ProgressCard
@@ -222,7 +208,6 @@ export type StrategyCard =
   | MonthlyForecastCard
   | GuestNightsMonthsCard
   | TargetPaceCard
-  | SankeyCard
 
 export interface BuildSpec {
   data: string
