@@ -7,6 +7,8 @@ import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { withMeasuredShares } from '../../lib/monthly'
+import { localize } from '../../lib/localize'
+import JA from '../../i18n/strategy.ja.json'
 import type { MonthlyForecastFile } from '../../types/monthly'
 import '../../styles/pages.css'
 
@@ -14,13 +16,17 @@ import '../../styles/pages.css'
  * The five strategic questions as dashboard components. Layout only: every
  * number comes from public/data/strategic_questions.json.
  */
-export default function StrategyView({ data, focus }: { data: StrategicQuestions; focus?: string }) {
-  const { t } = useLang()
+export default function StrategyView({ data: raw, focus }: { data: StrategicQuestions; focus?: string }) {
+  const { t, lang } = useLang()
   const [showSpecs, setShowSpecs] = useState(false)
-  const [activeQ, setActiveQ] = useState(data.questions[0]?.id)
-  const { meta, equation } = data
+  const [activeQ, setActiveQ] = useState(raw.questions[0]?.id)
   const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
-  const questions = useMemo(() => withMeasuredShares(data.questions, monthly), [data.questions, monthly])
+  // Real 2025 shares first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
+  const data = useMemo(() => {
+    const measured = { ...raw, questions: withMeasuredShares(raw.questions, monthly) }
+    return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
+  }, [raw, monthly, lang])
+  const { meta, equation, questions } = data
 
   // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.
   useEffect(() => {

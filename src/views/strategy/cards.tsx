@@ -240,7 +240,8 @@ function Bars({ card }: { card: BarsCard }) {
   )
 }
 
-const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn' }
+// English and Japanese (strategy.ja.json) action names.
+const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn', 通常: 'ok', 営業時間を延長: 'up', 屋内施設を案内: 'warn' }
 
 function Forecast({ card }: { card: ForecastCard }) {
   const { t } = useLang()

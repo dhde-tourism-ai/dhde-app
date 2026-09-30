@@ -13,6 +13,8 @@ import { SourceBadge } from '../../components/SourceBadge'
 import { Loading } from '../../components/StateMsg'
 import { KddiPending } from '../../components/KddiPending'
 import { StatusPill } from '../../components/StatusPill'
+import { localize } from '../../lib/localize'
+import JA from '../../i18n/strategy.ja.json'
 import { LAYERS } from '../map/layers'
 import '../../styles/pages.css'
 
@@ -278,7 +280,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
         <section className="s-card sum-faq" style={{ ['--span' as string]: 12 }}>
           <h2 className="card-title">{t('Frequently asked questions', 'よくある質問')}</h2>
           <p className="card-sub">{t("The government's five questions. Open one for today's answer, its chart and where the data comes from.", '行政の5つの質問。開くと現時点の回答、グラフ、データの出典を表示します。')}</p>
-          {(data.strategy.data?.questions ?? []).map((q) => {
+          {(lang === 'ja' ? localize(data.strategy.data?.questions ?? [], JA as Record<string, string>) : (data.strategy.data?.questions ?? [])).map((q) => {
             const cards: StrategyCard[] = q.cards
             const chart = cards.find((c) => c.id === FAQ[q.id]?.chart) ?? cards[0]
             const src = chart?.source ?? cards.find((c) => c.source)?.source
@@ -290,8 +292,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
                   {t(q.question ?? q.title, FAQ[q.id]?.ja ?? q.question ?? q.title)}
                 </summary>
                 <div className="faq-body">
-                  <p lang="en">{q.answer}</p>
-                  {lang === 'ja' && <p className="card-sub">回答は現在英語のみです。</p>}
+                  <p>{q.answer}</p>
                   {chart && (
                     <div className="faq-chart">
                       <StatusPill status={chart.status} />
