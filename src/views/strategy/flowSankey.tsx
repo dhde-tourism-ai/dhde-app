@@ -113,7 +113,7 @@ export function FlowSankey({ card }: { card: SankeyCard }) {
       <ResponsiveContainer width="100%" height={view ? 300 : 420}>
         <Sankey key={view ? 'alt' : 'base'} data={data} node={Node} link={Link} nodeWidth={12} nodePadding={18} sort={false} margin={{ top: 10, right: 200, bottom: 10, left: 230 }} iterations={32} />
       </ResponsiveContainer>
-      {!view && (
+      {!view && links.some((l) => l[3]) && (
         <p className="flow-key muted small">
           <span className="flow-dash" aria-hidden="true"></span> {t('Dashed = estimated split. All other bands are published figures.', '破線＝推計の内訳。その他は公表値。')}
         </p>
