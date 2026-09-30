@@ -10,7 +10,9 @@ name: Daily data refresh
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    # 00:23 UTC, not 00:00: GitHub delays scheduled runs most at the top of the
+    # hour (the 00:00 schedule started about 3 hours late in late September).
+    - cron: '23 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -194,3 +196,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run pages.yml --ref main
+
+      # Failure alarm: email the team through the dhde-dev-refresh-alerts topic
+      # (dhde-terraform-aws). Its own login, since the run may have failed before
+      # the one above. A run that never starts, or fails and can't log in here,
+      # is caught by the 13:00 JST check on the serving data's age instead.
+      - name: Log in to AWS for the failure alert
+        id: alert_login
+        if: failure() && vars.AWS_PUBLISH_ROLE_ARN != ''
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PUBLISH_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Email the team that the refresh failed
+        if: failure() && steps.alert_login.outcome == 'success'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          acct=$(aws sts get-caller-identity --query Account --output text)
+          day=$(TZ=Asia/Tokyo date +%F)
+          aws sns publish --topic-arn "arn:aws:sns:us-east-1:$acct:dhde-dev-refresh-alerts" \
+            --subject "DHDE: the morning data refresh failed ($day)" \
+            --message "Today's Daily data refresh in dhde-app failed. The run, with the failed step: $RUN_URL
+
+          Fix the cause and re-run it (Re-run jobs, or Actions > Daily data refresh > Run workflow). Until then the app shows the last data that was published." \
+            --query MessageId --output text
