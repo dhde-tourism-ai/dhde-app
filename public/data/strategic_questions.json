@@ -2062,6 +2062,41 @@
           "source": "Google Trends (trends.google.com), pulled 29 Sep 2026; research by Gabriella."
         },
         {
+          "id": "q4-decide",
+          "type": "indicators",
+          "span": 12,
+          "status": "real",
+          "title": "Decide: can an interested traveller book Fukui?",
+          "items": [
+            {
+              "value_text": "5 vs 56",
+              "label": "Fukui vs Himeji in \"day trip from Kyoto / Osaka\" listings",
+              "severity": "crit",
+              "status": "real"
+            },
+            {
+              "value_text": "5 vs 23",
+              "label": "Fukui vs Shirakawa-go in day trips from Kanazawa, 25 minutes away",
+              "severity": "warn",
+              "status": "real"
+            },
+            {
+              "value_text": "7 vs 68",
+              "label": "Products that include a night, Fukui vs Shirakawa-go",
+              "severity": "crit",
+              "status": "real"
+            },
+            {
+              "value_text": "0 of 27",
+              "label": "Fukui products on Viator with a stay (Kanazawa: 132)",
+              "severity": "warn",
+              "status": "real"
+            }
+          ],
+          "note": "Fukui is bookable, but not where travellers decide. Its 60 products match its low search interest, so more listings alone won't fix it. The gaps are the gateway shelf (day trips from Kyoto, Osaka and Kanazawa) and the stay. Snapshot: one check per platform, 25–27 Sep 2026; Fukui is the whole prefecture, the others are cities or a village.",
+          "source": "Team audit of GetYourGuide, Klook, KKday and Viator, 25–27 Sep 2026; research by Gabriella."
+        },
+        {
           "id": "q4-flow",
           "type": "sankey",
           "span": 12,
