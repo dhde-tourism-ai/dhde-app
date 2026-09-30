@@ -6,7 +6,7 @@
 - **Nodes**: per-node dashboards with the daily forecast (Dina Belay's dashboard logic, carried over from dhde-fukui-tourism-dashboard). Priority nodes without published data stay selectable with a "data on its way" panel.
 - **Strategy**: the strategy team's five strategic questions (what tourism is worth, visitor flow, visitor value, leaks, returns) as dashboard components.
 
-Every strategy and economics number shows its status: Real, Calculated / modelled, Illustrative or Data pending. Pending values display as "[pending]", never as a made-up number. Every layer running on simulated data shows a **Demo data** badge.
+Every strategy and economics number shows its status: Real, Estimated, Illustrative or Data pending. Pending values display as "[pending]", never as a made-up number. Every layer running on simulated data shows a **Demo data** badge.
 
 ## Run
 

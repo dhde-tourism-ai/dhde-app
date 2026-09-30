@@ -19,6 +19,8 @@ interface CardBase {
   pending_on?: string
   /** Kept in the file but not shown, e.g. the Q4 funnel until the final report. */
   hidden?: boolean
+  /** Short marker next to the title, e.g. "New" or "Updated". */
+  badge?: string
 }
 
 export interface StatCard extends CardBase {
@@ -210,6 +212,102 @@ export interface SankeyCard extends CardBase {
   zoom?: { label: string; label_ja?: string; total: number; parts: { label: string; label_ja?: string; value: number; low: number; high: number }[] }
 }
 
+/** Fukui's GDP by fiscal year (published, then estimated) with tourism's contribution stacked in. */
+export interface GdpTrendCard extends CardBase {
+  type: 'gdp_trend'
+  points: {
+    fy: number
+    /** Published GDP, ¥bn; absent from the first estimated year on. */
+    actual?: number
+    /** Estimated GDP, ¥bn. */
+    base?: number
+    kind?: 'nowcast' | 'forecast'
+    /** GDP added by tourism (all three rounds), ¥bn. */
+    tourism_va: number
+  }[]
+  kpis: { label: string; value_text: string; detail?: string; status: PillStatus }[]
+}
+
+/** One year of tourism's contribution, split into the direct, indirect ① and indirect ② rounds. */
+export interface TourismTrendPoint {
+  year: number
+  kind: 'modelled' | 'forecast'
+  spend_bn: number
+  gdp_bn: number
+  gdp_kind: 'actual' | 'nowcast' | 'forecast'
+  va_direct: number
+  va_indirect1: number
+  va_indirect2: number
+  va_total: number
+  jobs_direct: number
+  jobs_indirect1: number
+  jobs_indirect2: number
+  jobs_total: number
+  share_direct: number
+  share_indirect1: number
+  share_indirect2: number
+  share_total: number
+  jobs_share_total: number
+  /** Low to high spend scenarios, projection years only. */
+  range?: { va: [number, number]; share: [number, number]; jobs: [number, number]; spend_bn: [number, number] }
+}
+
+export interface TourismTrendCard extends CardBase {
+  type: 'tourism_trend'
+  points: TourismTrendPoint[]
+  /** Other published estimates to mark on the chart, e.g. the prefecture's own. */
+  benchmarks: { year: number; label: string; va?: number; share?: number; jobs?: number }[]
+}
+
+export type RippleTierId = 'direct' | 'indirect1' | 'indirect2'
+
+/** How one year's visitor spend ripples through the direct, indirect ① and indirect ② rounds. */
+export interface RippleCard extends CardBase {
+  type: 'ripple'
+  year: string
+  spend_bn: number
+  /** Spend that becomes output of Fukui businesses; the rest (`leak_bn`) buys goods made elsewhere. */
+  retained_bn: number
+  leak_bn: number
+  tiers: {
+    id: RippleTierId
+    what: string
+    output_bn: number
+    va_bn: number
+    income_bn: number
+    jobs: number
+    top: { sector: string; va_bn: number; jobs: number }[]
+  }[]
+  total: {
+    output_bn: number
+    va_bn: number
+    income_bn: number
+    jobs: number
+    share_pct: number
+    jobs_share_pct: number
+    multiplier_spend: number
+    multiplier_direct: number
+  }
+}
+
+/** Slider: change in tourism spend → GDP, jobs and share, at the base year's effect per ¥1bn. */
+export interface WhatIfCard extends CardBase {
+  type: 'what_if'
+  base_year: string
+  base_spend_bn: number
+  base_va_bn: number
+  base_jobs: number
+  gdp_bn: number
+  workers: number
+  per_bn: { va_bn: number; jobs: number; output_bn: number; income_bn: number }
+  min_pct: number
+  max_pct: number
+  step_pct: number
+  default_pct: number
+  /** Optional presets shown as buttons under the slider. */
+  marks?: { label: string; pct: number }[]
+}
+
 export type StrategyCard =
   | StatCard
   | ProgressCard
@@ -227,6 +325,10 @@ export type StrategyCard =
   | TargetPaceCard
   | SankeyCard
   | SearchTrendsCard
+  | GdpTrendCard
+  | TourismTrendCard
+  | RippleCard
+  | WhatIfCard
 
 /** Discover (Q4): Google Trends travel searches for Fukui vs Ishikawa + Kanazawa. A fixed snapshot until the weekly update. */
 export interface SearchTrendsCard extends CardBase {
