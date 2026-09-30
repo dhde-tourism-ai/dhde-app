@@ -1774,10 +1774,15 @@
   overflow-x: auto;
 }
 
-/* A card opened from an FAQ link. */
-.s-card.flash {
+/* A card or question opened from an FAQ link. */
+.s-card.flash,
+.q-section.flash {
   box-shadow: 0 0 0 2px var(--accent);
   transition: box-shadow 0.4s;
+}
+
+.q-section.flash {
+  border-radius: var(--r-md);
 }
 
 /* Executive summary FAQ */

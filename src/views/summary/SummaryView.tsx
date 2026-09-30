@@ -281,7 +281,9 @@ export default function SummaryView({ data }: { data: ProductData }) {
           {(data.strategy.data?.questions ?? []).map((q) => {
             const cards: StrategyCard[] = q.cards
             const chart = cards.find((c) => c.id === FAQ[q.id]?.chart) ?? cards[0]
-            const src = chart?.source ?? cards.find((c) => c.source)?.source
+            // The chart's own source only: another card's source would be shown as the
+            // source of a chart that is illustrative.
+            const src = chart?.source
             const source = src ? splitSource(src) : null
             return (
               <details key={q.id} className="faq">

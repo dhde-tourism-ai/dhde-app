@@ -22,7 +22,8 @@ export default function StrategyView({ data, focus }: { data: StrategicQuestions
     if (!focus) return
     const el = document.getElementById(focus)
     if (!el) return
-    el.scrollIntoView({ block: 'center' })
+    // A whole question is taller than the screen: bring its top into view.
+    el.scrollIntoView({ block: el.classList.contains('q-section') ? 'start' : 'center' })
     el.classList.add('flash')
     const id = window.setTimeout(() => el.classList.remove('flash'), 1800)
     return () => window.clearTimeout(id)
