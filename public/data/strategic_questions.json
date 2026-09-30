@@ -77,15 +77,14 @@
       "subs": [
         "How much do visitors spend?",
         "What share of the economy and jobs?",
-        "On track for 2029 targets?",
-        "How much spend lost to neighbours?"
+        "On track for 2029 targets?"
       ],
       "answer": "On 2025 figures, three of the five 2029 vision targets are already met: tourism spend ¥198.7bn (target ¥170bn), visitors 21.44M (21M) and spend per overnight guest ¥30,221 (¥27,000). Overnight guest-nights are on pace (3.93M vs 4.5M) but fell 2.4% in 2025; foreign guest-nights are the one target behind (108.6k vs 400k). Run through the prefecture's 2020 input-output table, that spend supports about ¥139bn of GDP, 3.4% of the economy (2.1% direct), and about 33,900 jobs (7.9% of workers), up from 2.6% and 23,300 jobs in 2019 on the same method (the prefecture's own 2019 estimate: 2.8%). Every extra ¥1bn of spend adds about ¥0.70bn of GDP and 171 jobs.",
       "cards": [
         {
           "id": "q1-spend",
           "type": "stat",
-          "span": 3,
+          "span": 4,
           "status": "real",
           "title": "Tourism spend 2025",
           "value_text": "¥198.7bn",
@@ -95,7 +94,7 @@
         {
           "id": "q1-share",
           "type": "stat",
-          "span": 3,
+          "span": 4,
           "status": "modelled",
           "badge": "Updated",
           "title": "Share of prefecture economy",
@@ -106,7 +105,7 @@
         {
           "id": "q1-jobs",
           "type": "stat",
-          "span": 3,
+          "span": 4,
           "status": "modelled",
           "badge": "Updated",
           "title": "Jobs supported",
@@ -114,16 +113,6 @@
           "detail": "7.9% of workers; 26,800 in the businesses visitors pay. FY2008: ~12,000 (2.8%); 2019 (prefecture): 23,320 (5.5%)",
           "note": "People in work, part-time included (就業者), not new hires. 2020 was a pandemic year, so jobs per yen may run high.",
           "source": "Same model: output × jobs per yen by sector (就業係数, 2020). Workers FY2023: 427,326 (ESRI). https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx"
-        },
-        {
-          "id": "q1-leak",
-          "type": "stat",
-          "span": 3,
-          "status": "pending",
-          "title": "Spend lost to neighbouring stays",
-          "value_text": null,
-          "detail": "Visitors who sleep in Kanazawa/Kyoto × overnight spend (a range)",
-          "pending_on": "survey + KDDI"
         },
         {
           "id": "q1-gdp",
