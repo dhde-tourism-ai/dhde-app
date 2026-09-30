@@ -15,6 +15,11 @@ import { LAYERS } from '../map/layers'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
+/** Tooltip for the visitors card's badge: its visitor numbers are estimates, not counts. */
+const ESTIMATE_NOTE = [
+  "Visitors are estimates: each site's signal (cameras, reservations or survey responses) scaled to its 2025 official annual count. Forecasts are the FTAS model's.",
+  '来訪者数は推計値：各地点の信号（カメラ・予約・アンケート回答）を2025年の公式年間値に換算。予測はFTASモデル。',
+] as const
 
 /** Japanese names for the vision KPI rows in strategic_questions.json (English only there). */
 const TARGET_JA: Record<string, string> = {
@@ -48,8 +53,9 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const nextDay = Math.min(lastDay + 1, (live?.days.length ?? 1) - 1)
   const nextDate = live?.days[nextDay]?.date ?? null
 
-  // Only real numbers: the measured day from real_data.json and the model's own forecast
-  // for the next day. The model starts the day after the shared date, so there is no
+  // Only data-based numbers: the latest day's visitor estimate from real_data.json
+  // (visitors_est: each site's signal scaled to its 2025 official count, so an
+  // estimate, not a count) and the model's own forecast for the next day. The model starts the day after the shared date, so there is no
   // model forecast for the measured day to compare against.
   const sites = useMemo(() => {
     if (!live) return []
@@ -122,16 +128,19 @@ export default function SummaryView({ data }: { data: ProductData }) {
 
       <div className="card-grid">
         <section className="s-card sum-visitors" style={{ ['--span' as string]: 7 }}>
-          <h2 className="card-title">{t('Visitors and forecast', '来訪者数と予測')}</h2>
+          <div className="sum-card-head">
+            <h2 className="card-title">{t('Visitors and forecast', '来訪者数と予測')}</h2>
+            <SourceBadge info={{ status: 'mixed', as_of: shared, real: [] }} note={ESTIMATE_NOTE} />
+          </div>
           <p className="card-sub">
-            {t("Visitors on the latest measured day, and the FTAS model's forecast for the next day with its likely range. Six sites.", '直近の実測日の来訪者数と、翌日のFTASモデル予測（予測範囲付き）。6地点。')}
+            {t("Estimated visitors on the latest day with data, and the FTAS model's forecast for the next day with its likely range. Six sites.", '直近のデータ日の推計来訪者数と、翌日のFTASモデル予測（予測範囲付き）。6地点。')}
           </p>
           <div className="sum-table-wrap">
             <table className="sum-table num">
               <thead>
                 <tr>
                   <th>{t('Site', '地点')}</th>
-                  <th>{t('Measured', '実測')} {live && dayLabel(live, lastDay, lang, true)}</th>
+                  <th>{t('Latest day (est.)', '直近日（推計）')} {live && dayLabel(live, lastDay, lang, true)}</th>
                   <th>{t('Forecast', '予測')} {live && dayLabel(live, nextDay, lang, true)}</th>
                   <th>{t('Likely range', '予測範囲')}</th>
                 </tr>

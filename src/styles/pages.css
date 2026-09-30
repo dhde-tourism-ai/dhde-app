@@ -1600,6 +1600,14 @@
   gap: 10px;
 }
 
+.sum-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
 .sum-table {
   width: 100%;
   border-collapse: collapse;
