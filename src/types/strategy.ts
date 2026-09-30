@@ -225,6 +225,29 @@ export type StrategyCard =
   | GuestNightsMonthsCard
   | TargetPaceCard
   | SankeyCard
+  | SearchTrendsCard
+
+/** Discover (Q4): Google Trends travel searches for Fukui vs Ishikawa + Kanazawa. A fixed snapshot until the weekly update. */
+export interface SearchTrendsCard extends CardBase {
+  type: 'search_trends'
+  markets_label: string
+  markets_label_ja?: string
+  /** Per searcher region: [prefecture, city] topic averages for Fukui and for Ishikawa. */
+  markets: { label: string; label_ja?: string; fukui: number[]; ishikawa: number[] }[]
+  trend: {
+    label: string
+    label_ja?: string
+    months: string[]
+    fukui: number[]
+    ishikawa: number[]
+    kansai: number[]
+    events?: { month: string; label: string; label_ja?: string }[]
+  }
+  insight?: string
+  insight_ja?: string
+  as_of: string
+  as_of_ja?: string
+}
 
 export interface BuildSpec {
   data: string

@@ -2015,3 +2015,12 @@
   height: 100%;
   opacity: 0.85;
 }
+
+/* Discover: Google Trends card (Q4). */
+.st-trend-h {
+  margin-top: var(--sp-4);
+}
+
+.st-asof {
+  margin: var(--sp-2) 0 0;
+}

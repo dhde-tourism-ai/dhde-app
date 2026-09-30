@@ -29,6 +29,7 @@ import type { MonthlyForecastFile } from '../../types/monthly'
 import { AXIS, S, TIP, TIP_ITEM, TIP_LABEL } from './chartTheme'
 import { GuestNightsMonths, TargetPace } from './guestNights'
 import { FlowSankey } from './flowSankey'
+import { SearchTrends } from './searchTrends'
 
 /** Card frame: title, status pill (always shown), notes and TODOs. */
 export function StrategyCardView({ card }: { card: StrategyCard }) {
@@ -98,6 +99,8 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
       return <TargetPace card={card} />
     case 'sankey':
       return <FlowSankey card={card} />
+    case 'search_trends':
+      return <SearchTrends card={card} />
   }
 }
 
