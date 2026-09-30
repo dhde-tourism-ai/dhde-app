@@ -138,7 +138,7 @@ export default function App() {
 
       {route.view !== 'map' && (
         <footer className="site-foot">
-          DHDE · Fukui Tourism Intelligence · {t('Distributed Human Data Engine, Sakura Science Program. Node forecasts from the FTAS pipeline.', '分散型ヒューマンデータエンジン（さくらサイエンスプログラム）。ノード予測はFTASパイプラインより。')}
+          DHDE · {t('Fukui Tourism Intelligence', '福井観光インテリジェンス')} · {t('Distributed Human Data Engine, Sakura Science Program. Node forecasts from the FTAS pipeline.', '分散型ヒューマンデータエンジン（さくらサイエンスプログラム）。ノード予測はFTASパイプラインより。')}
         </footer>
       )}
     </div>

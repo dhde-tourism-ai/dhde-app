@@ -60,7 +60,7 @@ export function levellingRate(monthShares: number[]): number {
  * shares from monthly_forecast.json, and become real; without a full year
  * they keep their placeholder values and status.
  */
-export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null): StrategicQuestion[] {
+export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null, lang: 'en' | 'ja' = 'en'): StrategicQuestion[] {
   if (!file) return questions
   return questions.map((q) => ({
     ...q,
@@ -78,12 +78,18 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
       const recentRate = recent && levellingRate(recent)
       // The model keeps the last 12 months' pattern and changes only the level, so
       // its rate matches those months (not necessarily the calendar year above).
+      const ja = lang === 'ja'
+      const same = fcRate !== null && recentRate !== null && Math.abs(fcRate - recentRate) < 0.05
       const fcNote =
         fcRate === null
           ? ''
-          : recentRate !== null && Math.abs(fcRate - recentRate) < 0.05
-            ? ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%, the same as the last 12 measured months (${last[0].month} to ${last[11].month}): the model keeps their monthly pattern and changes only the level.`
-            : ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%.`
+          : ja
+            ? same
+              ? `今後12か月の予測は${fcRate.toFixed(1)}%で、直近の実績12か月（${last[0].month}〜${last[11].month}）と同じ。モデルは月別のパターンを保ち、水準のみを変えるため。`
+              : `今後12か月の予測は${fcRate.toFixed(1)}%。`
+            : same
+              ? ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%, the same as the last 12 measured months (${last[0].month} to ${last[11].month}): the model keeps their monthly pattern and changes only the level.`
+              : ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%.`
       return {
         ...c,
         values: exact.map((v) => Math.round(v * 10) / 10),
@@ -92,8 +98,12 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
         // so a failed load never reads "actual" over the simulated placeholder.
         title: `${c.title} (${c.year}, actual)`,
         kpi: c.kpi && { ...c.kpi, value_text: `${rate.toFixed(1)}%`, status: 'real' as const },
-        note: `Monthly share of ${s.label} visitors in ${c.year}; quietest 3 consecutive months highlighted.${fcNote}`,
-        source: 'JTTA digital tourism statistics (日本観光振興協会 デジタル観光統計), via dhde-preprocessing-model monthly_actuals.csv.',
+        note: ja
+          ? `${c.year}年の${s.label_ja}の来訪者数に占める各月の割合。最も少ない連続3か月を強調。${fcNote}`
+          : `Monthly share of ${s.label} visitors in ${c.year}; quietest 3 consecutive months highlighted.${fcNote}`,
+        source: ja
+          ? '日本観光振興協会 デジタル観光統計（dhde-preprocessing-model の monthly_actuals.csv 経由）。'
+          : 'JTTA digital tourism statistics (日本観光振興協会 デジタル観光統計), via dhde-preprocessing-model monthly_actuals.csv.',
         todo: undefined,
       }
     }),

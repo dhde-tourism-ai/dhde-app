@@ -26,7 +26,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
   const real = useJsonResource<RealDailyFile>('real_data.json').data
   // Real 2025 shares and the real 7-day forecast first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
   const data = useMemo(() => {
-    const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly), real, lang) }
+    const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly, lang), real, lang) }
     return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
   }, [raw, monthly, real, lang])
   const { meta, equation, questions } = data
