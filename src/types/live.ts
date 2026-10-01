@@ -45,6 +45,8 @@ export interface LiveWeather {
   daily_wind_ms?: (number | null)[]
   /** True where the day's weather comes from real_data.json. */
   real_days?: boolean[]
+  /** Per hour: 'observed' (JMA) or 'forecast' (JMA model) from the hourly collector, null where the hour is daily-based or demo. */
+  hourly_source?: ('observed' | 'forecast' | null)[]
 }
 
 export interface LiveSentiment {
