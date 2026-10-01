@@ -40,7 +40,8 @@ export interface NodeFrame {
   load: number
   tier: Tier
   arrivals: number
-  weather: { temp: number; pop: number; mm: number; wind: number; cond: WeatherCondition; station: string; station_ja: string }
+  /** hourly: where this hour's values come from when real hourly weather covers it (else null). */
+  weather: { temp: number; pop: number; mm: number; wind: number; cond: WeatherCondition; station: string; station_ja: string; hourly: 'observed' | 'forecast' | null }
   alerts: LiveWeatherAlert[]
   sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[] }
   /** Real daily figures for this node on this day (null when the day is not observed). */
@@ -78,6 +79,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         cond: n.weather.condition[i],
         station: n.weather.station,
         station_ja: n.weather.station_ja,
+        hourly: n.weather.hourly_source?.[i] ?? null,
       },
       alerts: live.weather_alerts.filter((a) => a.nodes.includes(id) && i >= a.start && i <= a.end),
       realDay: (() => {
