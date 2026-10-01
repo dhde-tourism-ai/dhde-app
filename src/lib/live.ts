@@ -2,7 +2,7 @@
  * Pure helpers over live_demo.json: the state of every node, route and alert at
  * one hour index. Views call frameAt() and never touch the raw arrays.
  */
-import type { LiveData, LiveWeatherAlert, WeatherCondition } from '../types/live'
+import type { LiveData, LiveWeatherAlert, RealSentiment, WeatherCondition } from '../types/live'
 
 export interface Tier {
   key: 'good' | 'warn' | 'serious' | 'crit'
@@ -42,7 +42,7 @@ export interface NodeFrame {
   arrivals: number
   weather: { temp: number; pop: number; mm: number; wind: number; cond: WeatherCondition; station: string; station_ja: string }
   alerts: LiveWeatherAlert[]
-  sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[] }
+  sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[]; real?: RealSentiment }
   /** Real daily figures for this node on this day (null when the day is not observed). */
   realDay: { visitors: number | null; signal: number | null } | null
   /** No visitor estimate exists (Fukui Station): show the raw signal only. */
@@ -101,6 +101,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         score: n.sentiment.score[d],
         posts: n.sentiment.posts[d],
         keywords: n.sentiment.keywords[d] ?? [],
+        real: n.sentiment.real,
       },
     }
   }

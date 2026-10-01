@@ -331,7 +331,7 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
 const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#9085e9']
 
 /* ---------------- Social media ---------------- */
-/** Badge edge for real social counts: neutral, since there's no real sentiment yet. */
+/** Badge edge for real social counts without a sentiment score: neutral grey. */
 const SOCIAL_REAL_EDGE = '#8a94a6'
 const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
   { k: 'ja', en: 'Japanese', ja: '日本語' },
@@ -339,60 +339,156 @@ const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: 
   { k: 'ko', en: 'Korean', ja: '韓国語' },
   { k: 'latin', en: 'English / Latin script', ja: '英語など' },
 ]
+const LANG_LABELS: { k: keyof NonNullable<SocialNode['mentions']>['langs']; en: string; ja: string }[] = [
+  { k: 'ja', en: 'Japanese', ja: '日本語' },
+  { k: 'en', en: 'English', ja: '英語' },
+  { k: 'zh_hant', en: 'Chinese, Traditional (Taiwan, HK)', ja: '中国語・繁体字（台湾・香港）' },
+  { k: 'zh_hans', en: 'Chinese, Simplified', ja: '中国語・簡体字' },
+  { k: 'ko', en: 'Korean', ja: '韓国語' },
+  { k: 'ar', en: 'Arabic', ja: 'アラビア語' },
+  { k: 'other', en: 'Other', ja: 'その他' },
+]
+const PLATFORMS = [
+  { k: 'youtube', name: 'YouTube' },
+  { k: 'bluesky', name: 'Bluesky' },
+  { k: 'reddit', name: 'Reddit' },
+] as const
 
-function RealSocialMarker({ node: n, real: r, icon }: { node: MapNode; real: NonNullable<SocialNode['real']>; icon: L.DivIcon }) {
+/** Real posts in the window: Instagram plus mentions. */
+function realSocialTotal(s: SocialNode): number {
+  return (s.real?.posts ?? 0) + (s.mentions?.total ?? 0)
+}
+
+function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social: SocialNode; icon: L.DivIcon }) {
   const { t } = useLang()
   const narrow = useIsNarrow()
   const fmt = (v: number) => v.toLocaleString('en-US')
-  const captioned = r.posts - r.scripts.none
+  const r = s.real
+  const m = s.mentions
+  const sr = s.sentiment_real
+  const captioned = r ? r.posts - r.scripts.none : 0
+  const days = Math.max(r?.days ?? 0, m?.days ?? 0)
+  const asOf = [r?.as_of, m?.as_of].filter(Boolean).sort().pop() ?? ''
+  const lab = sr && sr.score !== null ? sentimentLabel(sr.score) : null
+  const pct = (k: number, of: number) => (of ? Math.round((k / of) * 100) : 0)
   return (
     <Marker position={[n.lat, n.lon]} icon={icon}>
       <Tooltip className="map-tip" direction="top" offset={[20, -30]}>
         <strong>
-          {t(n.name, n.name_ja)} · {fmt(r.posts)} {t('Instagram posts', 'Instagram投稿')}, {t(`${r.days} days to ${r.as_of}`, `${r.as_of}までの${r.days}日間`)}
+          {t(n.name, n.name_ja)} · {fmt(realSocialTotal(s))} {t('posts and comments', '件の投稿・コメント')}, {t(`${days} days to ${asOf}`, `${asOf}までの${days}日間`)}
         </strong>
         <div className="tip-sub">
-          {fmt(r.photos)} {t('photos', '写真')} · {fmt(r.videos)} {t('videos', '動画')} · {t('click for details', 'クリックで詳細')}
+          {lab ? `${t(lab.en, lab.ja)} · ` : ''}
+          {t('click for details', 'クリックで詳細')}
         </div>
       </Tooltip>
       <Popup className="map-pop" maxWidth={360} minWidth={280} autoPanPaddingTopLeft={narrow ? [12, 100] : [340, 80]} autoPanPaddingBottomRight={narrow ? [12, 180] : [400, 110]}>
         <div className="feed">
           <div className="tt-head">
-            <span>{t(n.name, n.name_ja)} · Instagram</span>
-            <span>{t(`Real · ${r.days} days to ${r.as_of}`, `実データ・${r.as_of}までの${r.days}日間`)}</span>
+            <span>
+              {t(n.name, n.name_ja)} · {t('social media', 'SNS')}
+            </span>
+            <span className="tt-real">{t(`Real · ${days} days to ${asOf}`, `実データ・${asOf}までの${days}日間`)}</span>
           </div>
-          <div className="feed-stats">
-            <span>
-              <b className="num">{fmt(r.posts)}</b> {t('posts', '投稿')}
-            </span>
-            <span>
-              <b className="num">{fmt(r.photos)}</b> {t('photos', '写真')}
-            </span>
-            <span>
-              <b className="num">{fmt(r.videos)}</b> {t('videos', '動画')}
-            </span>
-            <span>
-              <b className="num">{fmt(r.likes)}</b> {t('likes', 'いいね')}
-            </span>
-            <span>
-              <b className="num">{fmt(r.comments)}</b> {t('comments', 'コメント')}
-            </span>
-          </div>
-          {captioned > 0 && (
-            <ul className="feed-list">
-              {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
-                <li key={l.k} className="feed-item">
-                  <div className="feed-meta">
-                    {t(l.en, l.ja)}: <b className="num">{Math.round((r.scripts[l.k] / captioned) * 100)}%</b> ({fmt(r.scripts[l.k])})
-                  </div>
-                </li>
-              ))}
-            </ul>
+          {sr && (
+            <>
+              <div className="tt-sec">{t('Sentiment', '感情')}</div>
+              {sr.score !== null && lab ? (
+                <div className="feed-stats">
+                  <span className="feed-sent">
+                    <i style={{ background: sentimentColour(sr.score) }}></i>
+                    {t(lab.en, lab.ja)}{' '}
+                    <b className="num">
+                      {sr.score > 0 ? '+' : ''}
+                      {sr.score.toFixed(2)}
+                    </b>
+                  </span>
+                  <span>
+                    <b className="num">{pct(sr.positive, sr.scored)}%</b> {t('positive', '好意的')}
+                  </span>
+                  <span>
+                    <b className="num">{pct(sr.neutral, sr.scored)}%</b> {t('neutral', '中立')}
+                  </span>
+                  <span>
+                    <b className="num">{pct(sr.negative, sr.scored)}%</b> {t('negative', '否定的')}
+                  </span>
+                </div>
+              ) : (
+                <p className="muted small">{t(`Only ${sr.scored} scored: too few to judge.`, `判定は${sr.scored}件のみ：少なすぎて判定できません。`)}</p>
+              )}
+            </>
+          )}
+          {m && (
+            <>
+              <div className="tt-sec">{t('Mentions: posts and comments naming the site', '言及：この地点に触れた投稿・コメント')}</div>
+              <div className="feed-stats">
+                {PLATFORMS.map((p) => {
+                  const v = m.platforms[p.k]
+                  return (
+                    <span key={p.k}>
+                      {v === null ? (
+                        <>
+                          {p.name} <span className="muted">{t('not collected', '未収集')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <b className="num">{fmt(v)}</b> {p.name}
+                        </>
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+              {m.total > 0 && (
+                <ul className="feed-list">
+                  {LANG_LABELS.filter((l) => m.langs[l.k] > 0).map((l) => (
+                    <li key={l.k} className="feed-item">
+                      <div className="feed-meta">
+                        {t(l.en, l.ja)}: <b className="num">{pct(m.langs[l.k], m.total)}%</b> ({fmt(m.langs[l.k])})
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+          {r && (
+            <>
+              <div className="tt-sec">{t('Instagram: posts tagged at the site', 'Instagram：この地点にタグ付けされた投稿')}</div>
+              <div className="feed-stats">
+                <span>
+                  <b className="num">{fmt(r.posts)}</b> {t('posts', '投稿')}
+                </span>
+                <span>
+                  <b className="num">{fmt(r.photos)}</b> {t('photos', '写真')}
+                </span>
+                <span>
+                  <b className="num">{fmt(r.videos)}</b> {t('videos', '動画')}
+                </span>
+                <span>
+                  <b className="num">{fmt(r.likes)}</b> {t('likes', 'いいね')}
+                </span>
+                <span>
+                  <b className="num">{fmt(r.comments)}</b> {t('comments', 'コメント')}
+                </span>
+              </div>
+              {captioned > 0 && (
+                <ul className="feed-list">
+                  {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
+                    <li key={l.k} className="feed-item">
+                      <div className="feed-meta">
+                        {t(l.en, l.ja)}: <b className="num">{pct(r.scripts[l.k], captioned)}%</b> ({fmt(r.scripts[l.k])})
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
           <p className="muted small">
             {t(
-              'Posts tagged at this place on Instagram, collected weekly. Only counts are kept: no usernames, captions or images. Caption language is judged by writing system, a rough market proxy, not nationality. Likes and comments are counted when collected. Sentiment is not measured yet.',
-              'Instagramでこの場所にタグ付けされた投稿（毎週収集）。件数のみ保存し、ユーザー名・本文・画像は保存しません。本文の言語は文字の種類で判定した市場の目安で、国籍ではありません。いいね・コメントは収集時点の数。感情はまだ測定していません。',
+              'Collected weekly. Only counts and scores are kept: no usernames, text or images. Each post and comment is scored by a language model (some languages translated to English first), so read the score as a trend, not a verdict. Language points to a market, not nationality. Likes and comments are counted when collected.',
+              '毎週収集。件数とスコアのみ保存し、ユーザー名・本文・画像は保存しません。投稿・コメントごとに言語モデルで判定（一部の言語は英訳してから判定）するため、スコアは傾向として見てください。言語は市場の目安で、国籍ではありません。いいね・コメントは収集時点の数。',
             )}
           </p>
         </div>
@@ -410,13 +506,16 @@ export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nod
       Object.fromEntries(
         shown.map((n) => {
           const s = data.social[n.id]
-          if (s.real) {
-            // Real counts only: no thumbnails (no images are kept) and no sentiment yet.
+          if (s.real || s.mentions) {
+            // Real counts: no thumbnails (no images are kept); the edge is the real sentiment where there's enough of it.
+            const days = Math.max(s.real?.days ?? 0, s.mentions?.days ?? 0)
+            const sc = s.sentiment_real?.score
+            const edge = typeof sc === 'number' ? sentimentColour(sc) : SOCIAL_REAL_EDGE
             return [
               n.id,
               L.divIcon({
                 className: 'map-divicon',
-                html: `<div class="ov-badge ov-social" style="--r:${nodeR(frame, n.id)}px;--sc:${SOCIAL_REAL_EDGE}"><span class="ov-stack-txt"><b class="num">${s.real.posts.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${s.real.days}日` : `posts ${s.real.days}d`)}</span></span></div>`,
+                html: `<div class="ov-badge ov-social" style="--r:${nodeR(frame, n.id)}px;--sc:${edge}"><span class="ov-stack-txt"><b class="num">${realSocialTotal(s).toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${days}日` : `posts ${days}d`)}</span></span></div>`,
                 iconSize: [0, 0],
               }),
             ]
@@ -442,7 +541,7 @@ export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nod
     <>
       {shown.map((n) => {
         const s = data.social[n.id]
-        if (s.real) return <RealSocialMarker key={n.id} node={n} real={s.real} icon={icons[n.id]} />
+        if (s.real || s.mentions) return <RealSocialMarker key={n.id} node={n} social={s} icon={icons[n.id]} />
         const lab = sentimentLabel(s.avg_sentiment)
         return (
           <Marker key={n.id} position={[n.lat, n.lon]} icon={icons[n.id]}>

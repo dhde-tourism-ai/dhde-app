@@ -26,14 +26,16 @@
  * - Hotels, search intent (GMB), reviews (GMB) and survey response counts: see
  *   mergeMarket().
  */
-import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, DataSources } from '../types/live'
+import type { LiveData, LiveSeries, RealNodeMeta, RealSentiment, SourceInfo, WeatherCondition, DataSources } from '../types/live'
 import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
 
 export const PAST_DAYS = 7
-/** Days of Instagram posts the Social layer adds up (the weekly run's window). */
+/** Days of Instagram posts and mentions the Social and Sentiment layers add up (the weekly run's window). */
 export const SOCIAL_DAYS = 7
+/** Fewest scored posts and comments in the window for a real sentiment score (fewer is a few people's mood). */
+export const MIN_SENTIMENT_ITEMS = 5
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
 const MIN_STAR_REVIEWS = 10
 
@@ -79,6 +81,29 @@ const NUM_FIELDS: (keyof RealDaily)[] = [
   'instagram_script_zh',
   'instagram_script_latin',
   'instagram_script_none',
+  'instagram_scored',
+  'instagram_positive',
+  'instagram_neutral',
+  'instagram_negative',
+  'instagram_sentiment_mean',
+  'social_mentions',
+  'social_posts',
+  'social_comments',
+  'social_bluesky_mentions',
+  'social_youtube_mentions',
+  'social_reddit_mentions',
+  'social_positive',
+  'social_neutral',
+  'social_negative',
+  'social_scored',
+  'social_sentiment_mean',
+  'social_lang_ja',
+  'social_lang_en',
+  'social_lang_zh_hant',
+  'social_lang_zh_hans',
+  'social_lang_ko',
+  'social_lang_ar',
+  'social_lang_other',
 ]
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -252,6 +277,46 @@ function rowOn(n: RealNode | undefined, date: string): RealDaily | undefined {
   return n?.daily.find((r) => r.date === date)
 }
 
+/** The last SOCIAL_DAYS days to the latest day `covered` holds, or [] with no such day. */
+function lastWindow(daily: RealDaily[], covered: (x: RealDaily) => boolean): RealDaily[] {
+  const rows = daily.filter(covered)
+  if (!rows.length) return []
+  const asOf = rows[rows.length - 1].date
+  return rows.filter((x) => x.date > addDays(asOf, -SOCIAL_DAYS))
+}
+
+const sumOf = (rows: RealDaily[], k: keyof RealDaily) => rows.reduce((a, x) => a + ((x[k] as number | null) ?? 0), 0)
+
+/** Instagram captions and social mentions, scored, over the node's last weekly window. Null without any coverage. */
+export function realSentiment(daily: RealDaily[]): RealSentiment | null {
+  const rows = lastWindow(daily, (x) => x.social_mentions !== null || x.instagram_posts !== null)
+  if (!rows.length) return null
+  let weighted = 0
+  let scored = 0
+  const from = { instagram: 0, social: 0 }
+  for (const x of rows) {
+    for (const [src, n, mean] of [
+      ['instagram', x.instagram_scored, x.instagram_sentiment_mean],
+      ['social', x.social_scored, x.social_sentiment_mean],
+    ] as const) {
+      if (!n || mean === null) continue
+      weighted += n * mean
+      scored += n
+      from[src] += n
+    }
+  }
+  return {
+    as_of: rows[rows.length - 1].date,
+    days: rows.length,
+    scored,
+    score: scored >= MIN_SENTIMENT_ITEMS ? Math.round((weighted / scored) * 100) / 100 : null,
+    positive: sumOf(rows, 'instagram_positive') + sumOf(rows, 'social_positive'),
+    neutral: sumOf(rows, 'instagram_neutral') + sumOf(rows, 'social_neutral'),
+    negative: sumOf(rows, 'instagram_negative') + sumOf(rows, 'social_negative'),
+    from,
+  }
+}
+
 function statusOf(realCount: number, total: number): SourceInfo['status'] {
   if (realCount === 0) return 'demo'
   return realCount >= total ? 'real' : 'mixed'
@@ -351,6 +416,11 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
   const peopleReal: string[] = []
   const weatherReal: string[] = []
   let lastObservedDay = -1
+  // Real sentiment is one weekly figure per node, not per day: the layer shows it whichever day is picked.
+  const sentimentOf: Record<string, RealSentiment | undefined> = Object.fromEntries(
+    Object.keys(demo.nodes).map((id) => [id, real.nodes[id] ? (realSentiment(real.nodes[id].daily) ?? undefined) : undefined]),
+  )
+  const sentimentReal = Object.keys(sentimentOf).filter((id) => sentimentOf[id] && sentimentOf[id]!.score !== null)
 
   for (const [id, dn] of Object.entries(demo.nodes)) {
     const rn = real.nodes[id]
@@ -485,6 +555,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         score: sentimentPad(dn.sentiment.score),
         posts: sentimentPad(dn.sentiment.posts),
         keywords: sentimentPad(dn.sentiment.keywords),
+        real: sentimentOf[id],
       },
     }
     if (rn) {
@@ -584,6 +655,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     weather: { status: statusOf(weatherReal.length, nodeIds.length), as_of: maxDate(weatherReal.map((id) => real.nodes[id].as_of.weather)), real: weatherReal },
     traffic: { status: trafficReal.length ? 'mixed' : 'demo', as_of: maxDate(trafficReal.map((rid) => real.nodes[COUNTER[rid]]?.as_of.traffic)), real: trafficReal },
     nudges: { status: peopleReal.length ? 'mixed' : 'demo', as_of: real.shared_date, real: peopleReal },
+    sentiment: { status: statusOf(sentimentReal.length, nodeIds.length), as_of: maxDate(sentimentReal.map((id) => sentimentOf[id]!.as_of)), real: sentimentReal },
   }
 
   const live: LiveData = {
@@ -799,20 +871,51 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
     surveyReal.push(id)
   }
 
-  // Instagram posts tagged at the site: the last SOCIAL_DAYS covered days of the
-  // weekly log. Only counts are published, so a real node has no feed or sentiment.
+  // Instagram posts tagged at the site and Bluesky / YouTube / Reddit mentions: the
+  // last SOCIAL_DAYS covered days of each weekly log. Only counts and scores are
+  // published, so a real node has no feed.
   const socialReal: string[] = []
   const social = { ...m.social }
   for (const id of Object.keys(m.social)) {
-    const covered = real.nodes[id]?.daily.filter((x) => x.instagram_posts !== null) ?? []
-    if (!covered.length) continue
-    const asOf = covered[covered.length - 1].date
-    const rows = covered.filter((x) => x.date > addDays(asOf, -SOCIAL_DAYS))
-    const tot = (k: keyof RealDaily) => rows.reduce((a, x) => a + ((x[k] as number | null) ?? 0), 0)
+    const daily = real.nodes[id]?.daily ?? []
+    const rows = lastWindow(daily, (x) => x.instagram_posts !== null)
+    const mrows = lastWindow(daily, (x) => x.social_mentions !== null)
+    if (!rows.length && !mrows.length) continue
+    const tot = (k: keyof RealDaily) => sumOf(rows, k)
+    const mtot = (k: keyof RealDaily) => sumOf(mrows, k)
+    // A platform that never ran in the window is unknown, not 0.
+    const plat = (k: keyof RealDaily) => (mrows.some((x) => x[k] !== null) ? mtot(k) : null)
+    social[id] = {
+      ...social[id],
+      mentions: mrows.length
+        ? {
+            as_of: mrows[mrows.length - 1].date,
+            days: mrows.length,
+            total: mtot('social_mentions'),
+            posts: mtot('social_posts'),
+            comments: mtot('social_comments'),
+            platforms: { bluesky: plat('social_bluesky_mentions'), youtube: plat('social_youtube_mentions'), reddit: plat('social_reddit_mentions') },
+            langs: {
+              ja: mtot('social_lang_ja'),
+              en: mtot('social_lang_en'),
+              zh_hant: mtot('social_lang_zh_hant'),
+              zh_hans: mtot('social_lang_zh_hans'),
+              ko: mtot('social_lang_ko'),
+              ar: mtot('social_lang_ar'),
+              other: mtot('social_lang_other'),
+            },
+          }
+        : undefined,
+      sentiment_real: realSentiment(daily) ?? undefined,
+    }
+    if (!rows.length) {
+      socialReal.push(id)
+      continue
+    }
     social[id] = {
       ...social[id],
       real: {
-        as_of: asOf,
+        as_of: rows[rows.length - 1].date,
         days: rows.length,
         posts: tot('instagram_posts'),
         photos: tot('instagram_photos'),
@@ -832,7 +935,7 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
   }
 
   sources.hotels = { status: statusOf(hotelReal.length, m.hotels.length), as_of: maxDate(hotels.map((h) => h.as_of ?? null)), real: hotelReal }
-  sources.social = { status: statusOf(socialReal.length, Object.keys(m.social).length), as_of: maxDate(socialReal.map((id) => social[id].real?.as_of ?? null)), real: socialReal }
+  sources.social = { status: statusOf(socialReal.length, Object.keys(m.social).length), as_of: maxDate(socialReal.flatMap((id) => [social[id].real?.as_of ?? null, social[id].mentions?.as_of ?? null])), real: socialReal }
   sources.rsi = { status: statusOf(rsiReal.length, m.rsi.length), as_of: maxDate(rsi.map((a) => a.gmb?.as_of ?? null)), real: rsiReal }
   sources.reviews = { status: reviewsReal.length ? 'mixed' : 'demo', as_of: maxDate(reviewsReal.map((id) => reviews[id].real?.as_of ?? null)), real: reviewsReal }
   sources.survey = { status: surveyReal.length ? 'mixed' : 'demo', as_of: maxDate(surveyReal.map((id) => real.nodes[id].as_of.survey)), real: surveyReal }
