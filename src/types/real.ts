@@ -42,6 +42,17 @@ export interface RealDaily {
   reviews_foreign: number | null
   reviews_rating_total: number | null
   reviews_count_total: number | null
+  /** Instagram posts tagged at the site (instagram source): that day's posts, kinds, likes and comments at scrape time, caption script. Null outside a weekly run's coverage. */
+  instagram_posts: number | null
+  instagram_photos: number | null
+  instagram_videos: number | null
+  instagram_likes: number | null
+  instagram_comments: number | null
+  instagram_script_ja: number | null
+  instagram_script_ko: number | null
+  instagram_script_zh: number | null
+  instagram_script_latin: number | null
+  instagram_script_none: number | null
   gmb_review_change: number | null
 }
 

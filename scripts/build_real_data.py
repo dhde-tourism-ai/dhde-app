@@ -149,6 +149,17 @@ DAILY_FIELDS = {
     "reviews_foreign": "reviews_foreign",
     "reviews_rating_total": "reviews_rating_total",
     "reviews_count_total": "reviews_count_total",
+    # Instagram posts tagged at the site (instagram source, from the live-data branch).
+    "instagram_posts": "instagram_posts",
+    "instagram_photos": "instagram_photos",
+    "instagram_videos": "instagram_videos",
+    "instagram_likes": "instagram_likes",
+    "instagram_comments": "instagram_comments",
+    "instagram_script_ja": "instagram_script_ja",
+    "instagram_script_ko": "instagram_script_ko",
+    "instagram_script_zh": "instagram_script_zh",
+    "instagram_script_latin": "instagram_script_latin",
+    "instagram_script_none": "instagram_script_none",
 }
 RAKUTEN_LEADS = (1, 7, 30)
 

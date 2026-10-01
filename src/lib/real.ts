@@ -32,6 +32,8 @@ import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, R
 import { isHoliday } from './holidays'
 
 export const PAST_DAYS = 7
+/** Days of Instagram posts the Social layer adds up (the weekly run's window). */
+export const SOCIAL_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
 const MIN_STAR_REVIEWS = 10
 
@@ -67,6 +69,16 @@ const NUM_FIELDS: (keyof RealDaily)[] = [
   'reviews_foreign',
   'reviews_rating_total',
   'reviews_count_total',
+  'instagram_posts',
+  'instagram_photos',
+  'instagram_videos',
+  'instagram_likes',
+  'instagram_comments',
+  'instagram_script_ja',
+  'instagram_script_ko',
+  'instagram_script_zh',
+  'instagram_script_latin',
+  'instagram_script_none',
 ]
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -787,10 +799,43 @@ function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: num
     surveyReal.push(id)
   }
 
+  // Instagram posts tagged at the site: the last SOCIAL_DAYS covered days of the
+  // weekly log. Only counts are published, so a real node has no feed or sentiment.
+  const socialReal: string[] = []
+  const social = { ...m.social }
+  for (const id of Object.keys(m.social)) {
+    const covered = real.nodes[id]?.daily.filter((x) => x.instagram_posts !== null) ?? []
+    if (!covered.length) continue
+    const asOf = covered[covered.length - 1].date
+    const rows = covered.filter((x) => x.date > addDays(asOf, -SOCIAL_DAYS))
+    const tot = (k: keyof RealDaily) => rows.reduce((a, x) => a + ((x[k] as number | null) ?? 0), 0)
+    social[id] = {
+      ...social[id],
+      real: {
+        as_of: asOf,
+        days: rows.length,
+        posts: tot('instagram_posts'),
+        photos: tot('instagram_photos'),
+        videos: tot('instagram_videos'),
+        likes: tot('instagram_likes'),
+        comments: tot('instagram_comments'),
+        scripts: {
+          ja: tot('instagram_script_ja'),
+          ko: tot('instagram_script_ko'),
+          zh: tot('instagram_script_zh'),
+          latin: tot('instagram_script_latin'),
+          none: tot('instagram_script_none'),
+        },
+      },
+    }
+    socialReal.push(id)
+  }
+
   sources.hotels = { status: statusOf(hotelReal.length, m.hotels.length), as_of: maxDate(hotels.map((h) => h.as_of ?? null)), real: hotelReal }
+  sources.social = { status: statusOf(socialReal.length, Object.keys(m.social).length), as_of: maxDate(socialReal.map((id) => social[id].real?.as_of ?? null)), real: socialReal }
   sources.rsi = { status: statusOf(rsiReal.length, m.rsi.length), as_of: maxDate(rsi.map((a) => a.gmb?.as_of ?? null)), real: rsiReal }
   sources.reviews = { status: reviewsReal.length ? 'mixed' : 'demo', as_of: maxDate(reviewsReal.map((id) => reviews[id].real?.as_of ?? null)), real: reviewsReal }
   sources.survey = { status: surveyReal.length ? 'mixed' : 'demo', as_of: maxDate(surveyReal.map((id) => real.nodes[id].as_of.survey)), real: surveyReal }
 
-  return { ...m, start: dates[0], days: D, hotels, rsi, reviews, survey }
+  return { ...m, start: dates[0], days: D, hotels, rsi, reviews, survey, social }
 }
