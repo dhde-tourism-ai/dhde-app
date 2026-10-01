@@ -276,10 +276,10 @@ export interface Merged {
   real: RealData | null
 }
 
-/** Hour index → demo hour index of the same weekday (for past days) or itself (demo days). */
+/** Hour index → the demo's own hour on its own dates, else the demo hour of the same weekday. */
 function demoIndexFor(demo: LiveData, dayDate: string, dayOffset: number, dayIdx: number, h: number): number {
   const k = dayIdx - dayOffset
-  if (k >= 0 && k < demo.days.length) return k * 24 + h
+  if (k >= 0 && k < demo.days.length && demo.days[k].date === dayDate) return k * 24 + h
   const dow = dowOf(dayDate)
   const kk = demo.days.findIndex((d) => d.dow === dow)
   return (kk < 0 ? 0 : kk) * 24 + h
@@ -322,18 +322,30 @@ function forecastMethod(rn: RealNode): string {
   )
 }
 
-export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null): Merged {
+/** JST date and hour of a moment. */
+function jstNow(now: Date): { date: string; hour: number } {
+  const j = new Date(now.getTime() + 9 * 3600 * 1000)
+  return { date: j.toISOString().slice(0, 10), hour: j.getUTCHours() }
+}
+
+/**
+ * With real data the timeline follows the clock: today is `now`'s JST date and
+ * "now" its hour, PAST_DAYS before it and as many days after as the demo has.
+ * Demo values on dates the demo doesn't cover come from its same weekday.
+ */
+export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null, now: Date = new Date()): Merged {
   if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
 
-  const today = demo.start
+  const clock = jstNow(now)
+  const today = clock.date
   const P = PAST_DAYS
-  const dates = [...Array.from({ length: P }, (_, k) => addDays(today, k - P)), ...demo.days.map((d) => d.date)]
+  const dates = Array.from({ length: P + demo.days.length }, (_, k) => addDays(today, k - P))
   const D = dates.length
   const H = D * 24
   const days = dates.map((date) => {
     const dow = dowOf(date)
     const demoDay = demo.days.find((d) => d.date === date)
-    return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: demoDay?.holiday ?? false }
+    return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: isHoliday(date) || (demoDay?.holiday ?? false) }
   })
   const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], P, dayIdx, h)
   const pick = <T,>(arr: T[], dayIdx: number, h: number): T => arr[di(dayIdx, h)]
@@ -577,7 +589,9 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
   // freshest single node (Katsuyama bookings are known for today already).
   const sharedIdx = real.shared_date ? dates.indexOf(real.shared_date) : -1
   const obsDay = sharedIdx >= 0 ? sharedIdx : lastObservedDay
-  const observedUntil = obsDay >= 0 ? obsDay * 24 + 23 : demo.observed_until + shift
+  const nowIndex = P * 24 + clock.hour
+  // Never "observed" past now (a node with today's data still only has it up to now).
+  const observedUntil = Math.min(nowIndex, obsDay >= 0 ? obsDay * 24 + 23 : nowIndex)
   const sources: DataSources = {
     people: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
     density: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
@@ -594,7 +608,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     days,
     observed_until: observedUntil,
     today_day: P,
-    now_index: demo.observed_until + shift,
+    now_index: nowIndex,
     nodes,
     flows,
     traffic,
