@@ -23,6 +23,7 @@
  *   (lib/weatherHourly.ts: JMA observed, else the latest JMA-model forecast,
  *   past and future hours alike); other days real daily temperature, rain,
  *   wind, sun, humidity and snow with the hourly curve synthesised from them.
+ *   Weather warnings: JMA's live ones (lib/jmaWarnings.ts) once read, else demo.
  *   Advisories stay demo.
  * - Traffic: roads with a real counter get the demo congestion profile scaled
  *   by that day's real volume vs the node's 90-day mean; others stay demo.
@@ -34,6 +35,7 @@ import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
 import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
+import { toAlerts, type WarningsRead } from './jmaWarnings'
 
 export const PAST_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
@@ -276,13 +278,21 @@ export interface Merged {
   real: RealData | null
 }
 
-/** Hour index → demo hour index of the same weekday (for past days) or itself (demo days). */
-function demoIndexFor(demo: LiveData, dayDate: string, dayOffset: number, dayIdx: number, h: number): number {
-  const k = dayIdx - dayOffset
-  if (k >= 0 && k < demo.days.length) return k * 24 + h
-  const dow = dowOf(dayDate)
-  const kk = demo.days.findIndex((d) => d.dow === dow)
-  return (kk < 0 ? 0 : kk) * 24 + h
+/**
+ * The demo day to show on `date`, for a demo of `n` days from `start`: the demo's own day
+ * on its own dates, else its day of the same weekday (the timeline follows the clock, the
+ * demo doesn't), else its first day.
+ */
+function demoDayFor(start: string, n: number, date: string): number {
+  for (let k = 0; k < n; k++) if (addDays(start, k) === date) return k
+  const dow = dowOf(date)
+  for (let k = 0; k < n; k++) if (dowOf(addDays(start, k)) === dow) return k
+  return 0
+}
+
+/** Hour index → the demo hour for that date and hour (see demoDayFor). */
+function demoIndexFor(demo: LiveData, dayDate: string, h: number): number {
+  return demoDayFor(demo.start, demo.days.length, dayDate) * 24 + h
 }
 
 function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind: number; pop: number; cond: WeatherCondition } {
@@ -322,20 +332,32 @@ function forecastMethod(rn: RealNode): string {
   )
 }
 
-export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null): Merged {
+/** JST date and hour of a moment. */
+function jstNow(now: Date): { date: string; hour: number } {
+  const j = new Date(now.getTime() + 9 * 3600 * 1000)
+  return { date: j.toISOString().slice(0, 10), hour: j.getUTCHours() }
+}
+
+/**
+ * With real data the timeline follows the clock: today is `now`'s JST date and
+ * "now" its hour, PAST_DAYS before it and as many days after as the demo has.
+ * Demo values on dates the demo doesn't cover come from its same weekday.
+ */
+export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null, now: Date = new Date(), warnings?: WarningsRead | null): Merged {
   if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
 
-  const today = demo.start
+  const clock = jstNow(now)
+  const today = clock.date
   const P = PAST_DAYS
-  const dates = [...Array.from({ length: P }, (_, k) => addDays(today, k - P)), ...demo.days.map((d) => d.date)]
+  const dates = Array.from({ length: P + demo.days.length }, (_, k) => addDays(today, k - P))
   const D = dates.length
   const H = D * 24
   const days = dates.map((date) => {
     const dow = dowOf(date)
     const demoDay = demo.days.find((d) => d.date === date)
-    return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: demoDay?.holiday ?? false }
+    return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: isHoliday(date) || (demoDay?.holiday ?? false) }
   })
-  const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], P, dayIdx, h)
+  const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], h)
   const pick = <T,>(arr: T[], dayIdx: number, h: number): T => arr[di(dayIdx, h)]
 
   const node_meta: Record<string, RealNodeMeta> = {}
@@ -461,7 +483,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     if (realDays.some(Boolean) || hourlySource.some(Boolean)) weatherReal.push(id)
 
     const series = (a: (number | null)[], p: number[], l?: number[], hh?: number[]): LiveSeries => ({ actual: a, predicted: p, lo: l, hi: hh })
-    const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt, d) => (d >= P ? arr[d - P] : arr[demo.days.findIndex((x) => x.dow === dowOf(dt))] ?? arr[0]))
+    const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt) => arr[demoDayFor(demo.start, demo.days.length, dt)] ?? arr[0])
     nodes[id] = {
       ...dn,
       on_site: series(osA, osP, lo, hi),
@@ -577,7 +599,9 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
   // freshest single node (Katsuyama bookings are known for today already).
   const sharedIdx = real.shared_date ? dates.indexOf(real.shared_date) : -1
   const obsDay = sharedIdx >= 0 ? sharedIdx : lastObservedDay
-  const observedUntil = obsDay >= 0 ? obsDay * 24 + 23 : demo.observed_until + shift
+  const nowIndex = P * 24 + clock.hour
+  // Never "observed" past now (a node with today's data still only has it up to now).
+  const observedUntil = Math.min(nowIndex, obsDay >= 0 ? obsDay * 24 + 23 : nowIndex)
   const sources: DataSources = {
     people: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
     density: { status: statusOf(peopleReal.length, nodeIds.length), as_of: maxDate(peopleReal.map((id) => real.nodes[id].as_of.visitors)), real: peopleReal },
@@ -594,18 +618,21 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     days,
     observed_until: observedUntil,
     today_day: P,
-    now_index: demo.observed_until + shift,
+    now_index: nowIndex,
     nodes,
     flows,
     traffic,
     advisories: demo.advisories.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift })),
-    weather_alerts: demo.weather_alerts.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift, demo: true })),
+    // JMA's live warnings once read (none in force is an empty list); the demo ones only until then.
+    weather_alerts: warnings
+      ? toAlerts(warnings, dates[0], nowIndex, now)
+      : demo.weather_alerts.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift, demo: true })),
     node_meta,
     sources,
     shared_date: real.shared_date,
   }
 
-  const market = demoMarket ? mergeMarket(demoMarket, real, dates, P, sources) : null
+  const market = demoMarket ? mergeMarket(demoMarket, real, dates, sources) : null
   return { live, market, sources, real }
 }
 
@@ -629,9 +656,10 @@ const RSI_NODE: Record<string, string> = {
   mihama_wakasa: 'rainbow_line',
 }
 
-function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: number, sources: DataSources): MarketVoiceData {
+function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], sources: DataSources): MarketVoiceData {
   const D = dates.length
-  const padDay = <T,>(arr: T[], d: number): T => (d >= P ? arr[Math.min(arr.length - 1, d - P)] : arr[Math.min(arr.length - 1, (7 + d - P) % 7)])
+  // Demo values for a merged day: the demo's day for that date or weekday (see demoDayFor).
+  const padDay = <T,>(arr: T[], d: number): T => arr[Math.min(arr.length - 1, demoDayFor(m.start, m.days, dates[d]))]
 
   const hotelReal: string[] = []
   // Real Rakuten shares for the node an area serves; a missing lead keeps its demo value.

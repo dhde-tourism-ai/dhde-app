@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
 import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -192,6 +192,27 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
 
   const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.now_index ?? live?.observed_until ?? 0))
+
+  // A shared ?t=2026-10-02T14 is a JST date and hour: once the timeline is known, turn it into
+  // its index (ignored when that hour isn't in the timeline any more).
+  const tAt = useRef(url.tAt)
+  useEffect(() => {
+    if (!tAt.current || !live) return
+    const i = Math.round((Date.parse(`${tAt.current}:00:00+09:00`) - Date.parse(`${live.start}T00:00:00+09:00`)) / 3600000)
+    tAt.current = null
+    if (i >= 0 && i < live.hours) setT(i)
+  }, [live])
+
+  // The timeline follows the clock, so at midnight it starts a day later. A picked hour is an
+  // index into it: shift it back by the same hours so it stays on the same date and hour.
+  const prevStart = useRef(live?.start)
+  useEffect(() => {
+    const from = prevStart.current
+    prevStart.current = live?.start
+    if (!from || !live?.start || from === live.start) return
+    const hours = Math.round((Date.parse(`${live.start}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 3600000)
+    setT((cur) => (cur === null ? null : Math.max(0, cur - hours)))
+  }, [live?.start])
 
   useEffect(() => {
     if (!playing || !live) return
