@@ -1,10 +1,12 @@
 /**
- * Hourly weather per node, read live from dhde-preprocessing-model's live-data
- * branch (weather_hourly/{node}.csv, written every hour by its collector): the
- * JMA station's observation where that hour's page is out, else the latest
- * Open-Meteo JMA-model forecast. Read at page load and every REFRESH_MS, so the
- * weather loop and the nudges follow the hourly collector without a redeploy.
- * A node with no file, or a failed fetch, keeps the daily-based weather.
+ * Hourly weather per node, read at page load and every REFRESH_MS from two places:
+ * - dhde-preprocessing-model's live-data history (weather_hourly/{node}.csv, from
+ *   its collector): the JMA station's observations, and its saved forecast.
+ * - Open-Meteo's JMA-model forecast, asked directly (one request, CORS open): the
+ *   collector is scheduled hourly but GitHub runs it only a few times a day, so
+ *   the forecast the app shows comes straight from the source.
+ * An observation always wins; the live forecast beats the saved one. A node with
+ * neither, or a failed fetch, keeps the daily-based weather.
  */
 import type { WeatherCondition } from '../types/live'
 import { LIVE_DATA_URL } from './dataSource'
@@ -51,6 +53,79 @@ export function parseHourlyCsv(text: string): Map<string, HourlyWeatherRow> {
     })
   }
   return out
+}
+
+const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
+const FORECAST_DAYS = 9 // as the collector: today and the 7 days the timeline shows, plus one
+
+export interface NodePoint {
+  id: string
+  lat: number
+  lon: number
+}
+
+interface OpenMeteoPoint {
+  hourly?: { time?: string[]; temperature_2m?: (number | null)[]; precipitation?: (number | null)[]; wind_speed_10m?: (number | null)[]; relative_humidity_2m?: (number | null)[]; weather_code?: (number | null)[] }
+}
+
+/** Every node's forecast in one Open-Meteo request (the same model and units as the collector). */
+export async function fetchLiveForecast(points: NodePoint[], signal?: AbortSignal): Promise<HourlyWeather> {
+  if (!points.length) return {}
+  const q = new URLSearchParams({
+    latitude: points.map((p) => p.lat).join(','),
+    longitude: points.map((p) => p.lon).join(','),
+    models: 'jma_seamless',
+    timezone: 'Asia/Tokyo',
+    forecast_days: String(FORECAST_DAYS),
+    wind_speed_unit: 'ms',
+    hourly: 'temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,weather_code',
+  })
+  const r = await fetch(`${FORECAST_URL}?${q}`, { signal })
+  if (!r.ok) throw new Error(`Open-Meteo: HTTP ${r.status}`)
+  const body = (await r.json()) as OpenMeteoPoint | OpenMeteoPoint[]
+  const list = Array.isArray(body) ? body : [body]
+  if (list.length !== points.length) throw new Error(`Open-Meteo: ${list.length} points for ${points.length}`)
+  const issued = new Date().toISOString()
+  const out: HourlyWeather = {}
+  points.forEach((p, i) => {
+    const h = list[i].hourly
+    if (!h?.time) return
+    const rows = new Map<string, HourlyWeatherRow>()
+    h.time.forEach((t, k) => {
+      // "2026-10-02T13:00" → "2026-10-02 13", the CSV's key.
+      rows.set(`${t.slice(0, 10)} ${t.slice(11, 13)}`, {
+        source: 'forecast',
+        temp_c: h.temperature_2m?.[k] ?? null,
+        precip_mm: h.precipitation?.[k] ?? null,
+        wind_ms: h.wind_speed_10m?.[k] ?? null,
+        humidity_pct: h.relative_humidity_2m?.[k] ?? null,
+        weather_code: h.weather_code?.[k] ?? null,
+        issued_at: issued,
+      })
+    })
+    out[p.id] = rows
+  })
+  return out
+}
+
+/** The saved history with the live forecast laid over it: an observation is never replaced. */
+export function mergeHourly(saved: HourlyWeather, live: HourlyWeather): HourlyWeather {
+  const out: HourlyWeather = {}
+  for (const id of new Set([...Object.keys(saved), ...Object.keys(live)])) {
+    const rows = new Map(saved[id] ?? [])
+    for (const [k, r] of live[id] ?? []) if (rows.get(k)?.source !== 'observed') rows.set(k, r)
+    if (rows.size) out[id] = rows
+  }
+  return out
+}
+
+/** The saved history and the live forecast, merged; either may fail on its own. */
+export async function fetchAllHourly(points: NodePoint[], signal?: AbortSignal): Promise<HourlyWeather> {
+  const [saved, live] = await Promise.all([
+    fetchHourlyWeather(points.map((p) => p.id), signal),
+    fetchLiveForecast(points, signal).catch(() => ({}) as HourlyWeather),
+  ])
+  return mergeHourly(saved, live)
 }
 
 export async function fetchHourlyWeather(nodeIds: string[], signal?: AbortSignal): Promise<HourlyWeather> {

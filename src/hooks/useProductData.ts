@@ -24,8 +24,12 @@ export function useProductData() {
   const market = useJsonResource<MarketVoiceData>('market_voice_demo.json')
   // Optional: a missing or broken real_data.json just leaves the demo in place.
   const real = useJsonResource<unknown>('real_data.json')
-  // Optional too: hourly weather from the live-data branch, re-read every 30 minutes.
-  const hourly = useHourlyWeather(useMemo(() => Object.keys(live.data?.nodes ?? {}), [live.data]))
+  // Optional too: hourly weather (saved observations + live forecast), re-read every 30 minutes.
+  const points = useMemo(() => {
+    const ids = Object.keys(live.data?.nodes ?? {})
+    return (registry.data?.nodes ?? []).filter((n) => ids.includes(n.id)).map((n) => ({ id: n.id, lat: n.lat, lon: n.lon }))
+  }, [live.data, registry.data])
+  const hourly = useHourlyWeather(points)
   const merged = useMemo(() => {
     if (!live.data) return null
     let parsed = null
