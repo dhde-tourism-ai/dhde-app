@@ -103,7 +103,7 @@ export interface LiveAdvisory {
 
 export interface LiveWeatherAlert {
   id: string
-  type: 'heavy_rain' | 'wind' | 'thunder' | 'waves' | 'snow' | 'heat'
+  type: 'heavy_rain' | 'wind' | 'thunder' | 'waves' | 'snow' | 'heat' | 'fog' | 'other'
   level: 'advisory' | 'warning'
   nodes: string[]
   start: number
@@ -112,7 +112,7 @@ export interface LiveWeatherAlert {
   title_ja: string
   detail_en: string
   detail_ja: string
-  /** True for simulated advisories (all of them until a real JMA feed is wired in). */
+  /** True for simulated advisories (shown only when JMA's live warnings couldn't be read). */
   demo?: boolean
 }
 
