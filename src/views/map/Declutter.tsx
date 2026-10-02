@@ -3,8 +3,8 @@ import { useMap } from 'react-leaflet'
 
 /** Space kept between a badge and whatever it was moved off. */
 const GAP = 3
-/** How far a badge may move: this many of its own heights up or down, and a half width sideways. */
-const MAX_STEPS = 5
+/** How far a badge may move: this many of its own heights up or down, and up to one width sideways. */
+const MAX_STEPS = 7
 /** A badge moved further than this gets a thin line back to its site. */
 const LEADER_MIN = 18
 /** The UI drawn over the map: badges and site names never sit under it. */
@@ -101,7 +101,8 @@ export function Declutter() {
         const w = (r.right - r.left) / 2 + GAP
         const offsets: [number, number][] = [[0, 0]]
         for (let k = 1; k <= MAX_STEPS; k++) offsets.push([0, k * h], [0, -k * h])
-        for (let k = 0; k <= MAX_STEPS; k++) offsets.push([w, k * h], [-w, k * h], [w, -k * h], [-w, -k * h])
+        // Sideways: half a width first, then a full one, each with the same vertical steps.
+        for (const sx of [w, 2 * w]) for (let k = 0; k <= MAX_STEPS; k++) offsets.push([sx, k * h], [-sx, k * h], [sx, -k * h], [-sx, -k * h])
         let best: [number, number] = [0, 0]
         let bestCost = Infinity
         for (const [dx, dy] of offsets) {
