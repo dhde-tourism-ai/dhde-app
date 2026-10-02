@@ -32,7 +32,7 @@ export function dayTypeOf(d: Date, isHoliday: (d: Date) => boolean): DayType {
  */
 export function sourcesFor(file: TransportFile, node: TransportNode): TransportSource[] {
   const journeys = Object.values(node.days).some((d) => d?.from_hub || d?.to_hub)
-  return file.sources.filter((s) => journeys || node.feeds.includes(s.id))
+  return file.sources.filter((s) => s.used && (journeys || node.feeds.includes(s.id)))
 }
 
 /** Worst publish status among the feeds behind a node's numbers. */

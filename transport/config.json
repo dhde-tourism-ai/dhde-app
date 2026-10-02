@@ -94,13 +94,13 @@
         "label": "Fukui Prefectural Dinosaur Museum",
         "label_ja": "福井県立恐竜博物館"
       },
-      "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings); Echizen Railway's Katsuyama station is 3 km away and reached by bus.",
-      "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道勝山駅は3km先でバスで連絡。"
+      "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings). Echizen Railway to Katsuyama station is not counted: its only open timetable has expired.",
+      "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道（勝山駅）はオープンな時刻表が期限切れのため含めていない。"
     },
     "rainbow_line": {
       "radius_m": 800,
-      "note": "A toll road: the summit park is reached by car, or by the seasonal Gokoichi bus (ゴコイチバス, run by Fukui Railway) from JR Mikata station on weekends and holidays, July to November. That bus is the only open timetable here, and no open timetable links it to Fukui Station: JR Obama Line trains (Mikata, Kiyama) are not open data.",
-      "note_ja": "有料道路のため、山頂公園へは車か、季節運行のゴコイチバス（福井鉄道、7〜11月の土日祝）で。オープンな時刻表はこのバスだけで、福井駅とつながる時刻表はない（JR小浜線の三方・気山駅はオープンデータでない）。"
+      "note": "A toll road: the summit park is reached by car. The seasonal Gokoichi bus (ゴコイチバス, Fukui Railway) from JR Mikata station is in the Fukutetsu Bus timetable, which expired on 31 Mar 2026, so it is not used here; JR Obama Line trains are not open data.",
+      "note_ja": "有料道路のため山頂公園へは車で。JR三方駅からの季節運行のゴコイチバス（福井鉄道）は福鉄バスの時刻表に含まれるが、2026年3月31日で期限切れのため使用していない。JR小浜線はオープンデータでない。"
     },
     "awara_onsen": {
       "radius_m": 800

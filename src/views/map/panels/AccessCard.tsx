@@ -44,7 +44,7 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
   const modes = Object.entries(d?.departures_by_mode ?? {}) as [keyof typeof MODE_LABEL, number][]
   const nearest = node.stops?.slice().sort((a, b) => a.distance_m - b.distance_m)[0]
   const caveats = sources.filter((s) => s.caveat)
-  const expired = (d?.expired_feeds ?? []).map((id) => data.sources.find((s) => s.id === id)).filter((s) => s != null)
+  const noRail = !data.sources.some((s) => s.used && s.mode === 'rail') && data.sources.some((s) => !s.used && s.mode === 'rail')
 
   return (
     <>
@@ -63,12 +63,12 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
         ))}
       </div>
 
-      {expired.length > 0 && (
+      {noRail && !isHub && (
         <p className="access-expired">
           <Icon name="alert" size={12} />{' '}
           {tr(
-            `Uses expired timetables (${expired.map((s) => `${s.name}, ended ${s.valid_to}`).join('; ')}): the same week of an earlier year stands in, so times may have changed.`,
-            `期限切れの時刻表を使用（${expired.map((s) => `${s.name_ja}、${s.valid_to}終了`).join('、')}）：前年以前の同じ週で代用しているため、時刻が変わっている可能性がある。`,
+            'Buses only: the rail timetables have expired, so trips that would use Echizen Railway or Fukui Railway show the slower bus-only route.',
+            'バスのみ：鉄道の時刻表が期限切れのため、えちぜん鉄道・福井鉄道を使う移動はバスのみの遅い経路で表示。',
           )}
         </p>
       )}

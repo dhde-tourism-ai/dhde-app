@@ -15,8 +15,8 @@ GTFS-JP timetables listed in transport/config.json:
   there today, which is also the "car only after HH:MM" time
 - Kanazawa and Kyoto: an estimated JR leg to a gateway station (Fukui or
   Awara-Onsen), then the fastest local journey on that day's timetable
-- which feeds were used, and which had expired (their numbers come from the
-  same week of an earlier year)
+- which feeds were used; a feed that ended before the reference week is not
+  used at all, and is listed with used = false
 
 The map file holds the route lines and stops serving the nodes, plus the
 walking areas from transport/walk_areas.json (fetch_walk_areas.py).
@@ -271,15 +271,20 @@ def main() -> None:
     start = date.fromisoformat(args.date) if args.date else datetime.now(JST).date()
     days = reference_days(start)
 
+    # A timetable that ended before the reference week is left out entirely, not
+    # stood in for by an older week: it is listed in `sources` with used = false.
+    first_day = min(days.values())
     feeds, sources = [], []
     for fc in cfg["feeds"]:
         f = load_feed(fetch(fc, args.refresh), fc["id"], fc["mode"])
-        feeds.append(f)
+        expired = f.valid_to is not None and f.valid_to < first_day
+        if not expired:
+            feeds.append(f)
         sources.append({k: fc.get(k) for k in ("id", "name", "name_ja", "mode", "url", "page", "licence", "licence_url",
                                                 "caveat", "caveat_ja", "publish_status")}
                        | {"agency": f.agency, "valid_from": f.valid_from and f.valid_from.isoformat(),
-                          "valid_to": f.valid_to and f.valid_to.isoformat()})
-        print(f"  {fc['id']}: {len(f.trips)} trips, valid {f.valid_from} .. {f.valid_to}")
+                          "valid_to": f.valid_to and f.valid_to.isoformat(), "expired": expired, "used": not expired})
+        print(f"  {fc['id']}: {len(f.trips)} trips, valid {f.valid_from} .. {f.valid_to}{'  EXPIRED: not used' if expired else ''}")
 
     hub_id = cfg["hub"]
     anchors = {}
@@ -332,9 +337,6 @@ def main() -> None:
         if day == "weekday":
             lines = route_lines(feeds, net, weekday_routes)
 
-    first_day = min(days.values())
-    for src in sources:
-        src["expired"] = bool(src["valid_to"]) and src["valid_to"] < first_day.isoformat()
     for k, n in nodes_out.items():
         all_days = n["days"].values()
         n["modes"] = sorted({r["mode"] for d in all_days for r in d.get("routes", [])}) + ["car"]

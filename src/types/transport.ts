@@ -19,8 +19,10 @@ export interface TransportSource {
   agency: string
   valid_from: string | null
   valid_to: string | null
-  /** Ended before the reference week: its numbers come from the same week of an earlier year. */
+  /** Ended before the reference week. */
   expired: boolean
+  /** False when expired: the timetable is left out of every number. */
+  used: boolean
 }
 
 /** One leg of an itinerary: a bus or train ride, or a walk between stops. */

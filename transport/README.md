@@ -39,18 +39,23 @@ any new source.
 
 ## What the data shows (reference week of 5 Oct 2026)
 
-| Node | Weekday departures (any direction) | Quickest trip from Fukui Station | Last bus or train back to Fukui Station | From Kanazawa (est.) |
-|---|---|---|---|---|
-| Tojinbo | 26 bus | 74 min | 18:53 (weekend 18:24) | 67 min via Awara-Onsen |
-| Katsuyama (Dinosaur Museum) | 7 bus | 72 min (weekend 61) | **17:07**, every day | 102 min via Fukui |
-| Eiheiji | 21 bus | 28 min, + 9 min walk to the temple | 18:19, **weekend 16:45** | 58 min via Fukui |
-| Awara Onsen | 93 (67 rail, 26 bus) | 41 min | 22:18 | 38 min via Awara-Onsen |
-| Rainbow Line | none on weekdays; 6 weekend Gokoichi buses (Jul to Nov) | no open timetable links it to Fukui Station | — | — |
-| Fukui Station (hub) | 471 | | | 25 min |
+**Buses only.** Timetables that ended before the reference week are left out entirely: today that is the Fukui
+Railway + Echizen Railway research feed (ended 14 Mar 2025) and Fukutetsu Bus (ended 31 Mar 2026). With no current
+open rail timetable, trips that visitors would normally make by train show the slower bus-only route, so the
+Katsuyama, Awara Onsen and Tojinbo journey times below overstate the real trip. Rail is Pending until Echizen Railway
+and Fukui Railway publish a timetable.
 
-This supports the plan's day-trip hypothesis: from the Dinosaur Museum, the last bus or train back leaves at 17:07,
-and from Eiheiji at 16:45 at weekends. The page flags any last return at 17:30 or earlier. Rail figures come from the
-expired research timetable (below), so they need confirming.
+| Node | Weekday departures (any direction) | Quickest bus trip from Fukui Station | Last bus back to Fukui Station (weekday / Sat) |
+|---|---|---|---|
+| Tojinbo | 26 | 2 h 10 min | 18:53 / 17:23 |
+| Katsuyama (Dinosaur Museum) | 7 | 3 h 59 min (bus only; by train about 1 h) | 17:07 / 16:30 |
+| Eiheiji | 21 | 28 min, + 9 min walk to the temple | 16:56 / 16:45 |
+| Awara Onsen | 26 | 1 h 58 min | 18:27 / 16:57 |
+| Rainbow Line | none: the Gokoichi bus is in the expired Fukutetsu feed | — | car only |
+| Fukui Station (hub) | 345 | | |
+
+Eiheiji, whose direct buses are in a current feed, still shows the early last return the plan expected (16:45 at
+weekends). The other last returns are bus-only and need the rail timetable before they can be quoted.
 
 ## How the numbers are made
 
@@ -67,10 +72,9 @@ expired research timetable (below), so they need confirming.
   Fukui (Kanazawa 25 min, Kyoto 90 min) or Awara-Onsen (Kanazawa 25, Kyoto 100), then 5 min to change and the quickest
   local trip from that gateway on the selected day. The faster gateway wins, so the result changes by day and Awara
   Onsen is no longer routed through Fukui.
-- **Day types and expired feeds**: the next Wednesday, Saturday and Sunday. A feed that doesn't cover the date uses
-  the same weekday 52 weeks earlier, so seasonal services such as the Rainbow Line bus stay in season. This is shown
-  on the page: the banner lists every expired feed with its end date and the date used, and each card that relies on
-  one is marked. Today that is the rail feed (ended 14 Mar 2025) and Fukutetsu Bus (ended 31 Mar 2026).
+- **Day types and expired feeds**: the next Wednesday, Saturday and Sunday. A feed that ended before that week is not
+  used at all (the page lists it as "Expired · not used"). A feed that hasn't started yet uses the same weekday 52
+  weeks earlier, so seasonal services stay in season.
 - **Status badge on the card**: "Real · timetable" when every feed behind the numbers is openly licensed, "licence
   to confirm" when Keifuku is involved, and "Research timetable" when rail is involved. Journey times can use any
   feed, so any node with a journey shows the research badge until the rail data question is settled.

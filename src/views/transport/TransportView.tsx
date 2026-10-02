@@ -78,13 +78,10 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   // No service at all this day, vs buses that run but no open timetable links them to the hub.
   const noService = ranked.filter((id) => !data.nodes[id].days[day]?.departures)
   const noLink = ranked.filter((id) => (data.nodes[id].days[day]?.departures ?? 0) > 0 && !data.nodes[id].days[day]?.to_hub)
-  const researchRail = data.sources.some((s) => s.publish_status === 'research_only')
-  const expired = data.sources.filter((s) => s.expired)
-  const usedOn = (feed: string) => data.timetable_dates[day]?.[feed]
-  const sourceName = (id: string) => {
-    const s = data.sources.find((x) => x.id === id)
-    return s ? t(s.name, s.name_ja) : id
-  }
+  const used = data.sources.filter((s) => s.used)
+  const keifukuCheck = used.some((s) => s.publish_status === 'check')
+  const dropped = data.sources.filter((s) => !s.used)
+  const noRail = !used.some((s) => s.mode === 'rail') && dropped.some((s) => s.mode === 'rail')
   const trendRows =
     trends?.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) ?? []
 
@@ -96,8 +93,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           <h1 className="page-title">{t('Getting to the sites without a car', '車なしで各地点へ')}</h1>
           <p className="page-sub">
             {t(
-              `Scheduled bus and rail services from ${hub}, the starting point, to the other ${others.length} priority sites, and when the last one leaves to come back. From the operators' open timetables (GTFS-JP), not live.`,
-              `起点の${hub}から他の${others.length}つの重点地点へのバス・鉄道の運行と、戻りの最終便の時刻。事業者のオープンな時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。`,
+              `Scheduled ${noRail ? 'bus' : 'bus and rail'} services from ${hub}, the starting point, to the other ${others.length} priority sites, and when the last one leaves to come back. From the operators' current open timetables (GTFS-JP), not live.`,
+              `起点の${hub}から他の${others.length}つの重点地点への${noRail ? 'バス' : 'バス・鉄道'}の運行と、戻りの最終便の時刻。事業者の現行のオープンな時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。`,
             )}
           </p>
         </div>
@@ -110,33 +107,30 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         </div>
       </div>
 
-      {(expired.length > 0 || researchRail) && (
+      {(dropped.length > 0 || keifukuCheck) && (
         <div className="banner banner-warn tr-banner">
           <Icon name="alert" size={16} />
           <div>
-            {expired.length > 0 && (
+            {noRail && (
               <p className="tr-banner-p">
-                <strong>{t(`${expired.length} timetables have expired.`, `${expired.length}つの時刻表が有効期限切れ。`)}</strong>{' '}
-                {expired.map((s, i) => (
-                  <span key={s.id}>
-                    {i > 0 && t('; ', '、')}
-                    {t(
-                      `${s.name} ended ${s.valid_to}, so this page uses its timetable for ${usedOn(s.id) ?? '—'} (same week, earlier year)`,
-                      `${s.name_ja}は${s.valid_to}で終了。このページは${usedOn(s.id) ?? '—'}（前年以前の同じ週）の時刻表を使用`,
-                    )}
-                  </span>
-                ))}
+                <strong>{t('Buses only: no rail.', 'バスのみ：鉄道なし。')}</strong>{' '}
                 {t(
-                  '. Times on those services may have changed since. Cards that rely on them are marked.',
-                  '。その後ダイヤが変わっている可能性がある。これらに依存するカードには印を付けている。',
+                  'There is no current open timetable for Echizen Railway or Fukui Railway, so every trip on this page is by bus. Where visitors would normally take the train (Katsuyama, Awara Onsen, Tojinbo), the trips shown are much longer than by rail. Rail is Pending until the operators publish a timetable.',
+                  'えちぜん鉄道・福井鉄道の現行のオープンな時刻表がないため、このページの移動はすべてバス。通常は鉄道を使う地点（勝山・あわら温泉・東尋坊）では、表示の所要時間は鉄道よりかなり長い。事業者が時刻表を公開するまで鉄道は「データ待ち」。',
                 )}
               </p>
             )}
-            {researchRail && (
+            {dropped.length > 0 && (
+              <p className="tr-banner-p">
+                {t('Expired timetables, not used: ', '期限切れのため不使用の時刻表：')}
+                {dropped.map((s) => t(`${s.name} (ended ${s.valid_to})`, `${s.name_ja}（${s.valid_to}終了）`)).join(t('; ', '、'))}.
+              </p>
+            )}
+            {keifukuCheck && (
               <p className="tr-banner-p">
                 {t(
-                  'Rail times also come from a research timetable (University of Tokyo, research use only), and the Keifuku Bus licence still needs confirming with the company. Check both before these numbers go public.',
-                  '鉄道の時刻は研究用時刻表（東京大学、研究目的のみ）で、京福バスの利用許諾も会社に確認中。公開前に両方を確認すること。',
+                  'The Keifuku Bus licence still needs confirming with the company before these numbers go public.',
+                  '京福バスの利用許諾は、公開前に会社への確認が必要。',
                 )}
               </p>
             )}
@@ -254,15 +248,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   <Icon name="map" size={14} /> {t('Map', '地図')}
                 </button>
               </div>
-              {(d?.expired_feeds.length ?? 0) > 0 && (
-                <p className="tr-expired" title={d!.expired_feeds.map(sourceName).join(', ')}>
-                  <Icon name="alert" size={12} />{' '}
-                  {t(
-                    `Uses an expired timetable: ${d!.expired_feeds.map(sourceName).join(', ')}`,
-                    `期限切れの時刻表を使用：${d!.expired_feeds.map(sourceName).join('、')}`,
-                  )}
-                </p>
-              )}
               <div className="tr-kpis">
                 <div>
                   <div className="eyebrow">{t('Departures / day, any direction', '1日の出発本数（全方向）')}</div>
@@ -458,7 +443,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       {s.valid_from ?? '—'} – {s.valid_to ?? '—'}
                     </td>
                     <td>
-                      <span className={`tr-lic ${PUBLISH[s.publish_status].cls}`}>{t(PUBLISH[s.publish_status].en, PUBLISH[s.publish_status].ja)}</span>
+                      {s.used ? (
+                        <span className={`tr-lic ${PUBLISH[s.publish_status].cls}`}>{t(PUBLISH[s.publish_status].en, PUBLISH[s.publish_status].ja)}</span>
+                      ) : (
+                        <span className="tr-lic research">{t('Expired · not used', '期限切れ・不使用')}</span>
+                      )}
                     </td>
                   </tr>
                 ))}
