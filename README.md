@@ -82,7 +82,7 @@ Built by `scripts/build_real_data.py` (the lead's adapter; its docstring has the
 |---|---|---|
 | People / density | per-node daily `visitors_est` (modelled: the node's signal scaled to the prefecture's 2025 official annual count; confidence high / medium / low shown). The timeline gains the last 7 observed days. Future days: mean of the same weekday over the last 4 weeks. | hourly shape (scaled so each day adds up to the real total). Fukui Station has no official count: camera detections only, no visitor number |
 | People flow | route volumes follow the destination's real day total | split by road and hour |
-| Weather | hourly where the sources below have it: JMA observations (past days) and the JMA-model forecast (ahead). Other days: daily `temp_c`, `precip_mm`, `wind_ms`, `sun_h`, `humidity_pct`, `snow_cm` (hourly curve synthesised) | advisories (marked Demo) |
+| Weather | hourly where the sources below have it: JMA observations (past days) and the JMA-model forecast (ahead). Other days: daily `temp_c`, `precip_mm`, `wind_ms`, `sun_h`, `humidity_pct`, `snow_cm` (hourly curve synthesised). Weather warnings: JMA's in force, read live (below) | demo warnings only if JMA can't be reached (marked Demo) |
 | Traffic | roads with a counter (Katsuyama, Eiheiji, Rainbow Line): demo congestion profile scaled by the day's `traffic_volume` vs the 90-day mean. Zero or today's partial counts are treated as no reading | roads without a counter (Tojinbo, Awara), future days |
 | Hotels | `hotel_occ`, `hotel_adr_yen`, rooms sold / total per day; `hotel_forward` for nights ahead (Fukui Station, Awara, regional coast feed for Echizen, Mikata for Rainbow Line) | Rakuten availability |
 | Search intent | Google Maps Business Profile map views, search views, directions with a 14-day sparkline (lags about 5 days; `as_of` shown) for the node in each area | Ono, Tsuruga |
@@ -95,11 +95,12 @@ The header chip shows `shared_date` (the latest day every node has data for).
 
 ### Read live by the browser
 
-Besides the bundled files, the app reads two sources at page load and every 30 minutes (`src/lib/weatherHourly.ts`). Either can fail on its own; the app then keeps what it has.
+Besides the bundled files, the app reads these sources itself, at page load and then on a timer. Either can fail on its own; the app then keeps what it has.
 
 | Source | What | Notes |
 |---|---|---|
 | dhde-preprocessing-model `live-data` branch, `weather_hourly/{node}.csv` (raw.githubusercontent.com; root in `LIVE_DATA_URL`, override with `VITE_LIVE_DATA_URL`) | JMA observations and the collector's saved forecast | GitHub runs the collector only a few times a day, so observations arrive as whole past days |
+| JMA warnings, `bosai/warning/data/r8/180000.json` (Fukui; every 10 minutes, `src/lib/jmaWarnings.ts`) | warnings and advisories in force at the six nodes | JMA's level system since May 2026. After 30 minutes without a good read they're shown as unconfirmed |
 | [Open-Meteo](https://open-meteo.com/) forecast API, `models=jma_seamless`, one request for all nodes | the JMA-model forecast, 9 days | Data CC BY 4.0, credited in the weather tooltip and layer note. **The free API is for non-commercial use only** ([terms](https://open-meteo.com/en/terms)); every viewer's browser calls it. If the dashboard is or becomes commercial, it needs an Open-Meteo API plan (or the forecast read from the collector's file only). |
 
 `scripts/check_data.mjs` validates the file (exit 1 when malformed, 0 when valid or absent). The Pages workflow runs it before the build, so a bad data push fails the deploy and the previous site stays up.
