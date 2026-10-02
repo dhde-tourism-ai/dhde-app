@@ -276,13 +276,21 @@ export interface Merged {
   real: RealData | null
 }
 
-/** Hour index → the demo's own hour on its own dates, else the demo hour of the same weekday. */
-function demoIndexFor(demo: LiveData, dayDate: string, dayOffset: number, dayIdx: number, h: number): number {
-  const k = dayIdx - dayOffset
-  if (k >= 0 && k < demo.days.length && demo.days[k].date === dayDate) return k * 24 + h
-  const dow = dowOf(dayDate)
-  const kk = demo.days.findIndex((d) => d.dow === dow)
-  return (kk < 0 ? 0 : kk) * 24 + h
+/**
+ * The demo day to show on `date`, for a demo of `n` days from `start`: the demo's own day
+ * on its own dates, else its day of the same weekday (the timeline follows the clock, the
+ * demo doesn't), else its first day.
+ */
+function demoDayFor(start: string, n: number, date: string): number {
+  for (let k = 0; k < n; k++) if (addDays(start, k) === date) return k
+  const dow = dowOf(date)
+  for (let k = 0; k < n; k++) if (dowOf(addDays(start, k)) === dow) return k
+  return 0
+}
+
+/** Hour index → the demo hour for that date and hour (see demoDayFor). */
+function demoIndexFor(demo: LiveData, dayDate: string, h: number): number {
+  return demoDayFor(demo.start, demo.days.length, dayDate) * 24 + h
 }
 
 function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind: number; pop: number; cond: WeatherCondition } {
@@ -347,7 +355,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const demoDay = demo.days.find((d) => d.date === date)
     return { date, dow, weekend: dow === 'Sat' || dow === 'Sun', holiday: isHoliday(date) || (demoDay?.holiday ?? false) }
   })
-  const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], P, dayIdx, h)
+  const di = (dayIdx: number, h: number) => demoIndexFor(demo, dates[dayIdx], h)
   const pick = <T,>(arr: T[], dayIdx: number, h: number): T => arr[di(dayIdx, h)]
 
   const node_meta: Record<string, RealNodeMeta> = {}
@@ -473,7 +481,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     if (realDays.some(Boolean) || hourlySource.some(Boolean)) weatherReal.push(id)
 
     const series = (a: (number | null)[], p: number[], l?: number[], hh?: number[]): LiveSeries => ({ actual: a, predicted: p, lo: l, hi: hh })
-    const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt, d) => (d >= P ? arr[d - P] : arr[demo.days.findIndex((x) => x.dow === dowOf(dt))] ?? arr[0]))
+    const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt) => arr[demoDayFor(demo.start, demo.days.length, dt)] ?? arr[0])
     nodes[id] = {
       ...dn,
       on_site: series(osA, osP, lo, hi),
@@ -619,7 +627,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     shared_date: real.shared_date,
   }
 
-  const market = demoMarket ? mergeMarket(demoMarket, real, dates, P, sources) : null
+  const market = demoMarket ? mergeMarket(demoMarket, real, dates, sources) : null
   return { live, market, sources, real }
 }
 
@@ -643,9 +651,10 @@ const RSI_NODE: Record<string, string> = {
   mihama_wakasa: 'rainbow_line',
 }
 
-function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], P: number, sources: DataSources): MarketVoiceData {
+function mergeMarket(m: MarketVoiceData, real: RealData, dates: string[], sources: DataSources): MarketVoiceData {
   const D = dates.length
-  const padDay = <T,>(arr: T[], d: number): T => (d >= P ? arr[Math.min(arr.length - 1, d - P)] : arr[Math.min(arr.length - 1, (7 + d - P) % 7)])
+  // Demo values for a merged day: the demo's day for that date or weekday (see demoDayFor).
+  const padDay = <T,>(arr: T[], d: number): T => arr[Math.min(arr.length - 1, demoDayFor(m.start, m.days, dates[d]))]
 
   const hotelReal: string[] = []
   // Real Rakuten shares for the node an area serves; a missing lead keeps its demo value.
