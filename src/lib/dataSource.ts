@@ -15,6 +15,17 @@ const LIVE_BASE = (import.meta.env.VITE_DATA_BASE_URL ?? '').trim().replace(/\/+
 
 export const hasLiveSource = LIVE_BASE !== ''
 
+/**
+ * Root of dhde-preprocessing-model's live-data history (the hourly collector's files,
+ * e.g. weather_hourly/). Its GitHub branch by default; set VITE_LIVE_DATA_URL when the
+ * history moves (e.g. to S3).
+ */
+export const LIVE_DATA_URL = (
+  import.meta.env.VITE_LIVE_DATA_URL ?? 'https://raw.githubusercontent.com/dhde-tourism-ai/dhde-preprocessing-model/live-data'
+)
+  .trim()
+  .replace(/\/+$/, '')
+
 function withCacheBust(url: string): string {
   return import.meta.env.DEV ? `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}` : url
 }

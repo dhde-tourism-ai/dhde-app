@@ -19,8 +19,11 @@
  *   demo shape. forecast_source_daily says which one each day used.
  *   Nodes without an estimate (Fukui Station) keep demo shapes but are flagged
  *   no_estimate so the UI shows camera detections, never a visitor number.
- * - Weather: real daily temperature, rain, wind, sun, humidity and snow; the
- *   hourly curve is synthesised from the daily values. Advisories stay demo.
+ * - Weather: real hourly weather where the hourly collector has it
+ *   (lib/weatherHourly.ts: JMA observed, else the latest JMA-model forecast,
+ *   past and future hours alike); other days real daily temperature, rain,
+ *   wind, sun, humidity and snow with the hourly curve synthesised from them.
+ *   Advisories stay demo.
  * - Traffic: roads with a real counter get the demo congestion profile scaled
  *   by that day's real volume vs the node's 90-day mean; others stay demo.
  * - Hotels, search intent (GMB), reviews (GMB) and survey response counts: see
@@ -30,6 +33,7 @@ import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, 
 import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
+import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
 
 export const PAST_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
@@ -318,7 +322,7 @@ function forecastMethod(rn: RealNode): string {
   )
 }
 
-export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null): Merged {
+export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null): Merged {
   if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
 
   const today = demo.start
@@ -425,28 +429,36 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const pop: number[] = []
     const cond: WeatherCondition[] = []
     const realDays: boolean[] = []
+    const hourlySource: ('observed' | 'forecast' | null)[] = []
     for (let d = 0; d < D; d++) {
       const r = rowOn(rn, dates[d])
       const isReal = !!r && r.temp_c !== null
       realDays.push(isReal)
       for (let h = 0; h < 24; h++) {
-        if (isReal) {
-          const s = synthWeather(r!, h)
-          temp.push(s.temp)
-          mm.push(s.mm)
-          wind.push(s.wind)
-          pop.push(s.pop)
-          cond.push(s.cond)
+        // The daily-based value (real day) or the demo's, for anything the hourly row lacks.
+        const fb = isReal
+          ? synthWeather(r!, h)
+          : { temp: pick(wx.temp_c, d, h), mm: pick(wx.precip_mm, d, h), wind: pick(wx.wind_ms, d, h), pop: pick(wx.precip_pct, d, h), cond: pick(wx.condition, d, h) }
+        // An hour without a rain amount isn't used at all (not a real 0 mm); a missing wind
+        // reading takes the fallback too, so a false calm can't hide the wind nudge.
+        const hr = rowForSlot(hourly?.[id], dates[d], h)
+        hourlySource.push(usable(hr) ? hr.source : null)
+        if (usable(hr)) {
+          temp.push(hr.temp_c!)
+          mm.push(hr.precip_mm!)
+          wind.push(hr.wind_ms ?? fb.wind)
+          pop.push(popOf(hr))
+          cond.push(conditionOf(hr, h))
         } else {
-          temp.push(pick(wx.temp_c, d, h))
-          mm.push(pick(wx.precip_mm, d, h))
-          wind.push(pick(wx.wind_ms, d, h))
-          pop.push(pick(wx.precip_pct, d, h))
-          cond.push(pick(wx.condition, d, h))
+          temp.push(fb.temp)
+          mm.push(fb.mm)
+          wind.push(fb.wind)
+          pop.push(fb.pop)
+          cond.push(fb.cond)
         }
       }
     }
-    if (realDays.some(Boolean)) weatherReal.push(id)
+    if (realDays.some(Boolean) || hourlySource.some(Boolean)) weatherReal.push(id)
 
     const series = (a: (number | null)[], p: number[], l?: number[], hh?: number[]): LiveSeries => ({ actual: a, predicted: p, lo: l, hi: hh })
     const sentimentPad = <T,>(arr: T[]): T[] => dates.map((dt, d) => (d >= P ? arr[d - P] : arr[demo.days.findIndex((x) => x.dow === dowOf(dt))] ?? arr[0]))
@@ -468,6 +480,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         daily_precip_mm: dates.map((dt) => rowOn(rn, dt)?.precip_mm ?? null),
         daily_wind_ms: dates.map((dt) => rowOn(rn, dt)?.wind_ms ?? null),
         real_days: realDays,
+        hourly_source: hourlySource,
       },
       sentiment: {
         score: sentimentPad(dn.sentiment.score),

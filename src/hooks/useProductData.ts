@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useDashboardData } from './useDashboardData'
 import { mergeAll, parseReal } from '../lib/real'
 import { useJsonResource } from './useJsonResource'
+import { useHourlyWeather } from './useHourlyWeather'
 import type { NodeRegistry } from '../types/nodes'
 import type { RegionalEconomics } from '../types/economics'
 import type { StrategicQuestions } from '../types/strategy'
@@ -23,6 +24,12 @@ export function useProductData() {
   const market = useJsonResource<MarketVoiceData>('market_voice_demo.json')
   // Optional: a missing or broken real_data.json just leaves the demo in place.
   const real = useJsonResource<unknown>('real_data.json')
+  // Optional too: hourly weather (saved observations + live forecast), re-read every 30 minutes.
+  const points = useMemo(() => {
+    const ids = Object.keys(live.data?.nodes ?? {})
+    return (registry.data?.nodes ?? []).filter((n) => ids.includes(n.id)).map((n) => ({ id: n.id, lat: n.lat, lon: n.lon }))
+  }, [live.data, registry.data])
+  const hourly = useHourlyWeather(points)
   const merged = useMemo(() => {
     if (!live.data) return null
     let parsed = null
@@ -32,12 +39,12 @@ export function useProductData() {
       parsed = null
     }
     try {
-      return mergeAll(live.data, market.data, parsed)
+      return mergeAll(live.data, market.data, parsed, hourly)
     } catch (e) {
       console.error('real_data.json merge failed; using demo data', e)
       return mergeAll(live.data, market.data, null)
     }
-  }, [live.data, market.data, real.data])
+  }, [live.data, market.data, real.data, hourly])
   return { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }
 }
 
