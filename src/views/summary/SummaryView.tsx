@@ -261,6 +261,13 @@ export default function SummaryView({ data }: { data: ProductData }) {
                     </span>
                     <strong className="sum-act-title">{t(n.title_en, n.title_ja)}</strong>
                     <span className="sum-act-do">{t(n.action_en, n.action_ja)}</span>
+                    {/* As in the Action nudges panel: a nudge on demo inputs says so, so a made-up one never reads as real. */}
+                    {!n.real && (
+                      <span className="pill pill-illustrative sum-act-demo">
+                        <span className="pill-dot" aria-hidden="true"></span>
+                        {t('Demo', 'デモ')}
+                      </span>
+                    )}
                   </li>
                 )
               })}

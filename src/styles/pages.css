@@ -1773,6 +1773,11 @@
   color: var(--text-2);
 }
 
+.sum-act-demo {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
 .sum-more {
   align-self: flex-start;
 }
