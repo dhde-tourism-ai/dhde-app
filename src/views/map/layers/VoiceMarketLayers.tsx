@@ -335,7 +335,7 @@ const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '
 const SOCIAL_REAL_EDGE = '#8a94a6'
 const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
   { k: 'ja', en: 'Japanese', ja: '日本語' },
-  { k: 'zh', en: 'Chinese', ja: '中国語' },
+  { k: 'zh', en: 'Chinese (at least)', ja: '中国語（最低値）' },
   { k: 'ko', en: 'Korean', ja: '韓国語' },
   { k: 'latin', en: 'English / Latin script', ja: '英語など' },
 ]
@@ -391,8 +391,8 @@ function RealSocialMarker({ node: n, real: r, icon }: { node: MapNode; real: Non
           )}
           <p className="muted small">
             {t(
-              'Posts tagged at this place on Instagram, collected weekly. Only counts are kept: no usernames, captions or images. Caption language is judged by writing system, a rough market proxy, not nationality. Likes and comments are counted when collected. Sentiment is not measured yet.',
-              'Instagramでこの場所にタグ付けされた投稿（毎週収集）。件数のみ保存し、ユーザー名・本文・画像は保存しません。本文の言語は文字の種類で判定した市場の目安で、国籍ではありません。いいね・コメントは収集時点の数。感情はまだ測定していません。',
+              'Posts tagged at this place on Instagram, collected weekly. Only counts are kept: no usernames, captions or images. Caption language is judged by writing system, a rough market proxy, not nationality. Kanji-only captions count as Japanese unless they use characters only Chinese uses, so the Chinese share is a floor. Likes (to the nearest 10) and comments (nearest 5) are rounded and counted when collected. Sentiment is not measured yet.',
+              'Instagramでこの場所にタグ付けされた投稿（毎週収集）。件数のみ保存し、ユーザー名・本文・画像は保存しません。本文の言語は文字の種類で判定した市場の目安で、国籍ではありません。漢字のみの本文は中国語特有の字がない限り日本語として数えるため、中国語の割合は最低値です。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。感情はまだ測定していません。',
             )}
           </p>
         </div>
