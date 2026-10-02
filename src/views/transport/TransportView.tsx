@@ -101,7 +101,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       </div>
 
       {modes && (
-        <div className="card-grid tr-top">
+        <div className="tr-top">
           <ModeShare data={modes} name={name} />
         </div>
       )}
