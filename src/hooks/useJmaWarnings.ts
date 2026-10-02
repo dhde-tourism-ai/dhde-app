@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { fetchWarnings, REFRESH_MS, type JmaWarning } from '../lib/jmaWarnings'
+import { fetchWarnings, REFRESH_MS, type WarningsRead } from '../lib/jmaWarnings'
 
-/** JMA warnings in force, re-read every REFRESH_MS; null until the first successful read. */
-export function useJmaWarnings(): JmaWarning[] | null {
-  const [data, setData] = useState<JmaWarning[] | null>(null)
+/** The last good read of JMA's warnings, re-read every REFRESH_MS; null until the first one. */
+export function useJmaWarnings(): WarningsRead | null {
+  const [data, setData] = useState<WarningsRead | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
     const load = () =>
       fetchWarnings(controller.signal)
         .then(setData)
-        .catch(() => undefined) // a failed read keeps the last one (or the demo warnings)
+        .catch(() => undefined) // a failed read keeps the last good one; toAlerts marks it unconfirmed after 30 min
     void load()
     const timer = setInterval(load, REFRESH_MS)
     return () => {

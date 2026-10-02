@@ -35,7 +35,7 @@ import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
 import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
-import { toAlerts, type JmaWarning } from './jmaWarnings'
+import { toAlerts, type WarningsRead } from './jmaWarnings'
 
 export const PAST_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
@@ -343,7 +343,7 @@ function jstNow(now: Date): { date: string; hour: number } {
  * "now" its hour, PAST_DAYS before it and as many days after as the demo has.
  * Demo values on dates the demo doesn't cover come from its same weekday.
  */
-export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null, now: Date = new Date(), warnings?: JmaWarning[] | null): Merged {
+export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, real: RealData | null, hourly?: HourlyWeather | null, now: Date = new Date(), warnings?: WarningsRead | null): Merged {
   if (!real) return { live: demo, market: demoMarket, sources: {}, real: null }
 
   const clock = jstNow(now)
@@ -625,7 +625,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     advisories: demo.advisories.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift })),
     // JMA's live warnings once read (none in force is an empty list); the demo ones only until then.
     weather_alerts: warnings
-      ? toAlerts(warnings, dates[0], nowIndex)
+      ? toAlerts(warnings, dates[0], nowIndex, now)
       : demo.weather_alerts.map((a) => ({ ...a, start: a.start + shift, end: a.end + shift, demo: true })),
     node_meta,
     sources,

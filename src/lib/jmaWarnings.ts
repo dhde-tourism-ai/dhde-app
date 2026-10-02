@@ -10,6 +10,8 @@ import type { LiveWeatherAlert } from '../types/live'
 
 const URL = 'https://www.jma.go.jp/bosai/warning/data/r8/180000.json' // 福井県
 export const REFRESH_MS = 10 * 60 * 1000
+/** After this long without a good read, the last warnings are shown as unconfirmed and stop moving. */
+export const STALE_MS = 30 * 60 * 1000
 
 /** Node → JMA municipality (class20) codes. Rainbow Line crosses Mihama and Wakasa. */
 const AREAS: Record<string, string[]> = {
@@ -57,6 +59,12 @@ const CODES: Record<string, [Hazard, number]> = {
 }
 const NOT_IN_FORCE = new Set(['解除', '発表警報・注意報はなし'])
 
+/** One good read of JMA's file: the warnings in force and when they were read. */
+export interface WarningsRead {
+  warnings: JmaWarning[]
+  readAt: Date
+}
+
 export interface JmaWarning {
   code: string
   hazard: Hazard
@@ -74,14 +82,19 @@ interface R8Report {
 /** Warnings in force at any of each node's areas, one entry per warning with the nodes it covers. */
 export function parseWarnings(reports: unknown): JmaWarning[] {
   const byCode = new Map<string, JmaWarning>()
-  if (!Array.isArray(reports)) return []
+  const unknown = new Set<string>()
+  if (!Array.isArray(reports)) throw new Error('JMA warnings: not a list of reports')
   for (const rep of reports as R8Report[]) {
     for (const item of rep.warning?.class20Items ?? []) {
       const nodes = Object.keys(AREAS).filter((id) => AREAS[id].includes(item.areaCode ?? ''))
       if (!nodes.length) continue
       for (const k of item.kinds ?? []) {
         const c = k.code
-        if (!c || !CODES[c] || NOT_IN_FORCE.has(k.status ?? '')) continue
+        if (!c || NOT_IN_FORCE.has(k.status ?? '')) continue
+        if (!CODES[c]) {
+          unknown.add(c)
+          continue
+        }
         const w = byCode.get(c) ?? { code: c, hazard: CODES[c][0], level: CODES[c][1], nodes: [], report: '' }
         for (const id of nodes) if (!w.nodes.includes(id)) w.nodes.push(id)
         if ((rep.reportDatetime ?? '') > w.report) w.report = rep.reportDatetime ?? ''
@@ -89,6 +102,8 @@ export function parseWarnings(reports: unknown): JmaWarning[] {
       }
     }
   }
+  // Shown nowhere else: a code JMA adds (or one this table lacks) would otherwise vanish silently.
+  if (unknown.size) console.warn(`JMA warnings: codes in force but not in the table, not shown: ${[...unknown].sort().join(', ')}`)
   return [...byCode.values()].sort((a, b) => b.level - a.level || a.code.localeCompare(b.code))
 }
 
@@ -102,31 +117,39 @@ export function warningName(w: Pick<JmaWarning, 'hazard' | 'level'>): { ja: stri
 /**
  * As the app's weather alerts. JMA gives no end time, so a warning runs from its
  * latest report (or the timeline start) to 3 hours past now, and the next read
- * (every 10 minutes) moves or drops it.
+ * (every 10 minutes) moves or drops it. If JMA hasn't been read for STALE_MS, the
+ * warnings are marked unconfirmed and end 3 hours after the last good read, so a
+ * lifted one can't stay on screen while JMA is unreachable.
  */
-export function toAlerts(ws: JmaWarning[], start: string, nowIndex: number): LiveWeatherAlert[] {
+export function toAlerts(read: WarningsRead, start: string, nowIndex: number, now: Date): LiveWeatherAlert[] {
   const t0 = new Date(`${start}T00:00:00+09:00`).getTime()
-  return ws.map((w) => {
+  const stale = now.getTime() - read.readAt.getTime() > STALE_MS
+  const readIdx = Math.floor((read.readAt.getTime() - t0) / 3600000)
+  const jst = new Date(read.readAt.getTime() + 9 * 3600000).toISOString().slice(11, 16)
+  return read.warnings.map((w) => {
     const name = warningName(w)
     const fromIdx = w.report ? Math.floor((new Date(w.report).getTime() - t0) / 3600000) : nowIndex
     const hhmm = w.report.slice(11, 16)
+    const end = stale ? readIdx + 3 : nowIndex + 3
     return {
       id: `jma-${w.code}`,
       type: HAZARD[w.hazard][2],
       level: w.level >= 3 ? 'warning' : 'advisory',
       nodes: w.nodes,
-      start: Math.max(0, Math.min(fromIdx, nowIndex)),
-      end: nowIndex + 3,
-      title_en: name.en,
-      title_ja: name.ja,
-      detail_en: `In force (JMA${hhmm ? `, report ${hhmm}` : ''}). No end time is given until JMA lifts it.`,
-      detail_ja: `発表中（気象庁${hhmm ? `、${hhmm}発表` : ''}）。解除まで継続。`,
+      start: Math.max(0, Math.min(fromIdx, end)),
+      end,
+      title_en: stale ? `${name.en} (unconfirmed since ${jst})` : name.en,
+      title_ja: stale ? `${name.ja}（${jst}以降未確認）` : name.ja,
+      detail_en: stale
+        ? `JMA couldn't be reached since ${jst}; it may have been lifted.`
+        : `In force (JMA${hhmm ? `, report ${hhmm}` : ''}). No end time is given until JMA lifts it.`,
+      detail_ja: stale ? `${jst}以降、気象庁から取得できていません。解除されている可能性があります。` : `発表中（気象庁${hhmm ? `、${hhmm}発表` : ''}）。解除まで継続。`,
     }
   })
 }
 
-export async function fetchWarnings(signal?: AbortSignal): Promise<JmaWarning[]> {
+export async function fetchWarnings(signal?: AbortSignal): Promise<WarningsRead> {
   const r = await fetch(URL, { signal, cache: 'no-cache' })
   if (!r.ok) throw new Error(`JMA warnings: HTTP ${r.status}`)
-  return parseWarnings(await r.json())
+  return { warnings: parseWarnings(await r.json()), readAt: new Date() }
 }
