@@ -129,7 +129,7 @@ export function LayersPanel(p: Props) {
     social: (
       <>
         <Grad from="#e66767" to="#3987e5" left={t('Negative', '不評')} right={t('Positive', '好評')} />
-        <p className="lg-note">{t('Badge edge = average sentiment; thumbnails are abstract placeholders. Click for the feed. All posts fictional.', '縁の色＝平均感情。サムネイルは抽象的な仮画像。クリックでフィード。投稿は架空。')}</p>
+        <p className="lg-note">{t('Badge edge = average sentiment. Real sites: counts and scores only, click for details. Demo sites: thumbnails and feed are fictional.', '縁の色＝平均感情。実データの地点：件数とスコアのみ、クリックで詳細。デモの地点：サムネイルとフィードは架空。')}</p>
       </>
     ),
     reviews: <p className="lg-note">{t('Stars, average rating, review count, ▲▼ change over 30 days. Snippets are fictional.', '星・平均評価・件数・30日の変化。抜粋は架空。')}</p>,
