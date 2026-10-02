@@ -335,7 +335,7 @@ const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '
 const SOCIAL_REAL_EDGE = '#8a94a6'
 const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
   { k: 'ja', en: 'Japanese', ja: '日本語' },
-  { k: 'zh', en: 'Chinese', ja: '中国語' },
+  { k: 'zh', en: 'Chinese (at least)', ja: '中国語（最低値）' },
   { k: 'ko', en: 'Korean', ja: '韓国語' },
   { k: 'latin', en: 'English / Latin script', ja: '英語など' },
 ]
@@ -487,8 +487,8 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
           )}
           <p className="muted small">
             {t(
-              'Collected weekly. Only counts and scores are kept: no usernames, text or images. Each post and comment is scored by a language model (some languages translated to English first), so read the score as a trend, not a verdict. Language points to a market, not nationality. Likes and comments are counted when collected.',
-              '毎週収集。件数とスコアのみ保存し、ユーザー名・本文・画像は保存しません。投稿・コメントごとに言語モデルで判定（一部の言語は英訳してから判定）するため、スコアは傾向として見てください。言語は市場の目安で、国籍ではありません。いいね・コメントは収集時点の数。',
+              'Collected weekly. Only counts and scores are kept: no usernames, text or images. Each post and comment is scored by a language model (some languages translated to English first). It is a first model, not yet checked against hand-labelled posts: read the score as a trend, not a verdict. Language points to a market, not nationality; kanji-only text counts as Japanese unless it uses characters only Chinese uses, so Chinese shares are a floor. Likes (to the nearest 10) and comments (nearest 5) are rounded and counted when collected.',
+              '毎週収集。件数とスコアのみ保存し、ユーザー名・本文・画像は保存しません。投稿・コメントごとに言語モデルで判定（一部の言語は英訳してから判定）。手作業の判定との照合前の初期モデルのため、スコアは傾向として見てください。言語は市場の目安で、国籍ではありません。漢字のみの文は中国語特有の字がない限り日本語として数えるため、中国語の割合は最低値です。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。',
             )}
           </p>
         </div>

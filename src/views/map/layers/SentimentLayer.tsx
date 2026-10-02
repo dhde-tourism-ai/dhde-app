@@ -75,7 +75,7 @@ function RealRing({ node: n, real, r }: { node: MapNode; real: RealSentiment; r:
     >
       <Tooltip className="map-tip" direction="bottom" offset={[0, r]}>
         <strong>
-          {t(n.name, n.name_ja)} · {t(lab.en, lab.ja)} <span className="tt-real">{t('Real', '実データ')}</span>
+          {t(n.name, n.name_ja)} · {t(lab.en, lab.ja)} <span className="tt-real">{t('Real', '実データ')}</span> <span className="tt-demo">{t('first model, unchecked', '初期モデル・未検証')}</span>
         </strong>
         {s !== null && (
           <div className="tip-row">
