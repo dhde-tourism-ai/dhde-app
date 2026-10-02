@@ -92,10 +92,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           <div className="eyebrow">{t('Transport track', '交通トラック')}</div>
           <h1 className="page-title">{t('Getting to the sites', '各地点への交通')}</h1>
           <p className="page-sub">
-            {t(
-              `How many visitors arrive by train, bus, own car and rental car, then the scheduled ${noRail ? 'bus' : 'bus and rail'} services from ${hub} to the other ${others.length} priority sites and when the last one leaves to come back (operators' open timetables, not live).`,
-              `鉄道・バス・自家用車・レンタカーで来る来訪者数の推計と、${hub}から他の${others.length}つの重点地点への${noRail ? 'バス' : 'バス・鉄道'}の運行・戻りの最終便（事業者のオープンな時刻表に基づく予定、リアルタイムではない）。`,
-            )}
+            {t('How visitors reach the six priority sites, and how long the trip takes without a car.', '6つの重点地点への来訪者の交通手段と、車なしで行く場合の所要時間。')}
           </p>
         </div>
       </div>
