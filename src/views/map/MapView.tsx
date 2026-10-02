@@ -10,6 +10,7 @@ import type { RegionalEconomics } from '../../types/economics'
 import type { LiveData } from '../../types/live'
 import type { RoutesFile } from '../../types/routes'
 import type { MarketVoiceData } from '../../types/market'
+import type { TransportFile, TransportMapFile } from '../../types/transport'
 import { buildMapNodes } from '../../lib/nodes'
 import { frameAt, timeLabel } from '../../lib/live'
 import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
@@ -37,6 +38,7 @@ import { NodeDrawer } from './panels/NodeDrawer'
 import { Timeline } from './panels/Timeline'
 import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
+import { TransportLayer } from './layers/TransportLayer'
 import { HotelsLayer, ReviewsLayer, RsiLayer, SocialLayer, SurveyLayer } from './layers/VoiceMarketLayers'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
@@ -243,6 +245,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const day = Math.floor(t / 24)
   // Optional: without hotel_thresholds.json loop #3 keeps its demo rule.
   const hotelThresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
+  // Optional: public transport access (transport/build_transport.py). Without it the card and layer just don't show.
+  const transport = useJsonResource<TransportFile>('transport.json').data
+  const transportMap = useJsonResource<TransportMapFile>('transport_map.json').data
   const nudges = useMemo(
     () => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, hotelThresholds) : []),
     [live, market, registry, hotelThresholds],
@@ -260,6 +265,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
   }
   const selected = allNodes.find((n) => n.id === selectedId)
   const kanazawa = registry?.nodes.find((n) => n.id === 'kanazawa')
+  const hubNode = registry?.nodes.find((n) => n.id === (transport?.hub ?? 'fukui_station'))
+  const hubName: [string, string] = hubNode ? [hubNode.name, hubNode.name_ja] : ['Fukui Station', '福井駅']
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
   const layerOn = (l: LayerId) => active.has(l)
@@ -288,6 +295,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
       frame={frame?.[selected.id]}
       live={live}
       routes={routes}
+      transport={transport}
+      hubName={hubName}
       dashboard={dashboard}
       economics={economics}
       market={market}
@@ -320,6 +329,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         )}
         {market && layerOn('hotels') && <HotelsLayer data={market} day={day} nodes={registry?.nodes ?? []} />}
         {market && layerOn('rsi') && <RsiLayer data={market} />}
+        {layerOn('transport') && transportMap && <TransportLayer data={transportMap} />}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
         {(layerOn('people') || layerOn('flow')) && (
           <PeopleLayer

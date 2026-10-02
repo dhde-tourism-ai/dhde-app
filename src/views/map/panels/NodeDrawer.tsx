@@ -20,6 +20,8 @@ import { SourceBadge } from '../../../components/SourceBadge'
 import { KddiPending } from '../../../components/KddiPending'
 import { measureLabel } from '../../../lib/real'
 import type { MarketVoiceData } from '../../../types/market'
+import type { TransportFile } from '../../../types/transport'
+import { AccessCard } from './AccessCard'
 
 const S1 = '#3987e5'
 const AXIS = { fill: '#7f8ba3', fontSize: 10, fontFamily: 'IBM Plex Mono' }
@@ -38,6 +40,8 @@ interface Props {
   frame: NodeFrame | undefined
   live: LiveData | null
   routes: RoutesFile | null
+  transport?: TransportFile | null
+  hubName?: [string, string]
   dashboard: DashboardData | null
   economics: RegionalEconomics | null
   market?: MarketVoiceData | null
@@ -75,7 +79,7 @@ function Econ({ f }: { f: EconomicsFigures }) {
   )
 }
 
-export function NodeDrawer({ node, frame, live, routes, dashboard, economics, market, t, onClose, onOpenNode }: Props) {
+export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['Fukui Station', '福井駅'], dashboard, economics, market, t, onClose, onOpenNode }: Props) {
   const { t: tr, lang } = useLang()
   const measure = node.measure
   const est = isEstimatedMeasure(measure) || measure === 'vehicles'
@@ -335,6 +339,8 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
             </div>
           </>
         )}
+
+        {transport?.nodes[node.id] && <AccessCard data={transport} nodeId={node.id} hubName={hubName} />}
 
         {market && (market.reviews[node.id] || market.survey[node.id]) && (
           <>

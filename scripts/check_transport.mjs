@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+// Validate public/data/transport.json, transport_map.json and transport_trends.json
+// (transport/build_transport.py, transport/collect_trends.py). Each file is optional:
+// a missing file is OK (the app hides the card or layer), a malformed one exits 1
+// so the deploy stops and the previous site stays up.
+import { existsSync, readFileSync } from 'node:fs'
+
+const dir = process.argv[2] ?? 'public/data'
+const errors = []
+const fail = (msg) => errors.push(msg)
+const TIME = /^\d{2}:\d{2}$/
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v)
+const isLatLon = (p) => Array.isArray(p) && p.length === 2 && isNum(p[0]) && isNum(p[1]) && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180
+
+function load(name) {
+  const path = `${dir}/${name}`
+  if (!existsSync(path)) {
+    console.log(`OK: ${path} absent`)
+    return null
+  }
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'))
+  } catch (e) {
+    fail(`${path}: invalid JSON (${e.message})`)
+    return null
+  }
+}
+
+const tr = load('transport.json')
+if (tr) {
+  if (typeof tr.hub !== 'string') fail('transport.json: hub missing')
+  if (!Array.isArray(tr.sources) || tr.sources.length === 0) fail('transport.json: sources missing')
+  for (const s of tr.sources ?? []) {
+    if (!['ok', 'check', 'research_only'].includes(s.publish_status)) fail(`transport.json: source ${s.id} publish_status ${s.publish_status}`)
+    if (!s.licence) fail(`transport.json: source ${s.id} has no licence`)
+  }
+  if (typeof tr.nodes !== 'object' || !tr.nodes) fail('transport.json: nodes missing')
+  for (const [id, n] of Object.entries(tr.nodes ?? {})) {
+    if (!isNum(n.anchor?.lat) || !isNum(n.anchor?.lon)) fail(`transport.json: ${id} anchor`)
+    for (const [day, d] of Object.entries(n.days ?? {})) {
+      const where = `transport.json: ${id}.${day}`
+      if (!Number.isInteger(d.departures) || d.departures < 0) fail(`${where} departures`)
+      for (const k of ['first_departure', 'last_departure', 'first_arrival', 'last_arrival']) {
+        if (d[k] != null && !TIME.test(d[k])) fail(`${where}.${k} = ${d[k]}`)
+      }
+      if (d.to_hub && !TIME.test(d.to_hub.leave)) fail(`${where}.to_hub.leave`)
+      if (d.from_hub && !isNum(d.from_hub.fastest_min)) fail(`${where}.from_hub.fastest_min`)
+    }
+    for (const s of n.stops ?? []) if (!isLatLon([s.lat, s.lon])) fail(`transport.json: ${id} stop ${s.id}`)
+  }
+}
+
+const map = load('transport_map.json')
+if (map) {
+  for (const l of map.lines ?? []) {
+    if (!Array.isArray(l.path) || l.path.length < 2 || !l.path.every(isLatLon)) fail(`transport_map.json: line ${l.id} path`)
+  }
+  for (const s of map.stops ?? []) if (!isLatLon([s.lat, s.lon])) fail(`transport_map.json: stop ${s.id}`)
+  for (const [id, rings] of Object.entries(map.walk_areas?.nodes ?? {})) {
+    for (const [m, ring] of Object.entries(rings)) {
+      if (!Array.isArray(ring) || ring.length < 3 || !ring.every(isLatLon)) fail(`transport_map.json: walk area ${id} ${m} min`)
+    }
+  }
+}
+
+const trends = load('transport_trends.json')
+if (trends) {
+  const n = trends.weeks?.length ?? 0
+  if (!n) fail('transport_trends.json: weeks missing')
+  for (const t of trends.terms ?? []) {
+    if (!Array.isArray(t.values) || t.values.length !== n || !t.values.every((v) => isNum(v) && v >= 0 && v <= 100)) {
+      fail(`transport_trends.json: ${t.term} values`)
+    }
+  }
+}
+
+if (errors.length) {
+  for (const e of errors) console.error(`ERROR: ${e}`)
+  process.exit(1)
+}
+console.log('OK: transport files valid')
