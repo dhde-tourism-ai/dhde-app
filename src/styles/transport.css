@@ -694,140 +694,115 @@
 }
 
 /* =====================================================================
-   Report canvas: a light, framed report (sidebar + banner + pages), the
-   app's dark tokens re-pointed to a light palette for this page only.
+   Report layout on the dashboard's own dark theme: a page sidebar, a title
+   bar, then the selected page. Surfaces, lines and accent are the app tokens.
    ===================================================================== */
 .tx-page {
   max-width: 1500px;
-  padding-top: var(--sp-4);
+  padding-top: var(--sp-5);
 }
 
 .tx-canvas {
-  color-scheme: light;
-  --surface: #ffffff;
-  --surface-2: #f6f2fc;
-  --surface-3: #ffffff;
-  --bg-2: #f4f0fa;
-  --text: #1f1633;
-  --text-2: #4a4060;
-  --muted: #7a7090;
-  --line: rgba(60, 35, 110, 0.1);
-  --line-strong: rgba(60, 35, 110, 0.2);
-  --accent: #6a3fb5;
-  --accent-strong: #5b2ea6;
-  --accent-soft: #efe8fb;
-  --warn: #b45309;
-  --warn-text: #a14a06;
-  --tx-hi: #b45309;
-  --s1: #2a78d6;
-  --s3: #7048c8;
+  --tx-hi: var(--warn);
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  min-height: calc(100vh - 120px);
-  background: #ece6f6;
-  border-radius: 22px;
-  overflow: hidden;
-  color: var(--text);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  gap: 24px;
+  align-items: start;
 }
 
 /* sidebar */
 .tx-side {
+  position: sticky;
+  top: 72px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 26px 18px;
-  background: linear-gradient(180deg, #3d1f78 0%, #5b34a6 55%, #6f45bd 100%);
-  color: #fff;
+  gap: 18px;
+  padding: 18px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 
 .tx-brand {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 2px;
-  padding: 14px 0;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px 14px;
+  border-bottom: 1px solid var(--line);
 }
 
 .tx-brand-mark {
   font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 750;
-  letter-spacing: 0.04em;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .tx-brand-sub {
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.8;
+  color: var(--muted);
 }
 
 .tx-nav {
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
 .tx-nav-btn {
   font: inherit;
   font-size: 13.5px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-2);
   background: transparent;
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  padding: 11px 14px;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 12px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .tx-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .tx-nav-btn[aria-current='page'] {
-  background: #f4effb;
-  border-color: #f4effb;
-  color: #3d1f78;
-  box-shadow: 0 4px 14px rgba(20, 0, 60, 0.3);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .tx-side-foot {
-  margin: auto 0 0;
+  margin: 0;
+  padding: 12px 6px 0;
+  border-top: 1px solid var(--line);
   font-size: 11.5px;
   line-height: 1.5;
-  opacity: 0.75;
-  text-align: center;
+  color: var(--muted);
 }
 
 /* main area */
 .tx-main {
-  padding: 0 28px 28px;
   min-width: 0;
 }
 
 .tx-banner {
-  display: flex;
-  justify-content: center;
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .tx-banner h1 {
   margin: 0;
-  padding: 14px 48px;
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(90deg, #5b34a6, #8a63cc);
-  border-radius: 0 0 18px 18px;
-  box-shadow: 0 6px 18px rgba(70, 30, 140, 0.25);
-  text-align: center;
+  letter-spacing: -0.015em;
+  color: var(--text);
 }
 
-/* detail pages inside the canvas: cards on the lavender ground */
 .tx-canvas .tx-exhibit {
   padding-top: 0;
 }
@@ -837,96 +812,87 @@
   border-bottom: 0;
 }
 
-.tx-canvas .tx-ex-body,
-.tx-canvas .tx-finding {
-  box-shadow: 0 2px 10px rgba(60, 30, 110, 0.06);
-}
-
 .tx-canvas .tx-aside,
 .tx-canvas .tx-notes {
   margin-top: 0;
   padding: 22px 24px;
-  background: #fff;
-  border: 0;
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 
 .tx-canvas .tx-notes {
   margin-top: 16px;
 }
 
-.tx-canvas .tx-tl-bar:not(.hi),
-.tx-canvas .tx-key-bar:not(.hi) {
-  background: #8a63cc;
-}
-
 /* ---------- overview (TransportOverview.tsx) ---------- */
 .txo-kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .txo-kpi {
-  background: #fff;
-  border-radius: 14px;
-  border-left: 6px solid #4b2a8f;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 16px 18px 14px;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(60, 30, 110, 0.08);
 }
 
 .txo-kpi-value {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 30px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.1;
-  color: #3d1f78;
+  color: var(--text);
 }
 
 .txo-kpi-label {
   margin-top: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #5d5475;
+  font-size: 12.5px;
+  color: var(--muted);
 }
 
 .txo-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: 270px 290px;
-  gap: 16px;
+  grid-template-rows: 270px 290px 270px;
+  gap: 14px;
 }
 
 .txo-card {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: #fff;
-  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
   padding: 14px 16px 12px;
-  box-shadow: 0 2px 10px rgba(60, 30, 110, 0.08);
 }
 
 .txo-card-title {
   margin: 0 0 6px;
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #1f1633;
-  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .txo-card-body {
   position: relative;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.txo-a {
-  grid-column: span 4;
+.txo-card-body .recharts-responsive-container {
+  flex: 1;
+  min-height: 0;
 }
 
+.txo-a,
 .txo-b {
   grid-column: span 4;
 }
@@ -940,13 +906,8 @@
   grid-column: span 8;
 }
 
-.txo-c .txo-card-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.txo-c .recharts-responsive-container {
-  flex: 1;
+.txo-e {
+  grid-column: span 12;
 }
 
 .txo-note,
@@ -954,11 +915,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
   gap: 4px 14px;
   margin: 6px 0 0;
   font-size: 12px;
-  color: #5d5475;
+  color: var(--text-2);
 }
 
 .txo-note i,
@@ -971,84 +931,72 @@
   vertical-align: -1px;
 }
 
-.txo-d .txo-card-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.txo-d .recharts-responsive-container {
-  flex: 1;
+.txo-legend-note {
+  margin-left: auto;
+  color: var(--muted);
 }
 
 /* slicers */
 .txo-slicers {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 220px)) 1fr;
-  gap: 16px;
-  align-items: stretch;
-  margin-top: 18px;
-  padding: 14px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(60, 30, 110, 0.08);
+  gap: 14px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 
 .txo-slicer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #5b34a6, #6f45bd);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .txo-slicer select {
   font: inherit;
+  font-size: 13.5px;
   font-weight: 500;
-  font-size: 13px;
-  color: #1f1633;
-  background: #fff;
-  border: 0;
-  border-radius: 6px;
-  padding: 6px 8px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px 10px;
   cursor: pointer;
 }
 
-.txo-source {
-  align-self: center;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #7a7090;
-  padding: 0 8px;
+.txo-slicer select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-.tx-canvas .recharts-text {
-  font-family: var(--font-sans, inherit);
+.txo-source {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  padding: 0 8px;
 }
 
 @media (max-width: 1100px) {
   .tx-page {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .tx-canvas {
     grid-template-columns: minmax(0, 1fr);
-    border-radius: 16px;
+    gap: 14px;
   }
 
   .tx-side {
+    position: static;
     min-width: 0;
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .tx-nav {
-    min-width: 0;
-    scrollbar-width: none;
+    padding: 8px;
   }
 
   .tx-brand,
@@ -1058,8 +1006,9 @@
 
   .tx-nav {
     display: flex;
+    min-width: 0;
     overflow-x: auto;
-    gap: 8px;
+    scrollbar-width: none;
   }
 
   .tx-nav-btn {
@@ -1068,18 +1017,12 @@
     font-size: 12.5px;
   }
 
-  .tx-main {
-    padding: 0 14px 18px;
-  }
-
-  .tx-banner {
-    margin-top: 14px;
+  .tx-nav-btn[aria-current='page'] {
+    box-shadow: none;
   }
 
   .tx-banner h1 {
-    font-size: 16px;
-    padding: 12px 16px;
-    border-radius: 12px;
+    font-size: 21px;
   }
 
   .txo-kpis {
@@ -1092,21 +1035,27 @@
   }
 
   .txo-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
   }
 
   .txo-a,
   .txo-b,
   .txo-c,
-  .txo-d {
+  .txo-d,
+  .txo-e {
     grid-column: auto;
     grid-row: auto;
     height: 300px;
   }
 
-  .txo-c {
+  .txo-c,
+  .txo-d {
     height: 340px;
+  }
+
+  .txo-legend-note {
+    margin-left: 0;
   }
 
   .txo-slicers {

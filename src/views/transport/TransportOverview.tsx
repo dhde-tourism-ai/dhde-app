@@ -1,20 +1,29 @@
 import { useMemo, useState } from 'react'
-import { Bar, BarChart, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, Treemap, XAxis, YAxis } from 'recharts'
-import type { DayType, ModeId, TransportFile, TransportModesFile } from '../../types/transport'
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, Treemap, XAxis, YAxis } from 'recharts'
+import type { DayType, ModeId, TransportFile, TransportModesFile, TransportTrendsFile } from '../../types/transport'
 import { useLang } from '../../lib/i18n'
 import { DAY_LABEL, EARLY_LAST_RETURN_MIN, clockLabel, clockMinutes } from '../../lib/transport'
 
 /**
- * Mode colours on the light report canvas, validated with the dataviz
- * validator against #ffffff (all checks pass, adjacent order as listed).
+ * Mode colours: the dashboard's categorical tokens (tokens.css --s1..--s4),
+ * validated in this order against --surface (#121c2f): all checks pass.
  * Other is a recessive neutral.
  */
 const MODE_COLOURS: Record<ModeId, string> = {
-  own_car: '#7048c8',
-  rental_car: '#e0782f',
-  bus: '#2a78d6',
-  train: '#1a9a6c',
-  other: '#b9b3c9',
+  own_car: '#199e70',
+  rental_car: '#c98500',
+  bus: '#3987e5',
+  train: '#d95926',
+  other: '#4a5770',
+}
+/** Trend lines: the first five categorical slots, in order (validated, adjacent pairs). */
+const TREND_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181']
+const TERM_JA: Record<string, string> = {
+  'Echizen Railway': 'えちぜん鉄道',
+  'Keifuku Bus': '京福バス',
+  'Hokuriku Shinkansen Fukui': '北陸新幹線 福井',
+  'Car rental Fukui': 'レンタカー 福井',
+  'Bike rental Fukui': 'レンタサイクル 福井',
 }
 const MODE_ORDER: ModeId[] = ['own_car', 'rental_car', 'bus', 'train', 'other']
 const MODE_NAME: Record<ModeId, [string, string]> = {
@@ -24,10 +33,14 @@ const MODE_NAME: Record<ModeId, [string, string]> = {
   train: ['Train', '鉄道'],
   other: ['Other', 'その他'],
 }
-const PURPLE = '#6a3fb5'
-const EARLY = '#b45309'
-const AXIS = { fill: '#5d5475', fontSize: 12 }
-const TIP = { background: '#ffffff', border: '1px solid #ddd5ee', borderRadius: 8, fontSize: 12.5, color: '#1f1633', boxShadow: '0 6px 20px rgba(60,30,110,.12)' }
+const TILE = '#2f5f9e'
+const LATER = '#5a6782'
+const EARLY = '#fab219'
+const INK = '#e9eef8'
+const GRID = '#34425e'
+const AXIS = { fill: '#7f8ba3', fontSize: 12 }
+const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12.5, color: '#e9eef8' }
+const CURSOR = { fill: 'rgba(160,185,230,.06)' }
 type Period = 'last_30_days' | 'year_2025'
 
 const compact = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(2)}M` : v >= 1000 ? `${Math.round(v / 1000)}K` : `${Math.round(v)}`)
@@ -60,7 +73,19 @@ function Slicer({ label, value, options, onChange }: { label: string; value: str
 }
 
 /** Overview page of the transport report: KPI row, four charts, slicers. */
-export function TransportOverview({ data, modes, name, onOpenMap }: { data: TransportFile; modes: TransportModesFile | null; name: (id: string) => string; onOpenMap: (id: string) => void }) {
+export function TransportOverview({
+  data,
+  modes,
+  trends,
+  name,
+  onOpenMap,
+}: {
+  data: TransportFile
+  modes: TransportModesFile | null
+  trends: TransportTrendsFile | null
+  name: (id: string) => string
+  onOpenMap: (id: string) => void
+}) {
   const { t } = useLang()
   const [period, setPeriod] = useState<Period>('last_30_days')
   const [day, setDay] = useState<DayType>('saturday')
@@ -99,11 +124,21 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
         .sort((a, b) => b.size - a.size)
     : []
   const backBars = sites
-    .map((id) => ({ id, name: lastBack(id) == null ? `${name(id)} ${t('(no bus)', '（バスなし）')}` : name(id), value: lastBack(id), label: clockLabel(data.nodes[id].days[day]?.to_hub?.leave) }))
+    .map((id) => ({
+      id,
+      name: lastBack(id) == null ? `${name(id)} ${t('(no bus)', '（バスなし）')}` : name(id),
+      value: lastBack(id),
+      label: clockLabel(data.nodes[id].days[day]?.to_hub?.leave),
+    }))
     .sort((a, b) => (a.value ?? 9999) - (b.value ?? 9999))
   const stacked = modes
-    ? modeSites.map((id) => ({ id, name: name(id), ...Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])) }))
+    ? modeSites.map((id) => ({
+        id,
+        name: name(id),
+        ...Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])),
+      }))
     : []
+  const trendRows = trends ? trends.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) : []
   const periodLabel = period === 'last_30_days' ? t('Last 30 days', '直近30日') : t('2025', '2025年')
 
   const kpis = [
@@ -112,7 +147,10 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
     { value: ptShare != null ? `${Math.round(ptShare * 100)}%` : '—', label: t('Arrive by bus or train', 'バス・鉄道で来訪') },
     site === 'all'
       ? { value: `${early.length} / ${linked.length}`, label: t('Sites: last bus back by 17:30', '最終便17:30までの地点') }
-      : { value: lastBack(site) != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'), label: t('Last bus back to Fukui Stn', '福井駅への最終便') },
+      : {
+          value: lastBack(site) != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'),
+          label: t('Last bus back to Fukui Stn', '福井駅への最終便'),
+        },
     { value: String(buses), label: t(`Buses a day · ${DAY_LABEL[day][0]}`, `バス本数/日・${DAY_LABEL[day][1]}`) },
   ]
 
@@ -131,14 +169,14 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
         <Card title={t('Visitors by mode', '交通手段別の来訪者')} className="txo-a">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={modeBars} margin={{ top: 22, right: 8, left: 8, bottom: 0 }}>
-              <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: '#ddd5ee' }} interval={0} />
+              <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} interval={0} />
               <YAxis hide />
-              <Tooltip cursor={{ fill: 'rgba(106,63,181,.06)' }} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('visitors', '人')]} />
+              <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('visitors', '人')]} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={56} isAnimationActive={false}>
                 {modeBars.map((d) => (
                   <Cell key={d.id} fill={MODE_COLOURS[d.id]} />
                 ))}
-                <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v))} style={{ fill: '#1f1633', fontSize: 12, fontWeight: 600 }} />
+                <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v))} style={{ fill: INK, fontSize: 12, fontWeight: 600 }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -149,14 +187,14 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
             <Treemap
               data={tree}
               dataKey="size"
-              stroke="#ffffff"
+              stroke="#121c2f"
               isAnimationActive={false}
               content={(p: { x?: number; y?: number; width?: number; height?: number; name?: string; size?: number; index?: number; id?: string }) => {
                 const { x = 0, y = 0, width = 0, height = 0, name: n, size, id } = p
-                const fill = PURPLE
+                const fill = TILE
                 return (
                   <g style={{ cursor: id ? 'pointer' : undefined }} onClick={() => id && setSite(id)}>
-                    <rect x={x} y={y} width={width} height={height} fill={fill} stroke="#fff" strokeWidth={2} rx={4} />
+                    <rect x={x} y={y} width={width} height={height} fill={fill} stroke="#121c2f" strokeWidth={2} rx={4} />
                     {width > 56 && height > 34 && (
                       <>
                         <text x={x + 8} y={y + 18} fill="#fff" stroke="none" fontSize={12.5} fontWeight={600}>
@@ -177,19 +215,43 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
         <Card title={t(`Last bus back to Fukui Station · ${DAY_LABEL[day][0]}`, `福井駅への最終便・${DAY_LABEL[day][1]}`)} className="txo-c">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))} layout="vertical" margin={{ top: 22, right: 56, left: 8, bottom: 8 }}>
-              <XAxis type="number" domain={[6 * 60, 22 * 60]} ticks={[360, 600, 840, 1080, 1320]} tickFormatter={hhmm} tick={AXIS} tickLine={false} axisLine={{ stroke: '#ddd5ee' }} />
+              <XAxis
+                type="number"
+                domain={[6 * 60, 22 * 60]}
+                ticks={[360, 600, 840, 1080, 1320]}
+                tickFormatter={hhmm}
+                tick={AXIS}
+                tickLine={false}
+                axisLine={{ stroke: GRID }}
+              />
               <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
-              <ReferenceLine x={EARLY_LAST_RETURN_MIN} stroke={EARLY} strokeDasharray="4 4" label={{ value: '17:30', position: 'top', fill: EARLY, fontSize: 11 }} />
-              <Tooltip cursor={{ fill: 'rgba(106,63,181,.06)' }} contentStyle={TIP} formatter={(_, __, item) => [(item?.payload as { label?: string })?.label ?? '—', t('last bus', '最終便')]} />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={22} isAnimationActive={false} onClick={(d) => onOpenMap((d as unknown as { id: string }).id)} style={{ cursor: 'pointer' }}>
+              <ReferenceLine
+                x={EARLY_LAST_RETURN_MIN}
+                stroke={EARLY}
+                strokeDasharray="4 4"
+                label={{ value: '17:30', position: 'top', fill: EARLY, fontSize: 11 }}
+              />
+              <Tooltip
+                cursor={CURSOR}
+                contentStyle={TIP}
+                formatter={(_, __, item) => [(item?.payload as { label?: string })?.label ?? '—', t('last bus', '最終便')]}
+              />
+              <Bar
+                dataKey="value"
+                radius={[0, 4, 4, 0]}
+                barSize={22}
+                isAnimationActive={false}
+                onClick={(d) => onOpenMap((d as unknown as { id: string }).id)}
+                style={{ cursor: 'pointer' }}
+              >
                 {backBars.map((b) => (
-                  <Cell key={b.id} fill={b.value == null ? 'transparent' : b.value <= EARLY_LAST_RETURN_MIN ? EARLY : PURPLE} />
+                  <Cell key={b.id} fill={b.value == null ? 'transparent' : b.value <= EARLY_LAST_RETURN_MIN ? EARLY : LATER} />
                 ))}
                 <LabelList
                   dataKey="label"
                   position="right"
                   formatter={(v) => (v === '—' ? '' : String(v))}
-                  style={{ fill: '#1f1633', fontSize: 12.5, fontWeight: 600 }}
+                  style={{ fill: INK, fontSize: 12.5, fontWeight: 600 }}
                 />
               </Bar>
             </BarChart>
@@ -205,15 +267,20 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
             <BarChart data={stacked} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }} barCategoryGap={8}>
               <XAxis type="number" domain={[0, 100]} hide />
               <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
-              <Tooltip cursor={{ fill: 'rgba(106,63,181,.06)' }} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
+              <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
               {MODE_ORDER.map((m) => (
-                <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOURS[m]} isAnimationActive={false} stroke="#fff" strokeWidth={1.5}>
-                  <LabelList dataKey={m} position="center" formatter={(v) => (Number(v) >= 10 ? `${Math.round(Number(v))}%` : '')} style={{ fill: '#fff', fontSize: 11.5, fontWeight: 600 }} />
+                <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOURS[m]} isAnimationActive={false} stroke="#121c2f" strokeWidth={2}>
+                  <LabelList
+                    dataKey={m}
+                    position="center"
+                    formatter={(v) => (Number(v) >= 10 ? `${Math.round(Number(v))}%` : '')}
+                    style={{ fill: '#0a1120', fontSize: 11.5, fontWeight: 700 }}
+                  />
                 </Bar>
               ))}
             </BarChart>
           </ResponsiveContainer>
-          <div className="txo-legend">
+          <div className="txo-legend txo-legend-d">
             {MODE_ORDER.map((m) => (
               <span key={m}>
                 <i style={{ background: MODE_COLOURS[m] }}></i>
@@ -222,6 +289,46 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
             ))}
           </div>
         </Card>
+        {trends && trends.terms.length > 0 && (
+          <Card
+            title={t('Search interest in transport, Google Trends (last 12 months)', '交通に関する検索関心・Googleトレンド（直近12か月）')}
+            className="txo-e"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendRows} margin={{ top: 8, right: 16, left: -18, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(160,185,230,.08)" vertical={false} />
+                <XAxis dataKey="week" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} interval={7} />
+                <YAxis tick={AXIS} tickLine={false} axisLine={false} domain={[0, 100]} ticks={[0, 50, 100]} />
+                <Tooltip contentStyle={TIP} cursor={{ stroke: GRID }} />
+                {trends.terms.map((x, i) => (
+                  <Line
+                    key={x.term}
+                    dataKey={x.label}
+                    name={t(x.label, TERM_JA[x.label] ?? x.term)}
+                    stroke={TREND_COLOURS[i % TREND_COLOURS.length]}
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="txo-legend">
+              {trends.terms.map((x, i) => (
+                <span key={x.term}>
+                  <i style={{ background: TREND_COLOURS[i % TREND_COLOURS.length] }}></i>
+                  {t(x.label, TERM_JA[x.label] ?? x.term)}
+                </span>
+              ))}
+              <span className="txo-legend-note">
+                {t(
+                  `Index, 100 = busiest week of any term · not traveller counts · collected ${trends.generated_at.slice(0, 10)}`,
+                  `指数（いずれかの語の最多週＝100）・利用者数ではない・${trends.generated_at.slice(0, 10)}取得`,
+                )}
+              </span>
+            </div>
+          </Card>
+        )}
       </div>
 
       <div className="txo-slicers">
@@ -240,9 +347,17 @@ export function TransportOverview({ data, modes, name, onOpenMap }: { data: Tran
           onChange={(v) => setDay(v as DayType)}
           options={(Object.keys(DAY_LABEL) as DayType[]).map((k) => [k, t(...DAY_LABEL[k])])}
         />
-        <Slicer label={t('Site', '地点')} value={site} onChange={setSite} options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]} />
+        <Slicer
+          label={t('Site', '地点')}
+          value={site}
+          onChange={setSite}
+          options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]}
+        />
         <div className="txo-source">
-          {t('Estimates from the Fukui Prefecture tourism survey × site visitor counts; bus timetables (GTFS-JP). See Notes.', '福井県観光アンケート×各地点の来訪者数による推計、バス時刻表（GTFS-JP）。注記参照。')}
+          {t(
+            'Estimates from the Fukui Prefecture tourism survey × site visitor counts; bus timetables (GTFS-JP). See Notes.',
+            '福井県観光アンケート×各地点の来訪者数による推計、バス時刻表（GTFS-JP）。注記参照。',
+          )}
         </div>
       </div>
     </div>

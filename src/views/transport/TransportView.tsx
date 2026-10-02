@@ -184,7 +184,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             <h1>{t('Visitor Transport Dashboard · Fukui priority sites', '来訪者交通ダッシュボード・福井の重点地点')}</h1>
           </header>
 
-          {tab === 'overview' && <TransportOverview data={data} modes={modes} name={name} onOpenMap={onOpenMap} />}
+          {tab === 'overview' && <TransportOverview data={data} modes={modes} trends={trends} name={name} onOpenMap={onOpenMap} />}
 
           {tab === 'findings' && (
             <section className="tx-summary" aria-label={t('Key findings', '要点')}>
