@@ -193,6 +193,16 @@ export default function MapView({ registry, dashboard, economics, economicsError
 
   const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.now_index ?? live?.observed_until ?? 0))
 
+  // A shared ?t=2026-10-02T14 is a JST date and hour: once the timeline is known, turn it into
+  // its index (ignored when that hour isn't in the timeline any more).
+  const tAt = useRef(url.tAt)
+  useEffect(() => {
+    if (!tAt.current || !live) return
+    const i = Math.round((Date.parse(`${tAt.current}:00:00+09:00`) - Date.parse(`${live.start}T00:00:00+09:00`)) / 3600000)
+    tAt.current = null
+    if (i >= 0 && i < live.hours) setT(i)
+  }, [live])
+
   // The timeline follows the clock, so at midnight it starts a day later. A picked hour is an
   // index into it: shift it back by the same hours so it stays on the same date and hour.
   const prevStart = useRef(live?.start)
