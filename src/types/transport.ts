@@ -19,10 +19,6 @@ export interface TransportSource {
   agency: string
   valid_from: string | null
   valid_to: string | null
-  /** Ended before the reference week. */
-  expired: boolean
-  /** False when expired: the timetable is left out of every number. */
-  used: boolean
 }
 
 /** One leg of an itinerary: a bus or train ride, or a walk between stops. */
@@ -95,7 +91,6 @@ export interface TransportDay {
   /** Kanazawa, Kyoto: estimated JR leg + change + the fastest local journey on this day. */
   from_far: Record<string, FarJourney>
   feeds_used: string[]
-  expired_feeds: string[]
 }
 
 export interface TransportNode {

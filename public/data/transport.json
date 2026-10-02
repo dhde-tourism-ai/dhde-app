@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-02T05:55:01Z",
+ "generated_at": "2026-10-02T06:02:22Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -49,27 +49,7 @@
    "publish_status": "check",
    "agency": "京福バス",
    "valid_from": "2026-06-01",
-   "valid_to": "2027-05-31",
-   "expired": false,
-   "used": true
-  },
-  {
-   "id": "fukutetsu_bus",
-   "name": "Fukutetsu Bus (routes)",
-   "name_ja": "福鉄バス（路線バス）",
-   "mode": "bus",
-   "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/gtfs_fukutetu.zip",
-   "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
-   "licence": "CC BY 4.0",
-   "licence_url": "https://creativecommons.org/licenses/by/4.0/",
-   "caveat": null,
-   "caveat_ja": null,
-   "publish_status": "ok",
-   "agency": "福井鉄道株式会社",
-   "valid_from": "2025-10-01",
-   "valid_to": "2026-03-31",
-   "expired": true,
-   "used": false
+   "valid_to": "2027-05-31"
   },
   {
    "id": "katsuyama_city_bus",
@@ -85,9 +65,7 @@
    "publish_status": "ok",
    "agency": "勝山市コミュニティ",
    "valid_from": "2026-03-19",
-   "valid_to": "2027-03-31",
-   "expired": false,
-   "used": true
+   "valid_to": "2027-03-31"
   },
   {
    "id": "eiheiji_town_bus",
@@ -103,9 +81,7 @@
    "publish_status": "ok",
    "agency": "永平寺町",
    "valid_from": "2026-04-26",
-   "valid_to": "2027-03-31",
-   "expired": false,
-   "used": true
+   "valid_to": "2027-03-31"
   },
   {
    "id": "sakai_city_bus",
@@ -121,27 +97,7 @@
    "publish_status": "ok",
    "agency": "坂井市コミュニティバス",
    "valid_from": "2023-10-01",
-   "valid_to": "2027-03-31",
-   "expired": false,
-   "used": true
-  },
-  {
-   "id": "fukutetsu_echitetsu_rail",
-   "name": "Fukui Railway + Echizen Railway (research GTFS)",
-   "name_ja": "福井鉄道・えちぜん鉄道（研究用GTFS）",
-   "mode": "rail",
-   "url": "https://gtfs-gis.jp/gtfs4research/gtfs-fukutetsu-echitetsu20241001.zip",
-   "page": "https://gtfs-gis.jp/gtfs4research/",
-   "licence": "Research and survey use only (調査・研究目的に限る); not official, not operator-approved",
-   "licence_url": "https://gtfs-gis.jp/gtfs4research/",
-   "caveat": "Built by the University of Tokyo (Ito lab) from the October 2024 timetable; valid to 14 March 2025, so times can be out of date. Research use only: the published dashboard needs the operators' own data or their approval.",
-   "caveat_ja": "東京大学伊藤研究室が2024年10月ダイヤから作成した研究用データ（有効期限2025年3月14日）。時刻が古い可能性がある。調査・研究目的に限るため、公開ダッシュボードには事業者のデータか許諾が必要。",
-   "publish_status": "research_only",
-   "agency": "福井鉄道",
-   "valid_from": "2024-10-01",
-   "valid_to": "2025-03-14",
-   "expired": true,
-   "used": false
+   "valid_to": "2027-03-31"
   }
  ],
  "nodes": {
@@ -378,8 +334,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "saturday": {
      "departures": 35,
@@ -597,8 +552,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "sunday": {
      "departures": 35,
@@ -804,8 +758,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     }
    },
    "stops": [
@@ -1144,8 +1097,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "saturday": {
      "departures": 265,
@@ -1397,8 +1349,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "sunday": {
      "departures": 255,
@@ -1636,8 +1587,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     }
    },
    "stops": [
@@ -1847,8 +1797,8 @@
     "label_ja": "福井県立恐竜博物館"
    },
    "radius_m": 800,
-   "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings). Echizen Railway to Katsuyama station is not counted: its only open timetable has expired.",
-   "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道（勝山駅）はオープンな時刻表が期限切れのため含めていない。",
+   "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings). Echizen Railway to Katsuyama station is not counted: it has no open timetable.",
+   "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道（勝山駅）はオープンな時刻表がないため含めていない。",
    "days": {
     "weekday": {
      "departures": 7,
@@ -2028,8 +1978,7 @@
      "feeds_used": [
       "katsuyama_city_bus",
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "saturday": {
      "departures": 9,
@@ -2144,8 +2093,7 @@
      "feeds_used": [
       "katsuyama_city_bus",
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "sunday": {
      "departures": 8,
@@ -2260,8 +2208,7 @@
      "feeds_used": [
       "katsuyama_city_bus",
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     }
    },
    "stops": [
@@ -2292,8 +2239,8 @@
     "label_ja": "レインボーライン"
    },
    "radius_m": 800,
-   "note": "A toll road: the summit park is reached by car. The seasonal Gokoichi bus (ゴコイチバス, Fukui Railway) from JR Mikata station is in the Fukutetsu Bus timetable, which expired on 31 Mar 2026, so it is not used here; JR Obama Line trains are not open data.",
-   "note_ja": "有料道路のため山頂公園へは車で。JR三方駅からの季節運行のゴコイチバス（福井鉄道）は福鉄バスの時刻表に含まれるが、2026年3月31日で期限切れのため使用していない。JR小浜線はオープンデータでない。",
+   "note": "A toll road: the summit park is reached by car. JR Obama Line trains (Mikata, Kiyama) and the seasonal summit bus have no open timetable.",
+   "note_ja": "有料道路のため山頂公園へは車で。JR小浜線（三方・気山）と季節運行の山頂バスにはオープンな時刻表がない。",
    "days": {
     "weekday": {
      "departures": 0,
@@ -2318,8 +2265,7 @@
        "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
       }
      },
-     "feeds_used": [],
-     "expired_feeds": []
+     "feeds_used": []
     },
     "saturday": {
      "departures": 0,
@@ -2344,8 +2290,7 @@
        "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
       }
      },
-     "feeds_used": [],
-     "expired_feeds": []
+     "feeds_used": []
     },
     "sunday": {
      "departures": 0,
@@ -2370,8 +2315,7 @@
        "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
       }
      },
-     "feeds_used": [],
-     "expired_feeds": []
+     "feeds_used": []
     }
    },
    "stops": [],
@@ -2607,8 +2551,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "saturday": {
      "departures": 35,
@@ -2823,8 +2766,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "sunday": {
      "departures": 35,
@@ -3030,8 +2972,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     }
    },
    "stops": [
@@ -3350,8 +3291,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "saturday": {
      "departures": 18,
@@ -3486,8 +3426,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     },
     "sunday": {
      "departures": 18,
@@ -3622,8 +3561,7 @@
      },
      "feeds_used": [
       "keifuku_bus"
-     ],
-     "expired_feeds": []
+     ]
     }
    },
    "stops": [

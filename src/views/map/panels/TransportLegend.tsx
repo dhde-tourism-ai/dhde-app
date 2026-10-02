@@ -33,8 +33,8 @@ export function TransportLegend() {
       </div>
       <p className="lg-note">
         {t(
-          'Scheduled bus timetables (GTFS-JP), not live. Rail is not shown: the only open rail timetable has expired. Walking areas: OpenStreetMap via Valhalla. Select a site for journey times and the last service back.',
-          'バスの時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。鉄道はオープンな時刻表が期限切れのため非表示。徒歩圏：OpenStreetMap（Valhalla）。地点を選ぶと所要時間と最終便を表示。',
+          'Scheduled bus timetables (GTFS-JP), not live. Rail is not shown: Echizen Railway and Fukui Railway have no open timetable. Walking areas: OpenStreetMap via Valhalla. Select a site for journey times and the last service back.',
+          'バスの時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。えちぜん鉄道・福井鉄道はオープンな時刻表がないため非表示。徒歩圏：OpenStreetMap（Valhalla）。地点を選ぶと所要時間と最終便を表示。',
         )}
       </p>
       {trends && trends.terms.length > 0 && (

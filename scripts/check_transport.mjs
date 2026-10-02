@@ -52,7 +52,6 @@ if (tr) {
         if (mins(j.arrive) - mins(j.depart) !== j.minutes) fail(`${where}: ${j.depart} -> ${j.arrive} is not ${j.minutes} min`)
       }
       if (d.from_hub && d.from_hub.fastest_min !== d.from_hub.fastest?.minutes) fail(`${where}: fastest_min differs from the fastest trip`)
-      if (!Array.isArray(d.expired_feeds)) fail(`${where}.expired_feeds missing`)
       for (const [city, f] of Object.entries(d.from_far ?? {})) if (f.minutes != null && !isNum(f.minutes)) fail(`${where}.from_far.${city}`)
     }
     for (const s of n.stops ?? []) if (!isLatLon([s.lat, s.lon])) fail(`transport.json: ${id} stop ${s.id}`)

@@ -78,10 +78,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   // No service at all this day, vs buses that run but no open timetable links them to the hub.
   const noService = ranked.filter((id) => !data.nodes[id].days[day]?.departures)
   const noLink = ranked.filter((id) => (data.nodes[id].days[day]?.departures ?? 0) > 0 && !data.nodes[id].days[day]?.to_hub)
-  const used = data.sources.filter((s) => s.used)
-  const keifukuCheck = used.some((s) => s.publish_status === 'check')
-  const dropped = data.sources.filter((s) => !s.used)
-  const noRail = !used.some((s) => s.mode === 'rail') && dropped.some((s) => s.mode === 'rail')
+  const keifukuCheck = data.sources.some((s) => s.publish_status === 'check')
+  const noRail = !data.sources.some((s) => s.mode === 'rail')
   const trendRows =
     trends?.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) ?? []
 
@@ -107,7 +105,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         </div>
       </div>
 
-      {(dropped.length > 0 || keifukuCheck) && (
+      {(noRail || keifukuCheck) && (
         <div className="banner banner-warn tr-banner">
           <Icon name="alert" size={16} />
           <div>
@@ -115,15 +113,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               <p className="tr-banner-p">
                 <strong>{t('Buses only: no rail.', 'バスのみ：鉄道なし。')}</strong>{' '}
                 {t(
-                  'There is no current open timetable for Echizen Railway or Fukui Railway, so every trip on this page is by bus. Where visitors would normally take the train (Katsuyama, Awara Onsen, Tojinbo), the trips shown are much longer than by rail. Rail is Pending until the operators publish a timetable.',
-                  'えちぜん鉄道・福井鉄道の現行のオープンな時刻表がないため、このページの移動はすべてバス。通常は鉄道を使う地点（勝山・あわら温泉・東尋坊）では、表示の所要時間は鉄道よりかなり長い。事業者が時刻表を公開するまで鉄道は「データ待ち」。',
+                  'Echizen Railway and Fukui Railway have no open timetable, so every trip on this page is by bus. Where visitors would normally take the train (Katsuyama, Awara Onsen, Tojinbo), the trips shown are much longer than by rail. Rail is Pending until the operators publish a timetable.',
+                  'えちぜん鉄道・福井鉄道にはオープンな時刻表がないため、このページの移動はすべてバス。通常は鉄道を使う地点（勝山・あわら温泉・東尋坊）では、表示の所要時間は鉄道よりかなり長い。事業者が時刻表を公開するまで鉄道は「データ待ち」。',
                 )}
-              </p>
-            )}
-            {dropped.length > 0 && (
-              <p className="tr-banner-p">
-                {t('Expired timetables, not used: ', '期限切れのため不使用の時刻表：')}
-                {dropped.map((s) => t(`${s.name} (ended ${s.valid_to})`, `${s.name_ja}（${s.valid_to}終了）`)).join(t('; ', '、'))}.
               </p>
             )}
             {keifukuCheck && (
@@ -443,11 +435,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       {s.valid_from ?? '—'} – {s.valid_to ?? '—'}
                     </td>
                     <td>
-                      {s.used ? (
-                        <span className={`tr-lic ${PUBLISH[s.publish_status].cls}`}>{t(PUBLISH[s.publish_status].en, PUBLISH[s.publish_status].ja)}</span>
-                      ) : (
-                        <span className="tr-lic research">{t('Expired · not used', '期限切れ・不使用')}</span>
-                      )}
+                      <span className={`tr-lic ${PUBLISH[s.publish_status].cls}`}>{t(PUBLISH[s.publish_status].en, PUBLISH[s.publish_status].ja)}</span>
                     </td>
                   </tr>
                 ))}

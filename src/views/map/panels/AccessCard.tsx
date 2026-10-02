@@ -44,7 +44,7 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
   const modes = Object.entries(d?.departures_by_mode ?? {}) as [keyof typeof MODE_LABEL, number][]
   const nearest = node.stops?.slice().sort((a, b) => a.distance_m - b.distance_m)[0]
   const caveats = sources.filter((s) => s.caveat)
-  const noRail = !data.sources.some((s) => s.used && s.mode === 'rail') && data.sources.some((s) => !s.used && s.mode === 'rail')
+  const noRail = !data.sources.some((s) => s.mode === 'rail')
 
   return (
     <>
@@ -67,8 +67,8 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
         <p className="access-expired">
           <Icon name="alert" size={12} />{' '}
           {tr(
-            'Buses only: the rail timetables have expired, so trips that would use Echizen Railway or Fukui Railway show the slower bus-only route.',
-            'バスのみ：鉄道の時刻表が期限切れのため、えちぜん鉄道・福井鉄道を使う移動はバスのみの遅い経路で表示。',
+            'Buses only: Echizen Railway and Fukui Railway have no open timetable, so trips that would use the train show the slower bus-only route.',
+            'バスのみ：えちぜん鉄道・福井鉄道にはオープンな時刻表がないため、鉄道を使う移動はバスのみの遅い経路で表示。',
           )}
         </p>
       )}
