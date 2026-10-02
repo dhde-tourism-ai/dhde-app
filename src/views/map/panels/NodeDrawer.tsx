@@ -9,7 +9,7 @@ import type { NodeFrame } from '../../../lib/live'
 import { CONDITION_LABEL, dailyArrivals, dayLabel, routeCongestion, sentimentColour, sentimentLabel, trafficTier } from '../../../lib/live'
 import { routesTouching } from '../../../lib/routes'
 import { econNodeFor, fmtLost } from '../../../lib/economics'
-import { fmtCompact, fmtMetric } from '../../../lib/format'
+import { fmtCompact, fmtDate, fmtMetric } from '../../../lib/format'
 import { useLang } from '../../../lib/i18n'
 import { Icon, WeatherIcon } from '../../../components/icons'
 import { StatusPill } from '../../../components/StatusPill'
@@ -369,7 +369,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                       <span className="eyebrow">{tr(`Instagram, ${market.social[node.id].real!.days} days`, `Instagram（${market.social[node.id].real!.days}日間）`)}</span>
                       <span className="vg-val num">{market.social[node.id].real!.posts}</span>
                       <span className="muted small">
-                        {market.social[node.id].real!.photos} {tr('photos', '写真')} · {tr('to', '〜')} {market.social[node.id].real!.as_of}
+                        {market.social[node.id].real!.photos} {tr('photos', '写真')} · {tr('to', '〜')} {fmtDate(market.social[node.id].real!.as_of, lang)}
                       </span>
                     </>
                   ) : (

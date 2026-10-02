@@ -3,6 +3,7 @@ import { Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import type { MarketVoiceData, SocialNode } from '../../../types/market'
 import type { MapNode } from '../../../lib/nodes'
+import { fmtDate } from '../../../lib/format'
 import type { RegistryNode } from '../../../types/nodes'
 import type { NodeFrame } from '../../../lib/live'
 import { escapeHtml, peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
@@ -341,15 +342,16 @@ const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: 
 ]
 
 function RealSocialMarker({ node: n, real: r, icon }: { node: MapNode; real: NonNullable<SocialNode['real']>; icon: L.DivIcon }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const narrow = useIsNarrow()
   const fmt = (v: number) => v.toLocaleString('en-US')
+  const asOf = fmtDate(r.as_of, lang)
   const captioned = r.posts - r.scripts.none
   return (
     <Marker position={[n.lat, n.lon]} icon={icon}>
       <Tooltip className="map-tip" direction="top" offset={[20, -30]}>
         <strong>
-          {t(n.name, n.name_ja)} · {fmt(r.posts)} {t('Instagram posts', 'Instagram投稿')}, {t(`${r.days} days to ${r.as_of}`, `${r.as_of}までの${r.days}日間`)}
+          {t(n.name, n.name_ja)} · {fmt(r.posts)} {t('Instagram posts', 'Instagram投稿')}, {t(`${r.days} days to ${asOf}`, `${asOf}までの${r.days}日間`)}
         </strong>
         <div className="tip-sub">
           {fmt(r.photos)} {t('photos', '写真')} · {fmt(r.videos)} {t('videos', '動画')} · {t('click for details', 'クリックで詳細')}
@@ -359,7 +361,7 @@ function RealSocialMarker({ node: n, real: r, icon }: { node: MapNode; real: Non
         <div className="feed">
           <div className="tt-head">
             <span>{t(n.name, n.name_ja)} · Instagram</span>
-            <span>{t(`Real · ${r.days} days to ${r.as_of}`, `実データ・${r.as_of}までの${r.days}日間`)}</span>
+            <span>{t(`Real · ${r.days} days to ${asOf}`, `実データ・${asOf}までの${r.days}日間`)}</span>
           </div>
           <div className="feed-stats">
             <span>
