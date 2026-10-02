@@ -191,6 +191,17 @@
   transform: translate(-50%, calc(-100% - var(--r)));
 }
 
+/* Declutter.tsx: from a site to its badge when the badge had to move. */
+.dc-leader {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  transform-origin: 0 50%;
+  background: rgba(201, 212, 255, 0.55);
+  pointer-events: none;
+}
+
 .node-tag.dir-bottom {
   transform: translate(-50%, var(--r));
 }
@@ -368,12 +379,39 @@
   pointer-events: auto;
 }
 
+/* The strip sits between the side panels, so its message needs every pixel: its
+   badge shows only the dot (the same badge, with its words, is on the layers card,
+   the board and the timeline; hover gives the text), and a long message takes a
+   second line instead of being cut. */
+@media (max-width: 1600px) {
+  .status-strip .src-label,
+  .status-strip .src-date {
+    display: none;
+  }
+
+  .status-strip .src-badge {
+    padding: 4px;
+    gap: 0;
+  }
+
+  .ss-msg {
+    white-space: normal;
+    line-height: 1.25;
+    max-height: 2.5em;
+  }
+
+  .status-strip {
+    border-radius: 18px;
+  }
+}
+
 .status-strip {
   position: absolute;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: calc(100% - 800px);
+  /* Between the layers card (12 + 316px) and the board (12 + 348px), with a little air. */
+  max-width: calc(100% - 744px);
   min-width: 320px;
   display: flex;
   align-items: center;
@@ -1424,8 +1462,13 @@ button.al-item:hover {
   }
 
   .sheet-tabs .btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     justify-content: center;
+    gap: 5px;
+    padding-inline: 8px;
+    white-space: nowrap;
+    overflow: hidden;
     background: var(--glass);
     backdrop-filter: blur(10px);
   }

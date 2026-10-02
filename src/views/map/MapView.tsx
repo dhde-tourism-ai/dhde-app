@@ -38,6 +38,7 @@ import { Timeline } from './panels/Timeline'
 import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
 import { HotelsLayer, ReviewsLayer, RsiLayer, SocialLayer, SurveyLayer } from './layers/VoiceMarketLayers'
+import { Declutter } from './Declutter'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const VIEW_BOUNDS: [[number, number], [number, number]] = [
@@ -68,8 +69,9 @@ function FlyTo({ target }: { target: { at: [number, number]; key: number } | nul
 }
 
 /**
- * Keep hover cards inside the visible map: below the status strip and above the
- * timeline. Leaflet positions tooltips with a transform, so the nudge is a margin.
+ * Keep hover cards inside the visible map: below the status strip, above the
+ * timeline and clear of the side panels (layers on the left, the board on the
+ * right). Leaflet positions tooltips with a transform, so the nudge is a margin.
  */
 function KeepCardsInView() {
   const map = useMap()
@@ -79,6 +81,7 @@ function KeepCardsInView() {
     const fit = () => {
       if (!el) return
       el.style.marginTop = ''
+      el.style.marginLeft = ''
       const r = el.getBoundingClientRect()
       const mapBox = map.getContainer().getBoundingClientRect()
       const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
@@ -89,6 +92,20 @@ function KeepCardsInView() {
       if (r.top < top) d = top - r.top
       else if (r.bottom > bottom) d = Math.max(top - r.top, bottom - r.bottom)
       if (d !== 0) el.style.marginTop = `${d}px`
+      // Sideways: the visible part of the side panels (they're empty columns below their cards).
+      const edge = (sel: string, side: 'right' | 'left') =>
+        [...document.querySelectorAll<HTMLElement>(`${sel} > *`)]
+          .map((x) => x.getBoundingClientRect())
+          .filter((b) => b.width > 0 && b.height > 0 && b.bottom > r.top + d && b.top < r.bottom + d)
+          .reduce<number | null>((a, b) => (a === null ? b[side] : side === 'right' ? Math.max(a, b.right) : Math.min(a, b.left)), null)
+      const left = Math.max(mapBox.left, edge('.map-left', 'right') ?? mapBox.left) + 8
+      const right = Math.min(mapBox.right, edge('.map-right', 'left') ?? mapBox.right) - 8
+      let dx = 0
+      if (r.width <= right - left) {
+        if (r.left < left) dx = left - r.left
+        else if (r.right > right) dx = right - r.right
+      }
+      if (dx !== 0) el.style.marginLeft = `${dx}px`
     }
     const schedule = () => {
       cancelAnimationFrame(raf)
@@ -341,6 +358,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {layerOn('nudges') && <NudgeLayer nudges={nudgesShown} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
         <FlyTo target={fly} />
         <KeepCardsInView />
+        <Declutter />
       </MapContainer>
 
       <div className="map-ui">
@@ -397,7 +415,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 )}
               </button>
               <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
-                <Icon name="flag" /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
+                <Icon name="flag" /> {tr('Actions', '推奨')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}
