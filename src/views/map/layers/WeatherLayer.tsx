@@ -58,8 +58,8 @@ export function WeatherLayer({ nodes, frame, showPrecip }: { nodes: MapNode[]; f
                   </div>
                   <div className="tip-sub">
                     {w.hourly === 'observed'
-                      ? t('JMA observation, updated hourly.', '気象庁の観測値（毎時更新）。')
-                      : t('JMA model forecast via Open-Meteo (CC BY 4.0), updated hourly.', '気象庁モデルの予報（Open-Meteo、CC BY 4.0）、毎時更新。')}
+                      ? t('JMA observation (past days).', '気象庁の観測値（過去の日）。')
+                      : t('JMA model forecast via Open-Meteo (CC BY 4.0), refreshed every 30 min.', '気象庁モデルの予報（Open-Meteo、CC BY 4.0）、30分ごとに更新。')}
                   </div>
                 </>
               )}
