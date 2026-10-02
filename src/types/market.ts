@@ -100,6 +100,19 @@ export interface SocialNode {
   comments_24h: number
   avg_sentiment: number
   feed: SocialPost[]
+  /** Set by the real-data merge: Instagram posts tagged at the site in the `days` covered days to as_of.
+   * The layer then shows these counts and hides the demo feed and sentiment (no post text is kept). */
+  real?: {
+    as_of: string
+    days: number
+    posts: number
+    photos: number
+    videos: number
+    likes: number
+    comments: number
+    /** Posts by caption script: a rough market proxy, not nationality. */
+    scripts: { ja: number; ko: number; zh: number; latin: number; none: number }
+  }
 }
 
 export interface ReviewsNode {

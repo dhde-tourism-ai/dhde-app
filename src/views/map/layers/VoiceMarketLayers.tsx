@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
-import type { MarketVoiceData } from '../../../types/market'
+import type { MarketVoiceData, SocialNode } from '../../../types/market'
 import type { MapNode } from '../../../lib/nodes'
+import { fmtDate } from '../../../lib/format'
 import type { RegistryNode } from '../../../types/nodes'
 import type { NodeFrame } from '../../../lib/live'
 import { escapeHtml, peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
@@ -331,6 +332,77 @@ export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVo
 const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#9085e9']
 
 /* ---------------- Social media ---------------- */
+/** Badge edge for real social counts: neutral, since there's no real sentiment yet. */
+const SOCIAL_REAL_EDGE = '#8a94a6'
+const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
+  { k: 'ja', en: 'Japanese', ja: '日本語' },
+  { k: 'zh', en: 'Chinese (at least)', ja: '中国語（最低値）' },
+  { k: 'ko', en: 'Korean', ja: '韓国語' },
+  { k: 'latin', en: 'English / Latin script', ja: '英語など' },
+]
+
+function RealSocialMarker({ node: n, real: r, icon }: { node: MapNode; real: NonNullable<SocialNode['real']>; icon: L.DivIcon }) {
+  const { t, lang } = useLang()
+  const narrow = useIsNarrow()
+  const fmt = (v: number) => v.toLocaleString('en-US')
+  const asOf = fmtDate(r.as_of, lang)
+  const captioned = r.posts - r.scripts.none
+  return (
+    <Marker position={[n.lat, n.lon]} icon={icon}>
+      <Tooltip className="map-tip" direction="top" offset={[20, -30]}>
+        <strong>
+          {t(n.name, n.name_ja)} · {fmt(r.posts)} {t('Instagram posts', 'Instagram投稿')}, {t(`${r.days} days to ${asOf}`, `${asOf}までの${r.days}日間`)}
+        </strong>
+        <div className="tip-sub">
+          {fmt(r.photos)} {t('photos', '写真')} · {fmt(r.videos)} {t('videos', '動画')} · {t('click for details', 'クリックで詳細')}
+        </div>
+      </Tooltip>
+      <Popup className="map-pop" maxWidth={360} minWidth={280} autoPanPaddingTopLeft={narrow ? [12, 100] : [340, 80]} autoPanPaddingBottomRight={narrow ? [12, 180] : [400, 110]}>
+        <div className="feed">
+          <div className="tt-head">
+            <span>{t(n.name, n.name_ja)} · Instagram</span>
+            <span>{t(`Real · ${r.days} days to ${asOf}`, `実データ・${asOf}までの${r.days}日間`)}</span>
+          </div>
+          <div className="feed-stats">
+            <span>
+              <b className="num">{fmt(r.posts)}</b> {t('posts', '投稿')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.photos)}</b> {t('photos', '写真')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.videos)}</b> {t('videos', '動画')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.likes)}</b> {t('likes', 'いいね')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.comments)}</b> {t('comments', 'コメント')}
+            </span>
+          </div>
+          {captioned > 0 && (
+            <ul className="feed-list">
+              {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
+                <li key={l.k} className="feed-item">
+                  <div className="feed-meta">
+                    {t(l.en, l.ja)}: <b className="num">{Math.round((r.scripts[l.k] / captioned) * 100)}%</b> ({fmt(r.scripts[l.k])})
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="muted small">
+            {t(
+              'Posts tagged at this place on Instagram, collected weekly. Only counts are kept: no usernames, captions or images. Caption language is judged by writing system, a rough market proxy, not nationality. Kanji-only captions count as Japanese unless they use characters only Chinese uses, so the Chinese share is a floor. Likes (to the nearest 10) and comments (nearest 5) are rounded and counted when collected. Sentiment is not measured yet.',
+              'Instagramでこの場所にタグ付けされた投稿（毎週収集）。件数のみ保存し、ユーザー名・本文・画像は保存しません。本文の言語は文字の種類で判定した市場の目安で、国籍ではありません。漢字のみの本文は中国語特有の字がない限り日本語として数えるため、中国語の割合は最低値です。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。感情はまだ測定していません。',
+            )}
+          </p>
+        </div>
+      </Popup>
+    </Marker>
+  )
+}
+
 export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nodes: MapNode[]; frame: Frame }) {
   const { t, lang } = useLang()
   const narrow = useIsNarrow()
@@ -340,6 +412,17 @@ export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nod
       Object.fromEntries(
         shown.map((n) => {
           const s = data.social[n.id]
+          if (s.real) {
+            // Real counts only: no thumbnails (no images are kept) and no sentiment yet.
+            return [
+              n.id,
+              L.divIcon({
+                className: 'map-divicon',
+                html: `<div class="ov-badge ov-social" style="--r:${nodeR(frame, n.id)}px;--sc:${SOCIAL_REAL_EDGE}"><span class="ov-stack-txt"><b class="num">${s.real.posts.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${s.real.days}日` : `posts ${s.real.days}d`)}</span></span></div>`,
+                iconSize: [0, 0],
+              }),
+            ]
+          }
           const thumbs = s.feed
             .filter((p) => p.kind === 'photo')
             .slice(0, 2)
@@ -361,6 +444,7 @@ export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nod
     <>
       {shown.map((n) => {
         const s = data.social[n.id]
+        if (s.real) return <RealSocialMarker key={n.id} node={n} real={s.real} icon={icons[n.id]} />
         const lab = sentimentLabel(s.avg_sentiment)
         return (
           <Marker key={n.id} position={[n.lat, n.lon]} icon={icons[n.id]}>
