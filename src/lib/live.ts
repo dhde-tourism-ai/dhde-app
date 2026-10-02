@@ -175,6 +175,20 @@ export function sentimentLabel(score: number): { en: string; ja: string } {
   return { en: 'Very negative', ja: 'とても不評' }
 }
 
+/** Neutral band of the real sentiment model (dhde-preprocessing-model sentiment.NEUTRAL_BAND). */
+export const REAL_NEUTRAL_BAND = 0.2
+
+/**
+ * Label for a real average score, on the same ±0.2 band each post is labelled with, so a
+ * site's label agrees with its positive / neutral / negative split. No "very": a first
+ * model's average isn't precise enough for that.
+ */
+export function realSentimentLabel(score: number): { en: string; ja: string } {
+  if (score >= REAL_NEUTRAL_BAND) return { en: 'Positive', ja: '好評' }
+  if (score <= -REAL_NEUTRAL_BAND) return { en: 'Negative', ja: '不評' }
+  return { en: 'Mixed', ja: '賛否' }
+}
+
 export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string }> = {
   clear: { en: 'Sunny', ja: '晴れ' },
   clear_night: { en: 'Clear', ja: '晴れ' },

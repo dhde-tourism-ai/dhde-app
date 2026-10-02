@@ -3,9 +3,10 @@ import { Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
 import type { MarketVoiceData, SocialNode } from '../../../types/market'
 import type { MapNode } from '../../../lib/nodes'
+import { fmtDate } from '../../../lib/format'
 import type { RegistryNode } from '../../../types/nodes'
 import type { NodeFrame } from '../../../lib/live'
-import { escapeHtml, peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
+import { escapeHtml, peopleRadius, realSentimentLabel, sentimentColour, sentimentLabel } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
 import { thumbSvg, thumbUri } from '../../../lib/thumbs'
 import { useLang } from '../../../lib/i18n'
@@ -360,7 +361,7 @@ function realSocialTotal(s: SocialNode): number {
 }
 
 function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social: SocialNode; icon: L.DivIcon }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const narrow = useIsNarrow()
   const fmt = (v: number) => v.toLocaleString('en-US')
   const r = s.real
@@ -368,8 +369,8 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
   const sr = s.sentiment_real
   const captioned = r ? r.posts - r.scripts.none : 0
   const days = Math.max(r?.days ?? 0, m?.days ?? 0)
-  const asOf = [r?.as_of, m?.as_of].filter(Boolean).sort().pop() ?? ''
-  const lab = sr && sr.score !== null ? sentimentLabel(sr.score) : null
+  const asOf = fmtDate([r?.as_of, m?.as_of].filter(Boolean).sort().pop(), lang)
+  const lab = sr && sr.score !== null ? realSentimentLabel(sr.score) : null
   const pct = (k: number, of: number) => (of ? Math.round((k / of) * 100) : 0)
   return (
     <Marker position={[n.lat, n.lon]} icon={icon}>
@@ -443,15 +444,13 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
                 })}
               </div>
               {m.total > 0 && (
-                <ul className="feed-list">
+                <div className="feed-stats">
                   {LANG_LABELS.filter((l) => m.langs[l.k] > 0).map((l) => (
-                    <li key={l.k} className="feed-item">
-                      <div className="feed-meta">
-                        {t(l.en, l.ja)}: <b className="num">{pct(m.langs[l.k], m.total)}%</b> ({fmt(m.langs[l.k])})
-                      </div>
-                    </li>
+                    <span key={l.k} title={`${fmt(m.langs[l.k])}`}>
+                      <b className="num">{pct(m.langs[l.k], m.total)}%</b> {t(l.en, l.ja)}
+                    </span>
                   ))}
-                </ul>
+                </div>
               )}
             </>
           )}
@@ -476,22 +475,20 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
                 </span>
               </div>
               {captioned > 0 && (
-                <ul className="feed-list">
+                <div className="feed-stats">
                   {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
-                    <li key={l.k} className="feed-item">
-                      <div className="feed-meta">
-                        {t(l.en, l.ja)}: <b className="num">{pct(r.scripts[l.k], captioned)}%</b> ({fmt(r.scripts[l.k])})
-                      </div>
-                    </li>
+                    <span key={l.k} title={`${fmt(r.scripts[l.k])}`}>
+                      <b className="num">{pct(r.scripts[l.k], captioned)}%</b> {t(l.en, l.ja)}
+                    </span>
                   ))}
-                </ul>
+                </div>
               )}
             </>
           )}
           <p className="muted small">
             {t(
-              'Collected weekly. Only counts and scores are kept: no usernames, text or images. Each post and comment is scored by a language model (some languages translated to English first). It is a first model, not yet checked against hand-labelled posts: read the score as a trend, not a verdict. Language points to a market, not nationality; kanji-only text counts as Japanese unless it uses characters only Chinese uses, so Chinese shares are a floor. Likes (to the nearest 10) and comments (nearest 5) are rounded and counted when collected.',
-              '毎週収集。件数とスコアのみ保存し、ユーザー名・本文・画像は保存しません。投稿・コメントごとに言語モデルで判定（一部の言語は英訳してから判定）。手作業の判定との照合前の初期モデルのため、スコアは傾向として見てください。言語は市場の目安で、国籍ではありません。漢字のみの文は中国語特有の字がない限り日本語として数えるため、中国語の割合は最低値です。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。',
+              'Collected weekly; counts and scores only, no text or usernames. Scores come from a first model, not yet checked: read them as a trend. More in the layer note.',
+              '毎週収集。件数とスコアのみで、本文・ユーザー名は保存しません。スコアは未検証の初期モデルによる傾向です。詳細はレイヤーの説明に。',
             )}
           </p>
         </div>

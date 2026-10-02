@@ -1,8 +1,9 @@
 import { CircleMarker, Pane, Tooltip } from 'react-leaflet'
 import type { NodeFrame } from '../../../lib/live'
-import { peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
+import { peopleRadius, realSentimentLabel, sentimentColour, sentimentLabel } from '../../../lib/live'
 import type { MapNode } from '../../../lib/nodes'
 import { useLang } from '../../../lib/i18n'
+import { fmtDate } from '../../../lib/format'
 import type { RealSentiment } from '../../../types/live'
 
 /** A hotspot = strong opinion (|score| ≥ 0.25) with enough posts to trust it. */
@@ -59,11 +60,12 @@ export function SentimentLayer({ nodes, frame }: { nodes: MapNode[]; frame: Reco
 }
 
 function RealRing({ node: n, real, r }: { node: MapNode; real: RealSentiment; r: number }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const s = real.score
   const hot = s !== null && Math.abs(s) >= HOTSPOT_SCORE && real.scored >= HOTSPOT_POSTS
   const col = s === null ? TOO_FEW : sentimentColour(s)
-  const lab = s === null ? { en: 'Too few posts to judge', ja: '件数が少なく判定不可' } : sentimentLabel(s)
+  const lab = s === null ? { en: 'Too few posts to judge', ja: '件数が少なく判定不可' } : realSentimentLabel(s)
+  const asOf = fmtDate(real.as_of, lang)
   const pct = (k: number) => (real.scored ? Math.round((k / real.scored) * 100) : 0)
   return (
     <CircleMarker
@@ -84,7 +86,7 @@ function RealRing({ node: n, real, r }: { node: MapNode; real: RealSentiment; r:
         )}
         {s !== null && <div className="tip-sub">{t('Positive from +0.2, negative from -0.2, neutral between (a working band, to check against hand-labelled posts).', '+0.2以上を好意的、-0.2以下を否定的、その間を中立とします（手作業の判定と照合予定の暫定基準）。')}</div>}
         <div className="tip-row">
-          {real.scored} {t('posts and comments scored', '件の投稿・コメントを判定')}, {t(`${real.days} days to ${real.as_of}`, `${real.as_of}までの${real.days}日間`)}
+          {real.scored} {t('posts and comments scored', '件の投稿・コメントを判定')}, {t(`${real.days} days to ${asOf}`, `${asOf}までの${real.days}日間`)}
         </div>
         <div className="tip-sub">
           Instagram {real.from.instagram} · Bluesky / YouTube / Reddit {real.from.social}
