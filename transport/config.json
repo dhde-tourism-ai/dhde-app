@@ -185,5 +185,44 @@
         "mode": "bike"
       }
     ]
+  },
+  "mode_share": {
+    "note": "Survey area ids (fukui-kanko-survey area.csv 親番号) per site, the same as dhde-preprocessing-model config/nodes/*.yaml survey.area_ids.",
+    "nodes": {
+      "tojinbo": {
+        "area_ids": [
+          "300006"
+        ]
+      },
+      "fukui_station": {
+        "area_ids": [
+          "300004"
+        ],
+        "note": "No visitor estimate (camera detections only), so shares only.",
+        "note_ja": "来訪者数の推計がない（カメラ検知のみ）ため割合のみ。"
+      },
+      "katsuyama": {
+        "area_ids": [
+          "300019"
+        ]
+      },
+      "rainbow_line": {
+        "area_ids": [
+          "300059"
+        ]
+      },
+      "awara_onsen": {
+        "area_ids": [
+          "300011"
+        ],
+        "note": "Visitor estimate is overnight hotel guests, not day visitors.",
+        "note_ja": "来訪者数の推計は宿泊客で、日帰り客は含まない。"
+      },
+      "eiheiji": {
+        "area_ids": [
+          "300025"
+        ]
+      }
+    }
   }
 }

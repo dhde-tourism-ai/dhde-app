@@ -21,6 +21,30 @@ python -m pytest transport/tests -q
 node scripts/check_transport.mjs               # also runs in the Pages deploy
 ```
 
+## Visitors by mode (top of the Transport page)
+
+`build_modes.py` → `public/data/transport_modes.json`, rebuilt daily in `daily-data.yml` right after `real_data.json`.
+
+**visitors by mode = the site's visitor estimate × the site's mode share**
+
+- **Mode share**: the Fukui Prefecture tourism survey ([code4fukui/fukui-kanko-survey](https://github.com/code4fukui/fukui-kanko-survey),
+  CC BY 4.0, about 104,000 responses since 2022), question 福井県内での交通手段 ("how did you get around in Fukui").
+  Responses are matched to a site by answer area, with the same area ids as the preprocessing node configs, over the
+  last 12 months. Answers map to **train** (在来線, 新幹線), **bus** (路線バス, 旅行会社ツアーバス), **own car** (自家用車),
+  **rental car** (レンタカー) and **other** (taxi, rental bike, other; walking only when it is the only answer).
+  Several answers split equally. Range: 95% interval from the number of answers.
+- **Visitors**: `visitors_est` in `real_data.json` (each site's signal scaled to its official 2025 count) for the
+  last 30 days, and the official 2025 count for the year. Fukui Station has no visitor estimate, so it shows shares
+  only. Awara Onsen's estimate is overnight hotel guests.
+- Last 30 days (Sep 2026), five sites, 447k visitors: train 25k (6%), bus 66k (15%), own car 277k (62%), rental
+  car 64k (14%), other 16k (3%).
+- Caveats: respondents choose to answer (survey app users), so shares can lean that way; Katsuyama has the most
+  visitors, so its car-heavy split weighs most in the total.
+
+```bash
+python transport/build_modes.py --survey-dir path/to/fukui-kanko-survey   # default $DHDE_WORKSPACE_ROOT/fukui-kanko-survey
+```
+
 ## Step 0: sources checked
 
 | Mode | Source | What's in it | Licence | Status |
@@ -32,7 +56,7 @@ node scripts/check_transport.mjs               # also runs in the Pages deploy
 | Walking | [Valhalla](https://valhalla1.openstreetmap.de) pedestrian isochrones on OpenStreetMap | 15 and 30-minute walking areas per node | ODbL, © OpenStreetMap contributors | Real |
 | Cycling | No open rental data found | | | Pending (Federation ask) |
 | Interest | Google Trends via pytrends | Weekly 0-100 index for えちぜん鉄道, 京福バス, 北陸新幹線 福井, レンタカー 福井, レンタサイクル 福井 | Google terms; unofficial API | Illustrative. Route Searches are already in the Search intent layer |
-| Mode share | Survey v2 "How did you get here?" | | | Pending: the card shows `[pending]` |
+| Mode share | Fukui Prefecture tourism survey, 福井県内での交通手段 (already ingested by the preprocessing repo) | Per-response mode answers at each site's survey area | CC BY 4.0 | Modelled (top of the Transport page). Survey v2's own question can replace or check it later |
 
 Not checked here because the plan said to go through it first: Tuboer's data source inventory. Compare before adding
 any new source.

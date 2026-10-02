@@ -82,6 +82,23 @@ if (trends) {
   }
 }
 
+const modes = load('transport_modes.json')
+if (modes) {
+  for (const [period, tot] of Object.entries(modes.totals ?? {})) {
+    let sum = 0
+    for (const [m, v] of Object.entries(tot.by_mode ?? {})) {
+      if (!isNum(v.visitors) || v.lo > v.visitors || v.visitors > v.hi) fail(`transport_modes.json: ${period}.${m} range`)
+      sum += v.visitors
+    }
+    // per-mode counts are rounded per site, so allow a little drift from the total
+    if (Math.abs(sum - tot.visitors) > 10) fail(`transport_modes.json: ${period} modes add to ${sum}, total ${tot.visitors}`)
+  }
+  for (const [id, n] of Object.entries(modes.nodes ?? {})) {
+    const s = Object.values(n.shares ?? {}).reduce((a, v) => a + v.share, 0)
+    if (n.responses > 0 && Math.abs(s - 1) > 0.01) fail(`transport_modes.json: ${id} shares add to ${s}`)
+  }
+}
+
 if (errors.length) {
   for (const e of errors) console.error(`ERROR: ${e}`)
   process.exit(1)

@@ -139,3 +139,37 @@ export interface TransportTrendsFile {
   weeks: string[]
   terms: { term: string; label: string; mode: string; values: number[] }[]
 }
+
+/** public/data/transport_modes.json: estimated visitors by mode (transport/build_modes.py). Modelled. */
+export type ModeId = 'train' | 'bus' | 'own_car' | 'rental_car' | 'other'
+export interface ModeCount {
+  visitors: number
+  lo: number
+  hi: number
+  share?: number | null
+}
+export interface TransportModesFile {
+  generated_at: string
+  status: 'modelled'
+  method: string
+  survey: { source: string; url: string; licence: string; from: string; to: string }
+  modes: ModeId[]
+  totals: Record<'last_30_days' | 'year_2025', { period: [string, string] | null; visitors: number; by_mode: Record<ModeId, ModeCount> }>
+  nodes: Record<
+    string,
+    {
+      survey_areas: string[]
+      responses: number
+      shares: Record<ModeId, { share: number; lo: number; hi: number }>
+      bus_kind: { route?: number; tour?: number }
+      visitors_30d: number | null
+      by_mode_30d: Record<ModeId, ModeCount> | null
+      official_annual_2025: number | null
+      by_mode_year: Record<ModeId, ModeCount> | null
+      visitor_measure: string | null
+      visitor_confidence: string | null
+      note?: string | null
+      note_ja?: string | null
+    }
+  >
+}

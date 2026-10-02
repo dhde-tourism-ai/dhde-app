@@ -120,6 +120,12 @@ jobs:
       - name: Validate real_data.json
         run: node scripts/check_data.mjs
 
+      # Visitors by mode (train / bus / own car / rental car): real_data.json visitor
+      # estimates x mode shares from the prefecture survey that fetch_data.py just
+      # downloaded. Writes nothing if the survey isn't there, so the last file stays.
+      - name: Build transport mode estimate
+        run: python transport/build_modes.py --survey-dir "$DHDE_WORKSPACE_ROOT/fukui-kanko-survey"
+
       # Loop #3's occupancy thresholds per hotel area, from the same master tables.
       # Not fatal: without the file the app keeps the demo rule.
       - name: Build hotel thresholds
@@ -225,14 +231,14 @@ jobs:
       - name: Commit if changed
         id: commit
         run: |
-          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json; then
+          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json public/data/transport_modes.json; then
             echo "No change in real_data.json, hotel_thresholds.json or monthly_forecast.json."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json
+          git add public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json public/data/transport_modes.json
           git commit -m "data: daily real data $(TZ=Asia/Tokyo date +%F) (preprocessing $PREPROC_SHA)"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { NodeRegistry } from '../../types/nodes'
-import type { DayType, TransportFile, TransportMode, TransportTrendsFile } from '../../types/transport'
+import type { DayType, TransportFile, TransportMode, TransportModesFile, TransportTrendsFile } from '../../types/transport'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { useLang } from '../../lib/i18n'
 import { isHoliday } from '../../lib/holidays'
 import { Icon } from '../../components/icons'
 import { Loading, LoadError } from '../../components/StateMsg'
 import { Itinerary } from '../../components/Itinerary'
+import { ModeShare } from './ModeShare'
 import {
   DAY_LABEL,
   EARLY_LAST_RETURN_MIN,
@@ -55,6 +56,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   const { t, lang } = useLang()
   const res = useJsonResource<TransportFile>('transport.json')
   const trends = useJsonResource<TransportTrendsFile>('transport_trends.json').data
+  const modes = useJsonResource<TransportModesFile>('transport_modes.json').data
   const [day, setDay] = useState<DayType>(() => dayTypeOf(new Date(`${todayIso()}T12:00:00`), (d) => isHoliday(d.toISOString().slice(0, 10))))
 
   if (res.isLoading) return <Loading what={t('Loading transport…', '交通データを読み込み中…')} />
@@ -88,14 +90,25 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       <div className="page-head">
         <div>
           <div className="eyebrow">{t('Transport track', '交通トラック')}</div>
-          <h1 className="page-title">{t('Getting to the sites without a car', '車なしで各地点へ')}</h1>
+          <h1 className="page-title">{t('Getting to the sites', '各地点への交通')}</h1>
           <p className="page-sub">
             {t(
-              `Scheduled ${noRail ? 'bus' : 'bus and rail'} services from ${hub}, the starting point, to the other ${others.length} priority sites, and when the last one leaves to come back. From the operators' current open timetables (GTFS-JP), not live.`,
-              `起点の${hub}から他の${others.length}つの重点地点への${noRail ? 'バス' : 'バス・鉄道'}の運行と、戻りの最終便の時刻。事業者の現行のオープンな時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。`,
+              `How many visitors arrive by train, bus, own car and rental car, then the scheduled ${noRail ? 'bus' : 'bus and rail'} services from ${hub} to the other ${others.length} priority sites and when the last one leaves to come back (operators' open timetables, not live).`,
+              `鉄道・バス・自家用車・レンタカーで来る来訪者数の推計と、${hub}から他の${others.length}つの重点地点への${noRail ? 'バス' : 'バス・鉄道'}の運行・戻りの最終便（事業者のオープンな時刻表に基づく予定、リアルタイムではない）。`,
             )}
           </p>
         </div>
+      </div>
+
+      {modes && (
+        <div className="card-grid tr-top">
+          <ModeShare data={modes} name={name} />
+        </div>
+      )}
+
+      <h2 className="tr-section-h">{t('Getting there without a car', '車なしで行く')}</h2>
+      <div className="tr-day-row">
+        <span className="muted small">{t('Timetable day', '時刻表の曜日')}</span>
         <div className="access-days tr-days" role="tablist" aria-label={t('Day type', '曜日区分')}>
           {(Object.keys(DAY_LABEL) as DayType[]).map((k) => (
             <button key={k} role="tab" aria-selected={day === k} onClick={() => setDay(k)}>
@@ -351,7 +364,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
 
         {/* Search interest */}
         {trends && trends.terms.length > 0 && (
-          <section className="s-card s-illustrative" style={{ ['--span' as string]: 8 }}>
+          <section className="s-card s-illustrative" style={{ ['--span' as string]: 12 }}>
             <div className="s-card-head">
               <div>
                 <h2 className="card-title">{t('Search interest in getting around Fukui', '福井の移動手段への検索関心')}</h2>
@@ -388,20 +401,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             </div>
           </section>
         )}
-
-        {/* Mode share: Step 3 */}
-        <section className="s-card s-pending" style={{ ['--span' as string]: trends ? 4 : 12 }}>
-          <div className="s-card-head">
-            <h2 className="card-title">{t('How visitors actually arrive', '来訪者の実際の交通手段')}</h2>
-          </div>
-          <p className="tr-pending">[pending]</p>
-          <p className="muted small">
-            {t(
-              'Share of visitors arriving by car, train, bus or bike, per site. Comes from the "How did you get here?" question in Survey v2 (live 6 Oct), multiplied by each site\'s daily visitors, labelled Modelled. Cycling and parking figures are a Federation request.',
-              '地点ごとの車・鉄道・バス・自転車での来訪の割合。アンケートv2（10月6日開始）の「どうやって来ましたか？」の回答に各地点の日別来訪者数を掛けて推計（Modelled）。自転車・駐車場の数値は連盟に依頼。',
-            )}
-          </p>
-        </section>
 
         {/* Sources */}
         <section className="s-card" style={{ ['--span' as string]: 12 }}>
