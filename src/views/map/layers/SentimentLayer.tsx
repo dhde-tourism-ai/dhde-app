@@ -82,6 +82,7 @@ function RealRing({ node: n, real, r }: { node: MapNode; real: RealSentiment; r:
             {t('Score', 'スコア')} <b className="num">{s > 0 ? '+' : ''}{s.toFixed(2)}</b> · {pct(real.positive)}% {t('positive', '好意的')}, {pct(real.neutral)}% {t('neutral', '中立')}, {pct(real.negative)}% {t('negative', '否定的')}
           </div>
         )}
+        {s !== null && <div className="tip-sub">{t('Positive from +0.2, negative from -0.2, neutral between (a working band, to check against hand-labelled posts).', '+0.2以上を好意的、-0.2以下を否定的、その間を中立とします（手作業の判定と照合予定の暫定基準）。')}</div>}
         <div className="tip-row">
           {real.scored} {t('posts and comments scored', '件の投稿・コメントを判定')}, {t(`${real.days} days to ${real.as_of}`, `${real.as_of}までの${real.days}日間`)}
         </div>

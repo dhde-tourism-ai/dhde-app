@@ -394,6 +394,7 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
             <>
               <div className="tt-sec">{t('Sentiment', '感情')}</div>
               {sr.score !== null && lab ? (
+                <>
                 <div className="feed-stats">
                   <span className="feed-sent">
                     <i style={{ background: sentimentColour(sr.score) }}></i>
@@ -413,6 +414,8 @@ function RealSocialMarker({ node: n, social: s, icon }: { node: MapNode; social:
                     <b className="num">{pct(sr.negative, sr.scored)}%</b> {t('negative', '否定的')}
                   </span>
                 </div>
+                  <p className="muted small">{t('Positive from +0.2, negative from -0.2, neutral between (a working band, to check against hand-labelled posts).', '+0.2以上を好意的、-0.2以下を否定的、その間を中立とします（手作業の判定と照合予定の暫定基準）。')}</p>
+                </>
               ) : (
                 <p className="muted small">{t(`Only ${sr.scored} scored: too few to judge.`, `判定は${sr.scored}件のみ：少なすぎて判定できません。`)}</p>
               )}
