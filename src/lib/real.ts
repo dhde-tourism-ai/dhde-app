@@ -435,28 +435,26 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       const isReal = !!r && r.temp_c !== null
       realDays.push(isReal)
       for (let h = 0; h < 24; h++) {
-        // An hour without a rain amount keeps the daily-based or demo value, not a real 0 mm.
+        // The daily-based value (real day) or the demo's, for anything the hourly row lacks.
+        const fb = isReal
+          ? synthWeather(r!, h)
+          : { temp: pick(wx.temp_c, d, h), mm: pick(wx.precip_mm, d, h), wind: pick(wx.wind_ms, d, h), pop: pick(wx.precip_pct, d, h), cond: pick(wx.condition, d, h) }
+        // An hour without a rain amount isn't used at all (not a real 0 mm); a missing wind
+        // reading takes the fallback too, so a false calm can't hide the wind nudge.
         const hr = rowForSlot(hourly?.[id], dates[d], h)
         hourlySource.push(usable(hr) ? hr.source : null)
         if (usable(hr)) {
           temp.push(hr.temp_c!)
           mm.push(hr.precip_mm!)
-          wind.push(hr.wind_ms ?? 0)
+          wind.push(hr.wind_ms ?? fb.wind)
           pop.push(popOf(hr))
           cond.push(conditionOf(hr, h))
-        } else if (isReal) {
-          const s = synthWeather(r!, h)
-          temp.push(s.temp)
-          mm.push(s.mm)
-          wind.push(s.wind)
-          pop.push(s.pop)
-          cond.push(s.cond)
         } else {
-          temp.push(pick(wx.temp_c, d, h))
-          mm.push(pick(wx.precip_mm, d, h))
-          wind.push(pick(wx.wind_ms, d, h))
-          pop.push(pick(wx.precip_pct, d, h))
-          cond.push(pick(wx.condition, d, h))
+          temp.push(fb.temp)
+          mm.push(fb.mm)
+          wind.push(fb.wind)
+          pop.push(fb.pop)
+          cond.push(fb.cond)
         }
       }
     }
