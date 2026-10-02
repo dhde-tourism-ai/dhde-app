@@ -7,8 +7,9 @@
  * A node with no file, or a failed fetch, keeps the daily-based weather.
  */
 import type { WeatherCondition } from '../types/live'
+import { LIVE_DATA_URL } from './dataSource'
 
-const BASE = 'https://raw.githubusercontent.com/dhde-tourism-ai/dhde-preprocessing-model/live-data/weather_hourly'
+const BASE = `${LIVE_DATA_URL}/weather_hourly`
 export const REFRESH_MS = 30 * 60 * 1000
 
 export interface HourlyWeatherRow {
@@ -77,6 +78,11 @@ export function rowForSlot(rows: Map<string, HourlyWeatherRow> | undefined, date
   return rows.get(`${d.toISOString().slice(0, 10)} ${d.toISOString().slice(11, 13)}`)
 }
 
+/** An hour usable as real weather: a temperature and a rain amount (a missing amount isn't a dry hour). */
+export function usable(r: HourlyWeatherRow | undefined): r is HourlyWeatherRow {
+  return !!r && r.temp_c !== null && r.precip_mm !== null
+}
+
 /** WMO weather code (forecast) or the rain amount (observation) → the app's icon. */
 export function conditionOf(r: HourlyWeatherRow, h: number): WeatherCondition {
   const night = h < 6 || h >= 18
@@ -93,7 +99,8 @@ export function conditionOf(r: HourlyWeatherRow, h: number): WeatherCondition {
   }
   if (mm >= 8) return 'heavy_rain'
   if (mm >= 0.5) return (r.temp_c ?? 5) < 1 ? 'snow' : 'rain'
-  return 'cloudy'
+  // A dry observed hour: JMA's hourly page gives no sky, so neither sun nor cloud.
+  return night ? 'partly_night' : 'partly'
 }
 
 /** Chance of rain shown for the hour: the sources give amounts, not a probability. */

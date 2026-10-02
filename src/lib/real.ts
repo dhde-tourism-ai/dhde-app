@@ -33,7 +33,7 @@ import type { LiveData, LiveSeries, RealNodeMeta, SourceInfo, WeatherCondition, 
 import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
-import { conditionOf, popOf, rowForSlot, type HourlyWeather } from './weatherHourly'
+import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
 
 export const PAST_DAYS = 7
 /** Fewest reviews in 30 days for a real star split (fewer is one person's opinion, not a distribution). */
@@ -435,11 +435,12 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       const isReal = !!r && r.temp_c !== null
       realDays.push(isReal)
       for (let h = 0; h < 24; h++) {
+        // An hour without a rain amount keeps the daily-based or demo value, not a real 0 mm.
         const hr = rowForSlot(hourly?.[id], dates[d], h)
-        hourlySource.push(hr && hr.temp_c !== null ? hr.source : null)
-        if (hr && hr.temp_c !== null) {
-          temp.push(hr.temp_c)
-          mm.push(hr.precip_mm ?? 0)
+        hourlySource.push(usable(hr) ? hr.source : null)
+        if (usable(hr)) {
+          temp.push(hr.temp_c!)
+          mm.push(hr.precip_mm!)
           wind.push(hr.wind_ms ?? 0)
           pop.push(popOf(hr))
           cond.push(conditionOf(hr, h))
