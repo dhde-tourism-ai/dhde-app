@@ -107,8 +107,12 @@ export const BASEMAPS: { id: BasemapId; en: string; ja: string }[] = [
   { id: 'streets', en: 'Streets', ja: '道路地図' },
 ]
 
-/** ?layers=people,flow&base=dark&t=38&panel=nudges (and the older ?layer=economics) make shareable views. */
-export function readUrlState(): { layers: LayerId[] | null; base: BasemapId | null; t: number | null; panel: 'board' | 'nudges' | null } {
+/**
+ * ?layers=people,flow&base=dark&t=2026-10-02T14&panel=nudges (and the older ?layer=economics) make
+ * shareable views. `t` is a JST date and hour (`tAt`), since the timeline moves with the clock; an
+ * older link's plain hour index (`t=38`) still works but points at a different date each day.
+ */
+export function readUrlState(): { layers: LayerId[] | null; base: BasemapId | null; t: number | null; tAt: string | null; panel: 'board' | 'nudges' | null } {
   const p = new URLSearchParams(window.location.search)
   const valid = new Set(LAYERS.map((l) => l.id))
   let layers: LayerId[] | null = null
@@ -119,5 +123,6 @@ export function readUrlState(): { layers: LayerId[] | null; base: BasemapId | nu
   const base = b === 'hybrid' || b === 'dark' || b === 'streets' ? b : null
   const t = p.get('t')
   const pn = p.get('panel')
-  return { layers, base, t: t !== null && !isNaN(Number(t)) ? Number(t) : null, panel: pn === 'nudges' || pn === 'board' ? pn : null }
+  const tAt = t !== null && /^\d{4}-\d{2}-\d{2}T\d{2}$/.test(t) ? t : null
+  return { layers, base, t: t !== null && !tAt && !isNaN(Number(t)) ? Number(t) : null, tAt, panel: pn === 'nudges' || pn === 'board' ? pn : null }
 }

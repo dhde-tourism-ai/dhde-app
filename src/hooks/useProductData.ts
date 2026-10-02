@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDashboardData } from './useDashboardData'
 import { mergeAll, parseReal } from '../lib/real'
 import { useJsonResource } from './useJsonResource'
 import { useHourlyWeather } from './useHourlyWeather'
+import { useJmaWarnings } from './useJmaWarnings'
 import type { NodeRegistry } from '../types/nodes'
 import type { RegionalEconomics } from '../types/economics'
 import type { StrategicQuestions } from '../types/strategy'
@@ -30,6 +31,14 @@ export function useProductData() {
     return (registry.data?.nodes ?? []).filter((n) => ids.includes(n.id)).map((n) => ({ id: n.id, lat: n.lat, lon: n.lon }))
   }, [live.data, registry.data])
   const hourly = useHourlyWeather(points)
+  // Optional: JMA's warnings in force, read live every 10 minutes (demo warnings until then).
+  const warnings = useJmaWarnings()
+  // The timeline follows the clock: re-merge every 10 minutes so "now" (and, at midnight, today) moves.
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 10 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [])
   const merged = useMemo(() => {
     if (!live.data) return null
     let parsed = null
@@ -39,12 +48,12 @@ export function useProductData() {
       parsed = null
     }
     try {
-      return mergeAll(live.data, market.data, parsed, hourly)
+      return mergeAll(live.data, market.data, parsed, hourly, now, warnings)
     } catch (e) {
       console.error('real_data.json merge failed; using demo data', e)
       return mergeAll(live.data, market.data, null)
     }
-  }, [live.data, market.data, real.data, hourly])
+  }, [live.data, market.data, real.data, hourly, now, warnings])
   return { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }
 }
 
