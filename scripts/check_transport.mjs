@@ -9,6 +9,7 @@ const dir = process.argv[2] ?? 'public/data'
 const errors = []
 const fail = (msg) => errors.push(msg)
 const TIME = /^\d{2}:\d{2}$/
+const mins = (hm) => Number(hm.slice(0, -3)) * 60 + Number(hm.slice(-2))
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v)
 const isLatLon = (p) => Array.isArray(p) && p.length === 2 && isNum(p[0]) && isNum(p[1]) && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180
 
@@ -45,6 +46,14 @@ if (tr) {
       }
       if (d.to_hub && !TIME.test(d.to_hub.leave)) fail(`${where}.to_hub.leave`)
       if (d.from_hub && !isNum(d.from_hub.fastest_min)) fail(`${where}.from_hub.fastest_min`)
+      // every trip's minutes must equal its displayed arrive - depart
+      const trips = [d.from_hub?.fastest, d.from_hub?.after_0900, d.to_hub && { depart: d.to_hub.leave, arrive: d.to_hub.arrive_hub, minutes: d.to_hub.minutes }]
+      for (const j of trips.filter(Boolean)) {
+        if (mins(j.arrive) - mins(j.depart) !== j.minutes) fail(`${where}: ${j.depart} -> ${j.arrive} is not ${j.minutes} min`)
+      }
+      if (d.from_hub && d.from_hub.fastest_min !== d.from_hub.fastest?.minutes) fail(`${where}: fastest_min differs from the fastest trip`)
+      if (!Array.isArray(d.expired_feeds)) fail(`${where}.expired_feeds missing`)
+      for (const [city, f] of Object.entries(d.from_far ?? {})) if (f.minutes != null && !isNum(f.minutes)) fail(`${where}.from_far.${city}`)
     }
     for (const s of n.stops ?? []) if (!isLatLon([s.lat, s.lon])) fail(`transport.json: ${id} stop ${s.id}`)
   }

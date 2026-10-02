@@ -99,9 +99,38 @@ def test_access_metrics(feed_zip: Path):
     c = bt.service_counts(net, node)
     assert c["departures"] == 2 and c["arrivals"] == 3
     assert (c["first_departure"], c["last_departure"]) == ("16:00", "18:00")
-    j = bt.journeys_from_hub(net, hub, {"n": node})["n"]
-    assert j["fastest_min"] == 60 and j["leave_0900"] == {"depart": "09:00", "arrive": "10:00", "minutes": 60}
-    assert bt.last_return(net, hub, node) == {"leave": "16:00", "from_stop": "N", "arrive_hub": "16:40", "minutes": 40}
+    j = bt.journeys_from(net, hub, {"n": node})["n"]
+    assert j["fastest_min"] == 60 and (j["fastest"]["depart"], j["fastest"]["arrive"]) == ("08:00", "09:00")
+    nine = j["after_0900"]
+    assert (nine["depart"], nine["arrive"], nine["minutes"]) == ("09:00", "10:00", 60)
+    assert [leg["mode"] for leg in nine["legs"]] == ["bus", "walk", "bus"]  # change from M to M2 on foot
+    back = bt.last_return(net, hub, node)
+    assert (back["leave"], back["arrive_hub"], back["minutes"]) == ("16:00", "16:40", 40)
+    assert back["legs"][0]["route"] == "Route 4"
+
+
+def test_minutes_match_clock_times(feed_zip: Path):
+    """A trip's minutes are always arrive minus depart as displayed (no rounding drift)."""
+    net = net_for(feed_zip)
+    hub = bt.node_stops(net, STOPS["H"], 50, WALK)
+    node = bt.node_stops(net, STOPS["N"], 50, WALK)
+    j = bt.journeys_from(net, hub, {"n": node})["n"]
+    for trip in (j["fastest"], j["after_0900"]):
+        assert trip["minutes"] == bt.clock(trip["arrive"]) - bt.clock(trip["depart"])
+
+
+def test_long_distance_uses_best_gateway(feed_zip: Path):
+    net = net_for(feed_zip)
+    stops = {"h": bt.node_stops(net, STOPS["H"], 50, WALK), "n": bt.node_stops(net, STOPS["N"], 50, WALK)}
+    cfg = {"long_distance": {"far": {"name": "Far", "name_ja": "遠", "change_min": 5, "basis": "test", "gateways": [
+        {"name": "H", "name_ja": "H", "node": "h", "jr_min": 30},
+        {"name": "M", "name_ja": "M", "lat": STOPS["M"][0], "lon": STOPS["M"][1], "radius_m": 50, "jr_min": 20},
+    ]}}}
+    far = bt.from_far(net, cfg, stops, WALK)
+    assert far["h"]["far"]["minutes"] == 30  # at the gateway: JR leg only
+    # via H: 30 + 5 + 60 = 95. Via M: 20 + 5 + 25, the quickest local trip being the
+    # walk to M2 (2 min + 3 min to change, leaving 09:35) and bus 3 at 09:40 -> 10:00
+    assert (far["n"]["far"]["minutes"], far["n"]["far"]["via"]) == (50, "M")
 
 
 def test_reference_days_are_wed_sat_sun():

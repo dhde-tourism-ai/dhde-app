@@ -80,47 +80,110 @@
     }
   ],
   "nodes": {
-    "tojinbo": { "radius_m": 800 },
-    "fukui_station": { "radius_m": 400 },
+    "tojinbo": {
+      "radius_m": 800
+    },
+    "fukui_station": {
+      "radius_m": 400
+    },
     "katsuyama": {
       "radius_m": 800,
-      "anchor": { "lat": 36.0837, "lon": 136.5062, "label": "Fukui Prefectural Dinosaur Museum", "label_ja": "福井県立恐竜博物館" },
+      "anchor": {
+        "lat": 36.0837,
+        "lon": 136.5062,
+        "label": "Fukui Prefectural Dinosaur Museum",
+        "label_ja": "福井県立恐竜博物館"
+      },
       "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings); Echizen Railway's Katsuyama station is 3 km away and reached by bus.",
       "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道勝山駅は3km先でバスで連絡。"
     },
     "rainbow_line": {
       "radius_m": 800,
-      "note": "A toll road: the summit park is reached by car or the Fukutetsu summit bus, which runs on weekends and holidays from July to November. JR Obama Line stations (Mikata, Kiyama) are not in any open feed.",
-      "note_ja": "有料道路のため山頂公園へは車か福鉄の山頂バス（7〜11月の土日祝運行）。JR小浜線の駅（三方・気山）はオープンデータに含まれない。"
+      "note": "A toll road: the summit park is reached by car, or by the seasonal Gokoichi bus (ゴコイチバス, run by Fukui Railway) from JR Mikata station on weekends and holidays, July to November. That bus is the only open timetable here, and no open timetable links it to Fukui Station: JR Obama Line trains (Mikata, Kiyama) are not open data.",
+      "note_ja": "有料道路のため、山頂公園へは車か、季節運行のゴコイチバス（福井鉄道、7〜11月の土日祝）で。オープンな時刻表はこのバスだけで、福井駅とつながる時刻表はない（JR小浜線の三方・気山駅はオープンデータでない）。"
     },
-    "awara_onsen": { "radius_m": 800 },
-    "eiheiji": { "radius_m": 800 }
+    "awara_onsen": {
+      "radius_m": 800
+    },
+    "eiheiji": {
+      "radius_m": 800
+    }
   },
   "long_distance": {
     "kanazawa": {
       "name": "Kanazawa",
       "name_ja": "金沢",
-      "to_hub_min": 34,
-      "status": "estimated",
-      "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data."
+      "change_min": 5,
+      "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable.",
+      "gateways": [
+        {
+          "name": "Fukui Station",
+          "name_ja": "福井駅",
+          "node": "fukui_station",
+          "jr_min": 25
+        },
+        {
+          "name": "Awara-Onsen Station",
+          "name_ja": "芦原温泉駅",
+          "lat": 36.2156,
+          "lon": 136.2349,
+          "radius_m": 250,
+          "jr_min": 25
+        }
+      ]
     },
     "kyoto": {
       "name": "Kyoto",
       "name_ja": "京都",
-      "to_hub_min": 90,
-      "status": "estimated",
-      "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data."
+      "change_min": 5,
+      "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable.",
+      "gateways": [
+        {
+          "name": "Fukui Station",
+          "name_ja": "福井駅",
+          "node": "fukui_station",
+          "jr_min": 90
+        },
+        {
+          "name": "Awara-Onsen Station",
+          "name_ja": "芦原温泉駅",
+          "lat": 36.2156,
+          "lon": 136.2349,
+          "radius_m": 250,
+          "jr_min": 100
+        }
+      ]
     }
   },
   "trends": {
     "geo": "JP",
     "timeframe": "today 12-m",
     "terms": [
-      { "term": "えちぜん鉄道", "label": "Echizen Railway", "mode": "rail" },
-      { "term": "京福バス", "label": "Keifuku Bus", "mode": "bus" },
-      { "term": "北陸新幹線 福井", "label": "Hokuriku Shinkansen Fukui", "mode": "rail" },
-      { "term": "レンタカー 福井", "label": "Car rental Fukui", "mode": "car" },
-      { "term": "レンタサイクル 福井", "label": "Bike rental Fukui", "mode": "bike" }
+      {
+        "term": "えちぜん鉄道",
+        "label": "Echizen Railway",
+        "mode": "rail"
+      },
+      {
+        "term": "京福バス",
+        "label": "Keifuku Bus",
+        "mode": "bus"
+      },
+      {
+        "term": "北陸新幹線 福井",
+        "label": "Hokuriku Shinkansen Fukui",
+        "mode": "rail"
+      },
+      {
+        "term": "レンタカー 福井",
+        "label": "Car rental Fukui",
+        "mode": "car"
+      },
+      {
+        "term": "レンタサイクル 福井",
+        "label": "Bike rental Fukui",
+        "mode": "bike"
+      }
     ]
   }
 }

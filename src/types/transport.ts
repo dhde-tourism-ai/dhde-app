@@ -19,6 +19,34 @@ export interface TransportSource {
   agency: string
   valid_from: string | null
   valid_to: string | null
+  /** Ended before the reference week: its numbers come from the same week of an earlier year. */
+  expired: boolean
+}
+
+/** One leg of an itinerary: a bus or train ride, or a walk between stops. */
+export type JourneyLeg =
+  | { mode: Exclude<TransportMode, 'car'>; route: string; feed: string; from: string; depart: string; to: string; arrive: string }
+  | { mode: 'walk'; from: string; to: string; minutes: number }
+
+/** A journey stop to stop; `minutes` is arrive minus depart, so it matches the times shown. */
+export interface Journey {
+  depart: string
+  arrive: string
+  minutes: number
+  legs: JourneyLeg[]
+}
+
+export interface FarJourney {
+  name: string
+  name_ja: string
+  status: 'estimated'
+  basis: string
+  minutes: number | null
+  via?: string
+  via_ja?: string
+  jr_min?: number
+  change_min?: number
+  local_min?: number
 }
 
 export interface TransportStop {
@@ -52,13 +80,20 @@ export interface TransportDay {
   from_hub?: {
     journeys: number
     fastest_min: number
+    fastest: Journey
     typical_min: number
     first_arrival: string | null
-    leave_0900: { depart: string; arrive: string; minutes: number } | null
+    /** First journey leaving at or after 09:00. */
+    after_0900: Journey | null
   } | null
-  to_hub?: { leave: string; from_stop: string; arrive_hub: string; minutes: number | null } | null
+  /** The last bus or train from the site that still reaches the hub today. */
+  to_hub?: { leave: string; from_stop: string; arrive_hub: string; minutes: number; legs: JourneyLeg[] } | null
   /** Last public transport departure back to the hub; "all day" when there is none (car only). */
   car_only_after?: string
+  /** Kanazawa, Kyoto: estimated JR leg + change + the fastest local journey on this day. */
+  from_far: Record<string, FarJourney>
+  feeds_used: string[]
+  expired_feeds: string[]
 }
 
 export interface TransportNode {
@@ -70,7 +105,6 @@ export interface TransportNode {
   days: Partial<Record<DayType, TransportDay>>
   modes: TransportMode[]
   feeds: string[]
-  from_far: Record<string, { name: string; name_ja: string; status: 'estimated'; basis: string; minutes: number | null }>
 }
 
 export interface TransportFile {

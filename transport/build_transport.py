@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Build public/data/transport.json and public/data/transport_map.json: how
-visitors can reach each of the six priority nodes by public transport.
+visitors can reach the priority nodes by public transport.
 
 Per node and day type (weekday, Saturday, Sunday/holiday), from the open
 GTFS-JP timetables listed in transport/config.json:
@@ -9,10 +9,14 @@ GTFS-JP timetables listed in transport/config.json:
 - the stops serving the node (within `radius_m` of its access point) and
   the routes calling there
 - departures and arrivals per day, by mode, and the first and last of each
-- from Fukui Station: the fastest journey, and the journey leaving at 09:00
-- back to Fukui Station: the last departure that still gets there today,
-  which is also the "car only after HH:MM" time
-- Kanazawa and Kyoto: the Fukui Station journey plus an estimated JR leg
+- from Fukui Station: the fastest journey and the first one leaving at or
+  after 09:00, each with its itinerary
+- back to Fukui Station: the last bus or train from the node that still gets
+  there today, which is also the "car only after HH:MM" time
+- Kanazawa and Kyoto: an estimated JR leg to a gateway station (Fukui or
+  Awara-Onsen), then the fastest local journey on that day's timetable
+- which feeds were used, and which had expired (their numbers come from the
+  same week of an earlier year)
 
 The map file holds the route lines and stops serving the nodes, plus the
 walking areas from transport/walk_areas.json (fetch_walk_areas.py).
@@ -36,14 +40,14 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gtfs import INF, Network, build_network, earliest_arrival, haversine_m, hhmm, latest_departure, load_feed, walk_seconds  # noqa: E402
+from gtfs import INF, Network, build_network, earliest_arrival, haversine_m, hhmm, journey, latest_departure, load_feed, walk_seconds  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 CACHE = HERE / ".cache"
 JST = timezone(timedelta(hours=9))
 DAY_END = 24 * 3600 + 59 * 60  # trips after midnight still count for the service day
-HUB_WINDOW = (5 * 3600, 21 * 3600)  # departures from the hub considered for "from Fukui Station"
+ORIGIN_WINDOW = (5 * 3600, 21 * 3600)  # departures considered for journeys from the hub or a gateway
 DAY_TYPES = {"weekday": 2, "saturday": 5, "sunday": 6}  # Wednesday stands in for a weekday
 
 
@@ -105,52 +109,95 @@ def service_counts(net: Network, stops: list[dict]) -> dict:
     }
 
 
-def journeys_from_hub(net: Network, hub: list[dict], nodes: dict[str, list[dict]]) -> dict[str, dict]:
-    """Every departure time from the hub in HUB_WINDOW -> earliest arrival at each node's access point."""
-    times = sorted({int(t) for t in net.calls[net.calls["stop_id"].isin({s["id"] for s in hub})]["dep"]
-                    if HUB_WINDOW[0] <= t <= HUB_WINDOW[1]})
+def journeys_from(net: Network, origin: list[dict], nodes: dict[str, list[dict]]) -> dict[str, dict | None]:
+    """Journeys from the `origin` stops to each node's stops, stop to stop.
+
+    Every departure time from the origin in ORIGIN_WINDOW is tried; only the
+    journeys nobody would beat by leaving later are kept. For the fastest
+    one and the first one leaving at or after 09:00 the itinerary is rebuilt,
+    and every time shown comes from that itinerary, so they always add up.
+    """
+    src = {s["idx"] for s in origin}
+    times = sorted({int(t) for t in net.calls[net.calls["stop_id"].isin({s["id"] for s in origin})]["dep"]
+                    if ORIGIN_WINDOW[0] <= t <= ORIGIN_WINDOW[1]})
     found: dict[str, list[tuple[int, int]]] = {k: [] for k in nodes}
     for t in times:
-        ea = earliest_arrival(net, {s["idx"]: t for s in hub})
+        ea = earliest_arrival(net, {i: t for i in src})
         for k, stops in nodes.items():
-            a = min((ea[s["idx"]] + s["walk_s"] for s in stops if ea[s["idx"]] < INF), default=INF)
+            a = min((ea[s["idx"]] for s in stops), default=INF)
             if a < INF:
                 found[k].append((t, a))
-    out = {}
+    out: dict[str, dict | None] = {}
     for k, pairs in found.items():
-        # keep only journeys nobody would beat by leaving later (same or earlier arrival)
         best: list[tuple[int, int]] = []
         for t, a in sorted(pairs, key=lambda p: (-p[0], p[1])):
             if not best or a < best[-1][1]:
                 best.append((t, a))
         best.sort()
-        if not best:
+        targets = {s["idx"] for s in nodes[k]}
+        trips = [j for j in (journey(net, {i: t for i in src}, targets) for t, _ in best) if j and j["legs"]]
+        if not trips:
             out[k] = None
             continue
-        mins = [(a - t) / 60 for t, a in best]
-        nine = next(((t, a) for t, a in best if t >= 9 * 3600), None)
-        out[k] = {
-            "journeys": len(best),
-            "fastest_min": round(min(mins)),
-            "typical_min": round(statistics.median(mins)),
-            "first_arrival": hhmm(best[0][1]),
-            "leave_0900": None if nine is None else {"depart": hhmm(nine[0]), "arrive": hhmm(nine[1]),
-                                                      "minutes": round((nine[1] - nine[0]) / 60)},
-        }
+        fastest = min(trips, key=lambda j: (j["minutes"], clock(j["depart"])))
+        nine = next((j for j in trips if clock(j["depart"]) >= 9 * 60), None)
+        out[k] = {"journeys": len(trips), "fastest_min": fastest["minutes"], "fastest": fastest,
+                  "typical_min": round(statistics.median(j["minutes"] for j in trips)),
+                  "first_arrival": min(trips, key=lambda j: clock(j["arrive"]))["arrive"], "after_0900": nine}
     return out
 
 
+def clock(hm: str) -> int:
+    h, m = hm.split(":")
+    return int(h) * 60 + int(m)
+
+
 def last_return(net: Network, hub: list[dict], stops: list[dict]) -> dict | None:
-    """Latest time to leave the node's access point and still reach the hub today."""
+    """The last bus or train leaving one of the node's stops that still reaches the hub today."""
     ld = latest_departure(net, {s["idx"]: DAY_END for s in hub})
-    cands = [(ld[s["idx"]] - s["walk_s"], s) for s in stops if ld[s["idx"]] > -INF]
+    cands = [(ld[s["idx"]], s) for s in stops if ld[s["idx"]] > -INF]
     if not cands:
         return None
     leave, stop = max(cands, key=lambda c: c[0])
-    ea = earliest_arrival(net, {stop["idx"]: leave + stop["walk_s"]})
-    arrive = min(ea[s["idx"]] for s in hub)
-    return {"leave": hhmm(leave), "from_stop": stop["name"], "arrive_hub": hhmm(arrive),
-            "minutes": round((arrive - leave) / 60) if arrive < INF else None}
+    j = journey(net, {stop["idx"]: leave}, {s["idx"] for s in hub})
+    if not j or not j["legs"]:
+        return None
+    return {"leave": j["depart"], "from_stop": stop["name"], "arrive_hub": j["arrive"], "minutes": j["minutes"],
+            "legs": j["legs"]}
+
+
+def gateway_stops(net: Network, gw: dict, stops: dict[str, list[dict]], walk: dict) -> list[dict]:
+    if "node" in gw:
+        return stops[gw["node"]]
+    return node_stops(net, (gw["lat"], gw["lon"]), gw["radius_m"], walk)
+
+
+def from_far(net: Network, cfg: dict, stops: dict[str, list[dict]], walk: dict) -> dict[str, dict[str, dict]]:
+    """Kanazawa and Kyoto: an estimated JR leg to each gateway station (no open JR
+    timetable), a change, then the fastest local journey from that gateway on
+    this day's timetable. The best gateway wins. node -> city -> result."""
+    out: dict[str, dict[str, dict]] = {k: {} for k in stops}
+    for city, ld in cfg["long_distance"].items():
+        best: dict[str, dict] = {}
+        for gw in ld["gateways"]:
+            origin = gateway_stops(net, gw, stops, walk)
+            at_gateway = {k for k, st in stops.items() if {s["id"] for s in st} & {s["id"] for s in origin}}
+            local = journeys_from(net, origin, {k: v for k, v in stops.items() if v and k not in at_gateway})
+            for k in stops:
+                if k in at_gateway:
+                    total, lm = gw["jr_min"], 0
+                elif local.get(k):
+                    lm = local[k]["fastest_min"]
+                    total = gw["jr_min"] + ld["change_min"] + lm
+                else:
+                    continue
+                if k not in best or total < best[k]["minutes"]:
+                    best[k] = {"minutes": total, "via": gw["name"], "via_ja": gw["name_ja"], "jr_min": gw["jr_min"],
+                               "change_min": 0 if k in at_gateway else ld["change_min"], "local_min": lm}
+        for k in stops:
+            out[k][city] = best.get(k) or {"minutes": None}
+            out[k][city] |= {"name": ld["name"], "name_ja": ld["name_ja"], "status": "estimated", "basis": ld["basis"]}
+    return out
 
 
 def simplify(path: list[tuple[float, float]], tol_m: float = 25) -> list[list[float]]:
@@ -252,16 +299,26 @@ def main() -> None:
         net = build_network(feeds, d, walk)
         used_dates[day] = net.used_dates
         stops = {k: node_stops(net, (a["lat"], a["lon"]), cfg["nodes"][k]["radius_m"], walk) for k, a in anchors.items()}
+        called = set(net.calls["stop_id"])
+        stops = {k: [s for s in st if s["id"] in called] for k, st in stops.items()}  # stops with a service this day
         hub = stops[hub_id]
         others = {k: v for k, v in stops.items() if k != hub_id and v}
-        from_hub = journeys_from_hub(net, hub, others)
-        for k, st in stops.items():
-            served = [s for s in st if s["id"] in set(net.calls["stop_id"])]
+        from_hub = journeys_from(net, hub, others)
+        far = from_far(net, cfg, stops, walk)
+        for k, served in stops.items():
             entry = service_counts(net, served) if served else {"departures": 0, "arrivals": 0, "routes": []}
+            legs = []
             if k != hub_id:
                 entry["from_hub"] = from_hub.get(k)
                 entry["to_hub"] = last_return(net, hub, served) if served else None
                 entry["car_only_after"] = entry["to_hub"]["leave"] if entry["to_hub"] else "all day"
+                fh = entry["from_hub"] or {}
+                legs = [leg for j in (fh.get("fastest"), fh.get("after_0900"), entry["to_hub"]) if j for leg in j["legs"]]
+            entry["from_far"] = far[k]
+            used = {r["feed"] for r in entry["routes"]} | {leg["feed"] for leg in legs if "feed" in leg}
+            entry["feeds_used"] = sorted(used)
+            # feeds that don't cover this date: their numbers come from the same week of an earlier year
+            entry["expired_feeds"] = sorted(f for f in used if net.used_dates[f] != d.isoformat())
             nodes_out[k]["days"][day] = entry
             if day == "weekday":
                 weekday_routes |= {r["id"] for r in entry["routes"]}
@@ -275,25 +332,21 @@ def main() -> None:
         if day == "weekday":
             lines = route_lines(feeds, net, weekday_routes)
 
+    first_day = min(days.values())
+    for src in sources:
+        src["expired"] = bool(src["valid_to"]) and src["valid_to"] < first_day.isoformat()
     for k, n in nodes_out.items():
-        wk = n["days"]["weekday"]
-        fh = wk.get("from_hub")
-        n["from_far"] = {
-            city: {"name": ld["name"], "name_ja": ld["name_ja"], "status": ld["status"], "basis": ld["basis"],
-                   "minutes": (ld["to_hub_min"] + (fh["typical_min"] if fh else 0)) if (fh or k == hub_id) else None}
-            for city, ld in cfg["long_distance"].items()
-        }
-        modes = sorted({r["mode"] for r in wk.get("routes", [])})
-        n["modes"] = modes + ["car"]
-        n["feeds"] = sorted({r["feed"] for r in wk.get("routes", [])})
+        all_days = n["days"].values()
+        n["modes"] = sorted({r["mode"] for d in all_days for r in d.get("routes", [])}) + ["car"]
+        n["feeds"] = sorted({f for d in all_days for f in d["feeds_used"]})
 
     meta = {"generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "timezone": "Asia/Tokyo",
             "hub": hub_id, "reference_days": {k: v.isoformat() for k, v in days.items()}, "timetable_dates": used_dates,
             "walk": walk}
     transport = meta | {
         "note": "Public transport access per node from open GTFS-JP timetables (transport/README.md). Times are scheduled, "
-                "not live. Journey times include the walk between the stop and the node's access point (straight line x "
-                f"{walk['detour_factor']} at {walk['speed_m_per_min']} m/min). Kanazawa and Kyoto add an estimated JR leg.",
+                "not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and "
+                "Kyoto add an estimated JR leg, since JR timetables are not open data.",
         "sources": sources,
         "nodes": nodes_out,
     }
@@ -308,10 +361,12 @@ def main() -> None:
     for k, n in nodes_out.items():
         wk = n["days"]["weekday"]
         fh, th = wk.get("from_hub"), wk.get("to_hub")
+        far = {c: v["minutes"] for c, v in wk["from_far"].items()}
         print(f"  {k:14s} deps {wk['departures']:4d} {wk.get('departures_by_mode', {})} "
-              f"first {wk.get('first_departure')} last {wk.get('last_departure')} | "
-              f"from hub fastest {fh and fh['fastest_min']} min, 09:00 -> {fh and fh['leave_0900']} | "
-              f"last return {th}")
+              f"first {wk.get('first_departure')} last {wk.get('last_departure')} | fastest "
+              f"{fh and (fh['fastest']['depart'], fh['fastest']['arrive'], fh['fastest_min'])} | after 09:00 "
+              f"{fh and fh['after_0900'] and (fh['after_0900']['depart'], fh['after_0900']['arrive'])} | "
+              f"last return {th and (th['leave'], th['arrive_hub'], th['minutes'])} | far {far} | expired {wk['expired_feeds']}")
 
 
 if __name__ == "__main__":

@@ -39,29 +39,38 @@ any new source.
 
 ## What the data shows (reference week of 5 Oct 2026)
 
-| Node | Weekday departures | Fastest from Fukui Station | Last public transport back to Fukui Station |
-|---|---|---|---|
-| Tojinbo | 26 bus | 79 min | 18:47 (weekend 18:18) |
-| Katsuyama (Dinosaur Museum) | 7 bus | 72 min (weekend 61) | **17:06**, every day |
-| Eiheiji | 21 bus | 37 min | 18:10, **weekend 16:36** |
-| Awara Onsen | 93 (67 rail, 26 bus) | 46 min | 22:13 |
-| Rainbow Line | none on weekdays; 6 weekend summit buses (Jul to Nov) | no public transport link | car only |
-| Fukui Station (hub) | 471 | | |
+| Node | Weekday departures (any direction) | Quickest trip from Fukui Station | Last bus or train back to Fukui Station | From Kanazawa (est.) |
+|---|---|---|---|---|
+| Tojinbo | 26 bus | 74 min | 18:53 (weekend 18:24) | 67 min via Awara-Onsen |
+| Katsuyama (Dinosaur Museum) | 7 bus | 72 min (weekend 61) | **17:07**, every day | 102 min via Fukui |
+| Eiheiji | 21 bus | 28 min, + 9 min walk to the temple | 18:19, **weekend 16:45** | 58 min via Fukui |
+| Awara Onsen | 93 (67 rail, 26 bus) | 41 min | 22:18 | 38 min via Awara-Onsen |
+| Rainbow Line | none on weekdays; 6 weekend Gokoichi buses (Jul to Nov) | no open timetable links it to Fukui Station | — | — |
+| Fukui Station (hub) | 471 | | | 25 min |
 
-This supports the plan's day-trip hypothesis: from the Dinosaur Museum, the last way back without a car leaves at
-17:06, and from Eiheiji at 16:36 at weekends. The card flags any last return at 17:30 or earlier.
+This supports the plan's day-trip hypothesis: from the Dinosaur Museum, the last bus or train back leaves at 17:07,
+and from Eiheiji at 16:45 at weekends. The page flags any last return at 17:30 or earlier. Rail figures come from the
+expired research timetable (below), so they need confirming.
 
 ## How the numbers are made
 
 - **Stops serving a node**: every stop within `radius_m` (straight line) of the node's access point. The access
   point is the node's map pin, except Katsuyama, which uses the Dinosaur Museum.
 - **Departures**: trips that leave a node stop for somewhere else, each trip counted once.
-- **Journeys**: a Connection Scan over all the feeds together for one service day, with walking changes between stops
-  up to 300 m apart (+3 min to change). Walking is straight-line distance × 1.3 at 80 m/min, including the walk
-  between the stop and the access point. "Fastest" is the quickest journey of the day that no later departure beats.
-  "Last return" is the latest departure that still reaches Fukui Station by 24:59.
-- **Day types**: the next Wednesday, Saturday and Sunday. A feed that doesn't cover the date uses the same weekday 52
-  weeks earlier, so seasonal services such as the Rainbow Line summit bus stay in season.
+- **Journeys**: a Connection Scan over all the feeds together for one service day, stop to stop, with walking
+  changes between stops up to 300 m apart (walk + 3 min). Walking is straight-line distance × 1.3 at 80 m/min. The
+  walk from the nearest stop to the site is shown separately, not added. Every trip shown carries its itinerary,
+  and its minutes are arrive minus depart in whole clock minutes, so the numbers always add up
+  (`check_transport.mjs` enforces this). "Quickest" is the shortest such trip of the day. "Last back" is the last bus
+  or train leaving the site's stops that still reaches Fukui Station by 24:59.
+- **Kanazawa and Kyoto**: JR timetables are not open data, so the JR leg is a fixed estimate to a gateway station:
+  Fukui (Kanazawa 25 min, Kyoto 90 min) or Awara-Onsen (Kanazawa 25, Kyoto 100), then 5 min to change and the quickest
+  local trip from that gateway on the selected day. The faster gateway wins, so the result changes by day and Awara
+  Onsen is no longer routed through Fukui.
+- **Day types and expired feeds**: the next Wednesday, Saturday and Sunday. A feed that doesn't cover the date uses
+  the same weekday 52 weeks earlier, so seasonal services such as the Rainbow Line bus stay in season. This is shown
+  on the page: the banner lists every expired feed with its end date and the date used, and each card that relies on
+  one is marked. Today that is the rail feed (ended 14 Mar 2025) and Fukutetsu Bus (ended 31 Mar 2026).
 - **Status badge on the card**: "Real · timetable" when every feed behind the numbers is openly licensed, "licence
   to confirm" when Keifuku is involved, and "Research timetable" when rail is involved. Journey times can use any
   feed, so any node with a journey shows the research badge until the rail data question is settled.

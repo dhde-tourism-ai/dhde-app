@@ -7,6 +7,7 @@ import { useLang } from '../../lib/i18n'
 import { isHoliday } from '../../lib/holidays'
 import { Icon } from '../../components/icons'
 import { Loading, LoadError } from '../../components/StateMsg'
+import { Itinerary } from '../../components/Itinerary'
 import {
   DAY_LABEL,
   EARLY_LAST_RETURN_MIN,
@@ -74,8 +75,16 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     const m = clockMinutes(data.nodes[id].days[day]?.to_hub?.leave)
     return m != null && m <= EARLY_LAST_RETURN_MIN
   })
-  const carOnly = ranked.filter((id) => !data.nodes[id].days[day]?.to_hub)
+  // No service at all this day, vs buses that run but no open timetable links them to the hub.
+  const noService = ranked.filter((id) => !data.nodes[id].days[day]?.departures)
+  const noLink = ranked.filter((id) => (data.nodes[id].days[day]?.departures ?? 0) > 0 && !data.nodes[id].days[day]?.to_hub)
   const researchRail = data.sources.some((s) => s.publish_status === 'research_only')
+  const expired = data.sources.filter((s) => s.expired)
+  const usedOn = (feed: string) => data.timetable_dates[day]?.[feed]
+  const sourceName = (id: string) => {
+    const s = data.sources.find((x) => x.id === id)
+    return s ? t(s.name, s.name_ja) : id
+  }
   const trendRows =
     trends?.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) ?? []
 
@@ -87,8 +96,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           <h1 className="page-title">{t('Getting to the sites without a car', '車なしで各地点へ')}</h1>
           <p className="page-sub">
             {t(
-              `Scheduled bus and rail services to the six priority sites, and when the last one leaves for ${hub}. From the operators' open timetables (GTFS-JP), not live.`,
-              `6つの重点地点へのバス・鉄道の運行と、${hub}へ戻る最終便の時刻。事業者のオープンな時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。`,
+              `Scheduled bus and rail services from ${hub}, the starting point, to the other ${others.length} priority sites, and when the last one leaves to come back. From the operators' open timetables (GTFS-JP), not live.`,
+              `起点の${hub}から他の${others.length}つの重点地点へのバス・鉄道の運行と、戻りの最終便の時刻。事業者のオープンな時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。`,
             )}
           </p>
         </div>
@@ -101,15 +110,37 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         </div>
       </div>
 
-      {researchRail && (
+      {(expired.length > 0 || researchRail) && (
         <div className="banner banner-warn tr-banner">
           <Icon name="alert" size={16} />
-          <span>
-            {t(
-              'Rail times come from a research timetable (University of Tokyo, October 2024 timetable, research use only), and the Keifuku Bus licence still needs confirming with the company. Check both before these numbers go public.',
-              '鉄道の時刻は研究用時刻表（東京大学、2024年10月ダイヤ、研究目的のみ）で、京福バスの利用許諾も会社に確認中。公開前に両方を確認すること。',
+          <div>
+            {expired.length > 0 && (
+              <p className="tr-banner-p">
+                <strong>{t(`${expired.length} timetables have expired.`, `${expired.length}つの時刻表が有効期限切れ。`)}</strong>{' '}
+                {expired.map((s, i) => (
+                  <span key={s.id}>
+                    {i > 0 && t('; ', '、')}
+                    {t(
+                      `${s.name} ended ${s.valid_to}, so this page uses its timetable for ${usedOn(s.id) ?? '—'} (same week, earlier year)`,
+                      `${s.name_ja}は${s.valid_to}で終了。このページは${usedOn(s.id) ?? '—'}（前年以前の同じ週）の時刻表を使用`,
+                    )}
+                  </span>
+                ))}
+                {t(
+                  '. Times on those services may have changed since. Cards that rely on them are marked.',
+                  '。その後ダイヤが変わっている可能性がある。これらに依存するカードには印を付けている。',
+                )}
+              </p>
             )}
-          </span>
+            {researchRail && (
+              <p className="tr-banner-p">
+                {t(
+                  'Rail times also come from a research timetable (University of Tokyo, research use only), and the Keifuku Bus licence still needs confirming with the company. Check both before these numbers go public.',
+                  '鉄道の時刻は研究用時刻表（東京大学、研究目的のみ）で、京福バスの利用許諾も会社に確認中。公開前に両方を確認すること。',
+                )}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -121,8 +152,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               <h2 className="card-title">{t(`When public transport back to ${hub} runs out`, `${hub}へ戻る公共交通がなくなる時刻`)}</h2>
               <p className="card-sub">
                 {t(
-                  `Bar: from the first arrival from ${hub} to the last departure back. After the marker, the only way back is by car. ${DAY_LABEL[day][0]}, ${data.reference_days[day]}.`,
-                  `バー：${hub}からの始発到着から、戻りの最終出発まで。印の後は車でしか戻れない。${DAY_LABEL[day][1]}（${data.reference_days[day]}）。`,
+                  `Bar: from the first possible arrival from ${hub} to the last bus or train back that still reaches it. After the marker, the only way back is by car. Dashed line: 17:30. ${DAY_LABEL[day][0]}, ${data.reference_days[day]}.`,
+                  `バー：${hub}からの最も早い到着から、${hub}へ戻れる最終のバス・鉄道まで。印の後は車でしか戻れない。破線：17時30分。${DAY_LABEL[day][1]}（${data.reference_days[day]}）。`,
                 )}
               </p>
             </div>
@@ -156,7 +187,10 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       </>
                     ) : (
                       <span className="tr-none">
-                        <Icon name="car" size={13} /> {d && d.departures > 0 ? t(`no public transport link to ${hub}: car only`, `${hub}との公共交通の接続なし：車のみ`) : t('no bus or train this day: car only', 'この日はバス・鉄道なし：車のみ')}
+                        <Icon name="car" size={13} />{' '}
+                        {d && d.departures > 0
+                          ? t(`buses run here, but no open timetable links them to ${hub}`, `バスはあるが、${hub}とつながるオープンな時刻表がない`)
+                          : t('no bus or train this day: car only', 'この日はバス・鉄道なし：車のみ')}
                       </span>
                     )}
                   </div>
@@ -174,10 +208,19 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 )}{' '}
               </>
             )}
-            {carOnly.length > 0 && (
+            {noService.length > 0 && (
               <>
-                <strong>{carOnly.map(name).join(t(', ', '、'))}</strong>
-                {t(': reachable by car only on this day.', '：この日は車でのみ到達可能。')}
+                <strong>{noService.map(name).join(t(', ', '、'))}</strong>
+                {t(': no bus or train at all on this day, so car only.', '：この日はバス・鉄道が一切なく、車のみ。')}{' '}
+              </>
+            )}
+            {noLink.length > 0 && (
+              <>
+                <strong>{noLink.map(name).join(t(', ', '、'))}</strong>
+                {t(
+                  `: a local bus runs, but no open timetable connects it to ${hub} (JR lines are not open data), so the trip there can't be measured here.`,
+                  `：地元のバスはあるが、${hub}とつながるオープンな時刻表がない（JR線はオープンデータでない）ため、ここでは所要時間を計測できない。`,
+                )}
               </>
             )}
           </p>
@@ -192,6 +235,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           const isEarly = to != null && to <= EARLY_LAST_RETURN_MIN
           const nearest = n.stops?.slice().sort((a, b) => a.distance_m - b.distance_m)[0]
           const modes = Object.entries(d?.departures_by_mode ?? {}) as [TransportMode, number][]
+          const fh = d?.from_hub
+          const lines = Array.from(new Set(d?.routes.map((r) => r.name) ?? []))
           return (
             <section key={id} className="s-card tr-node" style={{ ['--span' as string]: 4 }}>
               <div className="s-card-head">
@@ -199,7 +244,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   <h3 className="card-title">{name(id)}</h3>
                   <p className="card-sub">
                     {isHub
-                      ? t('Hub: journeys are measured from here', '起点：所要時間はここから')
+                      ? t('Starting point: journeys are measured from here', '起点：所要時間はここから')
                       : n.anchor.label !== names[id]?.[0]
                         ? t(`Measured at: ${n.anchor.label}`, `基準点：${n.anchor.label_ja}`)
                         : t(`Stops within ${n.radius_m} m`, `${n.radius_m}m以内の停留所・駅`)}
@@ -209,9 +254,18 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   <Icon name="map" size={14} /> {t('Map', '地図')}
                 </button>
               </div>
+              {(d?.expired_feeds.length ?? 0) > 0 && (
+                <p className="tr-expired" title={d!.expired_feeds.map(sourceName).join(', ')}>
+                  <Icon name="alert" size={12} />{' '}
+                  {t(
+                    `Uses an expired timetable: ${d!.expired_feeds.map(sourceName).join(', ')}`,
+                    `期限切れの時刻表を使用：${d!.expired_feeds.map(sourceName).join('、')}`,
+                  )}
+                </p>
+              )}
               <div className="tr-kpis">
                 <div>
-                  <div className="eyebrow">{t('Departures / day', '1日の出発本数')}</div>
+                  <div className="eyebrow">{t('Departures / day, any direction', '1日の出発本数（全方向）')}</div>
                   <div className="tr-big num">{d?.departures ?? 0}</div>
                   <div className="tr-chips">
                     {modes.map(([m, c]) => (
@@ -223,29 +277,44 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 </div>
                 {!isHub && (
                   <div>
-                    <div className="eyebrow">{t(`Last back to ${hub}`, `${hub}への最終`)}</div>
-                    <div className={`tr-big num${isEarly ? ' warn-text' : ''}`}>{d?.to_hub ? clockLabel(d.to_hub.leave) : t('car only', '車のみ')}</div>
-                    {d?.to_hub && <div className="muted small">{t(`arrive ${clockLabel(d.to_hub.arrive_hub)}`, `${clockLabel(d.to_hub.arrive_hub)}着`)}</div>}
+                    <div className="eyebrow">{t(`Last bus or train back to ${hub}`, `${hub}へ戻る最終便`)}</div>
+                    <div className={`tr-big num${isEarly ? ' warn-text' : ''}`}>
+                      {d?.to_hub ? clockLabel(d.to_hub.leave) : d?.departures ? t('no link', '接続なし') : t('car only', '車のみ')}
+                    </div>
+                    {d?.to_hub && (
+                      <div className="muted small">
+                        {t(`arrive ${clockLabel(d.to_hub.arrive_hub)} (${fmtMinutes(d.to_hub.minutes, lang)})`, `${clockLabel(d.to_hub.arrive_hub)}着（${fmtMinutes(d.to_hub.minutes, lang)}）`)}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
               <ul className="road-list access-list">
                 <li className="kv">
-                  <span>{t('First / last departure', '始発 / 最終')}</span>
-                  <span className="kv-v num">
-                    {d?.departures ? `${clockLabel(d.first_departure)} – ${clockLabel(d.last_departure)}` : '—'}
-                  </span>
+                  <span>{t('First / last departure, any direction', '始発 / 最終（全方向）')}</span>
+                  <span className="kv-v num">{d?.departures ? `${clockLabel(d.first_departure)} – ${clockLabel(d.last_departure)}` : '—'}</span>
                 </li>
                 {!isHub && (
                   <li className="kv">
-                    <span>{t(`Fastest from ${hub}`, `${hub}から最速`)}</span>
+                    <span>{t(`Quickest trip from ${hub}`, `${hub}からの最短`)}</span>
                     <span className="kv-v">
-                      <span className="num">{d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : '—'}</span>
-                      {d?.from_hub?.leave_0900 && (
-                        <span className="muted small">
-                          {t(`09:00 → leave ${d.from_hub.leave_0900.depart}, arrive ${d.from_hub.leave_0900.arrive}`, `9時以降：${d.from_hub.leave_0900.depart}発 ${d.from_hub.leave_0900.arrive}着`)}
-                        </span>
+                      {fh ? (
+                        <>
+                          <span className="num">{fmtMinutes(fh.fastest_min, lang)}</span>
+                          <span className="muted small">{t(`leave ${clockLabel(fh.fastest.depart)} → arrive ${clockLabel(fh.fastest.arrive)}`, `${clockLabel(fh.fastest.depart)}発 → ${clockLabel(fh.fastest.arrive)}着`)}</span>
+                        </>
+                      ) : (
+                        '—'
                       )}
+                    </span>
+                  </li>
+                )}
+                {!isHub && fh?.after_0900 && (
+                  <li className="kv">
+                    <span>{t('First trip leaving after 09:00', '9時以降の最初の便')}</span>
+                    <span className="kv-v">
+                      <span className="num">{t(`${clockLabel(fh.after_0900.depart)} → ${clockLabel(fh.after_0900.arrive)}`, `${clockLabel(fh.after_0900.depart)}発 → ${clockLabel(fh.after_0900.arrive)}着`)}</span>
+                      <span className="muted small">{fmtMinutes(fh.after_0900.minutes, lang)}</span>
                     </span>
                   </li>
                 )}
@@ -253,25 +322,49 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   <li className="kv">
                     <span>{t('Nearest stop', '最寄りの停留所・駅')}</span>
                     <span className="kv-v">
-                      {nearest.name} <span className="muted small">{t(`${nearest.walk_min} min walk`, `徒歩${nearest.walk_min}分`)}</span>
+                      {nearest.name} <span className="muted small">{t(`+ ${nearest.walk_min} min walk to the site`, `地点まで徒歩${nearest.walk_min}分`)}</span>
                     </span>
                   </li>
                 )}
-                {Object.entries(n.from_far).map(([fid, f]) => (
+                {Object.entries(d?.from_far ?? {}).map(([fid, f]) => (
                   <li key={fid} className="kv" title={f.basis}>
                     <span>{t(`From ${f.name}`, `${f.name_ja}から`)}</span>
                     <span className="kv-v">
                       <span className="num">{f.minutes != null ? `≈ ${fmtMinutes(f.minutes, lang)}` : '—'}</span>
+                      {f.minutes != null && f.via && (
+                        <span className="muted small">
+                          {f.local_min
+                            ? t(`via ${f.via}: JR ${f.jr_min} + change ${f.change_min} + local ${f.local_min} min`, `${f.via_ja}経由：JR ${f.jr_min}＋乗換${f.change_min}＋地元${f.local_min}分`)
+                            : t(`JR to ${f.via}`, `${f.via_ja}までJR`)}
+                        </span>
+                      )}
                       <span className="tr-tag">{t('Estimated', '推計')}</span>
                     </span>
                   </li>
                 ))}
               </ul>
-              {(d?.routes.length ?? 0) > 0 && (
+              {!isHub && (fh?.after_0900 || d?.to_hub) && (
+                <details className="itin-more tr-itins">
+                  <summary>{t('Show the routes', '経路を表示')}</summary>
+                  {fh?.after_0900 && (
+                    <>
+                      <div className="eyebrow tr-itin-h">{t(`Going: first trip after 09:00`, '行き：9時以降の最初の便')}</div>
+                      <Itinerary legs={fh.after_0900.legs} />
+                    </>
+                  )}
+                  {d?.to_hub && (
+                    <>
+                      <div className="eyebrow tr-itin-h">{t(`Coming back: the last trip`, '帰り：最終便')}</div>
+                      <Itinerary legs={d.to_hub.legs} />
+                    </>
+                  )}
+                </details>
+              )}
+              {lines.length > 0 && (
                 <p className="muted small tr-routes">
                   {t('Lines: ', '路線：')}
-                  {Array.from(new Set(d!.routes.map((r) => r.name))).slice(0, 5).join(' · ')}
-                  {new Set(d!.routes.map((r) => r.name)).size > 5 && t(` + ${new Set(d!.routes.map((r) => r.name)).size - 5} more`, ` ほか${new Set(d!.routes.map((r) => r.name)).size - 5}路線`)}
+                  {lines.slice(0, 5).join(' · ')}
+                  {lines.length > 5 && t(` + ${lines.length - 5} more`, ` ほか${lines.length - 5}路線`)}
                 </p>
               )}
               {n.note && <p className="muted small tr-routes">{t(n.note, n.note_ja ?? n.note)}</p>}
@@ -287,12 +380,12 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 <h2 className="card-title">{t('Search interest in getting around Fukui', '福井の移動手段への検索関心')}</h2>
                 <p className="card-sub">
                   {t(
-                    'Google Trends, Japan, weekly, last 12 months. 0-100 relative to the busiest week of any term here: an interest index, not traveller numbers.',
-                    'Googleトレンド（日本・週次・直近12か月）。ここの語の中で最も多い週を100とした相対値で、利用者数ではない。',
+                    `Real Google Trends data (Japan, weekly, last 12 months), collected ${trends.generated_at.slice(0, 10)}. Marked Illustrative because it is a relative index (100 = the busiest week of any term here), not a count of travellers.`,
+                    `Googleトレンドの実データ（日本・週次・直近12か月、${trends.generated_at.slice(0, 10)}取得）。相対指数（ここの語で最も多い週＝100）で利用者数ではないため「参考」と表示。`,
                   )}
                 </p>
               </div>
-              <span className="tr-tag">{t('Illustrative', '参考')}</span>
+              <span className="tr-tag">{t('Illustrative · index', '参考・指数')}</span>
             </div>
             <div className="tr-chart">
               <ResponsiveContainer width="100%" height={260}>
@@ -374,8 +467,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           </div>
           <p className="muted small tr-routes">
             {t(
-              'Journeys: connection scan over all timetables together, with changes between stops up to 300 m apart (+3 min). Walking: straight line × 1.3 at 80 m/min. Kanazawa and Kyoto add an estimated JR leg (Shinkansen and JR timetables are not open data). Walking areas on the map: OpenStreetMap via Valhalla.',
-              '所要時間：全時刻表を合わせた乗換探索（300m以内の停留所間の乗換、+3分）。徒歩：直線距離×1.3、分速80m。金沢・京都はJR区間を推計で加算（新幹線・JRの時刻表はオープンデータでない）。地図の徒歩圏：OpenStreetMap（Valhalla）。',
+              'Journeys run stop to stop over all timetables together, changing between stops up to 300 m apart (walk + 3 min). Trip minutes are arrive minus depart, so they match the times shown. Walking to the site: straight line × 1.3 at 80 m/min, shown separately. Kanazawa and Kyoto: a fixed JR estimate to Fukui or Awara-Onsen station (Shinkansen timetables are not open data), 5 min to change, then the quickest local trip on the selected day; the faster gateway is used.',
+              '所要時間は全時刻表を合わせた停留所間の探索（300m以内の乗換は徒歩＋3分）。分数は到着時刻－出発時刻で、表示時刻と一致。地点までの徒歩（直線×1.3、分速80m）は別表示。金沢・京都：福井駅または芦原温泉駅までのJRの固定推計（新幹線の時刻表はオープンデータでない）＋乗換5分＋選択日の最短の地元交通。速い方の駅を使用。',
             )}
           </p>
         </section>

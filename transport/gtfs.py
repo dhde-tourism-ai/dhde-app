@@ -182,6 +182,7 @@ class Network:
     conn_deps: list[int] = field(default_factory=list)  # conns' departure times, for bisect
     stop_index: dict[str, int] = field(default_factory=dict)
     footpaths: dict[int, list[tuple[int, int]]] = field(default_factory=dict)  # idx -> [(idx, seconds)]
+    trip_info: dict[str, tuple[str, str, str]] = field(default_factory=dict)  # trip -> (mode, route name, feed)
     used_dates: dict[str, str] = field(default_factory=dict)
 
 
@@ -202,6 +203,8 @@ def build_network(feeds: list[Feed], wanted: date, walk: dict) -> Network:
                       ignore_index=True).drop_duplicates("stop_id").reset_index(drop=True)
     net = Network(stops=stops, calls=calls, used_dates=used)
     net.stop_index = {s: i for i, s in enumerate(stops["stop_id"])}
+    first_calls = calls.drop_duplicates("trip_id")
+    net.trip_info = dict(zip(first_calls["trip_id"], zip(first_calls["mode"], first_calls["name"], first_calls["feed"])))
     idx = calls["stop_id"].map(net.stop_index)
     calls = calls[idx.notna()]
     idx = idx[idx.notna()].astype(int).to_numpy()
@@ -282,3 +285,56 @@ def latest_departure(net: Network, targets: dict[int, int]) -> list[int]:
                     if dep - w > ld[j]:
                         ld[j] = dep - w
     return ld
+
+
+def journey(net: Network, sources: dict[int, int], targets: set[int]) -> dict | None:
+    """Earliest-arrival journey from `sources` (stop idx -> time) to the
+    earliest-reached stop in `targets`, with its legs. Same scan as
+    earliest_arrival, but each stop remembers how it was reached."""
+    ea = [INF] * len(net.stop_index)
+    parent: list[tuple | None] = [None] * len(ea)  # ('src',) | ('walk', from, start) | ('ride', board_ci, ci)
+    for s, t0 in sources.items():
+        if t0 < ea[s]:
+            ea[s], parent[s] = t0, ("src",)
+    for s, t0 in sources.items():
+        for j, w in net.footpaths.get(s, []):
+            if t0 + w < ea[j]:
+                ea[j], parent[j] = t0 + w, ("walk", s, t0)
+    board: dict[str, int] = {}
+    first = bisect.bisect_left(net.conn_deps, min(sources.values())) if sources else len(net.conns)
+    for ci in range(first, len(net.conns)):
+        dep, arr, a, b, trip = net.conns[ci]
+        if trip in board or ea[a] <= dep:
+            board.setdefault(trip, ci)
+            if arr < ea[b]:
+                ea[b], parent[b] = arr, ("ride", board[trip], ci)
+                for j, w in net.footpaths.get(b, []):
+                    if arr + w < ea[j]:
+                        ea[j], parent[j] = arr + w, ("walk", b, arr)
+    best = min(targets, key=lambda s: ea[s], default=None)
+    if best is None or ea[best] >= INF:
+        return None
+    names = net.stops["stop_name"]
+    legs, s = [], best
+    while parent[s][0] != "src":
+        p = parent[s]
+        if p[0] == "ride":
+            bc, c = net.conns[p[1]], net.conns[p[2]]
+            mode, route, feed = net.trip_info[c[4]]
+            legs.append({"mode": mode, "route": route, "feed": feed, "from": names[bc[2]], "depart": hhmm(bc[0]),
+                         "to": names[s], "arrive": hhmm(c[1]), "_dep": bc[0]})
+            s = bc[2]
+        else:
+            legs.append({"mode": "walk", "from": names[p[1]], "to": names[s],
+                         "minutes": max(1, round((ea[s] - p[2]) / 60)), "_dep": p[2]})
+            s = p[1]
+    legs.reverse()
+    rides = [leg for leg in legs if leg["mode"] != "walk"]
+    depart = rides[0]["_dep"] if rides else sources[s]
+    if rides and legs[0]["mode"] == "walk":  # a walk to the first stop counts as part of the trip
+        depart = rides[0]["_dep"] - legs[0]["minutes"] * 60
+    for leg in legs:
+        leg.pop("_dep")
+    return {"depart": hhmm(depart), "arrive": hhmm(ea[best]), "stop": int(best),
+            # whole minutes between the displayed clock times, so the numbers always add up
+            "minutes": ea[best] // 60 - depart // 60, "legs": legs}

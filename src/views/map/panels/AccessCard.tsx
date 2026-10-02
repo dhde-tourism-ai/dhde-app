@@ -3,6 +3,7 @@ import type { DayType, TransportFile } from '../../../types/transport'
 import { useLang } from '../../../lib/i18n'
 import { isHoliday } from '../../../lib/holidays'
 import { Icon } from '../../../components/icons'
+import { Itinerary } from '../../../components/Itinerary'
 import {
   DAY_LABEL,
   EARLY_LAST_RETURN_MIN,
@@ -43,6 +44,7 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
   const modes = Object.entries(d?.departures_by_mode ?? {}) as [keyof typeof MODE_LABEL, number][]
   const nearest = node.stops?.slice().sort((a, b) => a.distance_m - b.distance_m)[0]
   const caveats = sources.filter((s) => s.caveat)
+  const expired = (d?.expired_feeds ?? []).map((id) => data.sources.find((s) => s.id === id)).filter((s) => s != null)
 
   return (
     <>
@@ -61,6 +63,16 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
         ))}
       </div>
 
+      {expired.length > 0 && (
+        <p className="access-expired">
+          <Icon name="alert" size={12} />{' '}
+          {tr(
+            `Uses expired timetables (${expired.map((s) => `${s.name}, ended ${s.valid_to}`).join('; ')}): the same week of an earlier year stands in, so times may have changed.`,
+            `期限切れの時刻表を使用（${expired.map((s) => `${s.name_ja}、${s.valid_to}終了`).join('、')}）：前年以前の同じ週で代用しているため、時刻が変わっている可能性がある。`,
+          )}
+        </p>
+      )}
+
       {!d || d.departures === 0 ? (
         <div className="banner banner-warn small">
           <Icon name="car" size={14} />{' '}
@@ -72,8 +84,8 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
           <div className="banner banner-warn small">
             <Icon name="car" size={14} />{' '}
             {tr(
-              `Last public transport back to ${hub} leaves at ${clockLabel(back.leave)}. After that, car only.`,
-              `${hub}へ戻る最終の公共交通は${clockLabel(back.leave)}発。それ以降は車のみ。`,
+              `The last bus or train back to ${hub} leaves at ${clockLabel(back.leave)}. After that, car only.`,
+              `${hub}へ戻る最終のバス・鉄道は${clockLabel(back.leave)}発。それ以降は車のみ。`,
             )}
           </div>
         )
@@ -82,7 +94,7 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
       {d && d.departures > 0 && (
         <ul className="road-list access-list">
           <li className="kv">
-            <span>{tr('Departures per day', '1日の出発本数')}</span>
+            <span>{tr('Departures per day, any direction', '1日の出発本数（全方向）')}</span>
             <span className="kv-v">
               <span className="num">{d.departures}</span>{' '}
               {modes.map(([m, n]) => (
@@ -93,44 +105,48 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
             </span>
           </li>
           <li className="kv">
-            <span>{tr('First / last departure', '始発 / 最終')}</span>
+            <span>{tr('First / last departure, any direction', '始発 / 最終（全方向）')}</span>
             <span className="kv-v num">
               {clockLabel(d.first_departure)} – {clockLabel(d.last_departure)}
             </span>
           </li>
           {!isHub && (
             <li className="kv">
-              <span>{tr(`From ${hub}`, `${hub}から`)}</span>
+              <span>{tr(`Quickest trip from ${hub}`, `${hub}からの最短`)}</span>
               <span className="kv-v">
                 {d.from_hub ? (
                   <>
                     <span className="num">{fmtMinutes(d.from_hub.fastest_min, lang)}</span>{' '}
                     <span className="muted small">
-                      {d.from_hub.leave_0900
-                        ? tr(
-                            `leave ${d.from_hub.leave_0900.depart} → ${d.from_hub.leave_0900.arrive}`,
-                            `${d.from_hub.leave_0900.depart}発 → ${d.from_hub.leave_0900.arrive}着`,
-                          )
-                        : tr('no journey after 09:00', '9時以降の便なし')}
+                      {tr(`${clockLabel(d.from_hub.fastest.depart)} → ${clockLabel(d.from_hub.fastest.arrive)}`, `${clockLabel(d.from_hub.fastest.depart)}発 → ${clockLabel(d.from_hub.fastest.arrive)}着`)}
                     </span>
                   </>
                 ) : (
-                  <span className="muted small">{tr('no public transport link', '公共交通での接続なし')}</span>
+                  <span className="muted small">{tr(`no open timetable links it to ${hub}`, `${hub}とつながるオープンな時刻表なし`)}</span>
                 )}
+              </span>
+            </li>
+          )}
+          {!isHub && d.from_hub?.after_0900 && (
+            <li className="kv">
+              <span>{tr('First trip leaving after 09:00', '9時以降の最初の便')}</span>
+              <span className="kv-v">
+                <span className="num">{clockLabel(d.from_hub.after_0900.depart)} → {clockLabel(d.from_hub.after_0900.arrive)}</span>{' '}
+                <span className="muted small">{fmtMinutes(d.from_hub.after_0900.minutes, lang)}</span>
               </span>
             </li>
           )}
           {!isHub && (
             <li className="kv">
-              <span>{tr(`Last return to ${hub}`, `${hub}への最終`)}</span>
+              <span>{tr(`Last bus or train back to ${hub}`, `${hub}へ戻る最終便`)}</span>
               <span className="kv-v">
                 {back ? (
                   <>
                     <span className={`num${early ? ' warn-text' : ''}`}>{clockLabel(back.leave)}</span>{' '}
-                    <span className="muted small">{tr(`arrive ${clockLabel(back.arrive_hub)}`, `${clockLabel(back.arrive_hub)}着`)}</span>
+                    <span className="muted small">{tr(`arrive ${clockLabel(back.arrive_hub)} (${fmtMinutes(back.minutes, lang)})`, `${clockLabel(back.arrive_hub)}着（${fmtMinutes(back.minutes, lang)}）`)}</span>
                   </>
                 ) : (
-                  <span className="muted small">{tr('none: car only', 'なし：車のみ')}</span>
+                  <span className="muted small">{tr(`no open timetable links it to ${hub}`, `${hub}とつながるオープンな時刻表なし`)}</span>
                 )}
               </span>
             </li>
@@ -139,19 +155,39 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
             <li className="kv">
               <span>{tr('Nearest stop', '最寄りの停留所・駅')}</span>
               <span className="kv-v">
-                {nearest.name} <span className="muted small">{tr(`${nearest.walk_min} min walk`, `徒歩${nearest.walk_min}分`)}</span>
+                {nearest.name} <span className="muted small">{tr(`+ ${nearest.walk_min} min walk to the site`, `地点まで徒歩${nearest.walk_min}分`)}</span>
               </span>
             </li>
           )}
         </ul>
       )}
 
+      {d && !isHub && (d.from_hub?.after_0900 || back) && (
+        <details className="itin-more access-itins">
+          <summary>{tr('Show the routes', '経路を表示')}</summary>
+          {d.from_hub?.after_0900 && (
+            <>
+              <div className="eyebrow">{tr('Going: first trip after 09:00', '行き：9時以降の最初の便')}</div>
+              <Itinerary legs={d.from_hub.after_0900.legs} />
+            </>
+          )}
+          {back && (
+            <>
+              <div className="eyebrow">{tr('Coming back: the last trip', '帰り：最終便')}</div>
+              <Itinerary legs={back.legs} />
+            </>
+          )}
+        </details>
+      )}
+
       <ul className="road-list access-list">
-        {Object.entries(node.from_far).map(([id, f]) => (
+        {Object.entries(d?.from_far ?? {}).map(([id, f]) => (
           <li key={id} className="kv" title={f.basis}>
             <span>{tr(`From ${f.name}`, `${f.name_ja}から`)}</span>
             <span className="kv-v">
-              <span className="num">{f.minutes != null ? `≈ ${fmtMinutes(f.minutes, lang)}` : '—'}</span> <span className="tt-demo">{tr('Estimated', '推計')}</span>
+              <span className="num">{f.minutes != null ? `≈ ${fmtMinutes(f.minutes, lang)}` : '—'}</span>
+              {f.minutes != null && f.via && <span className="muted small">{tr(`via ${f.via}`, `${f.via_ja}経由`)}</span>}{' '}
+              <span className="tt-demo">{tr('Estimated', '推計')}</span>
             </span>
           </li>
         ))}

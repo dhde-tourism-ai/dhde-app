@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-02T05:17:36Z",
+ "generated_at": "2026-10-02T05:52:10Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -39,7 +39,7 @@
   "transfer_radius_m": 300,
   "transfer_buffer_min": 3
  },
- "note": "Public transport access per node from open GTFS-JP timetables (transport/README.md). Times are scheduled, not live. Journey times include the walk between the stop and the node's access point (straight line x 1.3 at 80 m/min). Kanazawa and Kyoto add an estimated JR leg.",
+ "note": "Public transport access per node from open GTFS-JP timetables (transport/README.md). Times are scheduled, not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and Kyoto add an estimated JR leg, since JR timetables are not open data.",
  "sources": [
   {
    "id": "keifuku_bus",
@@ -55,7 +55,8 @@
    "publish_status": "check",
    "agency": "京福バス",
    "valid_from": "2026-06-01",
-   "valid_to": "2027-05-31"
+   "valid_to": "2027-05-31",
+   "expired": false
   },
   {
    "id": "fukutetsu_bus",
@@ -71,7 +72,8 @@
    "publish_status": "ok",
    "agency": "福井鉄道株式会社",
    "valid_from": "2025-10-01",
-   "valid_to": "2026-03-31"
+   "valid_to": "2026-03-31",
+   "expired": true
   },
   {
    "id": "katsuyama_city_bus",
@@ -87,7 +89,8 @@
    "publish_status": "ok",
    "agency": "勝山市コミュニティ",
    "valid_from": "2026-03-19",
-   "valid_to": "2027-03-31"
+   "valid_to": "2027-03-31",
+   "expired": false
   },
   {
    "id": "eiheiji_town_bus",
@@ -103,7 +106,8 @@
    "publish_status": "ok",
    "agency": "永平寺町",
    "valid_from": "2026-04-26",
-   "valid_to": "2027-03-31"
+   "valid_to": "2027-03-31",
+   "expired": false
   },
   {
    "id": "sakai_city_bus",
@@ -119,7 +123,8 @@
    "publish_status": "ok",
    "agency": "坂井市コミュニティバス",
    "valid_from": "2023-10-01",
-   "valid_to": "2027-03-31"
+   "valid_to": "2027-03-31",
+   "expired": false
   },
   {
    "id": "fukutetsu_echitetsu_rail",
@@ -135,7 +140,8 @@
    "publish_status": "research_only",
    "agency": "福井鉄道",
    "valid_from": "2024-10-01",
-   "valid_to": "2025-03-14"
+   "valid_to": "2025-03-14",
+   "expired": true
   }
  ],
  "nodes": {
@@ -192,22 +198,140 @@
      ],
      "from_hub": {
       "journeys": 21,
-      "fastest_min": 79,
-      "typical_min": 80,
-      "first_arrival": "08:19",
-      "leave_0900": {
+      "fastest_min": 74,
+      "fastest": {
+       "depart": "14:39",
+       "arrive": "15:53",
+       "stop": 639,
+       "minutes": 74,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "14:39",
+         "to": "あわら湯のまち",
+         "arrive": "15:20"
+        },
+        {
+         "mode": "walk",
+         "from": "あわら湯のまち",
+         "to": "あわら湯のまち駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "85 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "あわら湯のまち駅",
+         "depart": "15:26",
+         "to": "東尋坊",
+         "arrive": "15:53"
+        }
+       ]
+      },
+      "typical_min": 75,
+      "first_arrival": "08:14",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "10:29",
-       "minutes": 80
+       "arrive": "10:24",
+       "stop": 639,
+       "minutes": 75,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "三国",
+         "arrive": "09:56"
+        },
+        {
+         "mode": "walk",
+         "from": "三国",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "10:11",
+         "to": "東尋坊",
+         "arrive": "10:24"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "18:47",
+      "leave": "18:53",
       "from_stop": "東尋坊",
       "arrive_hub": "20:01",
-      "minutes": 73
+      "minutes": 68,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "85 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "18:53",
+        "to": "三国港駅前",
+        "arrive": "18:58"
+       },
+       {
+        "mode": "walk",
+        "from": "三国港駅前",
+        "to": "三国港",
+        "minutes": 5
+       },
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "三国港",
+        "depart": "19:09",
+        "to": "福井",
+        "arrive": "20:01"
+       }
+      ]
      },
-     "car_only_after": "18:47"
+     "car_only_after": "18:53",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "saturday": {
      "departures": 35,
@@ -251,22 +375,140 @@
      ],
      "from_hub": {
       "journeys": 18,
-      "fastest_min": 79,
-      "typical_min": 80,
-      "first_arrival": "08:49",
-      "leave_0900": {
+      "fastest_min": 74,
+      "fastest": {
+       "depart": "14:39",
+       "arrive": "15:53",
+       "stop": 639,
+       "minutes": 74,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "14:39",
+         "to": "あわら湯のまち",
+         "arrive": "15:20"
+        },
+        {
+         "mode": "walk",
+         "from": "あわら湯のまち",
+         "to": "あわら湯のまち駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "85 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "あわら湯のまち駅",
+         "depart": "15:26",
+         "to": "東尋坊",
+         "arrive": "15:53"
+        }
+       ]
+      },
+      "typical_min": 75,
+      "first_arrival": "08:44",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "10:29",
-       "minutes": 80
+       "arrive": "10:24",
+       "stop": 639,
+       "minutes": 75,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "三国",
+         "arrive": "09:56"
+        },
+        {
+         "mode": "walk",
+         "from": "三国",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "10:11",
+         "to": "東尋坊",
+         "arrive": "10:24"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "18:18",
+      "leave": "18:24",
       "from_stop": "東尋坊",
       "arrive_hub": "20:01",
-      "minutes": 102
+      "minutes": 97,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "84 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "18:24",
+        "to": "あわら湯のまち駅",
+        "arrive": "18:53"
+       },
+       {
+        "mode": "walk",
+        "from": "あわら湯のまち駅",
+        "to": "あわら湯のまち",
+        "minutes": 4
+       },
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "あわら湯のまち",
+        "depart": "19:19",
+        "to": "福井",
+        "arrive": "20:01"
+       }
+      ]
      },
-     "car_only_after": "18:18"
+     "car_only_after": "18:24",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "sunday": {
      "departures": 35,
@@ -310,22 +552,140 @@
      ],
      "from_hub": {
       "journeys": 18,
-      "fastest_min": 79,
-      "typical_min": 80,
-      "first_arrival": "08:49",
-      "leave_0900": {
+      "fastest_min": 74,
+      "fastest": {
+       "depart": "14:39",
+       "arrive": "15:53",
+       "stop": 639,
+       "minutes": 74,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "14:39",
+         "to": "あわら湯のまち",
+         "arrive": "15:20"
+        },
+        {
+         "mode": "walk",
+         "from": "あわら湯のまち",
+         "to": "あわら湯のまち駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "85 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "あわら湯のまち駅",
+         "depart": "15:26",
+         "to": "東尋坊",
+         "arrive": "15:53"
+        }
+       ]
+      },
+      "typical_min": 75,
+      "first_arrival": "08:44",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "10:29",
-       "minutes": 80
+       "arrive": "10:24",
+       "stop": 639,
+       "minutes": 75,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "三国",
+         "arrive": "09:56"
+        },
+        {
+         "mode": "walk",
+         "from": "三国",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "10:11",
+         "to": "東尋坊",
+         "arrive": "10:24"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "18:18",
+      "leave": "18:24",
       "from_stop": "東尋坊",
       "arrive_hub": "20:01",
-      "minutes": 102
+      "minutes": 97,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "84 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "18:24",
+        "to": "あわら湯のまち駅",
+        "arrive": "18:53"
+       },
+       {
+        "mode": "walk",
+        "from": "あわら湯のまち駅",
+        "to": "あわら湯のまち",
+        "minutes": 4
+       },
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "あわら湯のまち",
+        "depart": "19:19",
+        "to": "福井",
+        "arrive": "20:01"
+       }
+      ]
      },
-     "car_only_after": "18:18"
+     "car_only_after": "18:24",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     }
    },
    "stops": [
@@ -339,27 +699,12 @@
      "walk_min": 5
     }
    ],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": 114
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": 170
-    }
-   },
    "modes": [
     "bus",
     "car"
    ],
    "feeds": [
+    "fukutetsu_echitetsu_rail",
     "keifuku_bus"
    ]
   },
@@ -673,6 +1018,39 @@
        "feed": "keifuku_bus",
        "trips": 1
       }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
      ]
     },
     "saturday": {
@@ -918,6 +1296,39 @@
        "feed": "keifuku_bus",
        "trips": 1
       }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
      ]
     },
     "sunday": {
@@ -1149,6 +1560,39 @@
        "feed": "keifuku_bus",
        "trips": 1
       }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
      ]
     }
    },
@@ -1361,22 +1805,6 @@
      "walk_min": 4
     }
    ],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": 34
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": 90
-    }
-   },
    "modes": [
     "bus",
     "rail",
@@ -1420,21 +1848,139 @@
      "from_hub": {
       "journeys": 7,
       "fastest_min": 72,
-      "typical_min": 102,
-      "first_arrival": "08:17",
-      "leave_0900": {
+      "fastest": {
        "depart": "10:55",
        "arrive": "12:07",
-       "minutes": 72
+       "stop": 2150,
+       "minutes": 72,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "勝山永平寺線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "10:55",
+         "to": "勝山",
+         "arrive": "11:48"
+        },
+        {
+         "mode": "walk",
+         "from": "勝山",
+         "to": "勝山駅前",
+         "minutes": 4
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "11:53",
+         "to": "恐竜博物館前",
+         "arrive": "12:07"
+        }
+       ]
+      },
+      "typical_min": 102,
+      "first_arrival": "08:17",
+      "after_0900": {
+       "depart": "10:55",
+       "arrive": "12:07",
+       "stop": 2150,
+       "minutes": 72,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "勝山永平寺線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "10:55",
+         "to": "勝山",
+         "arrive": "11:48"
+        },
+        {
+         "mode": "walk",
+         "from": "勝山",
+         "to": "勝山駅前",
+         "minutes": 4
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "11:53",
+         "to": "恐竜博物館前",
+         "arrive": "12:07"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "17:06",
+      "leave": "17:07",
       "from_stop": "恐竜博物館前",
       "arrive_hub": "18:42",
-      "minutes": 95
+      "minutes": 95,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "ぐるりん中部方面",
+        "feed": "katsuyama_city_bus",
+        "from": "恐竜博物館前",
+        "depart": "17:07",
+        "to": "勝山駅前",
+        "arrive": "17:28"
+       },
+       {
+        "mode": "walk",
+        "from": "勝山駅前",
+        "to": "勝山",
+        "minutes": 4
+       },
+       {
+        "mode": "rail",
+        "route": "勝山永平寺線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "勝山",
+        "depart": "17:49",
+        "to": "福井",
+        "arrive": "18:42"
+       }
+      ]
      },
-     "car_only_after": "17:06"
+     "car_only_after": "17:07",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 102,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 72,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 167,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 72,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "katsuyama_city_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "saturday": {
      "departures": 9,
@@ -1464,22 +2010,111 @@
      ],
      "from_hub": {
       "journeys": 7,
-      "fastest_min": 61,
+      "fastest_min": 60,
+      "fastest": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30"
+        }
+       ]
+      },
       "typical_min": 72,
       "first_arrival": "08:17",
-      "leave_0900": {
+      "after_0900": {
        "depart": "09:30",
-       "arrive": "10:31",
-       "minutes": 61
+       "arrive": "10:30",
+       "stop": 1529,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "17:06",
+      "leave": "17:07",
       "from_stop": "恐竜博物館前",
       "arrive_hub": "18:42",
-      "minutes": 95
+      "minutes": 95,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "ぐるりん中部方面",
+        "feed": "katsuyama_city_bus",
+        "from": "恐竜博物館前",
+        "depart": "17:07",
+        "to": "勝山駅前",
+        "arrive": "17:28"
+       },
+       {
+        "mode": "walk",
+        "from": "勝山駅前",
+        "to": "勝山",
+        "minutes": 4
+       },
+       {
+        "mode": "rail",
+        "route": "勝山永平寺線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "勝山",
+        "depart": "17:49",
+        "to": "福井",
+        "arrive": "18:42"
+       }
+      ]
      },
-     "car_only_after": "17:06"
+     "car_only_after": "17:07",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 155,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "katsuyama_city_bus",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "sunday": {
      "departures": 8,
@@ -1509,22 +2144,111 @@
      ],
      "from_hub": {
       "journeys": 6,
-      "fastest_min": 61,
+      "fastest_min": 60,
+      "fastest": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30"
+        }
+       ]
+      },
       "typical_min": 72,
       "first_arrival": "09:47",
-      "leave_0900": {
+      "after_0900": {
        "depart": "09:30",
-       "arrive": "10:31",
-       "minutes": 61
+       "arrive": "10:30",
+       "stop": 1529,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "17:06",
+      "leave": "17:07",
       "from_stop": "恐竜博物館前",
       "arrive_hub": "18:42",
-      "minutes": 95
+      "minutes": 95,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "ぐるりん中部方面",
+        "feed": "katsuyama_city_bus",
+        "from": "恐竜博物館前",
+        "depart": "17:07",
+        "to": "勝山駅前",
+        "arrive": "17:28"
+       },
+       {
+        "mode": "walk",
+        "from": "勝山駅前",
+        "to": "勝山",
+        "minutes": 4
+       },
+       {
+        "mode": "rail",
+        "route": "勝山永平寺線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "勝山",
+        "depart": "17:49",
+        "to": "福井",
+        "arrive": "18:42"
+       }
+      ]
      },
-     "car_only_after": "17:06"
+     "car_only_after": "17:07",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 155,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "katsuyama_city_bus",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     }
    },
    "stops": [
@@ -1538,28 +2262,14 @@
      "walk_min": 0
     }
    ],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": 136
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": 192
-    }
-   },
    "modes": [
     "bus",
     "car"
    ],
    "feeds": [
-    "katsuyama_city_bus"
+    "fukutetsu_echitetsu_rail",
+    "katsuyama_city_bus",
+    "keifuku_bus"
    ]
   },
   "rainbow_line": {
@@ -1570,8 +2280,8 @@
     "label_ja": "レインボーライン"
    },
    "radius_m": 800,
-   "note": "A toll road: the summit park is reached by car or the Fukutetsu summit bus, which runs on weekends and holidays from July to November. JR Obama Line stations (Mikata, Kiyama) are not in any open feed.",
-   "note_ja": "有料道路のため山頂公園へは車か福鉄の山頂バス（7〜11月の土日祝運行）。JR小浜線の駅（三方・気山）はオープンデータに含まれない。",
+   "note": "A toll road: the summit park is reached by car, or by the seasonal Gokoichi bus (ゴコイチバス, run by Fukui Railway) from JR Mikata station on weekends and holidays, July to November. That bus is the only open timetable here, and no open timetable links it to Fukui Station: JR Obama Line trains (Mikata, Kiyama) are not open data.",
+   "note_ja": "有料道路のため、山頂公園へは車か、季節運行のゴコイチバス（福井鉄道、7〜11月の土日祝）で。オープンな時刻表はこのバスだけで、福井駅とつながる時刻表はない（JR小浜線の三方・気山駅はオープンデータでない）。",
    "days": {
     "weekday": {
      "departures": 0,
@@ -1579,7 +2289,25 @@
      "routes": [],
      "from_hub": null,
      "to_hub": null,
-     "car_only_after": "all day"
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [],
+     "expired_feeds": []
     },
     "saturday": {
      "departures": 6,
@@ -1602,7 +2330,29 @@
      ],
      "from_hub": null,
      "to_hub": null,
-     "car_only_after": "all day"
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_bus"
+     ]
     },
     "sunday": {
      "departures": 6,
@@ -1625,30 +2375,39 @@
      ],
      "from_hub": null,
      "to_hub": null,
-     "car_only_after": "all day"
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_bus"
+     ]
     }
    },
    "stops": [],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": null
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": null
-    }
-   },
    "modes": [
+    "bus",
     "car"
    ],
-   "feeds": []
+   "feeds": [
+    "fukutetsu_bus"
+   ]
   },
   "awara_onsen": {
    "anchor": {
@@ -1711,22 +2470,95 @@
      ],
      "from_hub": {
       "journeys": 30,
-      "fastest_min": 46,
-      "typical_min": 46,
-      "first_arrival": "07:00",
-      "leave_0900": {
+      "fastest_min": 41,
+      "fastest": {
+       "depart": "06:15",
+       "arrive": "06:56",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "06:15",
+         "to": "あわら湯のまち",
+         "arrive": "06:56"
+        }
+       ]
+      },
+      "typical_min": 41,
+      "first_arrival": "06:56",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "09:54",
-       "minutes": 46
+       "arrive": "09:50",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "あわら湯のまち",
+         "arrive": "09:50"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "22:13",
+      "leave": "22:18",
       "from_stop": "あわら湯のまち",
       "arrive_hub": "23:00",
-      "minutes": 47
+      "minutes": 42,
+      "legs": [
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "あわら湯のまち",
+        "depart": "22:18",
+        "to": "福井",
+        "arrive": "23:00"
+       }
+      ]
      },
-     "car_only_after": "22:13"
+     "car_only_after": "22:18",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "saturday": {
      "departures": 102,
@@ -1778,22 +2610,95 @@
      ],
      "from_hub": {
       "journeys": 30,
-      "fastest_min": 46,
-      "typical_min": 46,
-      "first_arrival": "07:00",
-      "leave_0900": {
+      "fastest_min": 41,
+      "fastest": {
+       "depart": "06:15",
+       "arrive": "06:56",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "06:15",
+         "to": "あわら湯のまち",
+         "arrive": "06:56"
+        }
+       ]
+      },
+      "typical_min": 41,
+      "first_arrival": "06:56",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "09:54",
-       "minutes": 46
+       "arrive": "09:50",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "あわら湯のまち",
+         "arrive": "09:50"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "22:13",
+      "leave": "22:18",
       "from_stop": "あわら湯のまち",
       "arrive_hub": "23:00",
-      "minutes": 47
+      "minutes": 42,
+      "legs": [
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "あわら湯のまち",
+        "depart": "22:18",
+        "to": "福井",
+        "arrive": "23:00"
+       }
+      ]
      },
-     "car_only_after": "22:13"
+     "car_only_after": "22:18",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "sunday": {
      "departures": 102,
@@ -1845,22 +2750,95 @@
      ],
      "from_hub": {
       "journeys": 30,
-      "fastest_min": 46,
-      "typical_min": 46,
-      "first_arrival": "07:00",
-      "leave_0900": {
+      "fastest_min": 41,
+      "fastest": {
+       "depart": "06:15",
+       "arrive": "06:56",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "06:15",
+         "to": "あわら湯のまち",
+         "arrive": "06:56"
+        }
+       ]
+      },
+      "typical_min": 41,
+      "first_arrival": "06:56",
+      "after_0900": {
        "depart": "09:09",
-       "arrive": "09:54",
-       "minutes": 46
+       "arrive": "09:50",
+       "stop": 2449,
+       "minutes": 41,
+       "legs": [
+        {
+         "mode": "rail",
+         "route": "三国芦原線",
+         "feed": "fukutetsu_echitetsu_rail",
+         "from": "福井",
+         "depart": "09:09",
+         "to": "あわら湯のまち",
+         "arrive": "09:50"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "22:13",
+      "leave": "22:18",
       "from_stop": "あわら湯のまち",
       "arrive_hub": "23:00",
-      "minutes": 47
+      "minutes": 42,
+      "legs": [
+       {
+        "mode": "rail",
+        "route": "三国芦原線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "あわら湯のまち",
+        "depart": "22:18",
+        "to": "福井",
+        "arrive": "23:00"
+       }
+      ]
      },
-     "car_only_after": "22:13"
+     "car_only_after": "22:18",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     }
    },
    "stops": [
@@ -2000,22 +2978,6 @@
      "walk_min": 5
     }
    ],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": 80
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": 136
-    }
-   },
    "modes": [
     "bus",
     "rail",
@@ -2086,22 +3048,110 @@
      ],
      "from_hub": {
       "journeys": 18,
-      "fastest_min": 37,
-      "typical_min": 58,
-      "first_arrival": "07:38",
-      "leave_0900": {
+      "fastest_min": 28,
+      "fastest": {
        "depart": "09:50",
-       "arrive": "10:26",
-       "minutes": 37
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
+      },
+      "typical_min": 49,
+      "first_arrival": "07:30",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "18:10",
+      "leave": "18:19",
       "from_stop": "永平寺",
       "arrive_hub": "19:12",
-      "minutes": 62
+      "minutes": 53,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "88 永平寺線",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "18:19",
+        "to": "東古市第２",
+        "arrive": "18:32"
+       },
+       {
+        "mode": "walk",
+        "from": "東古市第２",
+        "to": "永平寺口",
+        "minutes": 5
+       },
+       {
+        "mode": "rail",
+        "route": "勝山永平寺線",
+        "feed": "fukutetsu_echitetsu_rail",
+        "from": "永平寺口",
+        "depart": "18:50",
+        "to": "福井",
+        "arrive": "19:12"
+       }
+      ]
      },
-     "car_only_after": "18:10"
+     "car_only_after": "18:19",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "fukutetsu_echitetsu_rail",
+      "keifuku_bus"
+     ],
+     "expired_feeds": [
+      "fukutetsu_echitetsu_rail"
+     ]
     },
     "saturday": {
      "departures": 18,
@@ -2152,22 +3202,92 @@
      ],
      "from_hub": {
       "journeys": 12,
-      "fastest_min": 37,
-      "typical_min": 47,
-      "first_arrival": "09:07",
-      "leave_0900": {
+      "fastest_min": 28,
+      "fastest": {
        "depart": "09:50",
-       "arrive": "10:26",
-       "minutes": 37
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
+      },
+      "typical_min": 38,
+      "first_arrival": "08:59",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "16:36",
+      "leave": "16:45",
       "from_stop": "永平寺",
       "arrive_hub": "17:30",
-      "minutes": 54
+      "minutes": 45,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "朝倉・永平寺ダイレクトバス",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "16:45",
+        "to": "福井駅東口",
+        "arrive": "17:30"
+       }
+      ]
      },
-     "car_only_after": "16:36"
+     "car_only_after": "16:45",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ],
+     "expired_feeds": []
     },
     "sunday": {
      "departures": 18,
@@ -2218,22 +3338,92 @@
      ],
      "from_hub": {
       "journeys": 12,
-      "fastest_min": 37,
-      "typical_min": 47,
-      "first_arrival": "09:07",
-      "leave_0900": {
+      "fastest_min": 28,
+      "fastest": {
        "depart": "09:50",
-       "arrive": "10:26",
-       "minutes": 37
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
+      },
+      "typical_min": 38,
+      "first_arrival": "08:59",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18"
+        }
+       ]
       }
      },
      "to_hub": {
-      "leave": "16:36",
+      "leave": "16:45",
       "from_stop": "永平寺",
       "arrive_hub": "17:30",
-      "minutes": 54
+      "minutes": 45,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "朝倉・永平寺ダイレクトバス",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "16:45",
+        "to": "福井駅東口",
+        "arrive": "17:30"
+       }
+      ]
      },
-     "car_only_after": "16:36"
+     "car_only_after": "16:45",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ],
+     "expired_feeds": []
     }
    },
    "stops": [
@@ -2256,27 +3446,12 @@
      "walk_min": 9
     }
    ],
-   "from_far": {
-    "kanazawa": {
-     "name": "Kanazawa",
-     "name_ja": "金沢",
-     "status": "estimated",
-     "basis": "Hokuriku Shinkansen Kanazawa → Fukui, from the approximate shinkansen legs in public/data/routes.json (25 + 9 min); JR West timetables are not open data.",
-     "minutes": 92
-    },
-    "kyoto": {
-     "name": "Kyoto",
-     "name_ja": "京都",
-     "status": "estimated",
-     "basis": "Limited express Thunderbird to Tsuruga, then Hokuriku Shinkansen to Fukui: about 1 h 28 min to 1 h 45 min including the 8-15 min change at Tsuruga (published journey guides); 90 min used. JR West timetables are not open data.",
-     "minutes": 148
-    }
-   },
    "modes": [
     "bus",
     "car"
    ],
    "feeds": [
+    "fukutetsu_echitetsu_rail",
     "keifuku_bus"
    ]
   }
