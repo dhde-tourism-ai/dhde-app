@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type ViewId = 'summary' | 'map' | 'nodes' | 'strategy'
+export type ViewId = 'summary' | 'map' | 'nodes' | 'transport' | 'strategy'
 
 export interface Route {
   view: ViewId
@@ -8,7 +8,7 @@ export interface Route {
   node?: string
 }
 
-const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'strategy']
+const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'transport', 'strategy']
 
 function parse(hash: string): Route {
   const [, view, node] = hash.replace(/^#/, '').split('/')
