@@ -36,6 +36,21 @@ const TERM_JA: Record<string, string> = {
 const LATER = '#5a6782'
 const EARLY = '#fab219'
 const INK = '#e9eef8'
+
+type LabelProps = { x?: number | string; y?: number | string; width?: number | string; height?: number | string; value?: unknown; index?: number }
+const box = (p: LabelProps) => ({ x: Number(p.x), y: Number(p.y), w: Number(p.width), h: Number(p.height) })
+
+/** Share label inside a stacked segment, left out where the segment is too narrow to hold it (phones). */
+function SegmentLabel(p: LabelProps) {
+  const { x, y, w, h } = box(p)
+  const v = Number(p.value)
+  if (!(v >= 10) || w < 34) return null
+  return (
+    <text x={x + w / 2} y={y + h / 2} dy="0.35em" textAnchor="middle" fill="#0a1120" fontSize={11.5} fontWeight={700}>
+      {Math.round(v)}%
+    </text>
+  )
+}
 const GRID = '#34425e'
 const AXIS = { fill: '#aeb9cd', fontSize: 12 }
 const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12.5, color: '#e9eef8' }
@@ -255,7 +270,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
                 {MODE_ORDER.map((m) => (
                   <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOUR[m]} isAnimationActive={false} stroke="#121c2f" strokeWidth={2}>
-                    <LabelList dataKey={m} position="center" formatter={(v) => (Number(v) >= 10 ? `${Math.round(Number(v))}%` : '')} style={{ fill: '#0a1120', fontSize: 11.5, fontWeight: 700 }} />
+                    <LabelList dataKey={m} content={SegmentLabel} />
                   </Bar>
                 ))}
               </BarChart>
@@ -283,7 +298,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         >
           <div className="td-chart" style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))} layout="vertical" margin={{ top: 18, right: 52, left: 4, bottom: 0 }}>
+              <BarChart data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))} layout="vertical" margin={{ top: 18, right: 16, left: 4, bottom: 0 }}>
                 <XAxis type="number" domain={[6 * 60, 22 * 60]} ticks={[360, 600, 840, 1080, 1320]} tickFormatter={hhmm} tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
                 <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
                 <ReferenceLine x={EARLY_LAST_RETURN_MIN} stroke={EARLY} strokeDasharray="4 4" label={{ value: '17:30', position: 'top', fill: EARLY, fontSize: 11 }} />
@@ -292,7 +307,19 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   {backBars.map((b) => (
                     <Cell key={b.id} fill={b.value == null ? 'transparent' : b.value <= EARLY_LAST_RETURN_MIN ? EARLY : LATER} />
                   ))}
-                  <LabelList dataKey="label" position="right" formatter={(v) => (v === '—' ? '' : String(v))} style={{ fill: INK, fontSize: 12.5, fontWeight: 600 }} />
+                  <LabelList
+                    dataKey="label"
+                    content={(p: LabelProps) => {
+                      const b = backBars[p.index ?? -1]
+                      if (!b || b.value == null) return null
+                      const { x, y, w, h } = box(p)
+                      return (
+                        <text x={x + w - 6} y={y + h / 2} dy="0.35em" textAnchor="end" fill={b.value <= EARLY_LAST_RETURN_MIN ? '#0a1120' : INK} fontSize={12.5} fontWeight={700}>
+                          {String(p.value)}
+                        </text>
+                      )
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -326,11 +353,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   return (
                     <tr key={id} className={site === 'all' || site === id ? '' : 'dim'} onClick={() => onOpenMap(id)} title={t('Show on the map', '地図で表示')}>
                       <th>{name(id)}</th>
-                      <td className="num">{v != null ? compact(v) : <span className="td-dim">—</span>}</td>
-                      <td className="num">{d?.departures ? d.departures : <span className="td-dim">0</span>}</td>
-                      <td className="num">{d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}</td>
-                      <td className="num">{fare != null ? `¥${fare.toLocaleString()}` : <span className="td-dim">—</span>}</td>
-                      <td className="num">
+                      <td className="num" data-label={t('Visitors', '来訪者')}>{v != null ? compact(v) : <span className="td-dim">—</span>}</td>
+                      <td className="num" data-label={t('Buses a day', 'バス本数/日')}>{d?.departures ? d.departures : <span className="td-dim">0</span>}</td>
+                      <td className="num" data-label={t(`Quickest from ${hub}`, `${hub}から最短`)}>{d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}</td>
+                      <td className="num" data-label={t('Bus fare', 'バス運賃')}>{fare != null ? `¥${fare.toLocaleString()}` : <span className="td-dim">—</span>}</td>
+                      <td className="num" data-label={t('Last bus back', '最終便')}>
                         {back == null ? <span className="td-dim">{t('none', 'なし')}</span> : <span className={back <= EARLY_LAST_RETURN_MIN ? 'td-hi' : ''}>{clockLabel(d?.to_hub?.leave)}</span>}
                       </td>
                     </tr>
