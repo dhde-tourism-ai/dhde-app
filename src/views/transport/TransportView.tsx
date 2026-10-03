@@ -56,13 +56,33 @@ const AXIS = { fill: '#aeb9cd', fontSize: 12 }
 const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12.5, color: '#e9eef8' }
 const CURSOR = { fill: 'rgba(160,185,230,.06)' }
 type Period = 'last_30_days' | 'year_2025'
+type Tab = 'arrive' | 'revenue' | 'spending'
+const TABS: [Tab, string, string][] = [
+  ['arrive', 'How tourists arrive', '観光客の来訪手段'],
+  ['revenue', 'Revenue and fares', '収入と運賃'],
+  ['spending', 'Spending and interest', '支出と関心'],
+]
 
 const pct = (x: number | null | undefined) => (x == null ? '—' : `${Math.round(x * 100)}%`)
 const compact = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(2)}M` : v >= 1000 ? `${Math.round(v / 1000)}K` : `${Math.round(v)}`)
 const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
 /** A dashboard card: the title states the finding, the subtitle says what is measured, the footer names the source. */
-function Card({ title, sub, source, tag, className = '', children }: { title: string; sub?: string; source?: ReactNode; tag?: ReactNode; className?: string; children: ReactNode }) {
+function Card({
+  title,
+  sub,
+  source,
+  tag,
+  className = '',
+  children,
+}: {
+  title: string
+  sub?: string
+  source?: ReactNode
+  tag?: ReactNode
+  className?: string
+  children: ReactNode
+}) {
   return (
     <section className={`td-card ${className}`}>
       <header>
@@ -113,6 +133,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   const [period, setPeriod] = useState<Period>('last_30_days')
   const [day, setDay] = useState<DayType>('saturday')
   const [site, setSite] = useState<string>('all')
+  const [tab, setTab] = useState<Tab>('arrive')
 
   const data = res.data
   const names = useMemo(() => Object.fromEntries((registry?.nodes ?? []).map((n) => [n.id, [n.name, n.name_ja] as [string, string]])), [registry])
@@ -154,7 +175,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
 
   // --- market
   const revenue = market ? market.revenue.filter((r) => r.yen != null).sort((a, b) => (b.yen ?? 0) - (a.yen ?? 0)) : []
-  const unpublished = market ? market.revenue.filter((r) => r.yen == null) : []
   const revenueTotal = revenue.reduce((a, r) => a + (r.yen ?? 0), 0)
   const ridership = market ? market.ridership.slice().sort((a, b) => b.passengers - a.passengers) : []
   const spend = modes?.spend_per_visitor
@@ -165,21 +185,42 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     : []
   const trendRows = trends ? trends.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) : []
   const yen = (v: number) =>
-    lang === 'ja' ? (v >= 1e8 ? `${(v / 1e8).toFixed(1)}億円` : `${Math.round(v / 1e4).toLocaleString()}万円`) : v >= 1e9 ? `¥${(v / 1e9).toFixed(2)}bn` : `¥${Math.round(v / 1e6)}M`
+    lang === 'ja'
+      ? v >= 1e8
+        ? `${(v / 1e8).toFixed(1)}億円`
+        : `${Math.round(v / 1e4).toLocaleString()}万円`
+      : v >= 1e9
+        ? `¥${(v / 1e9).toFixed(2)}bn`
+        : `¥${Math.round(v / 1e6)}M`
   const people = (v: number) => (lang === 'ja' ? `${Math.round(v / 1e4)}万人` : `${(v / 1e6).toFixed(2)}M`)
 
   // chart data
   const modeBars = byMode ? MODE_ORDER.map((m) => ({ id: m, name: t(...MODE_NAME[m]), value: byMode[m].visitors })) : []
   const stacked = modes
-    ? modeSites.map((id) => ({ id, name: name(id), ...Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])) }))
+    ? modeSites.map((id) => ({
+        id,
+        name: name(id),
+        ...Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])),
+      }))
     : []
   const backBars = sites
-    .map((id) => ({ id, name: lastBack(id) == null ? `${name(id)} ${t('(no bus)', '（バスなし）')}` : name(id), value: lastBack(id), label: clockLabel(data.nodes[id].days[day]?.to_hub?.leave) }))
+    .map((id) => ({
+      id,
+      name: lastBack(id) == null ? `${name(id)} ${t('(no bus)', '（バスなし）')}` : name(id),
+      value: lastBack(id),
+      label: clockLabel(data.nodes[id].days[day]?.to_hub?.leave),
+    }))
     .sort((a, b) => (a.value ?? 9999) - (b.value ?? 9999))
 
   // Everything split by mode comes from the tourism survey: say so where the number is.
   const tourists = (
-    <span className="td-tag" title={t('From the Fukui Prefecture tourism survey: how surveyed tourists got around. Not residents or all travellers.', '福井県観光アンケートより：回答した観光客の移動手段。住民や全移動者ではない。')}>
+    <span
+      className="td-tag"
+      title={t(
+        'From the Fukui Prefecture tourism survey: how surveyed tourists got around. Not residents or all travellers.',
+        '福井県観光アンケートより：回答した観光客の移動手段。住民や全移動者ではない。',
+      )}
+    >
       {t('Tourists only · survey', '観光客のみ・アンケート')}
     </span>
   )
@@ -189,7 +230,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     { value: pct(carShare), label: t('Tourists by car', '車で来る観光客'), accent: true, tag: true },
     { value: pct(ptShare), label: t('Tourists by bus or train', 'バス・鉄道で来る観光客'), tag: true },
     site === 'all'
-      ? { value: `${early.length} / ${linked.length}`, label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`), warn: early.length > 0 }
+      ? {
+          value: `${early.length} / ${linked.length}`,
+          label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`),
+          warn: early.length > 0,
+        }
       : {
           value: siteBack != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'),
           label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`),
@@ -214,166 +259,241 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               ['year_2025', t('Latest official year', '最新の公式年度')],
             ]}
           />
-          <Slicer label={t('Day', '曜日')} value={day} onChange={(v) => setDay(v as DayType)} options={(Object.keys(DAY_LABEL) as DayType[]).map((k) => [k, t(...DAY_LABEL[k])])} />
-          <Slicer label={t('Site', '地点')} value={site} onChange={setSite} options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]} />
+          <Slicer
+            label={t('Day', '曜日')}
+            value={day}
+            onChange={(v) => setDay(v as DayType)}
+            options={(Object.keys(DAY_LABEL) as DayType[]).map((k) => [k, t(...DAY_LABEL[k])])}
+          />
+          <Slicer
+            label={t('Site', '地点')}
+            value={site}
+            onChange={setSite}
+            options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]}
+          />
         </div>
       </header>
 
       <div className="td-kpis">
         {kpis.map((k, i) => (
           <div key={i} className={`td-kpi${k.accent ? ' accent' : ''}${k.warn ? ' warn' : ''}`}>
-            {'tag' in k && k.tag && tourists}
             <div className="td-kpi-value num">{k.value}</div>
             <div className="td-kpi-label">{k.label}</div>
+            {'tag' in k && k.tag && tourists}
           </div>
         ))}
       </div>
 
-      {/* Row 1: how visitors arrive */}
-      <h2 className="td-row-h">{t('How tourists arrive', '観光客の来訪手段')}</h2>
-      <div className="td-row">
-        <Card
-          className="td-5"
-          tag={tourists}
-          title={t('Tourists by mode of transport', '交通手段別の観光客')}
-          sub={t(`Visitors split by tourism survey answers · ${periodLabel}`, `来訪者を観光アンケートの割合で按分・${periodLabel}`)}
-          source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
-        >
-          <div className="td-chart" style={{ height: 230 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={modeBars} margin={{ top: 22, right: 6, left: 6, bottom: 0 }}>
-                <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} interval={0} />
-                <YAxis hide />
-                <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('visitors', '人')]} />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={54} isAnimationActive={false}>
-                  {modeBars.map((d) => (
-                    <Cell key={d.id} fill={MODE_COLOUR[d.id]} />
-                  ))}
-                  <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v))} style={{ fill: INK, fontSize: 12, fontWeight: 600 }} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card
-          className="td-7"
-          title={t('Tourist mode share by site', '地点別の観光客の交通手段')}
-          tag={tourists}
-          sub={t('Share of tourists by mode, %', '交通手段別の割合（%）')}
-          source={t('Fukui Prefecture tourism survey', '福井県観光アンケート')}
-        >
-          <div className="td-chart" style={{ height: 230 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stacked} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }} barCategoryGap={7}>
-                <XAxis type="number" domain={[0, 100]} hide />
-                <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
-                <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
-                {MODE_ORDER.map((m) => (
-                  <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOUR[m]} isAnimationActive={false} stroke="#121c2f" strokeWidth={2}>
-                    <LabelList dataKey={m} content={SegmentLabel} />
-                  </Bar>
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="td-legend">
-            {MODE_ORDER.map((m) => (
-              <span key={m}>
-                <i style={{ background: MODE_COLOUR[m] }}></i>
-                {t(...MODE_NAME[m])}
-              </span>
-            ))}
-          </div>
-        </Card>
+      <div className="td-tabs" role="tablist" aria-label={t('Sections', 'セクション')}>
+        {TABS.map(([id, en, ja]) => (
+          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+            {t(en, ja)}
+          </button>
+        ))}
       </div>
 
-      {/* Row 2: getting there without a car */}
-      <h2 className="td-row-h">{t('Getting there without a car', '車なしで行く')}</h2>
-      <div className="td-row">
-        <Card
-          className="td-5"
-          title={t('Last bus back to Fukui Station', '福井駅への最終バス')}
-          sub={t(`By site · ${dayLabel}`, `地点別・${dayLabel}`)}
-          source={t('Bus timetables (GTFS-JP)', 'バス時刻表（GTFS-JP）')}
-        >
-          <div className="td-chart" style={{ height: 240 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))} layout="vertical" margin={{ top: 18, right: 16, left: 4, bottom: 0 }}>
-                <XAxis type="number" domain={[6 * 60, 22 * 60]} ticks={[360, 600, 840, 1080, 1320]} tickFormatter={hhmm} tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
-                <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
-                <ReferenceLine x={EARLY_LAST_RETURN_MIN} stroke={EARLY} strokeDasharray="4 4" label={{ value: '17:30', position: 'top', fill: EARLY, fontSize: 11 }} />
-                <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(_, __, item) => [(item?.payload as { label?: string })?.label ?? '—', t('last bus', '最終便')]} />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false} onClick={(d) => onOpenMap((d as unknown as { id: string }).id)} style={{ cursor: 'pointer' }}>
-                  {backBars.map((b) => (
-                    <Cell key={b.id} fill={b.value == null ? 'transparent' : b.value <= EARLY_LAST_RETURN_MIN ? EARLY : LATER} />
-                  ))}
-                  <LabelList
-                    dataKey="label"
-                    content={(p: LabelProps) => {
-                      const b = backBars[p.index ?? -1]
-                      if (!b || b.value == null) return null
-                      const { x, y, w, h } = box(p)
-                      return (
-                        <text x={x + w - 6} y={y + h / 2} dy="0.35em" textAnchor="end" fill={b.value <= EARLY_LAST_RETURN_MIN ? '#0a1120' : INK} fontSize={12.5} fontWeight={700}>
-                          {String(p.value)}
-                        </text>
-                      )
-                    }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card
-          className="td-7"
-          title={t('Bus service by site', '地点別のバス運行')}
-          sub={t(`From ${hub} · ${dayLabel}`, `${hub}から・${dayLabel}`)}
-          source={t('Bus timetables and fares (GTFS-JP) · adult, one way', 'バス時刻表・運賃（GTFS-JP）・大人片道')}
-        >
-          <div className="td-table-wrap">
-            <table className="td-table">
-              <thead>
-                <tr>
-                  <th>{t('Site', '地点')}</th>
-                  <th>{t('Visitors', '来訪者')}</th>
-                  <th>{t('Buses a day', 'バス本数/日')}</th>
-                  <th>{t(`Quickest from ${hub}`, `${hub}から最短`)}</th>
-                  <th>{t('Bus fare', 'バス運賃')}</th>
-                  <th>{t('Last bus back', '最終便')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sites.map((id) => {
-                  const d = data.nodes[id].days[day]
-                  const m = modes?.nodes[id]
-                  const v = m ? (period === 'last_30_days' ? m.visitors_30d : m.official_annual_2025) : null
-                  const back = lastBack(id)
-                  const fare = (d?.from_hub?.recommended ?? d?.from_hub?.fastest)?.fare_yen
-                  return (
-                    <tr key={id} className={site === 'all' || site === id ? '' : 'dim'} onClick={() => onOpenMap(id)} title={t('Show on the map', '地図で表示')}>
-                      <th>{name(id)}</th>
-                      <td className="num" data-label={t('Visitors', '来訪者')}>{v != null ? compact(v) : <span className="td-dim">—</span>}</td>
-                      <td className="num" data-label={t('Buses a day', 'バス本数/日')}>{d?.departures ? d.departures : <span className="td-dim">0</span>}</td>
-                      <td className="num" data-label={t(`Quickest from ${hub}`, `${hub}から最短`)}>{d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}</td>
-                      <td className="num" data-label={t('Bus fare', 'バス運賃')}>{fare != null ? `¥${fare.toLocaleString()}` : <span className="td-dim">—</span>}</td>
-                      <td className="num" data-label={t('Last bus back', '最終便')}>
-                        {back == null ? <span className="td-dim">{t('none', 'なし')}</span> : <span className={back <= EARLY_LAST_RETURN_MIN ? 'td-hi' : ''}>{clockLabel(d?.to_hub?.leave)}</span>}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
-
-      {/* Row 3: the transport market */}
-      {market && (
+      {/* Tab 1: how tourists arrive, and getting there without a car */}
+      {tab === 'arrive' && (
         <>
-          <h2 className="td-section-h">{t('Revenue and Fares', '収入と運賃')}</h2>
-          <h3 className="td-row-h">{t('The transport market', '交通市場')}</h3>
+          <div className="td-row">
+            <Card
+              className="td-5"
+              tag={tourists}
+              title={t('Tourists by mode of transport', '交通手段別の観光客')}
+              sub={t(`Visitors split by tourism survey answers · ${periodLabel}`, `来訪者を観光アンケートの割合で按分・${periodLabel}`)}
+              source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
+            >
+              <div className="td-chart" style={{ height: 230 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={modeBars} margin={{ top: 22, right: 6, left: 6, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} interval={0} />
+                    <YAxis hide />
+                    <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('visitors', '人')]} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={54} isAnimationActive={false}>
+                      {modeBars.map((d) => (
+                        <Cell key={d.id} fill={MODE_COLOUR[d.id]} />
+                      ))}
+                      <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v))} style={{ fill: INK, fontSize: 12, fontWeight: 600 }} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+            <Card
+              className="td-7"
+              title={t('Tourist mode share by site', '地点別の観光客の交通手段')}
+              tag={tourists}
+              sub={t('Share of tourists by mode, %', '交通手段別の割合（%）')}
+              source={t('Fukui Prefecture tourism survey', '福井県観光アンケート')}
+            >
+              <div className="td-chart" style={{ height: 230 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stacked} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }} barCategoryGap={7}>
+                    <XAxis type="number" domain={[0, 100]} hide />
+                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
+                    <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
+                    {MODE_ORDER.map((m) => (
+                      <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOUR[m]} isAnimationActive={false} stroke="#121c2f" strokeWidth={2}>
+                        <LabelList dataKey={m} content={SegmentLabel} />
+                      </Bar>
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="td-legend">
+                {MODE_ORDER.map((m) => (
+                  <span key={m}>
+                    <i style={{ background: MODE_COLOUR[m] }}></i>
+                    {t(...MODE_NAME[m])}
+                  </span>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Row 2: getting there without a car */}
+          <h2 className="td-row-h">{t('Getting there without a car', '車なしで行く')}</h2>
+          <div className="td-row">
+            <Card
+              className="td-5"
+              title={t('Last bus back to Fukui Station', '福井駅への最終バス')}
+              sub={t(`By site · ${dayLabel}`, `地点別・${dayLabel}`)}
+              source={t('Keifuku Bus and city buses · Fukui Prefecture open data (CC BY 4.0)', '京福バス株式会社ほか・福井県オープンデータ（CC BY 4.0）')}
+            >
+              <div className="td-chart" style={{ height: 240 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))}
+                    layout="vertical"
+                    margin={{ top: 18, right: 16, left: 4, bottom: 0 }}
+                  >
+                    <XAxis
+                      type="number"
+                      domain={[6 * 60, 22 * 60]}
+                      ticks={[360, 600, 840, 1080, 1320]}
+                      tickFormatter={hhmm}
+                      tick={AXIS}
+                      tickLine={false}
+                      axisLine={{ stroke: GRID }}
+                    />
+                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
+                    <ReferenceLine
+                      x={EARLY_LAST_RETURN_MIN}
+                      stroke={EARLY}
+                      strokeDasharray="4 4"
+                      label={{ value: '17:30', position: 'top', fill: EARLY, fontSize: 11 }}
+                    />
+                    <Tooltip
+                      cursor={CURSOR}
+                      contentStyle={TIP}
+                      formatter={(_, __, item) => [(item?.payload as { label?: string })?.label ?? '—', t('last bus', '最終便')]}
+                    />
+                    <Bar
+                      dataKey="value"
+                      radius={[0, 4, 4, 0]}
+                      barSize={20}
+                      isAnimationActive={false}
+                      onClick={(d) => onOpenMap((d as unknown as { id: string }).id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {backBars.map((b) => (
+                        <Cell key={b.id} fill={b.value == null ? 'transparent' : b.value <= EARLY_LAST_RETURN_MIN ? EARLY : LATER} />
+                      ))}
+                      <LabelList
+                        dataKey="label"
+                        content={(p: LabelProps) => {
+                          const b = backBars[p.index ?? -1]
+                          if (!b || b.value == null) return null
+                          const { x, y, w, h } = box(p)
+                          return (
+                            <text
+                              x={x + w - 6}
+                              y={y + h / 2}
+                              dy="0.35em"
+                              textAnchor="end"
+                              fill={b.value <= EARLY_LAST_RETURN_MIN ? '#0a1120' : INK}
+                              fontSize={12.5}
+                              fontWeight={700}
+                            >
+                              {String(p.value)}
+                            </text>
+                          )
+                        }}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+            <Card
+              className="td-7"
+              title={t('Bus service by site', '地点別のバス運行')}
+              sub={t(`From ${hub} · ${dayLabel}`, `${hub}から・${dayLabel}`)}
+              source={t(
+                'Bus only (no open rail timetable) · adult fare, one way · Fukui Prefecture open data (CC BY 4.0)',
+                'バスのみ（鉄道の時刻表は非公開）・大人片道・福井県オープンデータ（CC BY 4.0）',
+              )}
+            >
+              <div className="td-table-wrap">
+                <table className="td-table">
+                  <thead>
+                    <tr>
+                      <th>{t('Site', '地点')}</th>
+                      <th>{t('Visitors', '来訪者')}</th>
+                      <th>{t('Buses a day', 'バス本数/日')}</th>
+                      <th>{t(`Quickest from ${hub}`, `${hub}から最短`)}</th>
+                      <th>{t('Bus fare', 'バス運賃')}</th>
+                      <th>{t('Last bus back', '最終便')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sites.map((id) => {
+                      const d = data.nodes[id].days[day]
+                      const m = modes?.nodes[id]
+                      const v = m ? (period === 'last_30_days' ? m.visitors_30d : m.official_annual_2025) : null
+                      const back = lastBack(id)
+                      const fare = (d?.from_hub?.recommended ?? d?.from_hub?.fastest)?.fare_yen
+                      return (
+                        <tr
+                          key={id}
+                          className={site === 'all' || site === id ? '' : 'dim'}
+                          onClick={() => onOpenMap(id)}
+                          title={t('Show on the map', '地図で表示')}
+                        >
+                          <th>{name(id)}</th>
+                          <td className="num" data-label={t('Visitors', '来訪者')}>
+                            {v != null ? compact(v) : <span className="td-dim">—</span>}
+                          </td>
+                          <td className="num" data-label={t('Buses a day', 'バス本数/日')}>
+                            {d?.departures ? d.departures : <span className="td-dim">0</span>}
+                          </td>
+                          <td className="num" data-label={t(`Quickest from ${hub}`, `${hub}から最短`)}>
+                            {d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}
+                          </td>
+                          <td className="num" data-label={t('Bus fare', 'バス運賃')}>
+                            {fare != null ? `¥${fare.toLocaleString()}` : <span className="td-dim">—</span>}
+                          </td>
+                          <td className="num" data-label={t('Last bus back', '最終便')}>
+                            {back == null ? (
+                              <span className="td-dim">{t('none', 'なし')}</span>
+                            ) : (
+                              <span className={back <= EARLY_LAST_RETURN_MIN ? 'td-hi' : ''}>{clockLabel(d?.to_hub?.leave)}</span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        </>
+      )}
+
+      {/* Tab 2: the transport market */}
+      {tab === 'revenue' && market && (
+        <>
           <div className="td-row">
             <Card
               className="td-6"
@@ -383,7 +503,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             >
               <div className="td-chart" style={{ height: 40 + revenue.length * 46 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenue.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))} layout="vertical" margin={{ top: 2, right: 82, left: 4, bottom: 2 }}>
+                  <BarChart
+                    data={revenue.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))}
+                    layout="vertical"
+                    margin={{ top: 2, right: 82, left: 4, bottom: 2 }}
+                  >
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={210} />
                     <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [yen(Number(v)), t('revenue', '収入')]} />
@@ -396,11 +520,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              {unpublished.length > 0 && (
-                <p className="td-note">
-                  <Badge status="not_published" /> {unpublished.map((r) => t(r.label, r.label_ja)).join(t(', ', '、'))}
-                </p>
-              )}
             </Card>
             <Card
               className="td-6"
@@ -410,7 +529,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             >
               <div className="td-chart" style={{ height: 40 + ridership.length * 38 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={ridership.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))} layout="vertical" margin={{ top: 2, right: 64, left: 4, bottom: 2 }}>
+                  <BarChart
+                    data={ridership.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))}
+                    layout="vertical"
+                    margin={{ top: 2, right: 64, left: 4, bottom: 2 }}
+                  >
                     <XAxis type="number" hide />
                     <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={230} />
                     <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('passengers', '人')]} />
@@ -418,7 +541,12 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       {ridership.map((r) => (
                         <Cell key={r.id} fill={GROUP_COLOUR[r.mode] ?? LATER} />
                       ))}
-                      <LabelList dataKey="passengers" position="right" formatter={(v) => people(Number(v))} style={{ fill: INK, fontSize: 12.5, fontWeight: 600 }} />
+                      <LabelList
+                        dataKey="passengers"
+                        position="right"
+                        formatter={(v) => people(Number(v))}
+                        style={{ fill: INK, fontSize: 12.5, fontWeight: 600 }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -439,10 +567,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         </>
       )}
 
-      {/* Row 4: spending and interest */}
-      {(spendRows.length > 0 || (trends && trends.terms.length > 0)) && (
+      {/* Tab 3: spending and interest */}
+      {tab === 'spending' && (
         <>
-          <h2 className="td-row-h">{t('Spending and interest', '支出と関心')}</h2>
           <div className="td-row">
             {spendRows.length > 0 && spend && (
               <Card
@@ -466,7 +593,13 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                           dataKey="yen"
                           position="right"
                           content={(p) => {
-                            const { x = 0, y = 0, width = 0, height = 0, index = 0 } = p as { x?: number; y?: number; width?: number; height?: number; index?: number }
+                            const {
+                              x = 0,
+                              y = 0,
+                              width = 0,
+                              height = 0,
+                              index = 0,
+                            } = p as { x?: number; y?: number; width?: number; height?: number; index?: number }
                             const r = spendRows[index]
                             return (
                               <text x={Number(x) + Number(width) + 8} y={Number(y) + Number(height) / 2 + 4} fill={INK} fontSize={12.5} fontWeight={600}>
@@ -499,7 +632,15 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       <YAxis tick={AXIS} tickLine={false} axisLine={false} domain={[0, 100]} ticks={[0, 50, 100]} />
                       <Tooltip contentStyle={TIP} cursor={{ stroke: GRID }} />
                       {trends.terms.map((x, i) => (
-                        <Line key={x.term} dataKey={x.label} name={t(x.label, TERM_JA[x.label] ?? x.term)} stroke={TREND_COLOURS[i % 5]} strokeWidth={2} dot={false} isAnimationActive={false} />
+                        <Line
+                          key={x.term}
+                          dataKey={x.label}
+                          name={t(x.label, TERM_JA[x.label] ?? x.term)}
+                          stroke={TREND_COLOURS[i % 5]}
+                          strokeWidth={2}
+                          dot={false}
+                          isAnimationActive={false}
+                        />
                       ))}
                     </LineChart>
                   </ResponsiveContainer>
@@ -517,52 +658,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           </div>
         </>
       )}
-
-      <details className="td-notes">
-        <summary>{t('Notes and sources', '注記と出典')}</summary>
-        <ol>
-          <li>
-            {t(
-              'Visitors by mode: each site’s visitor estimate (its camera, booking or hotel signal scaled to the official count) split by how that site’s respondents to the Fukui Prefecture tourism survey got around in Fukui (last 12 months). Several answers count equally; walking only when it was the only answer. Answers are voluntary, so the split is an estimate. Awara Onsen counts hotel guests; Fukui Station has no visitor estimate (shares only). “Latest official year” is calendar 2025, except Katsuyama (FY2025).',
-              '交通手段別の来訪者：各地点の来訪者推計（カメラ・予約・宿泊の指標を公式値に換算）を、その地点での福井県観光アンケートの「福井県内での交通手段」の回答割合（直近12か月）で分けた推計。複数回答は均等配分、徒歩は単独回答のみ。回答は任意。あわら温泉は宿泊客、福井駅は来訪者推計なし（割合のみ）。「最新の公式年度」は2025年（勝山は2025年度）。',
-            )}{' '}
-            {modes && (
-              <a href={modes.survey.url} target="_blank" rel="noreferrer">
-                {t('Survey data', 'アンケートデータ')}
-              </a>
-            )}
-          </li>
-          <li>
-            {t(
-              `Bus timetables and fares: ${data.sources.map((s) => s.name).join(', ')} (Fukui Prefecture open data, refreshed weekly). Echizen Railway and Fukui Railway publish no open timetable, so trips are by bus only and look longer than by train at Katsuyama, Awara Onsen and Tojinbo. Kanazawa times add an estimated Shinkansen leg. Bus data: 京福バス株式会社 and city buses, Fukui Prefecture open data (CC BY 4.0).`,
-              `バス時刻表・運賃：${data.sources.map((s) => s.name_ja).join('、')}（福井県オープンデータ、毎週更新）。えちぜん鉄道・福井鉄道はオープンな時刻表を公開していないため、移動はバスのみで、勝山・あわら温泉・東尋坊では鉄道より長めに出る。バスデータ：京福バス株式会社ほか、福井県オープンデータ（CC BY 4.0）。`,
-            )}
-          </li>
-          {market && (
-            <li>
-              {t('Published figures (each with period and status; nothing estimated):', '公表値（期間・区分付き、推計なし）：')}
-              <ul className="td-sources">
-                {[...market.revenue.filter((r) => r.url), ...market.ridership].map((r, i) => (
-                  <li key={`${r.id}-${i}`}>
-                    <a href={r.url} target="_blank" rel="noreferrer">
-                      {t(r.label, r.label_ja)}
-                    </a>{' '}
-                    <span className="td-dim">· {r.period}</span> <Badge status={r.status} />
-                  </li>
-                ))}
-                {market.fares.map((f, i) => (
-                  <li key={`fare-${i}`}>
-                    <a href={f.url} target="_blank" rel="noreferrer">
-                      {f.group === 'taxi' ? t(`${f.operator}, ${f.to}`, `${f.operator_ja}、${f.to_ja}`) : t(`${f.operator}: ${f.from} to ${f.to}`, `${f.operator_ja}：${f.from_ja}→${f.to_ja}`)}
-                    </a>{' '}
-                    <span className="num">¥{f.yen.toLocaleString()}</span> <Badge status={f.status} />
-                  </li>
-                ))}
-              </ul>
-            </li>
-          )}
-        </ol>
-      </details>
     </div>
   )
 }
