@@ -156,6 +156,30 @@ export function TransportOverview({
 
   return (
     <div className="txo">
+      <div className="txo-slicers">
+        <Slicer
+          label={t('Period', '期間')}
+          value={period}
+          onChange={(v) => setPeriod(v as Period)}
+          options={[
+            ['last_30_days', t('Last 30 days', '直近30日')],
+            ['year_2025', t('2025', '2025年')],
+          ]}
+        />
+        <Slicer
+          label={t('Timetable day', '時刻表の曜日')}
+          value={day}
+          onChange={(v) => setDay(v as DayType)}
+          options={(Object.keys(DAY_LABEL) as DayType[]).map((k) => [k, t(...DAY_LABEL[k])])}
+        />
+        <Slicer
+          label={t('Site', '地点')}
+          value={site}
+          onChange={setSite}
+          options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]}
+        />
+      </div>
+
       <div className="txo-kpis">
         {kpis.map((k, i) => (
           <div key={i} className="txo-kpi">
@@ -331,35 +355,12 @@ export function TransportOverview({
         )}
       </div>
 
-      <div className="txo-slicers">
-        <Slicer
-          label={t('Period', '期間')}
-          value={period}
-          onChange={(v) => setPeriod(v as Period)}
-          options={[
-            ['last_30_days', t('Last 30 days', '直近30日')],
-            ['year_2025', t('2025', '2025年')],
-          ]}
-        />
-        <Slicer
-          label={t('Timetable day', '時刻表の曜日')}
-          value={day}
-          onChange={(v) => setDay(v as DayType)}
-          options={(Object.keys(DAY_LABEL) as DayType[]).map((k) => [k, t(...DAY_LABEL[k])])}
-        />
-        <Slicer
-          label={t('Site', '地点')}
-          value={site}
-          onChange={setSite}
-          options={[['all', t('All sites', 'すべて')], ...sites.map((id) => [id, name(id)] as [string, string])]}
-        />
-        <div className="txo-source">
-          {t(
-            'Estimates from the Fukui Prefecture tourism survey × site visitor counts; bus timetables (GTFS-JP). See Notes.',
-            '福井県観光アンケート×各地点の来訪者数による推計、バス時刻表（GTFS-JP）。注記参照。',
-          )}
-        </div>
-      </div>
+      <p className="txo-source">
+        {t(
+          'Estimates from the Fukui Prefecture tourism survey × site visitor counts; bus timetables (GTFS-JP). See Notes.',
+          '福井県観光アンケート×各地点の来訪者数による推計、バス時刻表（GTFS-JP）。注記参照。',
+        )}
+      </p>
     </div>
   )
 }
