@@ -49,8 +49,8 @@
       "yen": null,
       "period": "FY2024",
       "status": "not_published",
-      "detail": "Revenue not published; net loss ¥18M, about ¥0.89bn a year in public support (FY2022–26)",
-      "detail_ja": "収入は非公表。純損失1,800万円、公的支援は年約8.9億円（2022〜26年度）",
+      "detail": "Revenue not published; net loss ¥18M; public support ¥3.57bn under the FY2022–26 plan (the source puts it at about ¥0.89bn a year)",
+      "detail_ja": "収入は非公表。純損失1,800万円。公的支援は2022〜26年度計画で35.7億円（出典では年約8.9億円）",
       "source": "Verepo, citing the company's FY2024 results",
       "url": "https://verepo.com/etetsu24/"
     },
@@ -62,8 +62,8 @@
       "yen": null,
       "period": "FY2024",
       "status": "not_published",
-      "detail": "Rail revenue not published; company total ¥3,797M includes its buses",
-      "detail_ja": "鉄道単独の収入は非公表。会社全体37.97億円はバス事業を含む",
+      "detail": "Rail revenue not published; company total ¥3,797M also covers buses, charter buses and oil sales, and includes ¥1.3bn of subsidies",
+      "detail_ja": "鉄道単独の収入は非公表。会社全体37.97億円はバス・貸切バス・石油販売を含み、補助金13億円を含む",
       "source": "Verepo, citing the company's FY2024 results",
       "url": "https://verepo.com/fukutetsu24/"
     },
@@ -116,10 +116,10 @@
       "passengers": 7618341,
       "period": "FY2024",
       "status": "press",
-      "detail": "21,060 a day (target 20,167); commuter passes 65%",
-      "detail_ja": "1日21,060人（目標20,167人）、定期65%",
+      "detail": "21,060 a day (target 20,167), 13,642 of them on commuter passes (tetsudokyogikai.net)",
+      "detail_ja": "1日21,060人（目標20,167人）、うち定期13,642人（鉄道協議会ネット）",
       "source": "Fukui Shimbun",
-      "url": "https://www.fukuishimbun.co.jp/articles/-/2332568"
+      "url": "https://www.fukuishimbun.co.jp/articles/-/2336181"
     },
     {
       "id": "bus",
@@ -221,12 +221,97 @@
     }
   ],
   "fares": [
-    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Katsuyama (Dinosaur Museum by bus)", "to_ja": "勝山（恐竜博物館へはバス）", "yen": 820, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
-    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Eiheiji-guchi (Eiheiji by bus)", "to_ja": "永平寺口（永平寺へはバス）", "yen": 490, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
-    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Awara-yunomachi", "to_ja": "あわら湯のまち", "yen": 730, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
-    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Mikuni-minato (Tojinbo by bus)", "to_ja": "三国港（東尋坊へはバス）", "yen": 820, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
-    { "group": "rail", "from": "Tsuruga", "from_ja": "敦賀", "to": "Fukui", "to_ja": "福井", "yen": 1140, "operator": "Hapi-line Fukui", "operator_ja": "ハピラインふくい", "status": "official", "period": "since 2024-03-16", "url": "https://www.hapi-line.co.jp/files/uploads/1-2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
-    { "group": "long", "from": "Tokyo", "from_ja": "東京", "to": "Fukui", "to_ja": "福井", "yen": 16030, "operator": "Hokuriku Shinkansen, reserved seat", "operator_ja": "北陸新幹線（指定席）", "status": "press", "period": "regular season", "url": "https://jr-shinkansen.net/articles/tokyo-fukui/" },
-    { "group": "taxi", "from": "Taxi", "from_ja": "タクシー", "to": "first 1.06 km", "to_ja": "初乗り1.06km", "yen": 650, "operator": "Fukui taxis (standard car)", "operator_ja": "福井県のタクシー（普通車）", "status": "official", "period": "from 2026-09-01; then ¥100 per 233 m", "url": "https://wwwtb.mlit.go.jp/chubu/press/pdf/jikou2026072802.pdf" }
-  ]
+    {
+      "group": "rail",
+      "from": "Fukui",
+      "from_ja": "福井",
+      "to": "Katsuyama (Dinosaur Museum by bus)",
+      "to_ja": "勝山（恐竜博物館へはバス）",
+      "yen": 820,
+      "operator": "Echizen Railway",
+      "operator_ja": "えちぜん鉄道",
+      "status": "official",
+      "period": "from 2024-03-16",
+      "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
+    },
+    {
+      "group": "rail",
+      "from": "Fukui",
+      "from_ja": "福井",
+      "to": "Eiheiji-guchi (Eiheiji by bus)",
+      "to_ja": "永平寺口（永平寺へはバス）",
+      "yen": 490,
+      "operator": "Echizen Railway",
+      "operator_ja": "えちぜん鉄道",
+      "status": "official",
+      "period": "from 2024-03-16",
+      "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
+    },
+    {
+      "group": "rail",
+      "from": "Fukui",
+      "from_ja": "福井",
+      "to": "Awara-yunomachi",
+      "to_ja": "あわら湯のまち",
+      "yen": 730,
+      "operator": "Echizen Railway",
+      "operator_ja": "えちぜん鉄道",
+      "status": "official",
+      "period": "from 2024-03-16",
+      "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
+    },
+    {
+      "group": "rail",
+      "from": "Fukui",
+      "from_ja": "福井",
+      "to": "Mikuni-minato (Tojinbo by bus)",
+      "to_ja": "三国港（東尋坊へはバス）",
+      "yen": 820,
+      "operator": "Echizen Railway",
+      "operator_ja": "えちぜん鉄道",
+      "status": "official",
+      "period": "from 2024-03-16",
+      "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
+    },
+    {
+      "group": "rail",
+      "from": "Tsuruga",
+      "from_ja": "敦賀",
+      "to": "Fukui",
+      "to_ja": "福井",
+      "yen": 1140,
+      "operator": "Hapi-line Fukui",
+      "operator_ja": "ハピラインふくい",
+      "status": "official",
+      "period": "since 2024-03-16",
+      "url": "https://www.hapi-line.co.jp/files/uploads/1-2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
+    },
+    {
+      "group": "long",
+      "from": "Tokyo",
+      "from_ja": "東京",
+      "to": "Fukui",
+      "to_ja": "福井",
+      "yen": 16030,
+      "operator": "Hokuriku Shinkansen, reserved seat",
+      "operator_ja": "北陸新幹線（指定席）",
+      "status": "press",
+      "period": "regular season",
+      "url": "https://jr-shinkansen.net/articles/tokyo-fukui/"
+    },
+    {
+      "group": "taxi",
+      "from": "Taxi",
+      "from_ja": "タクシー",
+      "to": "first 1.06 km",
+      "to_ja": "初乗り1.06km",
+      "yen": 650,
+      "operator": "Fukui district taxis, standard car, maximum fare",
+      "operator_ja": "福井地区タクシー（普通車・上限運賃）",
+      "status": "official",
+      "period": "from 2026-09-01; then up to ¥100 per 233 m",
+      "url": "https://wwwtb.mlit.go.jp/chubu/press/pdf/jikou2026072802.pdf"
+    }
+  ],
+  "verified": "All sources re-checked on 2026-10-03 against the cited documents (see the transport data verification report)."
 }
