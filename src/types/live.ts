@@ -193,7 +193,7 @@ export interface RealNodeMeta {
   index_daily: (number | null)[]
   /** Mean visitors_est over the real history: the demand alerts' fallback normal. */
   normal_daily: number | null
-  /** Per merged day: the mean of recent same weekdays, holidays left out (lib/normal.ts), the demand alerts' normal. */
+  /** Per merged day: the median of recent same weekdays, holidays left out (lib/normal.ts), the demand alerts' normal. */
   normal_by_day?: (number | null)[]
   forecast_method: string
   /** Per merged day: 'model' (7-day forecast), 'naive' (same-weekday mean, a rough estimate) or null (no forecast). */
