@@ -47,10 +47,11 @@ const compact = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(2)}M
 const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
 /** A dashboard card: the title states the finding, the subtitle says what is measured, the footer names the source. */
-function Card({ title, sub, source, className = '', children }: { title: string; sub?: string; source?: ReactNode; className?: string; children: ReactNode }) {
+function Card({ title, sub, source, tag, className = '', children }: { title: string; sub?: string; source?: ReactNode; tag?: ReactNode; className?: string; children: ReactNode }) {
   return (
     <section className={`td-card ${className}`}>
       <header>
+        {tag}
         <h3 className="td-card-title">{title}</h3>
         {sub && <p className="td-card-sub">{sub}</p>}
       </header>
@@ -170,11 +171,17 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     .map((id) => ({ id, name: lastBack(id) == null ? `${name(id)} ${t('(no bus)', '（バスなし）')}` : name(id), value: lastBack(id), label: clockLabel(data.nodes[id].days[day]?.to_hub?.leave) }))
     .sort((a, b) => (a.value ?? 9999) - (b.value ?? 9999))
 
+  // Everything split by mode comes from the tourism survey: say so where the number is.
+  const tourists = (
+    <span className="td-tag" title={t('From the Fukui Prefecture tourism survey: how surveyed tourists got around. Not residents or all travellers.', '福井県観光アンケートより：回答した観光客の移動手段。住民や全移動者ではない。')}>
+      {t('Tourists only · survey', '観光客のみ・アンケート')}
+    </span>
+  )
   const siteBack = site !== 'all' ? lastBack(site) : null
   const kpis = [
     { value: total != null ? compact(total) : '—', label: t(`Visitors · ${periodLabel}`, `来訪者・${periodLabel}`) },
-    { value: pct(carShare), label: t('By car', '車'), accent: true },
-    { value: pct(ptShare), label: t('By bus or train', 'バス・鉄道') },
+    { value: pct(carShare), label: t('Tourists by car', '車で来る観光客'), accent: true, tag: true },
+    { value: pct(ptShare), label: t('Tourists by bus or train', 'バス・鉄道で来る観光客'), tag: true },
     site === 'all'
       ? { value: `${early.length} / ${linked.length}`, label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`), warn: early.length > 0 }
       : {
@@ -209,6 +216,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       <div className="td-kpis">
         {kpis.map((k, i) => (
           <div key={i} className={`td-kpi${k.accent ? ' accent' : ''}${k.warn ? ' warn' : ''}`}>
+            {'tag' in k && k.tag && tourists}
             <div className="td-kpi-value num">{k.value}</div>
             <div className="td-kpi-label">{k.label}</div>
           </div>
@@ -216,12 +224,13 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       </div>
 
       {/* Row 1: how visitors arrive */}
-      <h2 className="td-row-h">{t('How visitors arrive', '来訪者の交通手段')}</h2>
+      <h2 className="td-row-h">{t('How tourists arrive', '観光客の来訪手段')}</h2>
       <div className="td-row">
         <Card
           className="td-5"
-          title={t(`${pct(carShare)} arrive by car`, `${pct(carShare)}が車で来訪`)}
-          sub={t(`Visitors by mode · ${periodLabel}`, `交通手段別の来訪者・${periodLabel}`)}
+          tag={tourists}
+          title={t(`${pct(carShare)} of tourists arrive by car`, `観光客の${pct(carShare)}が車で来訪`)}
+          sub={t(`Visitors by mode, split by tourist survey answers · ${periodLabel}`, `交通手段別の来訪者（観光客アンケートの割合で按分）・${periodLabel}`)}
           source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
         >
           <div className="td-chart" style={{ height: 230 }}>
@@ -245,12 +254,13 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           title={
             transitSite
               ? t(
-                  `Car leads everywhere; most transit at ${name(transitSite)} (${pct(siteShare(transitSite, ['bus', 'train']))})`,
+                  `Tourists: car leads everywhere; most transit at ${name(transitSite)} (${pct(siteShare(transitSite, ['bus', 'train']))})`,
                   `どこも車が最多、公共交通は${name(transitSite)}が最多（${pct(siteShare(transitSite, ['bus', 'train']))}）`,
                 )
               : t('How visitors travel, by site', '地点別の交通手段')
           }
-          sub={t('Mode share by site, %', '地点別の交通手段（%）')}
+          tag={tourists}
+          sub={t('How tourists travel, by site, %', '地点別の観光客の交通手段（%）')}
           source={t('Fukui Prefecture tourism survey', '福井県観光アンケート')}
         >
           <div className="td-chart" style={{ height: 230 }}>
@@ -434,8 +444,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             {spendRows.length > 0 && spend && (
               <Card
                 className="td-5"
-                title={spendRatio ? t(`Rental-car visitors spend ${spendRatio}× more on transport`, `レンタカー利用者の交通費は${spendRatio}倍`) : t('Transport spend per visitor', '1人当たりの交通費')}
-                sub={t('Transport spend per visitor · grey: residents', '1人当たりの交通費・灰色：県内在住')}
+                tag={tourists}
+                title={spendRatio ? t(`Rental-car tourists spend ${spendRatio}× more on transport`, `レンタカー利用の観光客の交通費は${spendRatio}倍`) : t('Transport spend per tourist', '1人当たりの交通費')}
+                sub={t('Transport spend per tourist · grey: tourists living in Fukui', '観光客1人当たりの交通費・灰色：県内在住の観光客')}
                 source={t('Estimate · prefecture tourism survey', '推計・県観光アンケート')}
               >
                 <div className="td-chart" style={{ height: 40 + spendRows.length * 44 }}>
