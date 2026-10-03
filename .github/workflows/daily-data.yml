@@ -200,7 +200,8 @@ jobs:
 
       # Training history (Monday: "Keep all training history in S3"). The live-data
       # branch and the JMA cache only live in git and the Actions cache, which can be
-      # rewritten or evicted; copying them to raw/ keeps every day for model training.
+      # rewritten or evicted, and the code4fukui data repos are someone else's; copying
+      # them to raw/ keeps every day for model training.
       # Their files grow in place, so each day goes to its own date=YYYY-MM-DD/ folder
       # and is uploaded create-only (If-None-Match: *): a key is never overwritten, and
       # a re-run of the same day gets a 412, treated as "already saved". aws s3 sync
@@ -238,6 +239,37 @@ jobs:
             save_new "$DHDE_WORKSPACE_ROOT/jma_cache" weather/jma
           else
             echo "::warning::no JMA cache; raw/weather/jma/ not saved today"
+          fi
+          # The code4fukui data repos fetch_data.py downloaded today (cameras, tourism
+          # survey, hotel and museum reservations, search trends), as read by the
+          # pipeline: one tar.gz per repo (the survey CSV alone is ~100 MB; gzip and one
+          # object keep it small), tagged with the repo's commit.
+          saved=0
+          for d in "$DHDE_WORKSPACE_ROOT"/*/; do
+            repo=$(basename "$d")
+            [ -e "$d/.git" ] || continue
+            case $(git -C "$d" remote get-url origin 2>/dev/null) in
+              https://github.com/code4fukui/*) ;;
+              *) continue ;;
+            esac
+            tgz="$RUNNER_TEMP/$repo.tar.gz"
+            tar -czf "$tgz" --exclude=.git -C "$DHDE_WORKSPACE_ROOT" "$repo"
+            key="raw/code4fukui/$repo/date=$day/$repo.tar.gz"
+            if err=$(aws s3api put-object --bucket "$DATA_BUCKET" --key "$key" --body "$tgz" \
+                --metadata "commit=$(git -C "$d" rev-parse HEAD)" --if-none-match '*' 2>&1 >/dev/null); then
+              saved=$((saved + 1))
+            else
+              case $err in
+                *PreconditionFailed*) saved=$((saved + 1)) ;;  # already saved by an earlier run today
+                *) echo "::warning::could not save $key: $err"; failed=1 ;;
+              esac
+            fi
+            rm -f "$tgz"
+          done
+          echo "code4fukui repos saved to raw/code4fukui/: $saved"
+          if [ "$saved" -eq 0 ]; then
+            echo "::warning::no code4fukui repo saved to raw/code4fukui/ today"
+            failed=1
           fi
           # continue-on-error hides a failed step behind a near-green run; fail it visibly.
           if [ "$failed" -ne 0 ]; then
