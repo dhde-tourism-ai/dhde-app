@@ -1,5 +1,5 @@
 /* Transport view (src/views/transport/TransportView.tsx): one skimmable page.
-   Header + filters, KPI strip and "so what", four rows of paired cards, notes.
+   Header + filters, KPI strip, then three tabs of paired cards.
    App tokens throughout; amber (--warn) only for "last bus by 17:30". */
 
 .td {
@@ -99,20 +99,6 @@
 }
 
 /* ---------- rows and cards ---------- */
-.td-section-h {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin: 40px 0 0;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
-}
-
-.td-section-h + .td-row-h {
-  margin-top: 12px;
-}
 
 .td-row-h {
   margin: 26px 0 10px;
@@ -345,49 +331,6 @@
   border: 1px dashed var(--line-strong);
 }
 
-/* notes */
-.td-notes {
-  margin-top: 28px;
-  padding: 14px 18px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--text-2);
-}
-
-.td-notes summary {
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.td-notes ol {
-  margin: 10px 0 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 8px;
-}
-
-.td-notes a {
-  color: var(--accent-strong);
-}
-
-.td-sources {
-  list-style: none;
-  margin: 6px 0 0;
-  padding: 0;
-  columns: 2;
-  column-gap: 28px;
-}
-
-.td-sources li {
-  break-inside: avoid;
-  padding: 2px 0;
-}
-
 /* ---------- small screens ---------- */
 @media (max-width: 1100px) {
   .td-kpis {
@@ -411,19 +354,11 @@
   .td-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .td-sources {
-    columns: 1;
-  }
 }
 
 @media (max-width: 640px) {
   .td-title {
     font-size: 23px;
-  }
-
-  .td-section-h {
-    font-size: 20px;
   }
 
   .td-kpi-value {
@@ -492,4 +427,71 @@
     font-size: 11px;
     color: var(--muted);
   }
+}
+
+/* section tabs under the KPI strip (same look as the map's panel tabs) */
+.td-tabs {
+  display: inline-flex;
+  gap: 2px;
+  margin: 24px 0 4px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.td-tabs button {
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.td-tabs button:hover {
+  color: var(--text);
+}
+
+.td-tabs button[aria-selected='true'] {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.td-tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.td-tabs + * {
+  margin-top: 14px;
+}
+
+/* Phones: the three tabs share the width, wrapping their labels */
+@media (max-width: 640px) {
+  .td-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .td-tabs button {
+    padding: 7px 6px;
+    font-size: 12.5px;
+    white-space: normal;
+    line-height: 1.25;
+  }
+}
+
+/* in a KPI the tag sits under the label, so the numbers line up across the strip */
+.td-kpi .td-tag {
+  margin: 8px 0 0;
 }
