@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-10-03T00:00:00Z",
-  "note": "Hand-maintained published figures for Fukui Prefecture transport (transport/README.md). Every value carries its period and source; 'official' = operator, prefecture, MLIT or JR document, 'press' = a newspaper citing an operator release. Nothing here is estimated. Update when operators publish new figures.",
+  "note": "Hand-maintained published figures for Fukui Prefecture transport (dhde-preprocessing-model docs/transport.md). Every value carries its period and source; 'official' = operator, prefecture, MLIT or JR document, 'press' = a newspaper citing an operator release. Nothing here is estimated. Update when operators publish new figures.",
   "revenue": [
     {
       "id": "taxi",

@@ -7,6 +7,4 @@ dist/
 __pycache__/
 *.pyc
 
-# transport track: downloaded GTFS feeds
-transport/.cache/
 .pytest_cache/

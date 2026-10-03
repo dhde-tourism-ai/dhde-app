@@ -267,7 +267,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const day = Math.floor(t / 24)
   // Optional: without hotel_thresholds.json loop #3 keeps its demo rule.
   const hotelThresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
-  // Optional: public transport access (transport/build_transport.py). Without it the card and layer just don't show.
+  // Optional: public transport access (built daily by dhde-preprocessing-model). Without it the card and layer just don't show.
   const transport = useJsonResource<TransportFile>('transport.json').data
   const transportMap = useJsonResource<TransportMapFile>('transport_map.json').data
   const nudges = useMemo(

@@ -1,5 +1,0 @@
-requests>=2.31
-pandas>=2.2
-jpholiday>=0.1.9
-pytrends>=4.9
-pytest>=7.0

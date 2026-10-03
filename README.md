@@ -32,7 +32,7 @@ The app only reads JSON from `data/`: the live CloudFront copy when configured (
 | `routes.json` | `scripts/fetch_routes.mjs` (run once) | road geometry between node pairs, plus the shinkansen line |
 | `real_data.json` | `scripts/build_real_data.py` from dhde-preprocessing-model (**real**, refreshed daily) | last 90 days per node: visitors estimate, weather, traffic, hotels, survey counts, Google Maps metrics; hotel forward bookings |
 | `live_demo.json` | `scripts/gen_live_demo.mjs` (**dummy**) | hourly people, flows, traffic, weather, sentiment for today + 7 days |
-| `transport.json`, `transport_map.json`, `transport_trends.json` | `transport/` (see [transport/README.md](transport/README.md)), weekly | public transport access per node from GTFS-JP timetables, route lines, stops, walking areas; Google Trends interest (Illustrative) |
+| `transport.json`, `transport_map.json`, `transport_modes.json`, `transport_trends.json` | dhde-preprocessing-model `scripts/build_transport.py` (see its [docs/transport.md](https://github.com/dhde-tourism-ai/dhde-preprocessing-model/blob/main/docs/transport.md)), **refreshed daily** in `daily-data.yml` | public transport access per node from GTFS-JP bus timetables, route lines, stops, walking areas; tourists by mode and spend (tourism survey); Google Trends interest (Illustrative) |
 | `market_voice_demo.json` | `scripts/gen_market_voice_demo.mjs` (**dummy**, fictional posts and reviews) | hotels, search intent, survey, social media, reviews |
 
 The demo files are snapshots so the app runs on its own; `real_data.json` is refreshed daily by the Data refresh workflow.

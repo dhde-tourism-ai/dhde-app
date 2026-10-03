@@ -1,4 +1,4 @@
-/** public/data/transport.json: public transport access per node (transport/build_transport.py). */
+/** public/data/transport.json: public transport access per node (dhde-preprocessing-model, built daily). */
 export type TransportMode = 'bus' | 'rail' | 'car' | 'ferry'
 export type DayType = 'weekday' | 'saturday' | 'sunday'
 /** ok = open licence; check = licence needs confirming with the operator; research_only = not for publication as is. */
@@ -144,7 +144,7 @@ export interface TransportTrendsFile {
   terms: { term: string; label: string; mode: string; values: number[] }[]
 }
 
-/** public/data/transport_modes.json: estimated visitors by mode (transport/build_modes.py). Modelled. */
+/** public/data/transport_modes.json: estimated visitors by mode (dhde-preprocessing-model, built daily). Modelled. */
 export type ModeId = 'train' | 'bus' | 'own_car' | 'rental_car' | 'other'
 export interface ModeCount {
   visitors: number

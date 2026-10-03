@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Validate public/data/transport.json, transport_map.json and transport_trends.json
-// (transport/build_transport.py, transport/collect_trends.py). Each file is optional:
+// (dhde-preprocessing-model scripts/build_transport.py, run daily). Each file is optional:
 // a missing file is OK (the app hides the card or layer), a malformed one exits 1
 // so the deploy stops and the previous site stays up.
 import { existsSync, readFileSync } from 'node:fs'

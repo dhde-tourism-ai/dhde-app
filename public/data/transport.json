@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T03:18:30Z",
+ "generated_at": "2026-10-03T05:45:59Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -33,7 +33,7 @@
   "transfer_radius_m": 300,
   "transfer_buffer_min": 3
  },
- "note": "Public transport access per node from open GTFS-JP timetables (transport/README.md). Times are scheduled, not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and Kyoto add an estimated JR leg, since JR timetables are not open data.",
+ "note": "Public transport access per node from open GTFS-JP timetables (dhde-preprocessing-model docs/transport.md). Times are scheduled, not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and Kyoto add an estimated JR leg, since JR timetables are not open data.",
  "sources": [
   {
    "id": "keifuku_bus",
