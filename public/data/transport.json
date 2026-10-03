@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T05:45:59Z",
+ "generated_at": "2026-10-03T13:24:25Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -407,15 +407,15 @@
      "last_arrival": "18:24",
      "routes": [
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_A",
-       "name": "96 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
       },
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_B",
-       "name": "97 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -684,15 +684,15 @@
      "last_arrival": "18:24",
      "routes": [
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_A",
-       "name": "96 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
       },
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_B",
-       "name": "97 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -999,13 +999,6 @@
        "trips": 23
       },
       {
-       "id": "keifuku_bus:県立病院丸岡線_A",
-       "name": "36 県立病院丸岡線",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 22
-      },
-      {
        "id": "keifuku_bus:大和田丸岡線_A",
        "name": "39 大和田丸岡線",
        "mode": "bus",
@@ -1013,15 +1006,22 @@
        "trips": 22
       },
       {
-       "id": "keifuku_bus:高速バス名古屋線_A",
-       "name": "名古屋線",
+       "id": "keifuku_bus:県立病院丸岡線_A",
+       "name": "36 県立病院丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_A",
+       "name": "10 越前海岸ブルーライン",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 20
       },
       {
-       "id": "keifuku_bus:越前海岸ブルーライン_A",
-       "name": "10 越前海岸ブルーライン",
+       "id": "keifuku_bus:高速バス名古屋線_A",
+       "name": "名古屋線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 20
@@ -1048,15 +1048,15 @@
        "trips": 16
       },
       {
-       "id": "keifuku_bus:すまいるバス_B",
-       "name": "すまいるバス東ルート",
+       "id": "keifuku_bus:すまいるバス_A",
+       "name": "すまいるバス南ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 14
       },
       {
-       "id": "keifuku_bus:すまいるバス_A",
-       "name": "すまいるバス南ルート",
+       "id": "keifuku_bus:すまいるバス_D",
+       "name": "すまいるバス西ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 14
@@ -1069,8 +1069,8 @@
        "trips": 14
       },
       {
-       "id": "keifuku_bus:すまいるバス_D",
-       "name": "すまいるバス西ルート",
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 14
@@ -1146,13 +1146,6 @@
        "trips": 5
       },
       {
-       "id": "keifuku_bus:済生会問屋団地線_B",
-       "name": "52 済生会問屋団地線",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 4
-      },
-      {
        "id": "keifuku_bus:羽水高校線_A",
        "name": "60 羽水高校線",
        "mode": "bus",
@@ -1160,15 +1153,8 @@
        "trips": 4
       },
       {
-       "id": "keifuku_bus:桜ヶ丘団地線_A",
-       "name": "13 桜ヶ丘団地線",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 4
-      },
-      {
-       "id": "keifuku_bus:大安寺線_A",
-       "name": "11 大安寺線",
+       "id": "keifuku_bus:済生会問屋団地線_B",
+       "name": "52 済生会問屋団地線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 4
@@ -1181,11 +1167,18 @@
        "trips": 4
       },
       {
-       "id": "keifuku_bus:運転者教育センター線_A",
-       "name": "28 運転者教育センター線",
+       "id": "keifuku_bus:大安寺線_A",
+       "name": "11 大安寺線",
        "mode": "bus",
        "feed": "keifuku_bus",
-       "trips": 3
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
       },
       {
        "id": "keifuku_bus:大野線_B",
@@ -1193,6 +1186,20 @@
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 3
+      },
+      {
+       "id": "keifuku_bus:運転者教育センター線_A",
+       "name": "28 運転者教育センター線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:川西三国線_A",
+       "name": "16 川西三国線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
       },
       {
        "id": "keifuku_bus:清水グリーンライン_C",
@@ -1211,13 +1218,6 @@
       {
        "id": "keifuku_bus:越前海岸ブルーライン_D",
        "name": "19 越前海岸ブルーライン",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 2
-      },
-      {
-       "id": "keifuku_bus:川西三国線_A",
-       "name": "16 川西三国線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 2
@@ -1370,15 +1370,15 @@
        "trips": 13
       },
       {
-       "id": "keifuku_bus:すまいるバス_B",
-       "name": "すまいるバス東ルート",
+       "id": "keifuku_bus:すまいるバス_C",
+       "name": "すまいるバス北ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
       },
       {
-       "id": "keifuku_bus:すまいるバス_A",
-       "name": "すまいるバス南ルート",
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -1391,8 +1391,8 @@
        "trips": 12
       },
       {
-       "id": "keifuku_bus:すまいるバス_C",
-       "name": "すまいるバス北ルート",
+       "id": "keifuku_bus:すまいるバス_A",
+       "name": "すまいるバス南ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -1412,15 +1412,15 @@
        "trips": 6
       },
       {
-       "id": "keifuku_bus:桜ヶ丘団地線_A",
-       "name": "13 桜ヶ丘団地線",
+       "id": "keifuku_bus:幾久・新田塚線（福井大学前先回り）_A",
+       "name": "21 幾久・新田塚線（福井大学前先回り）",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 5
       },
       {
-       "id": "keifuku_bus:大野線_A",
-       "name": "55 大野線",
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 5
@@ -1433,8 +1433,8 @@
        "trips": 5
       },
       {
-       "id": "keifuku_bus:幾久・新田塚線（福井大学前先回り）_A",
-       "name": "21 幾久・新田塚線（福井大学前先回り）",
+       "id": "keifuku_bus:大野線_A",
+       "name": "55 大野線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 5
@@ -1454,15 +1454,15 @@
        "trips": 4
       },
       {
-       "id": "keifuku_bus:大野線_B",
-       "name": "59 大野線",
+       "id": "keifuku_bus:越前海岸ブルーライン_B",
+       "name": "15 越前海岸ブルーライン",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 3
       },
       {
-       "id": "keifuku_bus:越前海岸ブルーライン_B",
-       "name": "15 越前海岸ブルーライン",
+       "id": "keifuku_bus:大野線_B",
+       "name": "59 大野線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 3
@@ -1587,22 +1587,8 @@
        "trips": 15
       },
       {
-       "id": "keifuku_bus:運動公園線（道守高校先回り）_A",
-       "name": "70 運動公園線（道守高校先回り）",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 14
-      },
-      {
        "id": "keifuku_bus:運動公園線（ベル前先回り）_A",
        "name": "71 運動公園線（ベル前先回り）",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 14
-      },
-      {
-       "id": "keifuku_bus:一乗谷東郷線_A",
-       "name": "62 一乗谷東郷線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 14
@@ -1615,18 +1601,25 @@
        "trips": 14
       },
       {
+       "id": "keifuku_bus:一乗谷東郷線_A",
+       "name": "62 一乗谷東郷線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:運動公園線（道守高校先回り）_A",
+       "name": "70 運動公園線（道守高校先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
        "id": "keifuku_bus:永平寺ライナー_A",
        "name": "永平寺ライナー",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 13
-      },
-      {
-       "id": "keifuku_bus:すまいるバス_B",
-       "name": "すまいるバス東ルート",
-       "mode": "bus",
-       "feed": "keifuku_bus",
-       "trips": 12
       },
       {
        "id": "keifuku_bus:すまいるバス_A",
@@ -1636,8 +1629,8 @@
        "trips": 12
       },
       {
-       "id": "keifuku_bus:すまいるバス_D",
-       "name": "すまいるバス西ルート",
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -1645,6 +1638,13 @@
       {
        "id": "keifuku_bus:すまいるバス_C",
        "name": "すまいるバス北ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_D",
+       "name": "すまいるバス西ルート",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -1664,8 +1664,8 @@
        "trips": 6
       },
       {
-       "id": "keifuku_bus:桜ヶ丘団地線_A",
-       "name": "13 桜ヶ丘団地線",
+       "id": "keifuku_bus:丸岡線_A",
+       "name": "31 丸岡線（田原町経由）",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 5
@@ -1678,8 +1678,8 @@
        "trips": 5
       },
       {
-       "id": "keifuku_bus:丸岡線_A",
-       "name": "31 丸岡線（田原町経由）",
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 5
@@ -2904,15 +2904,15 @@
      "last_arrival": "18:57",
      "routes": [
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_A",
-       "name": "96 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
       },
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_B",
-       "name": "97 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
@@ -3177,15 +3177,15 @@
      "last_arrival": "18:57",
      "routes": [
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_A",
-       "name": "96 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
       },
       {
-       "id": "keifuku_bus:東尋坊線（木村病院）_B",
-       "name": "97 東尋坊線",
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
        "mode": "bus",
        "feed": "keifuku_bus",
        "trips": 12
