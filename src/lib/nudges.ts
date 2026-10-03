@@ -133,8 +133,19 @@ export function computeNudges(
     const normal = normalDaily(live, id)
     for (const { d, predicted } of dailyArrivals(live, id)) {
       if (d < fromDay) continue
-      const pct = predicted / normal - 1
+      // That day's normal: recent same weekdays (lib/normal.ts), else the history's mean.
+      const dayNormal = live.node_meta?.[id]?.normal_by_day?.[d] ?? normal
+      const pct = predicted / dayNormal - 1
       if (Math.abs(pct) < DEMAND_THRESHOLD) continue
+      // The model's own range has to agree on the direction (Dina, #56): a busy alert needs
+      // its low bound above normal, a quiet one its high bound below. A forecast whose range
+      // spans normal (Rainbow Line's doubled Tuesdays: -18% to +466%) isn't an alert. Not past
+      // the threshold itself: an 80% range is wide, and that would drop confident ones too
+      // (Awara +40%, low bound +32%).
+      const lo = live.node_meta?.[id]?.forecast_lo_daily?.[d]
+      const hi = live.node_meta?.[id]?.forecast_hi_daily?.[d]
+      if (pct > 0 && lo != null && lo <= dayNormal) continue
+      if (pct < 0 && hi != null && hi >= dayNormal) continue
       const day = live.days[d]
       const up = pct > 0
       const p = `${up ? '+' : ''}${Math.round(pct * 100)}%`
@@ -152,8 +163,8 @@ export function computeNudges(
         end: d * 24 + 17,
         title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal${rough ? ' (rough estimate)' : ''}`,
         title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}${rough ? '（概算）' : ''}`,
-        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).${rough ? ' Rough estimate: no forecast model here, only the average of recent same weekdays.' : ''}`,
-        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。${rough ? '概算：予測モデルがなく、最近の同じ曜日の平均です。' : ''}`,
+        reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(dayNormal).toLocaleString('en-US')}${live.node_meta?.[id]?.normal_by_day?.[d] != null ? ' (median of recent same weekdays)' : live.node_meta?.[id] ? ' (real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).${rough ? ' Rough estimate: no forecast model here, only the median of recent same weekdays.' : ''}`,
+        reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(dayNormal).toLocaleString('en-US')}人（${live.node_meta?.[id]?.normal_by_day?.[d] != null ? '最近の同じ曜日の中央値、' : ''}${day.weekend ? '週末' : '平日'}）。${rough ? '概算：予測モデルがなく、最近の同じ曜日の中央値です。' : ''}`,
         action_en: up ? 'Add staff, extend parking and shop hours; push timed entry.' : 'Run a same-week offer and promote to nearby overnight guests.',
         action_ja: up ? '増員、駐車場・営業時間の延長、時間指定入場の案内を。' : '今週限りの特典で近隣宿泊客へ告知を。',
         focus: pos(id),
