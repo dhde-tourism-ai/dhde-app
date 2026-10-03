@@ -50,11 +50,29 @@ export interface LiveWeather {
 }
 
 export interface LiveSentiment {
-  /** Daily score, -1 (negative) to +1 (positive), one per day. */
+  /** Daily score, -1 (negative) to +1 (positive), one per day. Demo. */
   score: number[]
-  /** Posts / reviews mined that day. */
+  /** Posts / reviews mined that day. Demo. */
   posts: number[]
   keywords: { en: string; ja: string }[][]
+  /** Set by the real-data merge: the node's real sentiment over its last weekly window. */
+  real?: RealSentiment
+}
+
+/** Real sentiment over the last `days` covered days to as_of: Instagram captions plus
+ * Bluesky / YouTube / Reddit posts and comments, each scored by a model (no text is kept). */
+export interface RealSentiment {
+  as_of: string
+  days: number
+  /** Items with a score. */
+  scored: number
+  /** Mean score, -1..1. Null when fewer than MIN_SENTIMENT_ITEMS were scored: too few to judge. */
+  score: number | null
+  positive: number
+  neutral: number
+  negative: number
+  /** Scored items by source. */
+  from: { instagram: number; social: number }
 }
 
 export interface LiveNode {
@@ -152,7 +170,7 @@ export interface SourceInfo {
   real: string[]
 }
 
-export type DataSources = Partial<Record<'people' | 'flow' | 'density' | 'traffic' | 'weather' | 'hotels' | 'rsi' | 'reviews' | 'survey' | 'nudges', SourceInfo>>
+export type DataSources = Partial<Record<'people' | 'flow' | 'density' | 'traffic' | 'weather' | 'hotels' | 'rsi' | 'reviews' | 'survey' | 'social' | 'sentiment' | 'nudges', SourceInfo>>
 
 export interface RealNodeMeta {
   /** people (camera) | vehicles | reservations | proxy_camera | proxy_survey */

@@ -1,3 +1,5 @@
+import type { RealSentiment } from './live'
+
 /**
  * Contract for public/data/market_voice_demo.json: the Market (hotels, search
  * intent) and Voice of visitor (survey, social, reviews) layers. Today's file is
@@ -100,6 +102,33 @@ export interface SocialNode {
   comments_24h: number
   avg_sentiment: number
   feed: SocialPost[]
+  /** Set by the real-data merge: Instagram posts tagged at the site in the `days` covered days to as_of.
+   * With `mentions` or either one, the layer shows real counts and hides the demo feed (no post text is kept). */
+  real?: {
+    as_of: string
+    days: number
+    posts: number
+    photos: number
+    videos: number
+    likes: number
+    comments: number
+    /** Posts by caption script: a rough market proxy, not nationality. */
+    scripts: { ja: number; ko: number; zh: number; latin: number; none: number }
+  }
+  /** Set by the real-data merge: Bluesky, YouTube and Reddit posts and comments naming the site, `days` covered days to as_of. */
+  mentions?: {
+    as_of: string
+    days: number
+    total: number
+    posts: number
+    comments: number
+    /** Null: that platform wasn't collected (no API key yet). */
+    platforms: { bluesky: number | null; youtube: number | null; reddit: number | null }
+    /** By detected language. Traditional Chinese points to Taiwan / Hong Kong: a market proxy, not nationality. */
+    langs: { ja: number; en: number; zh_hant: number; zh_hans: number; ko: number; ar: number; other: number }
+  }
+  /** Real sentiment of the Instagram captions and mentions together (merge). */
+  sentiment_real?: RealSentiment
 }
 
 export interface ReviewsNode {

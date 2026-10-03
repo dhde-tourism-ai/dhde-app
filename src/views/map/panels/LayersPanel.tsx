@@ -41,6 +41,8 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
   reviews: ['Rating, new reviews, star split and total count are real (Google). Snippets are fictional demo.', '評価・新規件数・星の内訳・総件数は実データ（Google）。抜粋は架空のデモ。'],
   survey: ['Fukui nodes: responses, satisfaction, NPS, reasons for visiting and home region (Japan) are real (FTAS survey). Elsewhere only response counts are real; the rest is demo.', '福井のノード：回答数・満足度・NPS・来訪理由・居住地（国内）は実データ（FTASアンケート）。その他のノードは回答数のみ実データ、他はデモ。'],
+  social: ['Weekly, where collected: Instagram posts tagged at each site, and Bluesky, YouTube and Reddit posts and comments naming it, with language and model-scored sentiment (counts and scores only, no posts shown). Some languages are translated to English before scoring. Language points to a market, not nationality; kanji-only text counts as Japanese, so Chinese shares are a floor. Likes (nearest 10) and comments (nearest 5) are rounded, counted when collected. Elsewhere, and the feed, fictional demo.', '毎週、収集済みの地点：各地点にタグ付けされたInstagram投稿と、地点に触れたBluesky・YouTube・Redditの投稿・コメント（言語とモデル判定の感情付き。件数とスコアのみで投稿は非表示）。一部の言語は英訳してから判定。言語は市場の目安で国籍ではなく、漢字のみの文は日本語として数えるため中国語の割合は最低値。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。その他の地点とフィードは架空のデモ。'],
+  sentiment: ['Real where a site has at least 5 scored posts and comments in its last weekly window (Instagram captions plus Bluesky, YouTube and Reddit). Scored by a first language model, not yet checked against hand-labelled posts: read it as a trend, not a verdict. Elsewhere fictional demo.', '直近1週間に判定済みの投稿・コメントが5件以上ある地点は実データ（Instagram本文とBluesky・YouTube・Reddit）。手作業の判定との照合前の初期言語モデルによる判定のため、傾向として見てください。その他は架空のデモ。'],
   nudges: ['Demand and booking action nudges use real visitor history and forward bookings where available.', '需要・予約の推奨アクションは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
@@ -128,7 +130,7 @@ export function LayersPanel(p: Props) {
     social: (
       <>
         <Grad from="#e66767" to="#3987e5" left={t('Negative', '不評')} right={t('Positive', '好評')} />
-        <p className="lg-note">{t('Badge edge = average sentiment; thumbnails are abstract placeholders. Click for the feed. All posts fictional.', '縁の色＝平均感情。サムネイルは抽象的な仮画像。クリックでフィード。投稿は架空。')}</p>
+        <p className="lg-note">{t('Badge edge = average sentiment. Real sites: counts and scores only, click for details. Demo sites: thumbnails and feed are fictional.', '縁の色＝平均感情。実データの地点：件数とスコアのみ、クリックで詳細。デモの地点：サムネイルとフィードは架空。')}</p>
       </>
     ),
     reviews: <p className="lg-note">{t('Stars, average rating, review count, ▲▼ change over 30 days. Snippets are fictional.', '星・平均評価・件数・30日の変化。抜粋は架空。')}</p>,

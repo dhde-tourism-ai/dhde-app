@@ -1,25 +1,16 @@
 import { useMemo } from 'react'
-import { Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
+import { Marker, Polyline } from 'react-leaflet'
 import L from 'leaflet'
-import type { MarketVoiceData } from '../../../types/market'
-import type { MapNode } from '../../../lib/nodes'
+import type { MarketVoiceData, SocialNode } from '../../../types/market'
+import { fmtDate } from '../../../lib/format'
 import type { RegistryNode } from '../../../types/nodes'
-import type { NodeFrame } from '../../../lib/live'
-import { escapeHtml, peopleRadius, sentimentColour, sentimentLabel } from '../../../lib/live'
+import { escapeHtml, realSentimentLabel, sentimentColour, sentimentLabel } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
-import { thumbSvg, thumbUri } from '../../../lib/thumbs'
+import { thumbUri } from '../../../lib/thumbs'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
-import { useIsNarrow } from '../../../hooks/useIsNarrow'
-import { occupancyColour, rsiColour, sparkPath, starsHtml } from '../../../lib/market'
+import { occupancyColour, rsiColour, sparkPath } from '../../../lib/market'
 import { Stars } from '../../../components/Stars'
-
-type Frame = Record<string, NodeFrame> | null
-
-function nodeR(frame: Frame, id: string) {
-  const f = frame?.[id]
-  return f ? peopleRadius(Math.max(f.onSite, f.predicted)) : 8
-}
 
 function Bars({ items, unit = '%' }: { items: { label: string; value: number }[]; unit?: string }) {
   const max = Math.max(1, ...items.map((i) => i.value))
@@ -65,7 +56,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
           h.id,
           L.divIcon({
             className: 'map-divicon',
-            html: `<div class="ov-hotel-wrap"><div class="ov-badge ov-hotel"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 14)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="ov-area">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
+            html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(lang === 'ja' ? h.name_ja : h.name)}</span></div><div class="sc-row"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 13)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="sc-note">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
             iconSize: [0, 0],
           }),
         ]),
@@ -180,7 +171,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             m.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="ov-badge ov-rsi${m.gmb ? ' gmb' : ''}"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><span class="ov-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div>`,
+              html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span></div><div class="sc-row"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -237,257 +228,281 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
   )
 }
 
-/* ---------------- Survey ---------------- */
-export function SurveyLayer({ data, nodes, frame, stackBelow }: { data: MarketVoiceData; nodes: MapNode[]; frame: Frame; stackBelow: boolean }) {
+/* ---------------- Survey, social, reviews: rows on the site cards ---------------- */
+// Each site's value is a row on its card (SiteCards.tsx); these give the row and its
+// section of the card's hover detail.
+
+type Survey = MarketVoiceData['survey'][string]
+type Social = MarketVoiceData['social'][string]
+type Review = MarketVoiceData['reviews'][string]
+// The rows themselves are in cardRows.ts.
+
+export function SurveyDetail({ s }: { s: Survey }) {
   const { t, lang } = useLang()
-  const shown = nodes.filter((n) => data.survey[n.id])
-  const icons = useMemo(
-    () =>
-      Object.fromEntries(
-        shown.map((n) => {
-          const s = data.survey[n.id]
-          return [
-            n.id,
-            L.divIcon({
-              className: 'map-divicon',
-              html: `<div class="ov-badge ov-below${stackBelow ? ' ov-below2' : ''}" style="--r:${nodeR(frame, n.id)}px">${iconSvg('survey', 13)}<b class="num">${s.satisfaction.toFixed(1)}</b><span class="ov-sub">/5${s.nps !== null ? ` · NPS ${s.nps > 0 ? '+' : ''}${s.nps}` : ''}</span></div>`,
-              iconSize: [0, 0],
-            }),
-          ]
-        }),
-      ),
-    [shown, data, frame, stackBelow],
-  )
   return (
     <>
-      {shown.map((n) => {
-        const s = data.survey[n.id]
-        return (
-          <Marker key={n.id} position={[n.lat, n.lon]} icon={icons[n.id]} keyboard={false}>
-            <Tip>
-              <div className="tt-head">
-                <span>
-                  {t(n.name, n.name_ja)} · {t('visitor survey', '来訪者アンケート')}
-                </span>
-                {s.details_real ? (
-                  <span className="tt-real">{t('Real', '実データ')}</span>
-                ) : s.responses_real ? (
-                  <span className="tt-real">{t('Partly estimated or demo', '一部推計・デモ')}</span>
-                ) : (
-                  <span className="tt-demo">{t('Demo', 'デモ')}</span>
-                )}
-              </div>
-              <div className="tt-hero">
-                <b className="num">{s.satisfaction.toFixed(1)}</b>
-                <span>
-                  {t('satisfaction (1–5)', '満足度（1〜5）')}
-                  {s.nps !== null && (
-                    <>
-                      {' '}
-                      · NPS {s.nps > 0 ? '+' : ''}
-                      {s.nps} {!s.details_real && <span className="tt-demo">{t('Demo', 'デモ')}</span>}
-                    </>
-                  )}
-                </span>
-              </div>
-              <div className="tt-grid">
-                <span className="tt-k">{t('Responses, last 30 days', '回答数（30日）')}</span>
-                <span className="tt-v num">
-                  {s.responses_30d.toLocaleString('en-US')} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
-                </span>
-              </div>
-              <div className="tt-sec">{t('Top reasons for visiting', '主な来訪理由')}</div>
-              <Bars items={s.top_reasons.map((r) => ({ label: lang === 'ja' ? r.ja : r.en, value: r.share }))} />
-              <div className="tt-sec">{s.details_real ? t('Where visitors live (Japan)', '居住地（国内）') : t('Where visitors come from', '居住地')}</div>
-              <div className="tt-stack" role="img" aria-label={s.origin_share.map((o) => `${o.en} ${o.share}%`).join(', ')}>
-                {s.origin_share.map((o, i) => (
-                  <span key={o.en} style={{ width: `${o.share}%`, background: ORIGIN_COLOURS[i] }} title={`${o.en} ${o.share}%`}></span>
-                ))}
-              </div>
-              <div className="tt-legend">
-                {s.origin_share.map((o, i) => (
-                  <span key={o.en}>
-                    <i style={{ background: ORIGIN_COLOURS[i] }}></i>
-                    {lang === 'ja' ? o.ja : o.en} {o.share}%
-                  </span>
-                ))}
-              </div>
-              <div className="tip-sub">
-                {s.source}
-                {s.details_real
-                  ? ` · ${t(`${s.details_real.responses} responses in the 30 days to ${s.details_real.as_of}. NPS from ${s.details_real.nps_n} answers${s.nps === null ? ' (too few to show)' : ''}. Reasons: share of responses (several allowed). Respondents live in Japan.`, `${s.details_real.as_of}までの30日間の回答${s.details_real.responses}件。NPSは${s.details_real.nps_n}件の回答から${s.nps === null ? '（件数不足のため非表示）' : ''}。理由は回答者に占める割合（複数回答）。回答者は国内在住。`)}`
-                  : s.responses_real
-                    ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}`
-                    : ''}
-              </div>
-            </Tip>
-          </Marker>
-        )
-      })}
+      <div className="tt-sec">
+        {t('Visitor survey', '来訪者アンケート')}{' '}
+        {s.details_real ? (
+          <span className="tt-real">{t('Real', '実データ')}</span>
+        ) : s.responses_real ? (
+          <span className="tt-real">{t('Partly estimated or demo', '一部推計・デモ')}</span>
+        ) : (
+          <span className="tt-demo">{t('Demo', 'デモ')}</span>
+        )}
+      </div>
+      <div className="tt-hero">
+        <b className="num">{s.satisfaction.toFixed(1)}</b>
+        <span>
+          {t('satisfaction (1–5)', '満足度（1〜5）')}
+          {s.nps !== null && (
+            <>
+              {' '}
+              · NPS {s.nps > 0 ? '+' : ''}
+              {s.nps} {!s.details_real && <span className="tt-demo">{t('Demo', 'デモ')}</span>}
+            </>
+          )}
+        </span>
+      </div>
+      <div className="tt-grid">
+        <span className="tt-k">{t('Responses, last 30 days', '回答数（30日）')}</span>
+        <span className="tt-v num">
+          {s.responses_30d.toLocaleString('en-US')} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
+        </span>
+      </div>
+      <Bars items={s.top_reasons.slice(0, 3).map((r) => ({ label: lang === 'ja' ? r.ja : r.en, value: r.share }))} />
+      <div className="tt-stack" role="img" aria-label={s.origin_share.map((o) => `${o.en} ${o.share}%`).join(', ')}>
+        {s.origin_share.map((o, i) => (
+          <span key={o.en} style={{ width: `${o.share}%`, background: ORIGIN_COLOURS[i] }} title={`${o.en} ${o.share}%`}></span>
+        ))}
+      </div>
+      <div className="tt-legend">
+        {s.origin_share.map((o, i) => (
+          <span key={o.en}>
+            <i style={{ background: ORIGIN_COLOURS[i] }}></i>
+            {lang === 'ja' ? o.ja : o.en} {o.share}%
+          </span>
+        ))}
+      </div>
+      <div className="tip-sub">
+        {s.source}
+        {s.details_real
+          ? ` · ${t(`${s.details_real.responses} responses in the 30 days to ${s.details_real.as_of}. NPS from ${s.details_real.nps_n} answers${s.nps === null ? ' (too few to show)' : ''}. Reasons: share of responses (several allowed). Respondents live in Japan.`, `${s.details_real.as_of}までの30日間の回答${s.details_real.responses}件。NPSは${s.details_real.nps_n}件の回答から${s.nps === null ? '（件数不足のため非表示）' : ''}。理由は回答者に占める割合（複数回答）。回答者は国内在住。`)}`
+          : s.responses_real
+            ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}`
+            : ''}
+      </div>
     </>
   )
 }
 
 const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#9085e9']
 
-/* ---------------- Social media ---------------- */
-export function SocialLayer({ data, nodes, frame }: { data: MarketVoiceData; nodes: MapNode[]; frame: Frame }) {
+const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
+  { k: 'ja', en: 'Japanese', ja: '日本語' },
+  { k: 'zh', en: 'Chinese (at least)', ja: '中国語（最低値）' },
+  { k: 'ko', en: 'Korean', ja: '韓国語' },
+  { k: 'latin', en: 'English / Latin script', ja: '英語など' },
+]
+
+const LANG_LABELS: { k: keyof NonNullable<SocialNode['mentions']>['langs']; en: string; ja: string }[] = [
+  { k: 'ja', en: 'Japanese', ja: '日本語' },
+  { k: 'en', en: 'English', ja: '英語' },
+  { k: 'zh_hant', en: 'Chinese, Traditional (Taiwan, HK)', ja: '中国語・繁体字（台湾・香港）' },
+  { k: 'zh_hans', en: 'Chinese, Simplified', ja: '中国語・簡体字' },
+  { k: 'ko', en: 'Korean', ja: '韓国語' },
+  { k: 'ar', en: 'Arabic', ja: 'アラビア語' },
+  { k: 'other', en: 'Other', ja: 'その他' },
+]
+const PLATFORMS = [
+  { k: 'youtube', name: 'YouTube' },
+  { k: 'bluesky', name: 'Bluesky' },
+  { k: 'reddit', name: 'Reddit' },
+] as const
+
+/** Real social data for the site (#48, #51, #55): sentiment, mentions and Instagram; counts and scores only. */
+function RealSocialDetail({ s }: { s: Social }) {
   const { t, lang } = useLang()
-  const narrow = useIsNarrow()
-  const shown = nodes.filter((n) => data.social[n.id])
-  const icons = useMemo(
-    () =>
-      Object.fromEntries(
-        shown.map((n) => {
-          const s = data.social[n.id]
-          const thumbs = s.feed
-            .filter((p) => p.kind === 'photo')
-            .slice(0, 2)
-            .map((p) => `<span class="ov-thumb">${thumbSvg(p.thumb, 22)}</span>`)
-            .join('')
-          return [
-            n.id,
-            L.divIcon({
-              className: 'map-divicon',
-              html: `<div class="ov-badge ov-social" style="--r:${nodeR(frame, n.id)}px;--sc:${sentimentColour(s.avg_sentiment)}">${thumbs}<span class="ov-stack-txt"><b class="num">${s.posts_24h}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? '件/24h' : 'posts 24h')}</span></span></div>`,
-              iconSize: [0, 0],
-            }),
-          ]
-        }),
-      ),
-    [shown, data, frame, lang],
-  )
+  const fmt = (v: number) => v.toLocaleString('en-US')
+  const r = s.real
+  const m = s.mentions
+  const sr = s.sentiment_real
+  const captioned = r ? r.posts - r.scripts.none : 0
+  const days = Math.max(r?.days ?? 0, m?.days ?? 0)
+  const asOf = fmtDate([r?.as_of, m?.as_of].filter(Boolean).sort().pop(), lang)
+  const lab = sr && sr.score !== null ? realSentimentLabel(sr.score) : null
+  const pct = (k: number, of: number) => (of ? Math.round((k / of) * 100) : 0)
   return (
     <>
-      {shown.map((n) => {
-        const s = data.social[n.id]
-        const lab = sentimentLabel(s.avg_sentiment)
-        return (
-          <Marker key={n.id} position={[n.lat, n.lon]} icon={icons[n.id]}>
-            <Tooltip className="map-tip" direction="top" offset={[20, -30]}>
-              <strong>
-                {t(n.name, n.name_ja)} · {s.posts_24h} {t('posts', '件')}, {s.images_24h} {t('images', '画像')}, {s.comments_24h} {t('comments', 'コメント')}
-              </strong>
-              <div className="tip-sub">
-                {t(lab.en, lab.ja)} · {t('click for the feed', 'クリックで投稿一覧')}
-              </div>
-            </Tooltip>
-            <Popup className="map-pop" maxWidth={360} minWidth={300} autoPanPaddingTopLeft={narrow ? [12, 100] : [340, 80]} autoPanPaddingBottomRight={narrow ? [12, 180] : [400, 110]}>
-              <div className="feed">
-                <div className="tt-head">
-                  <span>
-                    {t(n.name, n.name_ja)} · {t('social feed', 'SNSフィード')}
-                  </span>
-                  <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>
-                </div>
-                <div className="feed-stats">
-                  <span>
-                    <b className="num">{s.posts_24h}</b> {t('posts', '投稿')}
-                  </span>
-                  <span>
-                    <b className="num">{s.images_24h}</b> {t('images', '画像')}
-                  </span>
-                  <span>
-                    <b className="num">{s.comments_24h}</b> {t('comments', 'コメント')}
-                  </span>
-                  <span className="feed-sent">
-                    <i style={{ background: sentimentColour(s.avg_sentiment) }}></i>
-                    {t(lab.en, lab.ja)}
-                  </span>
-                </div>
-                <ul className="feed-list">
-                  {s.feed.map((p) => (
-                    <li key={p.id} className="feed-item" style={{ borderLeftColor: sentimentColour(p.sentiment) }}>
-                      <img src={thumbUri(p.thumb)} alt="" width={40} height={48} />
-                      <div>
-                        <div className="feed-meta">
-                          <span className="feed-handle">@{p.handle}</span> · {p.hours_ago}h · {p.kind}
-                        </div>
-                        <div className="feed-text">{lang === 'ja' ? p.ja : p.en}</div>
-                        <div className="feed-meta">
-                          {p.likes} {t('likes', 'いいね')} · {p.comments} {t('replies', '返信')} · {t(sentimentLabel(p.sentiment).en, sentimentLabel(p.sentiment).ja)}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Popup>
-          </Marker>
-        )
-      })}
+      <div className="tt-sec">
+        {t('Social media', 'SNS')} <span className="tt-real">{t(`Real · ${days} days to ${asOf}`, `実データ・${asOf}までの${days}日間`)}</span>
+      </div>
+      {sr &&
+        (sr.score !== null && lab ? (
+          <>
+            <div className="feed-stats">
+              <span className="feed-sent">
+                <i style={{ background: sentimentColour(sr.score) }}></i>
+                {t(lab.en, lab.ja)}{' '}
+                <b className="num">
+                  {sr.score > 0 ? '+' : ''}
+                  {sr.score.toFixed(2)}
+                </b>
+              </span>
+              <span>
+                <b className="num">{pct(sr.positive, sr.scored)}%</b> {t('positive', '好意的')}
+              </span>
+              <span>
+                <b className="num">{pct(sr.neutral, sr.scored)}%</b> {t('neutral', '中立')}
+              </span>
+              <span>
+                <b className="num">{pct(sr.negative, sr.scored)}%</b> {t('negative', '否定的')}
+              </span>
+            </div>
+            <div className="tip-sub">{t('Positive from +0.2, negative from -0.2, neutral between (a working band, to check against hand-labelled posts).', '+0.2以上を好意的、-0.2以下を否定的、その間を中立とします（手作業の判定と照合予定の暫定基準）。')}</div>
+          </>
+        ) : (
+          <div className="tip-sub">{t(`Sentiment: only ${sr.scored} scored, too few to judge.`, `感情：判定は${sr.scored}件のみで、少なすぎて判定できません。`)}</div>
+        ))}
+      {m && (
+        <>
+          <div className="feed-stats">
+            {PLATFORMS.map((p) => {
+              const v = m.platforms[p.k]
+              return (
+                <span key={p.k}>
+                  {v === null ? (
+                    <>
+                      {p.name} <span className="muted">{t('not collected', '未収集')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <b className="num">{fmt(v)}</b> {p.name}
+                    </>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+          {m.total > 0 && (
+            <div className="feed-stats">
+              {LANG_LABELS.filter((l) => m.langs[l.k] > 0).map((l) => (
+                <span key={l.k} title={`${fmt(m.langs[l.k])}`}>
+                  <b className="num">{pct(m.langs[l.k], m.total)}%</b> {t(l.en, l.ja)}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+      {r && (
+        <>
+          <div className="feed-stats">
+            <span>
+              <b className="num">{fmt(r.posts)}</b> {t('Instagram posts', 'Instagram投稿')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.likes)}</b> {t('likes', 'いいね')}
+            </span>
+            <span>
+              <b className="num">{fmt(r.comments)}</b> {t('comments', 'コメント')}
+            </span>
+          </div>
+          {captioned > 0 && (
+            <div className="feed-stats">
+              {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
+                <span key={l.k} title={`${fmt(r.scripts[l.k])}`}>
+                  <b className="num">{pct(r.scripts[l.k], captioned)}%</b> {t(l.en, l.ja)}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+      <div className="tip-sub">
+        {t(
+          'Collected weekly; counts and scores only, no text or usernames. Scores come from a first model, not yet checked: read them as a trend. More in the layer note.',
+          '毎週収集。件数とスコアのみで、本文・ユーザー名は保存しません。スコアは未検証の初期モデルによる傾向です。詳細はレイヤーの説明に。',
+        )}
+      </div>
     </>
   )
 }
 
-/* ---------------- Reviews ---------------- */
-export function ReviewsLayer({ data, nodes, frame }: { data: MarketVoiceData; nodes: MapNode[]; frame: Frame }) {
+export function SocialDetail({ s }: { s: Social }) {
   const { t, lang } = useLang()
-  const shown = nodes.filter((n) => data.reviews[n.id])
-  const icons = useMemo(
-    () =>
-      Object.fromEntries(
-        shown.map((n) => {
-          const r = data.reviews[n.id]
-          const ch = Math.round((r.rating - r.rating_30d_ago) * 10) / 10
-          return [
-            n.id,
-            L.divIcon({
-              className: 'map-divicon',
-              html: `<div class="ov-badge ov-below" style="--r:${nodeR(frame, n.id)}px">${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString('en-US')})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span></div>`,
-              iconSize: [0, 0],
-            }),
-          ]
-        }),
-      ),
-    [shown, data, frame],
-  )
+  const lab = sentimentLabel(s.avg_sentiment)
+  if (s.real || s.mentions) return <RealSocialDetail s={s} />
   return (
     <>
-      {shown.map((n) => {
-        const r = data.reviews[n.id]
-        const ch = Math.round((r.rating - r.rating_30d_ago) * 10) / 10
-        return (
-          <Marker key={n.id} position={[n.lat, n.lon]} icon={icons[n.id]} keyboard={false}>
-            <Tip>
-              <div className="tt-head">
-                <span>
-                  {t(n.name, n.name_ja)} · {t('reviews', 'レビュー')}
-                </span>
-                {r.real ? <span className="tt-real">{t('Real rating', '実評価')}</span> : <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>}
+      <div className="tt-sec">
+        {t('Social media', 'SNS')} <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>
+      </div>
+      <div className="feed-stats">
+        <span>
+          <b className="num">{s.posts_24h}</b> {t('posts', '投稿')}
+        </span>
+        <span>
+          <b className="num">{s.images_24h}</b> {t('images', '画像')}
+        </span>
+        <span>
+          <b className="num">{s.comments_24h}</b> {t('comments', 'コメント')}
+        </span>
+        <span className="feed-sent">
+          <i style={{ background: sentimentColour(s.avg_sentiment) }}></i>
+          {t(lab.en, lab.ja)}
+        </span>
+      </div>
+      <ul className="feed-list">
+        {s.feed.slice(0, 3).map((p) => (
+          <li key={p.id} className="feed-item" style={{ borderLeftColor: sentimentColour(p.sentiment) }}>
+            <img src={thumbUri(p.thumb)} alt="" width={40} height={48} />
+            <div>
+              <div className="feed-meta">
+                <span className="feed-handle">@{p.handle}</span> · {p.hours_ago}h · {p.kind}
               </div>
-              <div className="tt-hero">
-                <b className="num">{r.rating.toFixed(1)}</b>
-                <span>
-                  <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
-                  {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
-                </span>
-              </div>
-              {(!r.real || r.stars_real) && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
-              <div className="tt-sec">
-                {t('Sample snippets', 'サンプル抜粋')} <span className="tt-demo">{t('Fictional', '架空')}</span>
-              </div>
-              <ul className="tt-quotes">
-                {r.snippets.map((s, i) => (
-                  <li key={i}>
-                    <Stars value={s.stars} small /> “{lang === 'ja' ? s.ja : s.en}” <span className="muted">· {s.days_ago}d</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="tip-sub">
-                {r.stars_real
-                  ? t(
-                      `Rating, new reviews and stars: the ${r.stars_real.n} Google Maps reviews of this place in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString('en-US')} reviews in total. Snippets are fictional.`,
-                      `評価・新規件数・星の内訳：${r.stars_real.as_of}までの30日間のこの場所のGoogleマップレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString('en-US')}件。抜粋は架空。`,
-                    )
-                  : r.real
-                    ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`)
-                    : r.source}
-              </div>
-            </Tip>
-          </Marker>
-        )
-      })}
+              <div className="feed-text">{lang === 'ja' ? p.ja : p.en}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+export function ReviewsDetail({ r }: { r: Review }) {
+  const { t, lang } = useLang()
+  const ch = Math.round((r.rating - r.rating_30d_ago) * 10) / 10
+  return (
+    <>
+      <div className="tt-sec">
+        {t('Reviews', 'レビュー')} {r.real ? <span className="tt-real">{t('Real rating', '実評価')}</span> : <span className="tt-demo">{t('Fictional demo', '架空のデモ')}</span>}
+      </div>
+      <div className="tt-hero">
+        <b className="num">{r.rating.toFixed(1)}</b>
+        <span>
+          <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
+          {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
+        </span>
+      </div>
+      {(!r.real || r.stars_real) && <Bars items={r.distribution_pct.map((v, i) => ({ label: `${5 - i}★`, value: v }))} />}
+      {r.snippets[0] && (
+        <ul className="tt-quotes">
+          <li>
+            <Stars value={r.snippets[0].stars} small /> “{lang === 'ja' ? r.snippets[0].ja : r.snippets[0].en}” <span className="tt-demo">{t('Fictional', '架空')}</span>
+          </li>
+        </ul>
+      )}
+      <div className="tip-sub">
+        {r.stars_real
+          ? t(
+              `Rating, new reviews and stars: the ${r.stars_real.n} Google Maps reviews of this place in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString('en-US')} reviews in total. Snippets are fictional.`,
+              `評価・新規件数・星の内訳：${r.stars_real.as_of}までの30日間のこの場所のGoogleマップレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString('en-US')}件。抜粋は架空。`,
+            )
+          : r.real
+            ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`)
+            : r.source}
+      </div>
     </>
   )
 }

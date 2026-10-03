@@ -22,7 +22,7 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers } from './layers'
+import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers, TOWN_LAYERS } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { SiteMarkers } from './layers/SiteMarkers'
@@ -39,7 +39,9 @@ import { Timeline } from './panels/Timeline'
 import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
 import { TransportLayer } from './layers/TransportLayer'
-import { HotelsLayer, ReviewsLayer, RsiLayer, SocialLayer, SurveyLayer } from './layers/VoiceMarketLayers'
+import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
+import { SiteCards } from './layers/SiteCards'
+import { Declutter } from './Declutter'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const VIEW_BOUNDS: [[number, number], [number, number]] = [
@@ -70,8 +72,9 @@ function FlyTo({ target }: { target: { at: [number, number]; key: number } | nul
 }
 
 /**
- * Keep hover cards inside the visible map: below the status strip and above the
- * timeline. Leaflet positions tooltips with a transform, so the nudge is a margin.
+ * Keep hover cards inside the visible map: below the status strip, above the
+ * timeline and clear of the side panels (layers on the left, the board on the
+ * right). Leaflet positions tooltips with a transform, so the nudge is a margin.
  */
 function KeepCardsInView() {
   const map = useMap()
@@ -81,6 +84,7 @@ function KeepCardsInView() {
     const fit = () => {
       if (!el) return
       el.style.marginTop = ''
+      el.style.marginLeft = ''
       const r = el.getBoundingClientRect()
       const mapBox = map.getContainer().getBoundingClientRect()
       const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
@@ -91,6 +95,20 @@ function KeepCardsInView() {
       if (r.top < top) d = top - r.top
       else if (r.bottom > bottom) d = Math.max(top - r.top, bottom - r.bottom)
       if (d !== 0) el.style.marginTop = `${d}px`
+      // Sideways: the visible part of the side panels (they're empty columns below their cards).
+      const edge = (sel: string, side: 'right' | 'left') =>
+        [...document.querySelectorAll<HTMLElement>(`${sel} > *`)]
+          .map((x) => x.getBoundingClientRect())
+          .filter((b) => b.width > 0 && b.height > 0 && b.bottom > r.top + d && b.top < r.bottom + d)
+          .reduce<number | null>((a, b) => (a === null ? b[side] : side === 'right' ? Math.max(a, b.right) : Math.min(a, b.left)), null)
+      const left = Math.max(mapBox.left, edge('.map-left', 'right') ?? mapBox.left) + 8
+      const right = Math.min(mapBox.right, edge('.map-right', 'left') ?? mapBox.right) - 8
+      let dx = 0
+      if (r.width <= right - left) {
+        if (r.left < left) dx = left - r.left
+        else if (r.right > right) dx = right - r.right
+      }
+      if (dx !== 0) el.style.marginLeft = `${dx}px`
     }
     const schedule = () => {
       cancelAnimationFrame(raf)
@@ -232,7 +250,11 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const toggle = (l: LayerId) => {
     const n = new Set(active)
     if (n.has(l)) n.delete(l)
-    else n.add(l)
+    else {
+      n.add(l)
+      // Town-level layers draw cards on the towns: one at a time, so they don't pile up.
+      for (const other of TOWN_LAYERS) if (other !== l && TOWN_LAYERS.includes(l)) n.delete(other)
+    }
     setActive(n)
     storeLayers(n)
   }
@@ -270,6 +292,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
   const layerOn = (l: LayerId) => active.has(l)
+  const cardLayers = useMemo(
+    () => ({ people: active.has('people'), weather: active.has('weather'), reviews: active.has('reviews'), survey: active.has('survey'), social: active.has('social') }),
+    [active],
+  )
   const paused = false
 
   const tabs = (
@@ -337,7 +363,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
             frame={frame}
             selectedId={selectedId}
             onSelect={onSelect}
-            showCounts={layerOn('people')}
             meta={live?.node_meta}
             day={day}
             kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
@@ -345,12 +370,22 @@ export default function MapView({ registry, dashboard, economics, economicsError
         )}
         {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}
         {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
-        {market && layerOn('reviews') && <ReviewsLayer data={market} nodes={nodes} frame={frame} />}
-        {market && layerOn('survey') && <SurveyLayer data={market} nodes={nodes} frame={frame} stackBelow={layerOn('reviews')} />}
-        {market && layerOn('social') && <SocialLayer data={market} nodes={nodes} frame={frame} />}
+        {/* One card per site: its name, then a row per active layer (weather, reviews, survey, posts). */}
+        <SiteCards
+          nodes={layerOn('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority)}
+          extra={nodes}
+          frame={frame}
+          market={market}
+          layers={cardLayers}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          meta={live?.node_meta}
+          day={day}
+        />
         {layerOn('nudges') && <NudgeLayer nudges={nudgesShown} routes={routes} day={day} activeId={activeNudge} onPick={pickNudge} />}
         <FlyTo target={fly} />
         <KeepCardsInView />
+        <Declutter />
       </MapContainer>
 
       <div className="map-ui">
@@ -407,7 +442,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 )}
               </button>
               <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
-                <Icon name="flag" /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
+                <Icon name="flag" /> {tr('Actions', 'アクション')} <span className="count-badge">{nudgesFrom.length}</span>
               </button>
             </div>
           )}
