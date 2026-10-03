@@ -8,6 +8,7 @@ import { escapeHtml, peopleRadius } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
 import type { RealNodeMeta } from '../../../types/live'
 import { measureLabel } from '../../../lib/real'
+import { lastSignal } from './cardRows'
 
 const ACCENT = '#8b9dff'
 
@@ -16,20 +17,9 @@ interface Props {
   frame: Record<string, NodeFrame> | null
   selectedId?: string
   onSelect: (id: string | undefined) => void
-  showCounts: boolean
   kanazawa?: { lat: number; lon: number }
   meta?: Record<string, RealNodeMeta>
   day?: number
-}
-
-/** Latest real signal on or before day d (for nodes without a visitor estimate). */
-function lastSignal(m: RealNodeMeta | undefined, d: number): { v: number; day: number } | null {
-  if (!m) return null
-  for (let k = Math.min(d, m.signal_daily.length - 1); k >= 0; k--) {
-    const v = m.signal_daily[k]
-    if (v !== null && v !== undefined) return { v, day: k }
-  }
-  return null
 }
 
 const CONF: Record<string, [string, string]> = { high: ['high', '高'], medium: ['medium', '中'], low: ['low', '低'], none: ['none', 'なし'] }
@@ -39,34 +29,10 @@ const CONF: Record<string, [string, string]> = { high: ['high', '高'], medium: 
  * forecast; forecast-only hours (future) have a hollow, faint fill. Colour is the
  * crowding tier (status scale, always with a text label). Estimated measures
  * (footfall proxy, bookings, vehicle counts) get a dashed outline and "est." tag.
+ * The site's name and count are on its card (SiteCards.tsx).
  */
-export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, kanazawa, meta, day = 0 }: Props) {
-  const { t, lang } = useLang()
-
-  const labelIcons = useMemo(() => {
-    const out: Record<string, L.DivIcon> = {}
-    for (const n of nodes) {
-      const f = frame?.[n.id]
-      const est = f ? isEstimatedMeasure(n.measure) || n.measure === 'vehicles' : false
-      const dir = n.label_dir ?? 'right'
-      const r = f ? peopleRadius(Math.max(f.onSite, f.predicted)) : 6
-      const name = escapeHtml(lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', ''))
-      const sig = f?.noEstimate ? lastSignal(meta?.[n.id], day) : null
-      const count = f?.noEstimate
-        ? `<span class="nt-count fc">${sig ? `${escapeHtml(t('cam', 'カメラ'))} ${Math.round(sig.v).toLocaleString('en-US')}` : escapeHtml(t('no estimate', '推計なし'))}</span>`
-        : f
-        ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}</span>`
-        : `<span class="nt-count none">${escapeHtml(t('no data yet', 'データなし'))}</span>`
-      const tier = f && !f.noEstimate ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
-      const estTag = est ? `<span class="nt-est">${escapeHtml(t('est.', '推定'))}</span>` : ''
-      out[n.id] = L.divIcon({
-        className: 'map-divicon',
-        html: `<div class="node-tag dir-${dir}${n.id === selectedId ? ' sel' : ''}${f ? '' : ' muted-tag'}" style="--r:${r + 5}px">${tier}<span class="nt-name">${name}</span>${showCounts ? count : ''}${estTag}</div>`,
-        iconSize: [0, 0],
-      })
-    }
-    return out
-  }, [nodes, frame, selectedId, showCounts, lang, t, meta, day])
+export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta, day = 0 }: Props) {
+  const { t } = useLang()
 
   const kzIcon = useMemo(
     () =>
@@ -223,16 +189,6 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
         )
       })}
 
-      {nodes.filter((n) => frame?.[n.id]).map((n) => (
-        <Marker
-          key={`lbl-${n.id}`}
-          position={[n.lat, n.lon]}
-          icon={labelIcons[n.id]}
-          eventHandlers={{ click: () => onSelect(n.id === selectedId ? undefined : n.id) }}
-          keyboard={false}
-          zIndexOffset={frame?.[n.id] ? 100 : 0}
-        />
-      ))}
     </Pane>
   )
 }

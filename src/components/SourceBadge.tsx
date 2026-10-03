@@ -22,7 +22,7 @@ export function SourceBadge({ info, compact = false, note }: { info?: SourceInfo
   return (
     <span className={`src-badge ${real ? 'real' : 'mixed'}`} title={title}>
       <span className="src-dot" aria-hidden="true"></span>
-      {real ? t('Real', '実データ') : t('Partly estimated or demo', '一部推計・デモ')}
+      <span className="src-label">{real ? t('Real', '実データ') : t('Partly estimated or demo', '一部推計・デモ')}</span>
       {!compact && date && <span className="src-date">· {date}</span>}
     </span>
   )
