@@ -179,10 +179,16 @@ export function computeNudges(
       } else if (open !== null) {
         const d = Math.floor(open / 24)
         const alerts = live.weather_alerts.filter((a) => a.nodes.includes(id) && a.start <= i - 1 && a.end >= open!)
+        // Real when every hour of the window has real hourly weather (observed, or the
+        // JMA-model forecast) rather than the daily-based or demo curve.
+        const src = n.weather.hourly_source
+        let real = Boolean(src)
+        for (let h = open; real && h <= i - 1; h++) real = Boolean(src?.[h])
         out.push({
           id: `n2-${id}-${open}`,
           loop: 2,
           sev: 'crit',
+          real,
           magnitude: peakMm / 10 + peakWind / 15,
           node: id,
           day: d,
