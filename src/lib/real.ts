@@ -34,6 +34,7 @@ import type { LiveData, LiveSeries, RealNodeMeta, RealSentiment, SourceInfo, Wea
 import type { HotelArea, MarketVoiceData } from '../types/market'
 import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
+import { median, weekdayNormal } from './normal'
 import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
 import { toAlerts, type WarningsRead } from './jmaWarnings'
 
@@ -391,7 +392,7 @@ function synthWeather(r: RealDaily, h: number): { temp: number; mm: number; wind
   return { temp: Math.round(temp * 10) / 10, mm: Math.round(mm * 10) / 10, wind: Math.round((r.wind_ms ?? 2) * 10) / 10, pop, cond }
 }
 
-const NAIVE_METHOD = 'Mean of recent same weekdays (up to 4 in the last 8 weeks; holidays skipped for a normal day), real visitors_est, spread over the day with the demo hourly shape.'
+const NAIVE_METHOD = 'Median of recent same weekdays (up to 4 in the last 8 weeks; holidays skipped for a normal day), real visitors_est, spread over the day with the demo hourly shape.'
 
 function forecastMethod(rn: RealNode): string {
   const f = rn.forecast
@@ -457,12 +458,11 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const noEstimate = !!rn && rn.calibration.factor === null
     const hasPeople = !!rn && hist.length > 0
 
-    // Naive seasonal forecast: mean visitors_est of the last 4 same weekdays found.
+    // Naive seasonal forecast: median visitors_est of the last 4 same weekdays found.
     // For a normal day, holidays and Obon are skipped (a holiday Tuesday would overstate
     // a normal one) and the search goes back up to 8 weeks to still find 4 normal days.
-    // A mean, not a median: the demand alerts compare it with the node's normal day, which
-    // is a mean too, and busy days pull that up, so a median would read low by default
-    // (Eiheiji's ordinary Tuesday as -35%). Switch both at once if medians are wanted.
+    // A median, like the demand alerts' normal day it's compared with (lib/normal.ts): the
+    // two changed together, so one Silver Week day or one glitchy count moves neither.
     const sameWeekday = (dt: string) => {
       const skip = (day: string) => !isHoliday(dt) && isHoliday(day)
       const vals: number[] = []
@@ -476,7 +476,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         const dow = dowOf(dt)
         for (const r of rn?.daily ?? []) if (r.visitors_est !== null && dowOf(r.date) === dow && !skip(r.date)) vals.push(r.visitors_est)
       }
-      return mean(vals)
+      return median(vals)
     }
     // The model's 7-day forecast where published; the naive one covers the days after it,
     // and days the model ran without its week-ahead bookings (its backtest error doesn't apply).
@@ -610,6 +610,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         signal_daily: signalDaily,
         index_daily: dates.map((dt) => rowOn(rn, dt)?.signal_index_pct ?? null),
         normal_daily: normal,
+        normal_by_day: dates.map((dt) => weekdayNormal((day) => rowOn(rn, day)?.visitors_est, dt)),
         forecast_method: forecastMethod(rn),
         forecast_source_daily: fcSource,
       }

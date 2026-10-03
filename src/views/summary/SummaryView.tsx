@@ -114,6 +114,9 @@ export default function SummaryView({ data }: { data: ProductData }) {
       // the Summary. The map's Action nudges panel still lists them, labelled Demo.
       .filter((n) => n.real && n.day >= nextDay && n.day < nextDay + 7)
       .sort((a, b) => RANK[priorityOf(a.sev)] - RANK[priorityOf(b.sev)] || b.magnitude - a.magnitude)
+      // At most one per site, its most pressing (the list is sorted): one busy site
+      // shouldn't fill the whole top 3.
+      .filter((n, i, all) => all.findIndex((x) => x.node === n.node) === i)
       .slice(0, 3)
   }, [live, market, registry, nextDay, thresholds])
 
