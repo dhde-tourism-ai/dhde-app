@@ -191,15 +191,128 @@
   transform: translate(-50%, calc(-100% - var(--r)));
 }
 
-/* Declutter.tsx: from a site to its badge when the badge had to move. */
-.dc-leader {
+/* SiteCards.tsx: one card per site, the name and a row per active layer. */
+.site-card {
   position: absolute;
   left: 0;
   top: 0;
-  height: 1px;
-  transform-origin: 0 50%;
-  background: rgba(201, 212, 255, 0.55);
-  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 8px 4px 7px;
+  border-radius: 10px;
+  background: rgba(10, 17, 32, 0.88);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+}
+
+/* The name sits level with the site; rows hang below it. */
+.site-card.dir-right {
+  transform: translate(var(--r), -11px);
+}
+
+.site-card.dir-left {
+  transform: translate(calc(-100% - var(--r)), -11px);
+}
+
+.site-card.dir-top {
+  transform: translate(-50%, calc(-100% - var(--r)));
+}
+
+.site-card.dir-bottom {
+  transform: translate(-50%, var(--r));
+}
+
+/* Town cards (hotels, search intent) are centred on the town. */
+.site-card.town {
+  transform: translate(-50%, -50%);
+  cursor: default;
+  font-size: 11.5px;
+}
+
+.site-card.sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 157, 255, 0.35);
+}
+
+.site-card.muted-tag .sc-head {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.sc-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  min-height: 18px;
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 2px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+}
+
+.sc-row b {
+  font-weight: 700;
+}
+
+.sc-row svg {
+  color: var(--text-2);
+  flex: none;
+}
+
+.sc-row.attn {
+  color: var(--warn-text, #fab219);
+}
+
+.sc-ic {
+  display: grid;
+  place-items: center;
+}
+
+.sc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.sc-note {
+  color: var(--text-2);
+  font-size: 10.5px;
+}
+
+/* Declutter.tsx: a card with no room shrinks to its name and what needs attention... */
+.site-card.dc-mini .sc-row:not(.attn),
+.site-card.dc-mini .sc-note,
+.site-card.dc-mini .nt-est {
+  display: none;
+}
+
+/* ...then, with no room for that either, to a dot at its site. */
+.site-card.dc-dot {
+  width: 10px;
+  height: 10px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--text-2);
+  transform: translate(calc(var(--r, 0px) - 2px), -5px);
+}
+
+.site-card.dc-dot > * {
+  display: none;
 }
 
 .node-tag.dir-bottom {
@@ -1501,6 +1614,11 @@ button.al-item:hover {
   .node-tag {
     font-size: 11px;
     padding: 2px 7px 2px 6px;
+  }
+
+  .site-card {
+    font-size: 11px;
+    padding: 2px 7px 3px 6px;
   }
 }
 

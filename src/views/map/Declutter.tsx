@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
 import { useMap } from 'react-leaflet'
 
-/** Space kept between a badge and whatever it was moved off. */
+/** Space kept between a card and whatever it was moved off. */
 const GAP = 3
-/** How far a badge may move: this many of its own heights up or down, and up to one width sideways. */
-const MAX_STEPS = 7
-/** A badge moved further than this gets a thin line back to its site. */
-const LEADER_MIN = 18
-/** The UI drawn over the map: badges and site names never sit under it. */
+/** A card keeps its spot until something covers more than this share of it (its own text can grow a little). */
+const KEEP_OVERLAP = 0.1
+/** The UI drawn over the map: cards never sit under it. */
 const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution']
+/** Marks that stay where they are; cards move off them. */
+const FIXED = '.nudge-flag, .route-flag'
 
 interface Box {
   left: number
@@ -21,18 +21,33 @@ const overlap = (a: Box, b: Box) => Math.max(0, Math.min(a.right, b.right) - Mat
 const shift = (r: Box, dx: number, dy: number): Box => ({ left: r.left + dx, right: r.right + dx, top: r.top + dy, bottom: r.bottom + dy })
 const visible = (r: DOMRect) => r.width > 0 && r.height > 0
 
+type Side = 'dir-left' | 'dir-right' | 'dir-top' | 'dir-bottom' | 'town'
+const SIDES: Side[] = ['dir-left', 'dir-right', 'dir-top', 'dir-bottom']
+/** The side the layer drew the card on (kept in data-home once Declutter moves it). */
+const homeSide = (el: HTMLElement): Side => {
+  if (!el.dataset.home) el.dataset.home = SIDES.find((c) => el.classList.contains(c)) ?? 'town'
+  return el.dataset.home as Side
+}
+const flip = (s: Side): Side | null => (s === 'dir-left' ? 'dir-right' : s === 'dir-right' ? 'dir-left' : null)
+const setSide = (el: HTMLElement, s: Side) => {
+  if (s === 'town') return
+  el.classList.remove(...SIDES)
+  el.classList.add(s)
+}
+
 /**
- * Keeps the map's badges readable when several layers are on. Sites like Tojinbo
- * and Awara Onsen sit a few kilometres apart, so each layer's badge (weather,
- * hotels, reviews, survey, search intent, social, nudges) lands on the others'
- * and on the site names. After every draw, zoom or layer change this:
- *   1. flips a site name to the node's other side when it runs off the map or
- *      under a panel (Katsuyama on a phone, or next to the right-hand board);
- *   2. moves each badge, top to bottom, to the nearest free spot (up, down, then
- *      sideways) clear of the names, the badges already placed and the panels.
- * Badges move with CSS `translate`, so Leaflet's own positioning and the
- * markers' hover cards and clicks are untouched. A badge that moved far gets a
- * thin line back to its site, so it's clear which site it belongs to.
+ * A light touch on the cards (SiteCards.tsx, and the town cards of hotels and search
+ * intent), which already keep the map to one card per place. After a draw, zoom or
+ * layer change, a card that overlaps another, a nudge flag or a panel, or runs off
+ * the map, tries the nearest free spot: up or down at most one card height, on its
+ * own side of the site, then on the other (Katsuyama next to the right-hand board).
+ * With no room there either it shrinks to its name (and anything needing attention),
+ * then to a dot; hover still shows its detail. Site cards are placed before town cards.
+ * Cards move with CSS `translate`, so Leaflet's positioning, hover cards and clicks
+ * are untouched. A card keeps its spot (remembered on its marker, since a layer
+ * redraws the card on every timeline step) while that spot is still free; only a
+ * layer change, zoom or resize places them afresh, so nothing jumps while the
+ * timeline plays.
  */
 export function Declutter() {
   const map = useMap()
@@ -40,24 +55,18 @@ export function Declutter() {
     const root = map.getContainer()
     let raf = 0
     let timer = 0
+    // A full run forgets the remembered spots and places every card afresh.
+    let fresh = true
 
     const run = () => {
-      for (const l of root.querySelectorAll('.dc-leader')) l.remove()
-      // Each icon's own content: its first child that isn't one of our leader lines.
-      const icons = [...root.querySelectorAll<HTMLElement>('.leaflet-marker-icon.map-divicon')]
-        .map((icon) => [...icon.children].find((c) => !c.classList.contains('dc-leader')) as HTMLElement | undefined)
-        .filter((el): el is HTMLElement => el !== undefined)
-      const labels = icons.filter((el) => el.classList.contains('node-tag'))
-      const badges = icons.filter((el) => !el.classList.contains('node-tag'))
-
+      const full = fresh
+      fresh = false
+      const cards = [...root.querySelectorAll<HTMLElement>('.leaflet-marker-icon.map-divicon > .site-card')]
       // Start from where the layers put things.
-      for (const el of badges) el.style.translate = ''
-      for (const el of labels) {
-        const orig = el.dataset.dir
-        if (orig) {
-          el.classList.remove('dir-left', 'dir-right')
-          el.classList.add(orig)
-        }
+      for (const el of cards) {
+        el.style.translate = ''
+        el.classList.remove('dc-dot', 'dc-mini')
+        setSide(el, homeSide(el))
       }
 
       const mapBox = root.getBoundingClientRect()
@@ -74,99 +83,141 @@ export function Declutter() {
       }
       const outside = (r: Box) => Math.max(0, area.left - r.left) + Math.max(0, r.right - area.right) + Math.max(0, area.top - r.top) + Math.max(0, r.bottom - area.bottom)
       const hitsUi = (r: Box) => ui.some((u) => overlap(r, u) > 0)
+      const placed: Box[] = [...root.querySelectorAll<HTMLElement>(FIXED)].map((e) => e.getBoundingClientRect()).filter(visible)
+      const cost = (c: Box) => placed.reduce((a, p) => a + overlap(c, p), 0) + (hitsUi(c) ? 1e6 : 0) + outside(c) * 1e3
+      // Keeping a spot allows a little overlap (a card's text can grow); a new spot must be free.
+      const keeps = (c: Box) => cost(c) <= (c.right - c.left) * (c.bottom - c.top) * KEEP_OVERLAP
+      const free = (c: Box) => cost(c) === 0
 
-      // 1. Site names: flip left/right when the name runs off the map or under a panel.
-      const placed: Box[] = []
-      for (const el of labels) {
-        let r: Box = el.getBoundingClientRect()
-        const side = el.classList.contains('dir-right') ? 'dir-right' : el.classList.contains('dir-left') ? 'dir-left' : null
-        if (side && (outside(r) > 0 || hitsUi(r))) {
-          const other = side === 'dir-right' ? 'dir-left' : 'dir-right'
-          el.dataset.dir = side
-          el.classList.replace(side, other)
-          const flipped = el.getBoundingClientRect()
-          if (outside(flipped) + (hitsUi(flipped) ? 1 : 0) <= outside(r) + (hitsUi(r) ? 1 : 0)) r = flipped
-          else el.classList.replace(other, side)
+      // Each card's box on either side of its site (town cards, centred, have one).
+      const measure = (el: HTMLElement, home: Side, other: Side | null) => {
+        const boxes: Partial<Record<Side, Box>> = { [home]: el.getBoundingClientRect() }
+        if (other) {
+          setSide(el, other)
+          boxes[other] = el.getBoundingClientRect()
+          setSide(el, home)
         }
-        placed.push(r)
+        return boxes
       }
+      const isTown = (el: HTMLElement) => el.classList.contains('town')
+      const items = cards
+        .map((el) => {
+          const home = homeSide(el)
+          const other = flip(home)
+          return { el, home, other, boxes: measure(el, home, other) }
+        })
+        .filter((x) => visible(x.boxes[x.home] as DOMRect))
+        .sort((a, b) => Number(isTown(a.el)) - Number(isTown(b.el)) || a.boxes[a.home]!.top - b.boxes[b.home]!.top || a.boxes[a.home]!.left - b.boxes[b.home]!.left)
 
-      // 2. Badges, top to bottom: the nearest offset that's free, or the least bad one.
-      const items = badges
-        .map((el) => ({ el, r: el.getBoundingClientRect() as Box }))
-        .filter((x) => x.r.right > x.r.left && x.r.bottom > x.r.top)
-        .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)
-      for (const { el, r } of items) {
-        const h = r.bottom - r.top + GAP
-        const w = (r.right - r.left) / 2 + GAP
-        const offsets: [number, number][] = [[0, 0]]
-        for (let k = 1; k <= MAX_STEPS; k++) offsets.push([0, k * h], [0, -k * h])
-        // Sideways: half a width first, then a full one, each with the same vertical steps.
-        for (const sx of [w, 2 * w]) for (let k = 0; k <= MAX_STEPS; k++) offsets.push([sx, k * h], [-sx, k * h], [sx, -k * h], [-sx, -k * h])
-        let best: [number, number] = [0, 0]
-        let bestCost = Infinity
-        for (const [dx, dy] of offsets) {
-          const c = shift(r, dx, dy)
-          const cost = placed.reduce((a, p) => a + overlap(c, p), 0) + (hitsUi(c) ? 1e6 : 0) + outside(c) * 1e3
-          // Prefer small moves: a tiny cost per pixel moved breaks ties.
-          const total = cost + Math.hypot(dx, dy) * 0.01
-          if (total < bestCost) {
-            bestCost = total
-            best = [dx, dy]
-          }
-          if (cost === 0) break
+      const place = (el: HTMLElement, side: Side, box: Box, dy: number, mini: boolean) => {
+        setSide(el, side)
+        el.classList.toggle('dc-mini', mini)
+        if (dy) el.style.translate = `0 ${Math.round(dy)}px`
+        if (el.parentElement) el.parentElement.dataset.dc = `${side}|${dy}|${mini ? 'mini' : ''}`
+        placed.push(shift(box, 0, dy))
+      }
+      // The nearest free spot: on its own side, then the other; up or down at most one card height.
+      const spot = (boxes: Partial<Record<Side, Box>>, sides: Side[]) => {
+        for (const side of sides) {
+          const box = boxes[side]!
+          const h = box.bottom - box.top + GAP
+          // Small steps first, so a card stays as close to its site as it can.
+          const dy = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1].map((k) => k * h).find((d) => free(shift(box, 0, d)))
+          if (dy !== undefined) return { side, box, dy }
         }
-        if (best[0] || best[1]) el.style.translate = `${Math.round(best[0])}px ${Math.round(best[1])}px`
-        const moved = shift(r, best[0], best[1])
-        placed.push(moved)
-        if (Math.hypot(best[0], best[1]) > LEADER_MIN) leader(el, moved)
+        return null
       }
-    }
-
-    // A line from the marker's point (the icon's own corner: icons are 0×0) to the
-    // nearest edge of its moved badge.
-    const leader = (el: HTMLElement, b: Box) => {
-      const icon = el.parentElement
-      if (!icon) return
-      const o = icon.getBoundingClientRect()
-      const x = Math.min(Math.max(o.left, b.left), b.right) - o.left
-      const y = Math.min(Math.max(o.top, b.top), b.bottom) - o.top
-      const len = Math.hypot(x, y)
-      if (len < LEADER_MIN) return
-      const line = document.createElement('span')
-      line.className = 'dc-leader'
-      line.style.width = `${len}px`
-      line.style.transform = `rotate(${Math.atan2(y, x)}rad)`
-      icon.prepend(line)
+      const rest: typeof items = []
+      // First the cards whose remembered spot is still free keep it.
+      for (const it of items) {
+        const [side, dy, mini] = (full ? '' : (it.el.parentElement?.dataset.dc ?? '')).split('|') as [Side, string, string]
+        if (mini) {
+          // A shrunk card is measured shrunk.
+          it.el.classList.add('dc-mini')
+          it.boxes = measure(it.el, it.home, it.other)
+          it.el.classList.remove('dc-mini')
+        }
+        const box = it.boxes[side]
+        if (box && dy !== undefined && keeps(shift(box, 0, Number(dy)))) place(it.el, side, box, Number(dy), !!mini)
+        else rest.push(it)
+      }
+      for (const it of rest) {
+        const sides = [it.home, ...(it.other ? [it.other] : [])]
+        const whole = spot(measure(it.el, it.home, it.other), sides)
+        if (whole) {
+          place(it.el, whole.side, whole.box, whole.dy, false)
+          continue
+        }
+        // No room for the whole card: its name and what needs attention only.
+        it.el.classList.add('dc-mini')
+        const mini = spot(measure(it.el, it.home, it.other), sides)
+        if (mini) {
+          place(it.el, mini.side, mini.box, mini.dy, true)
+          continue
+        }
+        // Still no room within one card height on either side: a dot at the site.
+        it.el.classList.remove('dc-mini')
+        it.el.classList.add('dc-dot')
+        if (it.el.parentElement) it.el.parentElement.dataset.dc = 'dot'
+        placed.push(it.el.getBoundingClientRect())
+      }
     }
 
     // Layers draw their markers after React renders, and fonts and icons settle a moment later.
-    const schedule = () => {
+    // `full` (a layer, zoom or size change) places every card afresh; otherwise they stay put.
+    const schedule = (full = false) => {
+      if (full) fresh = true
       cancelAnimationFrame(raf)
       window.clearTimeout(timer)
       raf = requestAnimationFrame(run)
       timer = window.setTimeout(run, 120)
     }
-    // Markers and icons coming and going; not our own leader lines, which would loop.
-    const ours = (n: Node) => n instanceof HTMLElement && n.classList.contains('dc-leader')
+    // Only the marker panes, not the map pane: its tiles come and go on every pan. A
+    // marker added or removed (a layer turned on or off) is a full run. A card redrawn
+    // inside its marker (a timeline step) isn't, and takes its remembered spot at once
+    // (this runs before the browser paints), so it doesn't flash at its site.
+    const panes = [map.getPane('markerPane'), map.getPane('dhde-cards')].filter((p): p is HTMLElement => !!p)
     const mo = new MutationObserver((records) => {
-      if (records.some((m) => [...m.addedNodes, ...m.removedNodes].some((n) => !ours(n)))) schedule()
+      let changed = false
+      for (const m of records) {
+        const onPane = panes.includes(m.target as HTMLElement)
+        if (onPane && (m.addedNodes.length || m.removedNodes.length)) changed = true
+        const dc = !onPane && m.target instanceof HTMLElement ? m.target.dataset.dc : undefined
+        if (!dc || fresh) continue
+        for (const n of m.addedNodes) {
+          if (!(n instanceof HTMLElement) || !n.classList.contains('site-card')) continue
+          if (dc === 'dot') {
+            n.classList.add('dc-dot')
+            continue
+          }
+          const [side, dy, mini] = dc.split('|') as [Side, string, string]
+          homeSide(n)
+          setSide(n, side)
+          if (mini) n.classList.add('dc-mini')
+          if (Number(dy)) n.style.translate = `0 ${Math.round(Number(dy))}px`
+        }
+      }
+      schedule(changed)
     })
-    mo.observe(map.getPane('mapPane') ?? root, { childList: true, subtree: true })
-    const ro = new ResizeObserver(schedule)
+    for (const p of panes) mo.observe(p, { childList: true, subtree: true })
+    const full = () => schedule(true)
+    const moved = () => schedule()
+    const ro = new ResizeObserver(full)
     ro.observe(root)
     for (const s of ['.map-left', '.map-right', '.map-bottom']) {
       const el = document.querySelector(s)
       if (el) ro.observe(el)
     }
-    map.on('zoomend moveend resize', schedule)
-    schedule()
+    map.on('zoomend resize', full)
+    map.on('moveend', moved)
+    full()
     return () => {
       cancelAnimationFrame(raf)
       window.clearTimeout(timer)
       mo.disconnect()
       ro.disconnect()
-      map.off('zoomend moveend resize', schedule)
+      map.off('zoomend resize', full)
+      map.off('moveend', moved)
     }
   }, [map])
   return null
