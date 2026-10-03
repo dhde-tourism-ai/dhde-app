@@ -81,6 +81,8 @@ export interface TransportDay {
     journeys: number
     fastest_min: number
     fastest: Journey
+    /** Fewest buses among the quickest options (a 10-minute penalty per extra bus); its fare is the one shown. */
+    recommended?: Journey
     typical_min: number
     first_arrival: string | null
     /** First journey leaving at or after 09:00. */

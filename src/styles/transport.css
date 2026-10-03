@@ -99,6 +99,21 @@
 }
 
 /* ---------- rows and cards ---------- */
+.td-section-h {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 40px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.td-section-h + .td-row-h {
+  margin-top: 12px;
+}
+
 .td-row-h {
   margin: 26px 0 10px;
   font-size: 12px;
@@ -405,6 +420,10 @@
 @media (max-width: 640px) {
   .td-title {
     font-size: 23px;
+  }
+
+  .td-section-h {
+    font-size: 20px;
   }
 
   .td-kpi-value {

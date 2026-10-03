@@ -152,3 +152,12 @@ def test_fare_override_only_for_its_stop_pair():
     before = {"legs": [{"mode": "bus", "feed": "k", "route": "Liner", "from": "Station", "to": "Temple", "fare_yen": 750}]}
     bt.apply_fare_overrides(before, over, date(2026, 9, 30))
     assert before["fare_yen"] == 750  # not yet in force
+
+
+def test_change_penalty_prefers_fewer_buses(feed_zip: Path):
+    """From H at 09:00 the only way to N is bus 1 + walk + bus 3; with no
+    alternative, the penalty must not lose the journey."""
+    net = net_for(feed_zip)
+    from gtfs import journey
+    j = journey(net, {idx(net, "H"): 9 * 3600}, {idx(net, "N")}, change_penalty=600)
+    assert j is not None and j["arrive"] == "10:00"

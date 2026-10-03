@@ -47,6 +47,7 @@ ROOT = HERE.parent
 CACHE = HERE / ".cache"
 JST = timezone(timedelta(hours=9))
 DAY_END = 24 * 3600 + 59 * 60  # trips after midnight still count for the service day
+CHANGE_PENALTY = 10 * 60  # an extra bus has to save 10 minutes to be worth it
 ORIGIN_WINDOW = (5 * 3600, 21 * 3600)  # departures considered for journeys from the hub or a gateway
 DAY_TYPES = {"weekday": 2, "saturday": 5, "sunday": 6}  # Wednesday stands in for a weekday
 
@@ -140,8 +141,13 @@ def journeys_from(net: Network, origin: list[dict], nodes: dict[str, list[dict]]
             out[k] = None
             continue
         fastest = min(trips, key=lambda j: (j["minutes"], clock(j["depart"])))
+        # What a visitor would pick: the same departures planned with a penalty per
+        # extra bus, then the quickest of those (fewer buses, then cheaper, on ties).
+        simple = [j for j in (journey(net, {i: t for i in src}, targets, CHANGE_PENALTY) for t, _ in best) if j and j["legs"]]
+        rides = lambda j: sum(1 for leg in j["legs"] if leg["mode"] != "walk")
+        recommended = min(simple or trips, key=lambda j: (j["minutes"], rides(j), j.get("fare_yen") or 10**6))
         nine = next((j for j in trips if clock(j["depart"]) >= 9 * 60), None)
-        out[k] = {"journeys": len(trips), "fastest_min": fastest["minutes"], "fastest": fastest,
+        out[k] = {"journeys": len(trips), "fastest_min": fastest["minutes"], "fastest": fastest, "recommended": recommended,
                   "typical_min": round(statistics.median(j["minutes"] for j in trips)),
                   "first_arrival": min(trips, key=lambda j: clock(j["arrive"]))["arrive"], "after_0900": nine}
     return out
@@ -334,7 +340,7 @@ def main() -> None:
                 entry["to_hub"] = last_return(net, hub, served) if served else None
                 entry["car_only_after"] = entry["to_hub"]["leave"] if entry["to_hub"] else "all day"
                 fh = entry["from_hub"] or {}
-                for j in (fh.get("fastest"), fh.get("after_0900"), entry["to_hub"]):
+                for j in (fh.get("fastest"), fh.get("recommended"), fh.get("after_0900"), entry["to_hub"]):
                     apply_fare_overrides(j, cfg.get("fare_overrides", []), d)
                 legs = [leg for j in (fh.get("fastest"), fh.get("after_0900"), entry["to_hub"]) if j for leg in j["legs"]]
             entry["from_far"] = far[k]

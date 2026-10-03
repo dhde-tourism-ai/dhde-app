@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
   actions: write
+  issues: write
 
 concurrency:
   group: transport-data
@@ -63,3 +64,17 @@ jobs:
         run: gh workflow run pages.yml --ref main
         env:
           GH_TOKEN: ${{ github.token }}
+      # Nobody has to remember to check: a failed run opens (or comments on) one issue.
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Transport data refresh failed"
+          n=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number')
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --body "Failed again on $(date -u +%Y-%m-%d): $RUN_URL"
+          else
+            gh issue create --title "$title" --body "The weekly transport refresh failed on $(date -u +%Y-%m-%d): $RUN_URL. The dashboard keeps the last good files until it is fixed."
+          fi

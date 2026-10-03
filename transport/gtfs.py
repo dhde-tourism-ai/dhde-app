@@ -300,10 +300,14 @@ def latest_departure(net: Network, targets: dict[int, int]) -> list[int]:
     return ld
 
 
-def journey(net: Network, sources: dict[int, int], targets: set[int]) -> dict | None:
+def journey(net: Network, sources: dict[int, int], targets: set[int], change_penalty: int = 0) -> dict | None:
     """Earliest-arrival journey from `sources` (stop idx -> time) to the
     earliest-reached stop in `targets`, with its legs. Same scan as
-    earliest_arrival, but each stop remembers how it was reached."""
+    earliest_arrival, but each stop remembers how it was reached.
+
+    `change_penalty` (seconds) is added before boarding any bus after the
+    first, so a trip with fewer changes wins unless an extra bus saves more
+    than that. The legs keep their real times; the penalty only steers."""
     ea = [INF] * len(net.stop_index)
     parent: list[tuple | None] = [None] * len(ea)  # ('src',) | ('walk', from, start) | ('ride', board_ci, ci)
     for s, t0 in sources.items():
@@ -317,7 +321,8 @@ def journey(net: Network, sources: dict[int, int], targets: set[int]) -> dict | 
     first = bisect.bisect_left(net.conn_deps, min(sources.values())) if sources else len(net.conns)
     for ci in range(first, len(net.conns)):
         dep, arr, a, b, trip = net.conns[ci]
-        if trip in board or ea[a] <= dep:
+        ready = ea[a] + (change_penalty if parent[a] is not None and parent[a][0] != "src" else 0)
+        if trip in board or ready <= dep:
             board.setdefault(trip, ci)
             if arr < ea[b]:
                 ea[b], parent[b] = arr, ("ride", board[trip], ci)

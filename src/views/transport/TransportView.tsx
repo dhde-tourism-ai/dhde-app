@@ -189,7 +189,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     <div className="page td">
       <header className="td-head">
         <div>
-          <h1 className="td-title">{t('How visitors reach Fukui’s priority sites', '福井の重点地点への来訪者の交通')}</h1>
+          <h1 className="td-title">{t('How Fukui People Travel', '福井の人々の移動')}</h1>
         </div>
         <div className="td-slicers">
           <Slicer
@@ -336,7 +336,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   const m = modes?.nodes[id]
                   const v = m ? (period === 'last_30_days' ? m.visitors_30d : m.official_annual_2025) : null
                   const back = lastBack(id)
-                  const fare = d?.from_hub?.fastest.fare_yen
+                  const fare = (d?.from_hub?.recommended ?? d?.from_hub?.fastest)?.fare_yen
                   return (
                     <tr key={id} className={site === 'all' || site === id ? '' : 'dim'} onClick={() => onOpenMap(id)} title={t('Show on the map', '地図で表示')}>
                       <th>{name(id)}</th>
@@ -359,7 +359,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       {/* Row 3: the transport market */}
       {market && (
         <>
-          <h2 className="td-row-h">{t('The transport market', '交通市場')}</h2>
+          <h2 className="td-section-h">{t('Revenue and Fares', '収入と運賃')}</h2>
+          <h3 className="td-row-h">{t('The transport market', '交通市場')}</h3>
           <div className="td-row">
             <Card
               className="td-6"
@@ -519,8 +520,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           </li>
           <li>
             {t(
-              `Bus timetables and fares: ${data.sources.map((s) => s.name).join(', ')} (Fukui Prefecture open data, refreshed weekly). Echizen Railway and Fukui Railway publish no open timetable, so trips are by bus only and look longer than by train at Katsuyama, Awara Onsen and Tojinbo. Kanazawa times add an estimated Shinkansen leg. The Keifuku Bus licence is to be confirmed with the company before publication.`,
-              `バス時刻表・運賃：${data.sources.map((s) => s.name_ja).join('、')}（福井県オープンデータ、毎週更新）。えちぜん鉄道・福井鉄道はオープンな時刻表を公開していないため、移動はバスのみで、勝山・あわら温泉・東尋坊では鉄道より長めに出る。京福バスの利用許諾は公開前に確認予定。`,
+              `Bus timetables and fares: ${data.sources.map((s) => s.name).join(', ')} (Fukui Prefecture open data, refreshed weekly). Echizen Railway and Fukui Railway publish no open timetable, so trips are by bus only and look longer than by train at Katsuyama, Awara Onsen and Tojinbo. Kanazawa times add an estimated Shinkansen leg. Bus data: 京福バス株式会社 and city buses, Fukui Prefecture open data (CC BY 4.0).`,
+              `バス時刻表・運賃：${data.sources.map((s) => s.name_ja).join('、')}（福井県オープンデータ、毎週更新）。えちぜん鉄道・福井鉄道はオープンな時刻表を公開していないため、移動はバスのみで、勝山・あわら温泉・東尋坊では鉄道より長めに出る。バスデータ：京福バス株式会社ほか、福井県オープンデータ（CC BY 4.0）。`,
             )}
           </li>
           {market && (

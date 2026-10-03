@@ -66,7 +66,7 @@ python transport/build_modes.py --survey-dir path/to/fukui-kanko-survey   # defa
 
 | Mode | Source | What's in it | Licence | Status |
 |---|---|---|---|---|
-| Bus | [Fukui Prefecture GTFS-JP page](https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html): Keifuku Bus, Fukutetsu Bus, Katsuyama, Eiheiji and Sakai community buses (26 feeds on the page; the 5 serving the nodes are used) | Full timetables, stops, Keifuku route shapes | CC BY 4.0 per the prefecture | **Keifuku: confirm.** Its own `feed_info` says to get the bus company's permission before using it to guide passengers, and forbids registering it under a CC licence. Fukutetsu's file expired 31 Mar 2026 (the build uses the same week a year earlier) |
+| Bus | [Fukui Prefecture GTFS-JP page](https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html): Keifuku Bus, Fukutetsu Bus, Katsuyama, Eiheiji and Sakai community buses (26 feeds on the page; the 5 serving the nodes are used) | Full timetables, stops, Keifuku route shapes | CC BY 4.0 per the prefecture | Keifuku: CC BY 4.0 confirmed (prefecture page and ODPT catalogue); the permission note in the feed is from its authoring tool. Fukutetsu Bus expired 31 Mar 2026 and is left out |
 | Rail | [University of Tokyo research GTFS](https://gtfs-gis.jp/gtfs4research/): Fukui Railway (Fukubu line) and Echizen Railway (Mikuni-Awara, Katsuyama-Eiheiji lines) | Timetables as of 1 Oct 2024, valid to 14 Mar 2025 | **Research and survey use only**; not official, not operator-approved | **Needs the operators' data or approval** before the public site shows it. Times may be out of date |
 | Rail | Hokuriku Shinkansen, JR Obama Line (JR West) | Not published as open data. Not in the national [GTFS data repository](https://gtfs-data.jp/) either (no Fukui feeds there at all) | | Kanazawa and Kyoto journey times are **Estimated** (config `long_distance`) |
 | Car | JARTIC, TomTom, Rainbow Line cameras | Already live in the Traffic layer | | Parking capacity still to source |
@@ -141,7 +141,7 @@ Top level: `sources[]` (licence, `publish_status` `ok` / `check` / `research_onl
 
 1. **Rail data**: ask Echizen Railway and Fukui Railway for their own GTFS, or for approval to show figures derived
    from the research feed. Until then, should the public site hide rail-based journey times?
-2. **Keifuku Bus**: confirm the licence with the company. It is the main operator for Tojinbo, Eiheiji and Awara.
+2. **Keifuku Bus** (resolved 3 Oct 2026): CC BY 4.0 per the Fukui Prefecture open data page and the ODPT catalogue (author 京福バス株式会社). The "get permission" line inside the feed comes from the GTFS authoring tool, not Keifuku. Credit 京福バス株式会社 / Fukui Prefecture open data.
 3. **Shinkansen and JR**: is the estimated Kanazawa (34 min) and Kyoto (90 min) leg good enough, or is it worth a
    paid timetable source?
 4. From the plan: priority (what's available vs what's used), Google Routes API vs free OpenStreetMap routing (OSM

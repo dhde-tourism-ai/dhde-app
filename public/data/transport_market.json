@@ -60,12 +60,12 @@
       "label": "Fukui Railway (tram line)",
       "label_ja": "福井鉄道（福武線）",
       "yen": null,
-      "period": "FY2024",
+      "period": "FY2025",
       "status": "not_published",
-      "detail": "Rail revenue not published; company total ¥3,797M also covers buses, charter buses and oil sales, and includes ¥1.3bn of subsidies",
-      "detail_ja": "鉄道単独の収入は非公表。会社全体37.97億円はバス・貸切バス・石油販売を含み、補助金13億円を含む",
-      "source": "Verepo, citing the company's FY2024 results",
-      "url": "https://verepo.com/fukutetsu24/"
+      "detail": "Rail revenue not published separately; company total ¥3,572M in FY2025 (¥3,797M in FY2024) also covers buses and other businesses",
+      "detail_ja": "鉄道単独の収入は非公表。会社全体は2025年度35.72億円（2024年度37.97億円）でバス等を含む",
+      "source": "Fukui Railway securities report via IRBANK (EDINET data)",
+      "url": "https://irbank.net/E04127/pl"
     },
     {
       "id": "shinkansen",
@@ -102,11 +102,11 @@
       "label_ja": "北陸新幹線（金沢〜福井）",
       "passengers": 8161000,
       "period": "Mar 2024 – Mar 2025",
-      "status": "press",
-      "detail": "22,000 a day, 125% of the limited expresses it replaced",
-      "detail_ja": "1日2.2万人、旧特急の125%",
-      "source": "Wakasa Bay (JR West figures)",
-      "url": "https://wakasabay.jp/articles/-/2388"
+      "status": "official",
+      "detail": "22,000 a day, 125% of the limited expresses it replaced; Fukui station 3,600 boardings a day, Awara-Onsen 500",
+      "detail_ja": "1日2.2万人、旧特急の125%。福井駅の乗車人員は1日3,600人、芦原温泉駅500人",
+      "source": "JR West press release, 17 Mar 2025",
+      "url": "https://www.westjr.co.jp/press/article/items/250317_00_press_hokurikushinkansen_goriyoujyoukyou.pdf"
     },
     {
       "id": "hapi",
@@ -287,19 +287,6 @@
       "url": "https://www.hapi-line.co.jp/files/uploads/1-2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf"
     },
     {
-      "group": "long",
-      "from": "Tokyo",
-      "from_ja": "東京",
-      "to": "Fukui",
-      "to_ja": "福井",
-      "yen": 16030,
-      "operator": "Hokuriku Shinkansen, reserved seat",
-      "operator_ja": "北陸新幹線（指定席）",
-      "status": "press",
-      "period": "regular season",
-      "url": "https://jr-shinkansen.net/articles/tokyo-fukui/"
-    },
-    {
       "group": "taxi",
       "from": "Taxi",
       "from_ja": "タクシー",
@@ -313,5 +300,5 @@
       "url": "https://wwwtb.mlit.go.jp/chubu/press/pdf/jikou2026072802.pdf"
     }
   ],
-  "verified": "All sources re-checked on 2026-10-03 against the cited documents (see the transport data verification report)."
+  "verified": "All sources re-checked on 2026-10-03; Shinkansen ridership now cites JR West directly; Tokyo–Fukui fare removed (sources conflict: ¥16,030 vs ¥15,480)."
 }

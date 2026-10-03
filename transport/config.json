@@ -15,11 +15,11 @@
       "mode": "bus",
       "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/keifuku_bus.zip",
       "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
-      "licence": "CC BY 4.0 (Fukui Prefecture open data page)",
+      "licence": "CC BY 4.0 (Fukui Prefecture open data; ODPT catalogue lists 京福バス株式会社 as author)",
       "licence_url": "https://creativecommons.org/licenses/by/4.0/",
-      "caveat": "The feed's own feed_info asks that operator permission be obtained before using it to guide bus passengers, which conflicts with the prefecture's CC BY 4.0 label. Confirm with Keifuku Bus before the public dashboard shows it.",
-      "caveat_ja": "フィード内のfeed_infoには「一般のバス利用者への案内利用はバス会社に公開許可を得ること」とあり、県のCC BY 4.0表示と食い違う。公開ダッシュボードに表示する前に京福バスに確認すること。",
-      "publish_status": "check"
+      "caveat": "CC BY 4.0: credit \"京福バス株式会社 / Fukui Prefecture open data\". The permission line in the feed comes from the GTFS authoring tool (その筋屋), not from Keifuku; the official listings carry no such condition. Confirmed 3 Oct 2026.",
+      "caveat_ja": "CC BY 4.0：「京福バス株式会社／福井県オープンデータ」を表示。フィード内の許諾の記載はGTFS作成ツール（その筋屋）のもので、京福バスの条件ではない（県・ODPTの公式掲載に条件なし）。2026年10月3日確認。",
+      "publish_status": "ok"
     },
     {
       "id": "fukutetsu_bus",

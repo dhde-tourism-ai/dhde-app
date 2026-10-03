@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T00:30:55Z",
+ "generated_at": "2026-10-03T03:18:30Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -42,11 +42,11 @@
    "mode": "bus",
    "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/keifuku_bus.zip",
    "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
-   "licence": "CC BY 4.0 (Fukui Prefecture open data page)",
+   "licence": "CC BY 4.0 (Fukui Prefecture open data; ODPT catalogue lists 京福バス株式会社 as author)",
    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
-   "caveat": "The feed's own feed_info asks that operator permission be obtained before using it to guide bus passengers, which conflicts with the prefecture's CC BY 4.0 label. Confirm with Keifuku Bus before the public dashboard shows it.",
-   "caveat_ja": "フィード内のfeed_infoには「一般のバス利用者への案内利用はバス会社に公開許可を得ること」とあり、県のCC BY 4.0表示と食い違う。公開ダッシュボードに表示する前に京福バスに確認すること。",
-   "publish_status": "check",
+   "caveat": "CC BY 4.0: credit \"京福バス株式会社 / Fukui Prefecture open data\". The permission line in the feed comes from the GTFS authoring tool (その筋屋), not from Keifuku; the official listings carry no such condition. Confirmed 3 Oct 2026.",
+   "caveat_ja": "CC BY 4.0：「京福バス株式会社／福井県オープンデータ」を表示。フィード内の許諾の記載はGTFS作成ツール（その筋屋）のもので、京福バスの条件ではない（県・ODPTの公式掲載に条件なし）。2026年10月3日確認。",
+   "publish_status": "ok",
    "agency": "京福バス",
    "valid_from": "2026-06-01",
    "valid_to": "2027-05-31"
@@ -204,6 +204,51 @@
          "feed": "keifuku_bus",
          "from": "龍翔博物館前",
          "depart": "12:10",
+         "to": "東尋坊",
+         "arrive": "12:24",
+         "fare_yen": 320
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:14",
+       "arrive": "12:24",
+       "stop": 639,
+       "fare_yen": 1590,
+       "minutes": 130,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "12:11",
          "to": "東尋坊",
          "arrive": "12:24",
          "fare_yen": 320
@@ -448,6 +493,51 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "10:14",
+       "arrive": "11:54",
+       "stop": 639,
+       "fare_yen": 1590,
+       "minutes": 100,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "11:41",
+         "to": "東尋坊",
+         "arrive": "11:54",
+         "fare_yen": 320
+        }
+       ]
+      },
       "typical_min": 140,
       "first_arrival": "09:54",
       "after_0900": {
@@ -657,6 +747,51 @@
          "to": "芦原温泉駅",
          "arrive": "12:14",
          "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "東尋坊",
+         "arrive": "13:17",
+         "fare_yen": 790
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "13:17",
+       "stop": 639,
+       "fare_yen": 2350,
+       "minutes": 147,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
         },
         {
          "mode": "walk",
@@ -1907,6 +2042,51 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "13:08",
+       "arrive": "17:07",
+       "stop": 1560,
+       "fare_yen": 2060,
+       "minutes": 239,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "59 大野線",
+         "feed": "keifuku_bus",
+         "from": "アオッサ前",
+         "depart": "13:08",
+         "to": "ヴィオ",
+         "arrive": "14:21",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "bus",
+         "route": "46 勝山大野線",
+         "feed": "keifuku_bus",
+         "from": "ヴィオ",
+         "depart": "15:30",
+         "to": "勝山駅前",
+         "arrive": "16:07",
+         "fare_yen": 720
+        },
+        {
+         "mode": "walk",
+         "from": "勝山駅前",
+         "to": "勝山駅前",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "16:53",
+         "to": "恐竜博物館前",
+         "arrive": "17:07",
+         "fare_yen": 300
+        }
+       ]
+      },
       "typical_min": 249,
       "first_arrival": "12:07",
       "after_0900": {
@@ -2080,6 +2260,25 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
       "typical_min": 90,
       "first_arrival": "10:30",
       "after_0900": {
@@ -2183,6 +2382,25 @@
       "journeys": 4,
       "fastest_min": 60,
       "fastest": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
+      "recommended": {
        "depart": "09:30",
        "arrive": "10:30",
        "stop": 1529,
@@ -2493,6 +2711,51 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
       "typical_min": 119,
       "first_arrival": "10:50",
       "after_0900": {
@@ -2723,6 +2986,51 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
       "typical_min": 122,
       "first_arrival": "10:20",
       "after_0900": {
@@ -2932,6 +3240,51 @@
          "to": "芦原温泉駅",
          "arrive": "12:14",
          "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
         },
         {
          "mode": "walk",
@@ -3292,6 +3645,25 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
       "typical_min": 28,
       "first_arrival": "10:04",
       "after_0900": {
@@ -3471,6 +3843,25 @@
         }
        ]
       },
+      "recommended": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
       "typical_min": 28,
       "first_arrival": "09:54",
       "after_0900": {
@@ -3594,6 +3985,25 @@
       "journeys": 9,
       "fastest_min": 28,
       "fastest": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "recommended": {
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
