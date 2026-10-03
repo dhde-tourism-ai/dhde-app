@@ -196,4 +196,6 @@ export interface RealNodeMeta {
   forecast_method: string
   /** Per merged day: 'model' (7-day forecast), 'naive' (same-weekday mean, a rough estimate) or null (no forecast). */
   forecast_source_daily: ('model' | 'naive' | null)[]
+  /** Per merged day: the forecast model's visitor total where it published one (exact, unrounded by hour). */
+  forecast_daily?: (number | null)[]
 }

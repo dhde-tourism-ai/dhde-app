@@ -4,6 +4,7 @@ import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { useLang } from '../../lib/i18n'
+import { useBriefing } from '../../lib/briefing'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { withMeasuredShares } from '../../lib/monthly'
@@ -21,6 +22,7 @@ import '../../styles/pages.css'
 export default function StrategyView({ data: raw, focus }: { data: StrategicQuestions; focus?: string }) {
   const { t, lang } = useLang()
   const [showSpecs, setShowSpecs] = useState(false)
+  const briefing = useBriefing()
   const [activeQ, setActiveQ] = useState(raw.questions[0]?.id)
   const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
   const real = useJsonResource<RealDailyFile>('real_data.json').data
@@ -67,6 +69,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
             {meta.subtitle} · <AsOf as_of={meta.as_of} />
           </p>
         </div>
+        {!briefing && (
         <label className="spec-toggle">
           <span className="switch">
             <input type="checkbox" checked={showSpecs} onChange={(e) => setShowSpecs(e.target.checked)} />
@@ -74,10 +77,11 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
           </span>
           {t('Show build specs', 'ビルド仕様を表示')}
         </label>
+        )}
       </div>
 
       <div className="card strat-legend">
-        <PillLegend labels={data.pills} />
+        <PillLegend labels={data.pills} only={briefing ? ['real', 'modelled'] : undefined} />
       </div>
 
       <section className="card equation" aria-label={t('Revenue equation', '観光消費の式')}>
@@ -103,7 +107,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
         <p className="eq-caption">{equation.caption}</p>
       </section>
 
-      {data.todos.map((td, i) => (
+      {!briefing && data.todos.map((td, i) => (
         <div key={i} className="banner banner-warn research-note">
           <Icon name="info" />
           <span>
@@ -134,7 +138,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
       </nav>
 
       {questions.map((q) => (
-        <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
+        <QuestionSection key={q.id} q={q} showSpecs={showSpecs && !briefing} />
       ))}
 
       <footer className="strat-foot">
@@ -148,6 +152,8 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
 }
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
+  // Briefing shows charts built from real data or a model; illustrative and pending ones are left out.
+  const briefing = useBriefing()
   const { t } = useLang()
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
@@ -173,7 +179,7 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
       </div>
       <div className="card-grid">
         {q.cards
-          .filter((c) => !c.hidden)
+          .filter((c) => !c.hidden && !(briefing && (c.status === 'illustrative' || c.status === 'pending')))
           .map((c) => (
             <StrategyCardView key={c.id} card={c} />
           ))}

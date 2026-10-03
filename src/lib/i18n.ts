@@ -19,7 +19,10 @@ export function useLang(): LangCtx {
   return useContext(LangContext)
 }
 
+/** ?lang=ja|en wins (a link can open in Japanese), then the viewer's last choice, else English. */
 export function readStoredLang(): Lang {
+  const q = new URLSearchParams(window.location.search).get('lang')
+  if (q === 'ja' || q === 'en') return q
   try {
     const v = window.localStorage.getItem('dhde.lang')
     return v === 'ja' ? 'ja' : 'en'

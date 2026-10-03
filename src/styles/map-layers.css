@@ -239,7 +239,7 @@
   display: inline-block;
   letter-spacing: 1px;
   line-height: 1;
-  background: linear-gradient(90deg, #ffc94a var(--pct), #3a4560 var(--pct));
+  background: linear-gradient(90deg, #ffc94a var(--pct), var(--track) var(--pct));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -253,12 +253,12 @@
   gap: 5px;
   padding: 3px 9px 3px 4px;
   border-radius: 8px;
-  background: rgba(10, 17, 32, 0.9);
+  background: rgba(var(--chip-rgb), 0.9);
   border: 1px solid var(--line-strong);
   color: var(--text);
   font-size: 12px;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.4 * var(--shadow-k)));
   backdrop-filter: blur(3px);
   cursor: default;
 }
@@ -307,7 +307,7 @@
 .ov-area {
   padding: 1px 6px;
   border-radius: 6px;
-  background: rgba(10, 17, 32, 0.78);
+  background: rgba(var(--chip-rgb), 0.78);
   color: var(--text-2);
   font-size: 10.5px;
   white-space: nowrap;
@@ -374,7 +374,7 @@
 
 .ov-thumb + .ov-thumb {
   margin-left: -10px;
-  box-shadow: -2px 0 0 rgba(10, 17, 32, 0.9);
+  box-shadow: -2px 0 0 rgba(var(--chip-rgb), 0.9);
 }
 
 .ov-stack-txt {
@@ -395,7 +395,7 @@
   color: #0a1120;
   font-weight: 700;
   font-size: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.45 * var(--shadow-k)));
   cursor: pointer;
 }
 
@@ -403,8 +403,22 @@
   color: #0a1120;
 }
 
+/* Next action later in the week: smaller, outlined in the priority colour, dated. */
+.nudge-flag.ahead {
+  padding: 2px 7px 2px 5px;
+  font-size: 11px;
+  white-space: nowrap;
+  background: rgba(var(--chip-rgb), 0.92);
+  color: var(--c);
+  border: 1.5px solid var(--c);
+}
+
+.nudge-flag.ahead svg {
+  color: var(--c);
+}
+
 .nudge-flag.on {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--outline-strong);
   outline-offset: 2px;
 }
 
@@ -415,7 +429,7 @@
 
 /* ---------- popups (social feed) ---------- */
 .map-pop .leaflet-popup-content-wrapper {
-  background: rgba(16, 25, 43, 0.98);
+  background: rgba(var(--panel-rgb), 0.98);
   color: var(--text);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
@@ -423,7 +437,7 @@
 }
 
 .map-pop .leaflet-popup-tip {
-  background: rgba(16, 25, 43, 0.98);
+  background: rgba(var(--panel-rgb), 0.98);
 }
 
 .map-pop .leaflet-popup-content {

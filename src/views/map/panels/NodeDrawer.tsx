@@ -20,6 +20,8 @@ import { SourceBadge } from '../../../components/SourceBadge'
 import { KddiPending } from '../../../components/KddiPending'
 import { measureLabel } from '../../../lib/real'
 import type { MarketVoiceData } from '../../../types/market'
+import { dayFigures, useBriefing } from '../../../lib/briefing'
+import { useTheme } from '../../../lib/theme'
 
 const S1 = '#3987e5'
 const AXIS = { fill: '#7f8ba3', fontSize: 10, fontFamily: 'IBM Plex Mono' }
@@ -84,6 +86,12 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
   const survey = market?.survey[node.id]
   const day = Math.floor(t / 24)
   const ln = live?.nodes[node.id]
+  // Briefing: the same day figure as the map and board (real, else the model's forecast), and no
+  // simulated hourly views, guessed capacity, demo roads, demo sentiment or demo market cells.
+  const briefing = useBriefing()
+  const fig = briefing && live ? dayFigures(live, day)[node.id] : undefined
+  // The "counted" line is the page's ink colour, so it reads on either theme.
+  const ink = useTheme() === 'light' ? '#24262c' : '#e9eef8'
 
   const hourly = ln
     ? Array.from({ length: 24 }, (_, h) => {
@@ -135,7 +143,7 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
           ) : (
             <span className="measure-tag est">{tr('Not measured yet', '未計測')}</span>
           )}
-          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} note={['Daily visitor totals for this site are real estimates; the hourly shape is simulated.', 'この地点の日別来訪者数は実推計。時間別の形は模擬。']} /> : <DemoBadge />)}
+          {frame && live?.demo && !briefing && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} note={['Daily visitor totals for this site are real estimates; the hourly shape is simulated.', 'この地点の日別来訪者数は実推計。時間別の形は模擬。']} /> : <DemoBadge />)}
         </div>
 
         {!frame ? (
@@ -163,10 +171,19 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
             ) : meta ? (
               <div className="real-card">
                 <div className="rc-head">
-                  <span className="eyebrow">{frame.realDay?.visitors != null ? tr('Visitors this day (modelled)', 'この日の来訪者数（推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
-                  {frame.realDay?.visitors != null ? <span className="tt-real">{tr('Real', '実データ')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
+                  {fig ? (
+                    <>
+                      <span className="eyebrow">{fig.kind === 'real' ? tr('Visitors this day (estimate from real counts)', 'この日の来訪者数（実測からの推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
+                      {fig.kind === 'real' ? <span className="tt-real">{tr('Real data', '実データ')}</span> : fig.kind === 'forecast' ? <span className="tt-real">{tr('Model forecast', 'モデル予測')}</span> : null}
+                    </>
+                  ) : (
+                    <>
+                      <span className="eyebrow">{frame.realDay?.visitors != null ? tr('Visitors this day (modelled)', 'この日の来訪者数（推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
+                      {frame.realDay?.visitors != null ? <span className="tt-real">{tr('Real', '実データ')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
+                    </>
+                  )}
                 </div>
-                <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString('en-US')}</span>
+                <span className="dk-val">{fig ? (fig.value !== null ? Math.round(fig.value).toLocaleString('en-US') : tr('No forecast yet', '予測なし')) : Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString('en-US')}</span>
                 <div className="tt-grid">
                   <span className="tt-k">{tr('Method', '方法')}</span>
                   <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
@@ -183,10 +200,12 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                     </>
                   )}
                 </div>
-                <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。')}</p>
+                {!briefing && <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。')}</p>}
               </div>
             ) : null}
             {!frame.noEstimate && (
+            <>
+            {!briefing && (
             <>
             <div className="drawer-kpis">
               <div className="dk">
@@ -220,16 +239,18 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(n)]} />
                   <Area dataKey="band" name={tr('Range', '予測幅')} stroke="none" fill={S1} fillOpacity={0.12} isAnimationActive={false} />
                   <Line dataKey="forecast" name={tr('Forecast', '予測')} stroke={S1} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
-                  <Line dataKey="actual" name={tr('Counted', '実測')} stroke="#e9eef8" strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
+                  <Line dataKey="actual" name={tr('Counted', '実測')} stroke={ink} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
                   {t >= day * 24 && t < day * 24 + 24 && <ReferenceLine x={t % 24} stroke="#8b9dff" strokeWidth={1.5} />}
                 </ComposedChart>
               </ResponsiveContainer>
               <div className="chart-key">
-                <span><i className="k-line" style={{ borderColor: '#e9eef8' }}></i>{tr('Counted', '実測')}</span>
+                <span><i className="k-line" style={{ borderColor: ink }}></i>{tr('Counted', '実測')}</span>
                 <span><i className="k-line dash" style={{ borderColor: S1 }}></i>{tr('Forecast', '予測')}</span>
                 <span><i className="k-band" style={{ background: 'rgba(57,135,229,.25)' }}></i>{tr('Range', '予測幅')}</span>
               </div>
             </div>
+            </>
+            )}
 
             <h3 className="drawer-h">{meta ? tr('Daily visitors: last 7 days (real) and next 7 (forecast)', '1日の来訪者数：直近7日（実）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
             <div className="mini-chart">
@@ -275,11 +296,11 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                   </div>
                 )}
                 <div className="muted small">
-                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)} · {frame.wxDay.real ? <span className="tt-real">{tr('Real daily', '実データ（日別）')}</span> : <span className="tt-demo">{tr('Demo', 'デモ')}</span>}
+                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)} · {frame.wxDay.real ? <span className="tt-real">{tr('Real daily', '実データ（日別）')}</span> : briefing ? null : <span className="tt-demo">{tr('Demo', 'デモ')}</span>}
                 </div>
               </div>
             </div>
-            {frame.alerts.map((a) => (
+            {frame.alerts.filter((a) => !briefing || !a.demo).map((a) => (
               <div key={a.id} className="banner banner-warn">
                 <Icon name="alert" />
                 <span>
@@ -288,6 +309,8 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
               </div>
             ))}
 
+            {!briefing && (
+            <>
             <h3 className="drawer-h">{tr('Roads in', '接続道路')}</h3>
             <ul className="road-list">
               {routesTouching(routes, node.id)
@@ -333,10 +356,12 @@ export function NodeDrawer({ node, frame, live, routes, dashboard, economics, ma
                 ))}
               </div>
             </div>
+            </>
+            )}
           </>
         )}
 
-        {market && (market.reviews[node.id] || market.survey[node.id]) && (
+        {!briefing && market && (market.reviews[node.id] || market.survey[node.id]) && (
           <>
             <h3 className="drawer-h">
               {tr('Voice of visitor and market', '来訪者の声と市場')} <DemoBadge compact />

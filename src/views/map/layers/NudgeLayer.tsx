@@ -5,16 +5,26 @@ import type { RoutesFile } from '../../../types/routes'
 import type { Nudge } from '../../../lib/nudges'
 import { LOOP_LABEL, PRIORITY, priorityOf } from '../../../lib/nudges'
 import { routeById, reversePath } from '../../../lib/routes'
-import { escapeHtml } from '../../../lib/live'
+import { dayLabel, escapeHtml } from '../../../lib/live'
+import type { LiveData } from '../../../types/live'
 import { iconSvg } from '../../../lib/icons'
 import { useLang } from '../../../lib/i18n'
 
 const ROUTE_COLOUR = '#3fd8c4'
+/** How many days after the selected one an upcoming flag looks ahead. */
+const AHEAD_DAYS = 6
 
-/** Map annotations for the action nudges on the selected day: a flag per nudge and the suggested route for weather-route nudges. */
-export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: Nudge[]; routes: RoutesFile | null; day: number; activeId?: string; onPick: (n: Nudge) => void }) {
+const SEV_ORDER = { crit: 3, serious: 2, warn: 1, info: 0 } as const
+const worstOf = (g: Nudge[]) => [...g].sort((a, b) => SEV_ORDER[b.sev] - SEV_ORDER[a.sev])[0]
+
+/**
+ * Map annotations for the action nudges: a flag per location for the selected day, the suggested
+ * route for weather-route nudges, and a smaller dated flag where the next action is later in the
+ * week, so the map is never empty on a quiet day. Clicking an upcoming flag jumps to its day.
+ */
+export function NudgeLayer({ nudges, routes, day, live, activeId, onPick }: { nudges: Nudge[]; routes: RoutesFile | null; day: number; live: LiveData | null; activeId?: string; onPick: (n: Nudge) => void }) {
   const { t, lang } = useLang()
-  const today = nudges.filter((n) => n.day === day)
+  const today = useMemo(() => nudges.filter((n) => n.day === day), [nudges, day])
 
   // One flag per location: stack the count, colour by the most urgent.
   const groups = useMemo(() => {
@@ -25,6 +35,24 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
     }
     return [...m.values()]
   }, [today])
+
+  // Locations with nothing on the selected day: the week ahead's most urgent day there (the
+  // soonest on a tie), so a High-priority warning on Wednesday beats a Low one on Monday.
+  const upcoming = useMemo(() => {
+    const taken = new Set(today.map((n) => n.focus.join(',')))
+    const byPlaceDay = new Map<string, Map<number, Nudge[]>>()
+    for (const n of nudges) {
+      if (n.day <= day || n.day > day + AHEAD_DAYS) continue
+      const k = n.focus.join(',')
+      if (taken.has(k)) continue
+      const days = byPlaceDay.get(k) ?? new Map<number, Nudge[]>()
+      days.set(n.day, [...(days.get(n.day) ?? []), n])
+      byPlaceDay.set(k, days)
+    }
+    return [...byPlaceDay.values()].map((days) =>
+      [...days.values()].sort((a, b) => SEV_ORDER[worstOf(b).sev] - SEV_ORDER[worstOf(a).sev] || a[0].day - b[0].day)[0],
+    )
+  }, [nudges, today, day])
 
   return (
     <>
@@ -55,9 +83,34 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
             </Fragment>
           )
         })}
+      {upcoming.map((g) => {
+        const worst = worstOf(g)
+        const when = live ? dayLabel(live, g[0].day, lang, true) : ''
+        const icon = L.divIcon({
+          className: 'map-divicon',
+          html: `<div class="nudge-flag ahead" style="--c:${PRIORITY[priorityOf(worst.sev)].colour}">${iconSvg('flag', 11)}<span class="when">${escapeHtml(when)}</span></div>`,
+          iconSize: [0, 0],
+        })
+        return (
+          <Marker key={`a-${g[0].focus.join(',')}`} position={g[0].focus} icon={icon} eventHandlers={{ click: () => onPick(worst) }} zIndexOffset={400}>
+            <Tooltip className="map-tip wide" direction="top" offset={[-12, -30]}>
+              <div className="tip-row">{t(`Coming up ${when}: click to jump there`, `${when}の予定：クリックで表示`)}</div>
+              {g.map((n) => (
+                <div key={n.id} className="tt-nudge">
+                  <div className="tt-nudge-h">
+                    <i style={{ background: PRIORITY[priorityOf(n.sev)].colour }}></i>
+                    {t(PRIORITY[priorityOf(n.sev)].en, PRIORITY[priorityOf(n.sev)].ja)} · {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja)}
+                  </div>
+                  <div className="tt-nudge-t">{t(n.title_en, n.title_ja)}</div>
+                </div>
+              ))}
+            </Tooltip>
+          </Marker>
+        )
+      })}
       {groups.map((g) => {
         const top = g[0]
-        const worst = [...g].sort((a, b) => ({ crit: 3, serious: 2, warn: 1, info: 0 })[b.sev] - ({ crit: 3, serious: 2, warn: 1, info: 0 })[a.sev])[0]
+        const worst = worstOf(g)
         const active = g.some((n) => n.id === activeId)
         const icon = L.divIcon({
           className: 'map-divicon',

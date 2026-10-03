@@ -4,6 +4,8 @@ import { useHashRoute } from './hooks/useHashRoute'
 import { useDataFallback } from './hooks/useDataFallback'
 import type { ViewId } from './hooks/useHashRoute'
 import { useLang } from './lib/i18n'
+import { setTheme, useTheme } from './lib/theme'
+import { setBriefing, useBriefing } from './lib/briefing'
 import { Icon } from './components/icons'
 import type { IconName } from './lib/icons'
 import { fmtDate } from './lib/format'
@@ -26,7 +28,7 @@ function BrandMark() {
   // Six nodes on a flow arc: the product in one glyph.
   return (
     <svg className="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="9" fill="#17233a" />
+      <rect width="32" height="32" rx="9" style={{ fill: 'var(--brand-tile, #17233a)' }} />
       <path d="M6 22c4-9 9-12 20-13" stroke="#8b9dff" strokeWidth="2" fill="none" strokeLinecap="round" strokeDasharray="1 3.2" />
       <circle cx="7" cy="21.5" r="2.6" fill="#3987e5" />
       <circle cx="15.5" cy="13.5" r="3.4" fill="#8b9dff" />
@@ -40,6 +42,8 @@ export default function App() {
   const { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading } = data
   const [route, navigate] = useHashRoute()
   const { lang, setLang, t } = useLang()
+  const theme = useTheme()
+  const briefing = useBriefing()
   const fallback = useDataFallback()
 
   const shared = merged?.real?.shared_date ?? null
@@ -68,11 +72,31 @@ export default function App() {
 
         <div className="appbar-right">
           {generated && (
-            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')}>
+            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={briefing ? t('Real data up to this date, the latest day all sites share', 'この日までの実データ（全地点共通の最新日）') : isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')}>
               <span className="fresh-dot" aria-hidden="true"></span>
               <span className="fresh-text-long">{shared ? t('Real data to', '実データ') : t('Data', 'データ')}</span> {fmtDate(generated, lang)}
             </span>
           )}
+          <div className="lang-toggle mode-toggle" role="group" aria-label={t('View mode', '表示モード')}>
+            <button aria-pressed={briefing} onClick={() => setBriefing(true)} title={t('Real data and forecasts only, for presenting', '実データと予測のみ（説明用）')}>
+              {t('Briefing', 'ブリーフィング')}
+            </button>
+            <button aria-pressed={!briefing} onClick={() => setBriefing(false)} title={t('Everything, including demo layers, for the team', 'デモを含む全レイヤー（チーム用）')}>
+              {t('Full view', '全表示')}
+            </button>
+          </div>
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            aria-label={theme === 'light' ? t('Switch to dark theme', 'ダークテーマに切替') : t('Switch to light theme', 'ライトテーマに切替')}
+            title={theme === 'light' ? t('Dark theme', 'ダークテーマ') : t('Light theme', 'ライトテーマ')}
+          >
+            {theme === 'light' ? (
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+            )}
+          </button>
           <div className="lang-toggle" role="group" aria-label={t('Language', '言語')}>
             <button aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
               EN

@@ -123,7 +123,7 @@
 }
 
 .data-table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--tint-rgb), 0.02);
 }
 
 .data-table .num {
@@ -558,7 +558,7 @@
   overflow-x: auto;
   padding: 10px 0;
   margin: 0 0 var(--sp-4);
-  background: linear-gradient(180deg, var(--bg) 80%, rgba(10, 17, 32, 0));
+  background: linear-gradient(180deg, var(--bg) 80%, rgba(var(--chip-rgb), 0));
   scrollbar-width: none;
 }
 
@@ -848,7 +848,7 @@
   position: relative;
   height: 10px;
   border-radius: 5px;
-  background: #1c3456;
+  background: var(--heat-0);
 }
 
 .progress-fill {
@@ -1286,7 +1286,7 @@
   width: 90px;
   height: 8px;
   border-radius: 4px;
-  background: #1c3456;
+  background: var(--heat-0);
 }
 
 .pace-fill {
@@ -1461,7 +1461,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #b3aaf3;
+  color: var(--s7-text);
   margin-bottom: 8px;
 }
 

@@ -99,4 +99,86 @@
   --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
   --appbar-h: 56px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Theme-dependent channels used by the stylesheets instead of fixed colours:
+     map chips and floating panels sit on --chip-rgb, faint fills use --tint-rgb,
+     and shadows scale by --shadow-k. */
+  --chip-rgb: 10, 17, 32;
+  --panel-rgb: 16, 25, 43;
+  --tint-rgb: 255, 255, 255;
+  --shadow-rgb: 0, 0, 0;
+  --shadow-k: 1;
+  --map-bg: #070c17;
+  --outline-strong: #fff;
+  --track: #3a4560;
+  --heat-0: #1c3456;
+  --real-text: #b8f0c7;
+  --accent-text: #d8ddff;
+  --s7-text: #b3aaf3;
+}
+
+/*
+ * Light theme: washi paper and sumi ink, after Japan's traditional colours (nihon no dentoshoku).
+ * Ground kinari (unbleached silk), ink sumi, the one accent ai (indigo), urgent shu (vermilion),
+ * busy yamabuki, calm wakatake (young bamboo). Text pairs meet WCAG AA on --bg and --surface.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f7f3ea;
+  --bg-2: #f1ebdf;
+  --surface: #fffdf8;
+  --surface-2: #f6f1e7;
+  --surface-3: #ece4d4;
+  --glass: rgba(255, 253, 248, 0.92);
+  --line: rgba(43, 40, 35, 0.1);
+  --line-strong: rgba(43, 40, 35, 0.2);
+
+  --text: #24262c;
+  --text-2: #4c5058;
+  --muted: #6a6d74;
+
+  --accent: #165e83;
+  --accent-strong: #0f4a69;
+  --accent-soft: rgba(22, 94, 131, 0.1);
+  --accent-ink: #ffffff;
+
+  --good: #2f8f4e;
+  --warn: #d99000;
+  --serious: #e0663a;
+  --crit: #c8302a;
+  --good-text: #1f6b3a;
+  --crit-text: #a8261f;
+  --warn-text: #7f5300;
+
+  --real: #2f8f4e;
+  --modelled: #2e6fb7;
+  --illustrative: #a8700f;
+  --pending: #7a7d84;
+
+  --seq-1: #d7e4f2;
+  --seq-2: #9ec0e4;
+  --seq-3: #5b95d3;
+  --seq-4: #2e6fb7;
+  --seq-5: #1b4f8a;
+  --div-mid: #e5dfd3;
+
+  --grid: #e7e0d2;
+  --axis: #c4baa6;
+
+  --shadow-float: 0 10px 30px rgba(60, 48, 28, 0.14), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+
+  --chip-rgb: 255, 253, 248;
+  --panel-rgb: 255, 253, 248;
+  --tint-rgb: 60, 50, 35;
+  --shadow-rgb: 60, 48, 28;
+  --shadow-k: 0.4;
+  --map-bg: #ebe6db;
+  --outline-strong: #24262c;
+  --track: #e2dccf;
+  --heat-0: #dce6f2;
+  --real-text: #1f6b3a;
+  --accent-text: #0f4a69;
+  --s7-text: #5b4bc4;
+  --brand-tile: #165e83;
 }

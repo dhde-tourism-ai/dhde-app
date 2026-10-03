@@ -24,10 +24,11 @@ export function StatusPill({ status, label }: { status: MetricStatus; label?: st
 
 type PillLabels = Partial<Record<MetricStatus, { label: string; description: string }>>
 
-export function PillLegend({ labels }: { labels?: PillLabels }) {
+/** `only` limits the legend to the statuses a view shows (briefing: real and estimated). */
+export function PillLegend({ labels, only }: { labels?: PillLabels; only?: MetricStatus[] }) {
   return (
     <div className="pill-legend">
-      {ORDER.map((s) => (
+      {ORDER.filter((s) => !only || only.includes(s)).map((s) => (
         <span key={s} className="pill-legend-item">
           <StatusPill status={s} label={labels?.[s]?.label} />
           {labels?.[s]?.description && <span className="pill-legend-desc">{labels[s]?.description}</span>}

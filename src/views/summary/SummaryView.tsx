@@ -16,6 +16,7 @@ import { StatusPill } from '../../components/StatusPill'
 import { localize } from '../../lib/localize'
 import JA from '../../i18n/strategy.ja.json'
 import { LAYERS } from '../map/layers'
+import { BRIEFING_LAYERS, useBriefing } from '../../lib/briefing'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
@@ -70,6 +71,7 @@ function fmtUnit(v: number, prefix: string, unit: string): string {
 export default function SummaryView({ data }: { data: ProductData }) {
   const { t, lang } = useLang()
   const live = data.merged?.live ?? data.live.data
+  const briefing = useBriefing()
   const market = data.merged?.market ?? data.market.data
   const registry = data.registry.data
   const thresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
@@ -110,10 +112,10 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const actions = useMemo(() => {
     if (!live) return []
     return computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, thresholds)
-      .filter((n) => n.day >= nextDay && n.day < nextDay + 7)
+      .filter((n) => n.day >= nextDay && n.day < nextDay + 7 && (!briefing || n.real))
       .sort((a, b) => RANK[priorityOf(a.sev)] - RANK[priorityOf(b.sev)] || b.magnitude - a.magnitude)
       .slice(0, 3)
-  }, [live, market, registry, nextDay, thresholds])
+  }, [live, market, registry, nextDay, thresholds, briefing])
 
   const progress = data.strategy.data?.questions.flatMap((q) => q.cards).find((c): c is ProgressCard => c.type === 'progress')
   const targets = (progress?.rows ?? []).map((r) => {
@@ -124,7 +126,10 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const met = targets.filter((r) => r.met).length
   const behind = targets.filter((r) => r.behind)
 
-  const sources = Object.entries(live?.sources ?? {}).filter((e): e is [string, SourceInfo] => Boolean(e[1]))
+  // Briefing lists only the layers it shows, all of them real or estimated from real data.
+  const sources = Object.entries(live?.sources ?? {})
+    .filter((e): e is [string, SourceInfo] => Boolean(e[1]))
+    .filter(([id]) => !briefing || (BRIEFING_LAYERS as readonly string[]).includes(id))
   const fmt = (v: number | null) => (v === null ? '–' : Math.round(v).toLocaleString('en-US'))
 
   if (data.live.isLoading || data.realLoading) return <Loading what={t('Loading summary…', '概要を読み込み中…')} />
@@ -304,7 +309,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
                 </summary>
                 <div className="faq-body">
                   <p>{q.answer}</p>
-                  {chart && (
+                  {chart && !(briefing && (chart.status === 'illustrative' || chart.status === 'pending')) && (
                     <div className="faq-chart">
                       <StatusPill status={chart.status} />
                       <span className="faq-chart-title">{chart.title}</span>
@@ -326,7 +331,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
                       </>
                     ) : chart?.pending_on ? (
                       t(`Pending on ${chart.pending_on}.`, `${chart.pending_on}待ち。`)
-                    ) : chart?.status === 'illustrative' ? (
+                    ) : chart?.status === 'illustrative' && !briefing ? (
                       t('No published source yet; this chart is illustrative.', '公表された出典はまだありません。このグラフは例示です。')
                     ) : (
                       t('See the inputs and notes on the chart.', 'グラフ上の入力値と注記を参照。')

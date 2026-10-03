@@ -14,6 +14,7 @@ import type { MarketVoiceData } from '../../../types/market'
 import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
 import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
+import { BRIEFING_LAYERS, LEVEL, useBriefing } from '../../../lib/briefing'
 
 interface Props {
   basemap: BasemapId
@@ -45,6 +46,14 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   nudges: ['Demand and booking action nudges use real visitor history and forward bookings where available.', '需要・予約の推奨アクションは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
+/** Briefing mode's notes: what each shown layer is, in plain words, with no demo parts to explain. */
+const BRIEF_NOTE: Partial<Record<LayerId, [string, string]>> = {
+  people: ["Each site's visitors for the selected day. Past days: estimates from real counts (cameras, bookings or cars, scaled to the site's official 2025 count). Later days: the 7-day forecast model. The colour compares the day with the site's usual day.", '選択日の各地点の来訪者数。過去の日：実測（カメラ・予約・車両を2025年の公式年間値で換算）からの推計。以降の日：7日間予測モデル。色は各地点の通常の日との比較。'],
+  weather: ["JMA observations and forecasts at each site, and JMA's warnings in force.", '各地点の気象庁の観測・予報と、発表中の警報・注意報。'],
+  hotels: ['Hotel occupancy from FTAS reservation feeds, on days with reservation data. "Area" means a regional feed covering several sites.', 'FTAS予約データによるホテル稼働率（予約データのある日）。「周辺」は複数地点をまとめた地域データ。'],
+  nudges: ['Actions triggered by real visitor history, the forecast model and forward bookings.', '来訪者の実績・予測モデル・先行予約から出した推奨アクション。'],
+}
+
 function Grad({ from, to, left, right }: { from: string; to: string; left: string; right: string }) {
   return (
     <div className="lg-grad">
@@ -59,6 +68,9 @@ function Grad({ from, to, left, right }: { from: string; to: string; left: strin
 
 export function LayersPanel(p: Props) {
   const { t } = useLang()
+  const briefing = useBriefing()
+  const shownLayers = briefing ? LAYERS.filter((l) => (BRIEFING_LAYERS as readonly LayerId[]).includes(l.id)) : LAYERS
+  const activeCount = [...p.active].filter((id) => shownLayers.some((l) => l.id === id)).length
   // On a phone the panel is a sheet with its own close button, so it never collapses.
   const collapsible = !p.onClose
   const [openState, setOpenState] = useState(readPanelOpen)
@@ -71,6 +83,7 @@ export function LayersPanel(p: Props) {
   const anyReal = Object.values(p.sources ?? {}).some((x) => x && x.status !== 'demo')
   const realNote = (id: LayerId): ReactNode => {
     const i = src(id)
+    if (briefing) return BRIEF_NOTE[id] ? <p className="lg-note">{t(BRIEF_NOTE[id]![0], BRIEF_NOTE[id]![1])}</p> : null
     if (!i || i.status === 'demo') return null
     return (
       <div className="lg-src">
@@ -96,7 +109,7 @@ export function LayersPanel(p: Props) {
           <span className="lg-line" style={{ borderColor: '#3fd8c4', borderTopStyle: 'dashed' }}></span>
           {t('Suggested indoor route', '推奨する屋内への経路')}
         </div>
-        <p className="lg-note">{t('Flags show the selected day. Full list in the Action nudges tab.', '旗は選択日の分。一覧は推奨アクションタブ。')}</p>
+        <p className="lg-note">{t('Flags show the selected day; a smaller dated flag shows a site\'s next action later in the week. Full list in the Action nudges tab.', '旗は選択日の分。日付付きの小さな旗は今週後半の次のアクション。一覧は推奨アクションタブ。')}</p>
       </>
     ),
     hotels: (
@@ -259,7 +272,7 @@ export function LayersPanel(p: Props) {
           {collapsible ? (
             <button className="fp-toggle" onClick={flip} aria-expanded={open} aria-controls="layers-body">
               <Icon name="layers" /> {t('Layers', 'レイヤー')}
-              {p.active.size > 0 && <span className="count-badge">{p.active.size}</span>}
+              {activeCount > 0 && <span className="count-badge">{activeCount}</span>}
               <span className="fp-arrow">
                 <Icon name="chevron" size={16} />
               </span>
@@ -290,11 +303,11 @@ export function LayersPanel(p: Props) {
           </div>
         </div>
 
-        {GROUPS.map((g) => (
+        {GROUPS.filter((g) => shownLayers.some((l) => l.group === g.id)).map((g) => (
           <div key={g.id} className="layer-group">
             <h3 className="layer-group-title">{t(g.en, g.ja)}</h3>
             <ul className="layer-list">
-              {LAYERS.filter((l) => l.group === g.id).map((l) => {
+              {shownLayers.filter((l) => l.group === g.id).map((l) => {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
@@ -317,7 +330,19 @@ export function LayersPanel(p: Props) {
                     {on && (
                       <div className="layer-legend">
                         {realNote(l.id)}
-                        {legend[l.id]}
+                        {briefing && l.id === 'people' ? (
+                          <div className="lg-tiers">
+                            {(['busy', 'normal', 'quiet'] as const).map((k) => (
+                              <span key={k} className="lg-row">
+                                <span className="lg-sq" style={{ background: LEVEL[k].colour }}></span>
+                                {t(LEVEL[k].en, LEVEL[k].ja)}
+                              </span>
+                            ))}
+                            <span className="lg-row">{t('Dashed outline: forecast', '破線：予測')}</span>
+                          </div>
+                        ) : (
+                          legend[l.id]
+                        )}
                       </div>
                     )}
                   </li>

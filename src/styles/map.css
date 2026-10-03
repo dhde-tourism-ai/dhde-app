@@ -11,12 +11,12 @@
 .map-canvas {
   position: absolute;
   inset: 0;
-  background: #070c17;
+  background: var(--map-bg);
 }
 
 .leaflet-container {
   font-family: var(--font-body);
-  background: #070c17;
+  background: var(--map-bg);
 }
 
 .tiles-imagery {
@@ -28,7 +28,7 @@
 }
 
 .leaflet-control-attribution {
-  background: rgba(10, 17, 32, 0.78) !important;
+  background: rgba(var(--chip-rgb), 0.78) !important;
   color: var(--muted) !important;
   font-size: 10.5px;
   border-radius: 6px 0 0 0;
@@ -69,7 +69,7 @@
 
 /* tooltips */
 .leaflet-tooltip.map-tip {
-  background: rgba(16, 25, 43, 0.96);
+  background: rgba(var(--panel-rgb), 0.96);
   color: var(--text);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
@@ -168,13 +168,13 @@
   gap: 6px;
   padding: 3px 9px 3px 7px;
   border-radius: var(--r-pill);
-  background: rgba(10, 17, 32, 0.84);
+  background: rgba(var(--chip-rgb), 0.84);
   border: 1px solid var(--line-strong);
   color: var(--text);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.35 * var(--shadow-k)));
   cursor: pointer;
   backdrop-filter: blur(3px);
 }
@@ -241,6 +241,37 @@
   padding: 0 4px;
 }
 
+/* "forecast" after a briefing-mode figure. */
+.nt-kind {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
+/* Hotel occupancy inside a site label (People + Hotels on): bar colour = how full. */
+.nt-hotel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 6px;
+  border-left: 1px solid var(--line-strong);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.nt-hotel i {
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* A regional feed standing in for the site: dimmer, since it isn't the site's own hotels. */
+.nt-hotel.area {
+  color: var(--text-2);
+}
+
 .route-flag {
   position: absolute;
   transform: translate(-50%, -140%);
@@ -251,7 +282,7 @@
   white-space: nowrap;
   color: #04160a;
   background: #4fd06a;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.4 * var(--shadow-k)));
 }
 
 .wx-chip {
@@ -263,10 +294,10 @@
   align-items: center;
   padding: 4px 8px 4px 5px;
   border-radius: var(--r-md);
-  background: rgba(10, 17, 32, 0.88);
+  background: rgba(var(--chip-rgb), 0.88);
   border: 1px solid var(--line-strong);
   color: var(--text);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.4 * var(--shadow-k)));
   white-space: nowrap;
   font-size: 11px;
   backdrop-filter: blur(3px);
@@ -568,7 +599,7 @@
 }
 
 .layer-item.on {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border-color: var(--line);
 }
 
@@ -1119,7 +1150,7 @@ button.al-item:hover {
   position: relative;
   height: 50px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   cursor: pointer;
   touch-action: none;
   user-select: none;
@@ -1146,7 +1177,7 @@ button.al-item:hover {
   top: 0;
   bottom: 14px;
   right: 0;
-  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 4px, transparent 4px 8px);
+  background: repeating-linear-gradient(135deg, rgba(var(--tint-rgb), 0.035) 0 4px, transparent 4px 8px);
   border-left: 1px dashed var(--line-strong);
   pointer-events: none;
 }
@@ -1164,7 +1195,7 @@ button.al-item:hover {
 }
 
 .tl-day-seg.wknd {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--tint-rgb), 0.02);
 }
 
 .lab-short {
@@ -1348,7 +1379,7 @@ button.al-item:hover {
   .float-panel {
     border-radius: var(--r-lg) var(--r-lg) 0 0;
     border-bottom: 0;
-    background: rgba(13, 21, 37, 0.97);
+    background: rgba(var(--panel-rgb), 0.97);
   }
 
   .map-bottom {

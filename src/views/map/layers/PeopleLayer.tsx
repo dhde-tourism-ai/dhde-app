@@ -8,6 +8,8 @@ import { escapeHtml, peopleRadius } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
 import type { RealNodeMeta } from '../../../types/live'
 import { measureLabel } from '../../../lib/real'
+import { iconSvg } from '../../../lib/icons'
+import { occupancyColour } from '../../../lib/market'
 
 const ACCENT = '#8b9dff'
 
@@ -20,6 +22,15 @@ interface Props {
   kanazawa?: { lat: number; lon: number }
   meta?: Record<string, RealNodeMeta>
   day?: number
+  /** Hotel occupancy per site, shown inside its label when the Hotels layer is on too. */
+  hotels?: Record<string, SiteHotel>
+}
+
+export interface SiteHotel {
+  pct: number
+  left: number
+  /** The figure is a regional feed standing in for several sites. */
+  area: boolean
 }
 
 /** Latest real signal on or before day d (for nodes without a visitor estimate). */
@@ -40,7 +51,7 @@ const CONF: Record<string, [string, string]> = { high: ['high', '高'], medium: 
  * crowding tier (status scale, always with a text label). Estimated measures
  * (footfall proxy, bookings, vehicle counts) get a dashed outline and "est." tag.
  */
-export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, kanazawa, meta, day = 0 }: Props) {
+export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, kanazawa, meta, day = 0, hotels }: Props) {
   const { t, lang } = useLang()
 
   const labelIcons = useMemo(() => {
@@ -51,22 +62,26 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, showCounts, ka
       const dir = n.label_dir ?? 'right'
       const r = f ? peopleRadius(Math.max(f.onSite, f.predicted)) : 6
       const name = escapeHtml(lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', ''))
-      const sig = f?.noEstimate ? lastSignal(meta?.[n.id], day) : null
+      // A raw camera count isn't a visitor number, so the label says so; the tooltip keeps the signal.
       const count = f?.noEstimate
-        ? `<span class="nt-count fc">${sig ? `${escapeHtml(t('cam', 'カメラ'))} ${Math.round(sig.v).toLocaleString('en-US')}` : escapeHtml(t('no estimate', '推計なし'))}</span>`
+        ? `<span class="nt-count none">${escapeHtml(t('no count yet', '人数未推計'))}</span>`
         : f
         ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}</span>`
         : `<span class="nt-count none">${escapeHtml(t('no data yet', 'データなし'))}</span>`
       const tier = f && !f.noEstimate ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
       const estTag = est ? `<span class="nt-est">${escapeHtml(t('est.', '推定'))}</span>` : ''
+      const h = hotels?.[n.id]
+      const hotel = h
+        ? `<span class="nt-hotel${h.area ? ' area' : ''}" title="${escapeHtml(h.area ? t('Hotels in the wider area', '周辺地域のホテル') : t('Hotels nearby', '近隣のホテル'))}"><i style="background:${occupancyColour(h.pct)}"></i>${iconSvg('bed', 12)}<b>${h.pct}%</b></span>`
+        : ''
       out[n.id] = L.divIcon({
         className: 'map-divicon',
-        html: `<div class="node-tag dir-${dir}${n.id === selectedId ? ' sel' : ''}${f ? '' : ' muted-tag'}" style="--r:${r + 5}px">${tier}<span class="nt-name">${name}</span>${showCounts ? count : ''}${estTag}</div>`,
+        html: `<div class="node-tag dir-${dir}${n.id === selectedId ? ' sel' : ''}${f ? '' : ' muted-tag'}" style="--r:${r + 5}px">${tier}<span class="nt-name">${name}</span>${showCounts ? count : ''}${estTag}${hotel}</div>`,
         iconSize: [0, 0],
       })
     }
     return out
-  }, [nodes, frame, selectedId, showCounts, lang, t, meta, day])
+  }, [nodes, frame, selectedId, showCounts, lang, t, hotels])
 
   const kzIcon = useMemo(
     () =>

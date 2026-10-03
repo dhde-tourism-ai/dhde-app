@@ -14,7 +14,7 @@ export type LayerId =
   | 'rsi'
   | 'economics'
   | 'nudges'
-export type BasemapId = 'hybrid' | 'dark' | 'streets'
+export type BasemapId = 'light' | 'hybrid' | 'dark' | 'streets'
 export type GroupId = 'actions' | 'movement' | 'conditions' | 'voice' | 'market' | 'economics'
 
 export interface LayerDef {
@@ -62,12 +62,16 @@ export const OVERVIEW_NOTE = [
   '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
 ] as const
 
-export const DEFAULT_LAYERS: LayerId[] = []
+/** The briefing view: visitors, hotels and what to do, readable in about 20 seconds. */
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges']
+
+// v2 since the briefing defaults: earlier visitors saved an empty or older choice.
+const LAYERS_KEY = 'dhde.layers.v2'
 
 /** The viewer's last layer choice, or null on a first visit. */
 export function readStoredLayers(): LayerId[] | null {
   try {
-    const raw = window.localStorage.getItem('dhde.layers')
+    const raw = window.localStorage.getItem(LAYERS_KEY)
     if (raw === null) return null
     const valid = new Set(LAYERS.map((l) => l.id))
     return raw.split(',').filter((x): x is LayerId => valid.has(x as LayerId))
@@ -95,13 +99,14 @@ export function storePanelOpen(open: boolean) {
 
 export function storeLayers(layers: Iterable<LayerId>) {
   try {
-    window.localStorage.setItem('dhde.layers', [...layers].join(','))
+    window.localStorage.setItem(LAYERS_KEY, [...layers].join(','))
   } catch {
     /* storage blocked: the choice still holds for this visit */
   }
 }
 
 export const BASEMAPS: { id: BasemapId; en: string; ja: string }[] = [
+  { id: 'light', en: 'Light', ja: 'ライト' },
   { id: 'hybrid', en: 'Hybrid', ja: '航空写真' },
   { id: 'dark', en: 'Dark', ja: 'ダーク' },
   { id: 'streets', en: 'Streets', ja: '道路地図' },
@@ -120,7 +125,7 @@ export function readUrlState(): { layers: LayerId[] | null; base: BasemapId | nu
   if (raw !== null) layers = raw.split(',').filter((x): x is LayerId => valid.has(x as LayerId))
   if (p.get('layer') === 'economics') layers = [...(layers ?? DEFAULT_LAYERS), 'economics']
   const b = p.get('base')
-  const base = b === 'hybrid' || b === 'dark' || b === 'streets' ? b : null
+  const base = b === 'light' || b === 'hybrid' || b === 'dark' || b === 'streets' ? b : null
   const t = p.get('t')
   const pn = p.get('panel')
   const tAt = t !== null && /^\d{4}-\d{2}-\d{2}T\d{2}$/.test(t) ? t : null

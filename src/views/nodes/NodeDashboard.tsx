@@ -61,6 +61,8 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
   const defaultNode = nodes['tojinbo' as NodeKey] || Object.values(nodes)[0]
   const summary = activeNodeData?.summary || (data as any).summary || defaultNode?.summary || {}
   const p30 = summary.past_30_day || {}
+  // A site whose collection started this year has no last-year total: a YoY against 0 means nothing.
+  const hasLastYear = typeof p30.previous_year_total === 'number' && p30.previous_year_total > 0
   const week = summary.this_week_pacing || {}
   const modelAccuracy = summary.model_accuracy
   const weatherStrip = activeNodeData?.weather_strip || (data as any).weather_strip || defaultNode?.weather_strip || []
@@ -104,20 +106,30 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           <div className="tile">
             <div className="tile-label">{t('Past 30 days', '過去30日')}</div>
             <div className="tile-value">{fmtNum(p30.current_total)}</div>
-            <div className={`tile-delta ${yoyUp ? 'up' : 'down'}`}>
-              {yoyUp ? '▲' : '▼'} {yoyText} {t('YoY', '前年比')}
-            </div>
+            {hasLastYear ? (
+              <div className={`tile-delta ${yoyUp ? 'up' : 'down'}`}>
+                {yoyUp ? '▲' : '▼'} {yoyText} {t('YoY', '前年比')}
+              </div>
+            ) : (
+              <div className="tile-foot">{t('No comparison: collection started this year', '比較なし：今年から計測')}</div>
+            )}
           </div>
           <div className="tile">
             <div className="tile-label">{t('Same period last year', '前年同期')}</div>
-            <div className="tile-value">{fmtNum(p30.previous_year_total)}</div>
-            <div className="tile-foot">{t('Baseline', '基準')}</div>
+            <div className="tile-value">{hasLastYear ? fmtNum(p30.previous_year_total) : '–'}</div>
+            <div className="tile-foot">{hasLastYear ? t('Baseline', '基準') : t('Not collected then', '当時は未計測')}</div>
           </div>
           <div className="tile">
             <div className="tile-label">{t('Net difference', '差分')}</div>
             <div className="tile-value">
-              {p30.diff !== undefined && p30.diff >= 0 ? '+' : ''}
-              {fmtNum(p30.diff)}
+              {hasLastYear ? (
+                <>
+                  {p30.diff !== undefined && p30.diff >= 0 ? '+' : ''}
+                  {fmtNum(p30.diff)}
+                </>
+              ) : (
+                '–'
+              )}
             </div>
             <div className="tile-foot">{t('Visitors vs last year', '前年比の来訪者数')}</div>
           </div>

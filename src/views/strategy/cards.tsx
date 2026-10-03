@@ -20,6 +20,7 @@ import { StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
 import { fmtCompact, fmtYen, PENDING } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
+import { useBriefing } from '../../lib/briefing'
 import { storeLayers, storePanelOpen } from '../map/layers'
 import type { LayerId } from '../map/layers'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -688,9 +689,10 @@ const SEV = {
 function Indicators({ card }: { card: IndicatorsCard }) {
   const pending = usePending()
   const { t } = useLang()
+  const briefing = useBriefing()
   return (
     <div className="indicators">
-      {card.items.map((it) => (
+      {card.items.filter((it) => !briefing || (it.value_text !== null && it.status !== 'pending' && it.status !== 'illustrative')).map((it) => (
         <div key={it.label} className={`indicator sev-${it.severity}`}>
           <div className={`indicator-value ${it.value_text === null ? 'pending' : ''}`}>{it.value_text ?? pending}</div>
           <div className="indicator-label">{it.label}</div>
@@ -728,6 +730,7 @@ function PaceBar({ pace }: { pace: { value: number; expected: number; label?: st
 }
 
 function DataTable({ card }: { card: TableCard }) {
+  const briefing = useBriefing()
   const pending = usePending()
   const hasStatusCol = card.columns.length > (card.rows[0]?.cells.length ?? 0)
   const paceCol = card.columns.findIndex((c) => c.toLowerCase() === 'pace')
@@ -742,7 +745,7 @@ function DataTable({ card }: { card: TableCard }) {
           </tr>
         </thead>
         <tbody>
-          {card.rows.map((r, i) => (
+          {card.rows.filter((r) => !briefing || (r.status !== 'pending' && r.status !== 'illustrative' && !r.cells.some((c) => c === null))).map((r, i) => (
             <tr key={i}>
               {r.cells.map((c, j) => (
                 <td key={j} className={c === null ? 'pending-cell' : c === 'Not yet measurable' ? 'muted' : ''}>

@@ -16,7 +16,7 @@ const SEV_LABEL = {
   info: ['Info', '情報'],
 } as const
 
-function Group({ title, icon, items, empty, onPick }: { title: string; icon: IconName; items: AlertItem[]; empty: string; onPick: (id: string) => void }) {
+export function Group({ title, icon, items, empty, onPick }: { title: string; icon: IconName; items: AlertItem[]; empty: string; onPick: (id: string) => void }) {
   const { t } = useLang()
   return (
     <div className="al-group">

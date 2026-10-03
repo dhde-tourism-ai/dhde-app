@@ -489,6 +489,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
     const lo: number[] = []
     const hi: number[] = []
     const fcSource: RealNodeMeta['forecast_source_daily'] = []
+    const fcDaily: (number | null)[] = []
     for (let d = 0; d < D; d++) {
       const demoArr = Array.from({ length: 24 }, (_, h) => pick(dn.arrivals.predicted, d, h))
       const demoTotal = Math.max(1, sum(demoArr))
@@ -496,6 +497,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       const md = hasPeople && d >= P ? modelDay(dates[d]) : undefined
       const fc = md?.visitors_est ?? (hasPeople && d >= P ? sameWeekday(dates[d]) : null)
       fcSource.push(md?.visitors_est != null ? 'model' : fc !== null ? 'naive' : null)
+      fcDaily.push(md?.visitors_est ?? null)
       const kA = realV !== null ? realV / demoTotal : null
       const kP = fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
       // The model's own low/high range when it has one, else the demo band scaled like the forecast.
@@ -612,6 +614,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         normal_daily: normal,
         forecast_method: forecastMethod(rn),
         forecast_source_daily: fcSource,
+        forecast_daily: fcDaily,
       }
     }
   }
