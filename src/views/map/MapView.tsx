@@ -355,7 +355,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         )}
         {market && layerOn('hotels') && <HotelsLayer data={market} day={day} nodes={registry?.nodes ?? []} />}
         {market && layerOn('rsi') && <RsiLayer data={market} />}
-        {layerOn('transport') && transportMap && <TransportLayer data={transportMap} />}
+        {(layerOn('transport') || layerOn('rail')) && transportMap && <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} />}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
         {(layerOn('people') || layerOn('flow')) && (
           <PeopleLayer
