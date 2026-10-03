@@ -110,30 +110,38 @@ export function Declutter() {
         .filter((x) => visible(x.boxes[x.home] as DOMRect))
         .sort((a, b) => Number(isTown(a.el)) - Number(isTown(b.el)) || a.boxes[a.home]!.top - b.boxes[b.home]!.top || a.boxes[a.home]!.left - b.boxes[b.home]!.left)
 
-      const place = (el: HTMLElement, side: Side, box: Box, dy: number, mini: boolean) => {
+      const place = (el: HTMLElement, side: Side, box: Box, dy: number, mini: boolean, dx = 0) => {
         setSide(el, side)
         el.classList.toggle('dc-mini', mini)
-        if (dy) el.style.translate = `0 ${Math.round(dy)}px`
+        if (dx || dy) el.style.translate = `${Math.round(dx)}px ${Math.round(dy)}px`
         // The card's pointer stays level with its site however far the card moved (map.css).
         el.style.setProperty('--dy', `${Math.round(dy)}px`)
-        if (el.parentElement) el.parentElement.dataset.dc = `${side}|${dy}|${mini ? 'mini' : ''}`
-        placed.push(shift(box, 0, dy))
+        if (el.parentElement) el.parentElement.dataset.dc = `${side}|${dy}|${mini ? 'mini' : ''}|${dx}`
+        placed.push(shift(box, dx, dy))
       }
       // The nearest free spot: on its own side, then the other; up or down at most one card height.
-      const spot = (boxes: Partial<Record<Side, Box>>, sides: Side[]) => {
+      // A town card (hotels, search intent) has no side and no pointer and is only there for its
+      // number, so it may go two card heights up or down and half its width sideways before it
+      // gives up and becomes a dot (with six layers on at 1440, Awara, Katsuyama and Ono did).
+      const STEPS = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1]
+      const TOWN_STEPS = [...STEPS, -1.5, 1.5, -2, 2]
+      const spot = (boxes: Partial<Record<Side, Box>>, sides: Side[], town = false) => {
         for (const side of sides) {
           const box = boxes[side]!
           const h = box.bottom - box.top + GAP
+          const w = (box.right - box.left) / 2 + GAP
           // Small steps first, so a card stays as close to its site as it can.
-          const dy = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1].map((k) => k * h).find((d) => free(shift(box, 0, d)))
-          if (dy !== undefined) return { side, box, dy }
+          for (const dx of town ? [0, w, -w] : [0]) {
+            const dy = (town ? TOWN_STEPS : STEPS).map((k) => k * h).find((d) => free(shift(box, dx, d)))
+            if (dy !== undefined) return { side, box, dy, dx }
+          }
         }
         return null
       }
       const rest: typeof items = []
       // First the cards whose remembered spot is still free keep it.
       for (const it of items) {
-        const [side, dy, mini] = (full ? '' : (it.el.parentElement?.dataset.dc ?? '')).split('|') as [Side, string, string]
+        const [side, dy, mini, dx] = (full ? '' : (it.el.parentElement?.dataset.dc ?? '')).split('|') as [Side, string, string, string]
         if (mini) {
           // A shrunk card is measured shrunk.
           it.el.classList.add('dc-mini')
@@ -141,21 +149,22 @@ export function Declutter() {
           it.el.classList.remove('dc-mini')
         }
         const box = it.boxes[side]
-        if (box && dy !== undefined && keeps(shift(box, 0, Number(dy)))) place(it.el, side, box, Number(dy), !!mini)
+        if (box && dy !== undefined && keeps(shift(box, Number(dx) || 0, Number(dy)))) place(it.el, side, box, Number(dy), !!mini, Number(dx) || 0)
         else rest.push(it)
       }
       for (const it of rest) {
         const sides = [it.home, ...(it.other ? [it.other] : [])]
-        const whole = spot(measure(it.el, it.home, it.other), sides)
+        const town = isTown(it.el)
+        const whole = spot(measure(it.el, it.home, it.other), sides, town)
         if (whole) {
-          place(it.el, whole.side, whole.box, whole.dy, false)
+          place(it.el, whole.side, whole.box, whole.dy, false, whole.dx)
           continue
         }
         // No room for the whole card: its name and what needs attention only.
         it.el.classList.add('dc-mini')
-        const mini = spot(measure(it.el, it.home, it.other), sides)
+        const mini = spot(measure(it.el, it.home, it.other), sides, town)
         if (mini) {
-          place(it.el, mini.side, mini.box, mini.dy, true)
+          place(it.el, mini.side, mini.box, mini.dy, true, mini.dx)
           continue
         }
         // Still no room within one card height on either side: a dot at the site.
@@ -193,11 +202,11 @@ export function Declutter() {
             n.classList.add('dc-dot')
             continue
           }
-          const [side, dy, mini] = dc.split('|') as [Side, string, string]
+          const [side, dy, mini, dx] = dc.split('|') as [Side, string, string, string]
           homeSide(n)
           setSide(n, side)
           if (mini) n.classList.add('dc-mini')
-          if (Number(dy)) n.style.translate = `0 ${Math.round(Number(dy))}px`
+          if (Number(dy) || Number(dx)) n.style.translate = `${Math.round(Number(dx) || 0)}px ${Math.round(Number(dy))}px`
           n.style.setProperty('--dy', `${Math.round(Number(dy))}px`)
         }
       }

@@ -137,6 +137,15 @@ export function computeNudges(
       const dayNormal = live.node_meta?.[id]?.normal_by_day?.[d] ?? normal
       const pct = predicted / dayNormal - 1
       if (Math.abs(pct) < DEMAND_THRESHOLD) continue
+      // The model's own range has to agree on the direction (Dina, #56): a busy alert needs
+      // its low bound above normal, a quiet one its high bound below. A forecast whose range
+      // spans normal (Rainbow Line's doubled Tuesdays: -18% to +466%) isn't an alert. Not past
+      // the threshold itself: an 80% range is wide, and that would drop confident ones too
+      // (Awara +40%, low bound +32%).
+      const lo = live.node_meta?.[id]?.forecast_lo_daily?.[d]
+      const hi = live.node_meta?.[id]?.forecast_hi_daily?.[d]
+      if (pct > 0 && lo != null && lo <= dayNormal) continue
+      if (pct < 0 && hi != null && hi >= dayNormal) continue
       const day = live.days[d]
       const up = pct > 0
       const p = `${up ? '+' : ''}${Math.round(pct * 100)}%`

@@ -77,7 +77,8 @@ function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja')
   const fmt = (v: number | null) => (v === null ? '–' : Math.round(v).toLocaleString('en-US'))
   const next7 = days.slice(0, 7).map((d) => {
     const normal = normalOn(d.date)
-    const a = s.signalOnly ? ACTION.none : normal !== null && d.v !== null && d.v >= normal * BUSY ? ACTION.busy : ACTION.normal
+    // Like the alerts: the forecast past the threshold, and its low bound above normal.
+    const a = s.signalOnly ? ACTION.none : normal !== null && d.v !== null && d.v >= normal * BUSY && (d.lo === null || d.lo > normal) ? ACTION.busy : ACTION.normal
     return { day: dayLabel(d.date, lang), range: `${fmt(d.lo)}–${fmt(d.hi)}`, action: a[lang] }
   })
   return { id: s.id, label: s[lang], points, next7 }
@@ -105,8 +106,8 @@ export function withRealForecast(questions: StrategicQuestion[], file: RealDaily
             status: 'modelled' as const,
             note:
               lang === 'ja'
-                ? `直近8週間の実績（実線）と7日間予測（破線、約80%の範囲）。予測は dhde-preprocessing-model の日次モデルで毎日更新。${range ? `検証誤差は地点により${range}。` : ''}対応：その曜日の平常（最近の同じ曜日の中央値、祝日を除く）より${pct}%以上多い日＝営業時間を延長（地図の需要アラートと同じ基準）。福井駅は公式の来訪者数がないためカメラ検知数で、対応は表示しない。`
-                : `Last 8 weeks measured (line) and the 7-day forecast (dashed) with its roughly 80% range, from the daily model in dhde-preprocessing-model, refreshed daily. ${range ? `Typical error in tests: ${range} depending on the site. ` : ''}Action: ${pct}% or more above that weekday's normal (the median of the same weekday over recent weeks, holidays left out) = extend hours, the same rule as the map's demand alerts. Fukui Station has no official visitor count, so it shows camera detections and no action.`,
+                ? `直近8週間の実績（実線）と7日間予測（破線、約80%の範囲）。予測は dhde-preprocessing-model の日次モデルで毎日更新。${range ? `検証誤差は地点により${range}。` : ''}対応：その曜日の平常（最近の同じ曜日の中央値、祝日を除く）より${pct}%以上多く、予測範囲の下限も平常を上回る日＝営業時間を延長（地図の需要アラートと同じ基準）。福井駅は公式の来訪者数がないためカメラ検知数で、対応は表示しない。`
+                : `Last 8 weeks measured (line) and the 7-day forecast (dashed) with its roughly 80% range, from the daily model in dhde-preprocessing-model, refreshed daily. ${range ? `Typical error in tests: ${range} depending on the site. ` : ''}Action: ${pct}% or more above that weekday's normal (the median of the same weekday over recent weeks, holidays left out) = extend hours, when the forecast's low bound is above normal too: the same rule as the map's demand alerts. Fukui Station has no official visitor count, so it shows camera detections and no action.`,
           }
         : c,
     ),
