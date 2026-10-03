@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T00:31:37+00:00",
+ "generated_at": "2026-10-03T05:29:43+00:00",
  "today": "2026-10-03",
  "method": "Per hotel area, from its reservation feed's past nights: tight = the 90th percentile of occupancy (plus demand 35% above normal where demand_check), slack = the 10th percentile for that weekday (plus demand at or above normal).",
  "notes": [],
