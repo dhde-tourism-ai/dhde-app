@@ -43,12 +43,19 @@ export function surveyRow(s: Survey): string {
   return `<span class="sc-ic">${iconSvg('survey', 13)}</span><b class="num">${s.satisfaction.toFixed(1)}</b><span class="ov-sub">/5${s.nps !== null ? ` · NPS ${s.nps > 0 ? '+' : ''}${s.nps}` : ''}</span>`
 }
 
-/** The row's dot for real social counts: neutral, since there's no real sentiment yet. */
+/** The row's dot for real social counts without a sentiment score: neutral grey. */
 const SOCIAL_REAL_DOT = '#8a94a6'
 
 export function socialRow(s: Social, lang: 'en' | 'ja'): string {
-  // Real Instagram counts (posts in the collected days) where they exist; else the fictional demo.
-  if (s.real) return `<span class="sc-dot" style="background:${SOCIAL_REAL_DOT}"></span><b class="num">${s.real.posts.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${s.real.days}日` : `posts ${s.real.days}d`)}</span>`
+  // Real posts (Instagram plus mentions) where they exist, the dot coloured by the real
+  // sentiment where there's enough of it; else the fictional demo.
+  if (s.real || s.mentions) {
+    const days = Math.max(s.real?.days ?? 0, s.mentions?.days ?? 0)
+    const total = (s.real?.posts ?? 0) + (s.mentions?.total ?? 0)
+    const sc = s.sentiment_real?.score
+    const dot = typeof sc === 'number' ? sentimentColour(sc) : SOCIAL_REAL_DOT
+    return `<span class="sc-dot" style="background:${dot}"></span><b class="num">${total.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${days}日` : `posts ${days}d`)}</span>`
+  }
   return `<span class="sc-dot" style="background:${sentimentColour(s.avg_sentiment)}"></span><b class="num">${s.posts_24h}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? '件/24h' : 'posts 24h')}</span>`
 }
 

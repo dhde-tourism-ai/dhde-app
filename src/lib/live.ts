@@ -2,7 +2,7 @@
  * Pure helpers over live_demo.json: the state of every node, route and alert at
  * one hour index. Views call frameAt() and never touch the raw arrays.
  */
-import type { LiveData, LiveWeatherAlert, WeatherCondition } from '../types/live'
+import type { LiveData, LiveWeatherAlert, RealSentiment, WeatherCondition } from '../types/live'
 
 export interface Tier {
   key: 'good' | 'warn' | 'serious' | 'crit'
@@ -43,7 +43,7 @@ export interface NodeFrame {
   /** hourly: where this hour's values come from when real hourly weather covers it (else null). */
   weather: { temp: number; pop: number; mm: number; wind: number; cond: WeatherCondition; station: string; station_ja: string; hourly: 'observed' | 'forecast' | null }
   alerts: LiveWeatherAlert[]
-  sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[] }
+  sentiment: { score: number; posts: number; keywords: { en: string; ja: string }[]; real?: RealSentiment }
   /** Real daily figures for this node on this day (null when the day is not observed). */
   realDay: { visitors: number | null; signal: number | null } | null
   /** No visitor estimate exists (Fukui Station): show the raw signal only. */
@@ -103,6 +103,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         score: n.sentiment.score[d],
         posts: n.sentiment.posts[d],
         keywords: n.sentiment.keywords[d] ?? [],
+        real: n.sentiment.real,
       },
     }
   }
@@ -174,6 +175,20 @@ export function sentimentLabel(score: number): { en: string; ja: string } {
   if (score > -0.1) return { en: 'Mixed', ja: '賛否' }
   if (score > -0.35) return { en: 'Negative', ja: '不評' }
   return { en: 'Very negative', ja: 'とても不評' }
+}
+
+/** Neutral band of the real sentiment model (dhde-preprocessing-model sentiment.NEUTRAL_BAND). */
+export const REAL_NEUTRAL_BAND = 0.2
+
+/**
+ * Label for a real average score, on the same ±0.2 band each post is labelled with, so a
+ * site's label agrees with its positive / neutral / negative split. No "very": a first
+ * model's average isn't precise enough for that.
+ */
+export function realSentimentLabel(score: number): { en: string; ja: string } {
+  if (score >= REAL_NEUTRAL_BAND) return { en: 'Positive', ja: '好評' }
+  if (score <= -REAL_NEUTRAL_BAND) return { en: 'Negative', ja: '不評' }
+  return { en: 'Mixed', ja: '賛否' }
 }
 
 export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string }> = {

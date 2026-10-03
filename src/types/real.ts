@@ -53,6 +53,32 @@ export interface RealDaily {
   instagram_script_zh: number | null
   instagram_script_latin: number | null
   instagram_script_none: number | null
+  /** Instagram captions scored for sentiment (sentiment.py in the pipeline): counts by label, mean score -1..1. */
+  instagram_scored: number | null
+  instagram_positive: number | null
+  instagram_neutral: number | null
+  instagram_negative: number | null
+  instagram_sentiment_mean: number | null
+  /** Bluesky, YouTube and Reddit posts and comments naming the site (social_listening source): counts, per platform
+   * (null where that platform didn't run), by sentiment label and language. Null outside a weekly run's coverage. */
+  social_mentions: number | null
+  social_posts: number | null
+  social_comments: number | null
+  social_bluesky_mentions: number | null
+  social_youtube_mentions: number | null
+  social_reddit_mentions: number | null
+  social_positive: number | null
+  social_neutral: number | null
+  social_negative: number | null
+  social_scored: number | null
+  social_sentiment_mean: number | null
+  social_lang_ja: number | null
+  social_lang_en: number | null
+  social_lang_zh_hant: number | null
+  social_lang_zh_hans: number | null
+  social_lang_ko: number | null
+  social_lang_ar: number | null
+  social_lang_other: number | null
   gmb_review_change: number | null
 }
 
