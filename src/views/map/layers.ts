@@ -56,6 +56,9 @@ export const LAYERS: LayerDef[] = [
   { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失', tip_en: 'Tourism revenue per town, and revenue missed from day-trips instead of overnight stays, bad weather and empty rooms.', tip_ja: '市町ごとの観光収入と、宿泊せず日帰りになった分・悪天候・空室による取りこぼし。' },
 ]
 
+/** Layers drawn as cards on towns rather than on sites: only one at a time (MapView's toggle). */
+export const TOWN_LAYERS: LayerId[] = ['hotels', 'rsi']
+
 /** Tooltip for a "Partly estimated or demo" badge that covers several layers. */
 export const OVERVIEW_NOTE = [
   'Some layers use real data; the rest is estimated or demo. Turn a layer on to see which part is estimated or demo.',
