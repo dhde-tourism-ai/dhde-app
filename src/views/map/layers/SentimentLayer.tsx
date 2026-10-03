@@ -42,7 +42,7 @@ export function SentimentLayer({ nodes, frame }: { nodes: MapNode[]; frame: Reco
               className={hot ? 'sent-pulse' : undefined}
               pathOptions={{ color: col, weight: hot ? 3 : 1.6, opacity: hot ? 1 : 0.8, fillOpacity: 0, dashArray: hot ? undefined : '1 4' }}
             >
-              <Tooltip className="map-tip" direction="bottom" offset={[0, r]}>
+              <Tooltip pane="tooltipPane" className="map-tip" direction="bottom" offset={[0, r]}>
                 <strong>
                   {t(n.name, n.name_ja)} · {t(lab.en, lab.ja)} <span className="tt-demo">{t('Demo', 'デモ')}</span>
                 </strong>
@@ -75,7 +75,7 @@ function RealRing({ node: n, real, r }: { node: MapNode; real: RealSentiment; r:
       className={hot ? 'sent-pulse' : undefined}
       pathOptions={{ color: col, weight: hot ? 3 : 2, opacity: hot ? 1 : 0.9, fillOpacity: 0, dashArray: s === null ? '2 5' : hot ? undefined : '1 4' }}
     >
-      <Tooltip className="map-tip" direction="bottom" offset={[0, r]}>
+      <Tooltip pane="tooltipPane" className="map-tip" direction="bottom" offset={[0, r]}>
         <strong>
           {t(n.name, n.name_ja)} · {t(lab.en, lab.ja)} <span className="tt-real">{t('Real', '実データ')}</span> <span className="tt-demo">{t('first model, unchecked', '初期モデル・未検証')}</span>
         </strong>
