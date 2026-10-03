@@ -65,6 +65,7 @@ export function Declutter() {
       // Start from where the layers put things.
       for (const el of cards) {
         el.style.translate = ''
+        el.style.removeProperty('--dy')
         el.classList.remove('dc-dot', 'dc-mini')
         setSide(el, homeSide(el))
       }
@@ -113,6 +114,8 @@ export function Declutter() {
         setSide(el, side)
         el.classList.toggle('dc-mini', mini)
         if (dy) el.style.translate = `0 ${Math.round(dy)}px`
+        // The card's pointer stays level with its site however far the card moved (map.css).
+        el.style.setProperty('--dy', `${Math.round(dy)}px`)
         if (el.parentElement) el.parentElement.dataset.dc = `${side}|${dy}|${mini ? 'mini' : ''}`
         placed.push(shift(box, 0, dy))
       }
@@ -195,6 +198,7 @@ export function Declutter() {
           setSide(n, side)
           if (mini) n.classList.add('dc-mini')
           if (Number(dy)) n.style.translate = `0 ${Math.round(Number(dy))}px`
+          n.style.setProperty('--dy', `${Math.round(Number(dy))}px`)
         }
       }
       schedule(changed)

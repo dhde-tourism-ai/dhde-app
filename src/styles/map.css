@@ -228,6 +228,33 @@
   transform: translate(-50%, var(--r));
 }
 
+/* A short pointer on the side facing the site, so a card that moved (or flipped to the
+   site's other side, like Katsuyama next to the board) still shows whose it is. It sits
+   level with the site: the name row's middle (11px), minus however far Declutter moved
+   the card (--dy), kept inside the card's edge. */
+.site-card.dir-right::before,
+.site-card.dir-left::before {
+  content: '';
+  position: absolute;
+  top: clamp(3px, calc(11px - var(--dy, 0px) - 6px), calc(100% - 15px));
+  border: 6px solid transparent;
+  pointer-events: none;
+}
+
+.site-card.dir-right::before {
+  left: -12px;
+  border-right-color: rgba(201, 212, 255, 0.75);
+}
+
+.site-card.dir-left::before {
+  right: -12px;
+  border-left-color: rgba(201, 212, 255, 0.75);
+}
+
+.site-card.dc-dot::before {
+  display: none;
+}
+
 /* Town cards (hotels, search intent) are centred on the town. */
 .site-card.town {
   transform: translate(-50%, -50%);
@@ -300,6 +327,17 @@
 }
 
 /* ...then, with no room for that either, to a dot at its site. */
+.site-card.town.dc-mini .sc-row {
+  /* A town card is there for its number: when short of room it keeps the number and drops
+     the extras (sparkline, sub-label, area note), instead of shrinking to a bare name. */
+  display: flex;
+}
+
+.site-card.town.dc-mini .ov-spark,
+.site-card.town.dc-mini .ov-sub {
+  display: none;
+}
+
 .site-card.dc-dot {
   width: 10px;
   height: 10px;
@@ -507,7 +545,8 @@
     gap: 0;
   }
 
-  .ss-msg {
+  /* .status-strip in front: the base .ss-msg rule comes later in this file and would win. */
+  .status-strip .ss-msg {
     white-space: normal;
     line-height: 1.25;
     max-height: 2.5em;
