@@ -7,6 +7,9 @@ export const MODE_COLOUR: Record<TransportMode, string> = {
   ferry: '#5fd3c4',
 }
 
+/** Railway lines and stations on the map's Public transport layer. */
+export const RAIL_LINE_COLOUR = '#e5484d'
+
 export const MODE_LABEL: Record<TransportMode, [string, string]> = {
   rail: ['Rail', '鉄道'],
   bus: ['Bus', 'バス'],

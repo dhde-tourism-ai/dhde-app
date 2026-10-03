@@ -119,7 +119,17 @@ export interface TransportFile {
   nodes: Record<string, TransportNode>
 }
 
-/** public/data/transport_map.json: route lines, stops and walking areas for the map layer. */
+/** Railway track and stations (MLIT railway data N02, CC BY 4.0): routes only, no timetables. */
+export interface RailLines {
+  source: string
+  url: string
+  licence: string
+  credit: string
+  lines: { id: string; name: string; name_ja: string; operator_ja: string; kind: 'shinkansen' | 'rail' | 'tram'; paths: [number, number][][] }[]
+  stations: { id: string; name_ja: string; lat: number; lon: number; lines: string[] }[]
+}
+
+/** public/data/transport_map.json: route lines, stops, walking areas and railway lines for the map layer. */
 export interface TransportMapFile {
   generated_at: string
   lines: { id: string; name: string; mode: TransportMode; feed: string; colour: string | null; path: [number, number][] }[]
@@ -131,6 +141,8 @@ export interface TransportMapFile {
     /** node -> minutes -> ring of [lat, lon] */
     nodes: Record<string, Record<string, [number, number][]>>
   } | null
+  /** Absent in files built before the railway lines were added. */
+  rail?: RailLines | null
 }
 
 /** public/data/transport_trends.json: Google Trends interest in transport terms (Illustrative). */
