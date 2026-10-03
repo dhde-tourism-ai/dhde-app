@@ -40,6 +40,7 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
   reviews: ['Rating, new reviews, star split and total count are real (Google). Snippets are fictional demo.', '評価・新規件数・星の内訳・総件数は実データ（Google）。抜粋は架空のデモ。'],
   survey: ['Fukui nodes: responses, satisfaction, NPS, reasons for visiting and home region (Japan) are real (FTAS survey). Elsewhere only response counts are real; the rest is demo.', '福井のノード：回答数・満足度・NPS・来訪理由・居住地（国内）は実データ（FTASアンケート）。その他のノードは回答数のみ実データ、他はデモ。'],
+  social: ['Instagram posts tagged at each site, counted weekly (real where a site has a run; counts only, no posts shown). Elsewhere, and the feed and sentiment, fictional demo.', '各地点にタグ付けされたInstagram投稿の件数（毎週、実行済みの地点は実データ。件数のみで投稿は非表示）。その他の地点とフィード・感情は架空のデモ。'],
   nudges: ['Demand and booking action nudges use real visitor history and forward bookings where available.', '需要・予約の推奨アクションは実データ（来訪者履歴・先行予約）を使用。'],
 }
 

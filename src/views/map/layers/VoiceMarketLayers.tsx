@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { Marker, Polyline } from 'react-leaflet'
 import L from 'leaflet'
-import type { MarketVoiceData } from '../../../types/market'
+import type { MarketVoiceData, SocialNode } from '../../../types/market'
+import { fmtDate } from '../../../lib/format'
 import type { RegistryNode } from '../../../types/nodes'
 import { escapeHtml, sentimentColour, sentimentLabel } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
@@ -297,9 +298,67 @@ export function SurveyDetail({ s }: { s: Survey }) {
 
 const ORIGIN_COLOURS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#9085e9']
 
+const SCRIPT_LABELS: { k: keyof NonNullable<SocialNode['real']>['scripts']; en: string; ja: string }[] = [
+  { k: 'ja', en: 'Japanese', ja: '日本語' },
+  { k: 'zh', en: 'Chinese (at least)', ja: '中国語（最低値）' },
+  { k: 'ko', en: 'Korean', ja: '韓国語' },
+  { k: 'latin', en: 'English / Latin script', ja: '英語など' },
+]
+
+/** Real Instagram counts for the site (from #48): counts only, no posts or sentiment. */
+function RealSocialDetail({ r }: { r: NonNullable<SocialNode['real']> }) {
+  const { t, lang } = useLang()
+  const fmt = (v: number) => v.toLocaleString('en-US')
+  const asOf = fmtDate(r.as_of, lang)
+  const captioned = r.posts - r.scripts.none
+  return (
+    <>
+      <div className="tt-sec">
+        Instagram <span className="tt-real">{t(`Real · ${r.days} days to ${asOf}`, `実データ・${asOf}までの${r.days}日間`)}</span>
+      </div>
+      <div className="feed-stats">
+        <span>
+          <b className="num">{fmt(r.posts)}</b> {t('posts', '投稿')}
+        </span>
+        <span>
+          <b className="num">{fmt(r.photos)}</b> {t('photos', '写真')}
+        </span>
+        <span>
+          <b className="num">{fmt(r.videos)}</b> {t('videos', '動画')}
+        </span>
+        <span>
+          <b className="num">{fmt(r.likes)}</b> {t('likes', 'いいね')}
+        </span>
+        <span>
+          <b className="num">{fmt(r.comments)}</b> {t('comments', 'コメント')}
+        </span>
+      </div>
+      {captioned > 0 && (
+        <div className="tt-grid">
+          {SCRIPT_LABELS.filter((l) => r.scripts[l.k] > 0).map((l) => (
+            <span key={l.k} style={{ display: 'contents' }}>
+              <span className="tt-k">{t(l.en, l.ja)}</span>
+              <span className="tt-v num">
+                {Math.round((r.scripts[l.k] / captioned) * 100)}% ({fmt(r.scripts[l.k])})
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="tip-sub">
+        {t(
+          'Posts tagged at this place on Instagram, collected weekly. Only counts are kept: no usernames, captions or images. Caption language is judged by writing system, a rough market proxy, not nationality. Kanji-only captions count as Japanese unless they use characters only Chinese uses, so the Chinese share is a floor. Likes (to the nearest 10) and comments (nearest 5) are rounded and counted when collected. Sentiment is not measured yet.',
+          'Instagramでこの場所にタグ付けされた投稿（毎週収集）。件数のみ保存し、ユーザー名・本文・画像は保存しません。本文の言語は文字の種類で判定した市場の目安で、国籍ではありません。漢字のみの本文は中国語特有の字がない限り日本語として数えるため、中国語の割合は最低値です。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。感情はまだ測定していません。',
+        )}
+      </div>
+    </>
+  )
+}
+
 export function SocialDetail({ s }: { s: Social }) {
   const { t, lang } = useLang()
   const lab = sentimentLabel(s.avg_sentiment)
+  if (s.real) return <RealSocialDetail r={s.real} />
   return (
     <>
       <div className="tt-sec">

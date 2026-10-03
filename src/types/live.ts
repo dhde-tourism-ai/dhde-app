@@ -152,7 +152,7 @@ export interface SourceInfo {
   real: string[]
 }
 
-export type DataSources = Partial<Record<'people' | 'flow' | 'density' | 'traffic' | 'weather' | 'hotels' | 'rsi' | 'reviews' | 'survey' | 'nudges', SourceInfo>>
+export type DataSources = Partial<Record<'people' | 'flow' | 'density' | 'traffic' | 'weather' | 'hotels' | 'rsi' | 'reviews' | 'survey' | 'social' | 'nudges', SourceInfo>>
 
 export interface RealNodeMeta {
   /** people (camera) | vehicles | reservations | proxy_camera | proxy_survey */
