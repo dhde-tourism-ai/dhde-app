@@ -120,6 +120,29 @@ jobs:
       - name: Validate real_data.json
         run: node scripts/check_data.mjs
 
+      # Transport page and the map's Public transport layer (dhde-preprocessing-model
+      # scripts/build_transport.py): access per site from the bus timetables (GTFS-JP,
+      # downloaded fresh), visitors by mode (the prefecture survey fetch_data.py just
+      # downloaded x the real_data.json above) and Google Trends. A part that fails
+      # writes nothing, and the files are only taken if they validate, so the app
+      # keeps yesterday's. Not fatal: the rest of the refresh goes on.
+      - name: Build transport data
+        continue-on-error: true
+        run: |
+          python "$PREPROC/scripts/build_transport.py" --output-dir "$OUT/transport" \
+            --real-data public/data/real_data.json --refresh \
+            || echo "::warning::bus timetables not built; the app keeps yesterday's transport.json"
+          for f in $TRANSPORT_FILES; do
+            if [ -f "$OUT/transport/$f" ]; then cp "$OUT/transport/$f" public/data/; fi
+          done
+          if ! node scripts/check_transport.mjs; then
+            echo "::warning::today's transport files failed validation; the app keeps yesterday's"
+            git checkout -- $(printf 'public/data/%s ' $TRANSPORT_FILES)
+            exit 1
+          fi
+        env:
+          TRANSPORT_FILES: transport.json transport_map.json transport_modes.json transport_trends.json
+
       # Loop #3's occupancy thresholds per hotel area, from the same master tables.
       # Not fatal: without the file the app keeps the demo rule.
       - name: Build hotel thresholds
@@ -225,14 +248,15 @@ jobs:
       - name: Commit if changed
         id: commit
         run: |
-          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json; then
-            echo "No change in real_data.json, hotel_thresholds.json or monthly_forecast.json."
+          files="public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json public/data/transport.json public/data/transport_map.json public/data/transport_modes.json public/data/transport_trends.json"
+          if git diff --quiet -- $files; then
+            echo "No change in the data files."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json
+          git add $files
           git commit -m "data: daily real data $(TZ=Asia/Tokyo date +%F) (preprocessing $PREPROC_SHA)"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

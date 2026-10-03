@@ -14,6 +14,7 @@ import type { MarketVoiceData } from '../../../types/market'
 import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
 import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
+import { TransportLegend } from './TransportLegend'
 
 interface Props {
   basemap: BasemapId
@@ -204,6 +205,7 @@ export function LayersPanel(p: Props) {
         </div>
       </>
     ),
+    transport: <TransportLegend />,
     weather: (
       <>
         <p className="lg-note">{t('Chip: sky, temperature, chance of rain, wind. ⚠ = JMA-style advisory in force.', 'チップ：天気・気温・降水確率・風速。⚠＝注意報発表中。')}</p>

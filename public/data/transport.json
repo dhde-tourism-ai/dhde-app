@@ -1,0 +1,4127 @@
+{
+ "generated_at": "2026-10-03T05:45:59Z",
+ "timezone": "Asia/Tokyo",
+ "hub": "fukui_station",
+ "reference_days": {
+  "weekday": "2026-10-07",
+  "saturday": "2026-10-03",
+  "sunday": "2026-10-04"
+ },
+ "timetable_dates": {
+  "weekday": {
+   "keifuku_bus": "2026-10-07",
+   "katsuyama_city_bus": "2026-10-07",
+   "eiheiji_town_bus": "2026-10-07",
+   "sakai_city_bus": "2026-10-07"
+  },
+  "saturday": {
+   "keifuku_bus": "2026-10-03",
+   "katsuyama_city_bus": "2026-10-03",
+   "eiheiji_town_bus": "2026-10-03",
+   "sakai_city_bus": "2026-10-03"
+  },
+  "sunday": {
+   "keifuku_bus": "2026-10-04",
+   "katsuyama_city_bus": "2026-10-04",
+   "eiheiji_town_bus": "2026-10-04",
+   "sakai_city_bus": "2026-10-04"
+  }
+ },
+ "walk": {
+  "speed_m_per_min": 80,
+  "detour_factor": 1.3,
+  "transfer_radius_m": 300,
+  "transfer_buffer_min": 3
+ },
+ "note": "Public transport access per node from open GTFS-JP timetables (dhde-preprocessing-model docs/transport.md). Times are scheduled, not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and Kyoto add an estimated JR leg, since JR timetables are not open data.",
+ "sources": [
+  {
+   "id": "keifuku_bus",
+   "name": "Keifuku Bus (routes)",
+   "name_ja": "京福バス（路線バス）",
+   "mode": "bus",
+   "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/keifuku_bus.zip",
+   "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
+   "licence": "CC BY 4.0 (Fukui Prefecture open data; ODPT catalogue lists 京福バス株式会社 as author)",
+   "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+   "caveat": "CC BY 4.0: credit \"京福バス株式会社 / Fukui Prefecture open data\". The permission line in the feed comes from the GTFS authoring tool (その筋屋), not from Keifuku; the official listings carry no such condition. Confirmed 3 Oct 2026.",
+   "caveat_ja": "CC BY 4.0：「京福バス株式会社／福井県オープンデータ」を表示。フィード内の許諾の記載はGTFS作成ツール（その筋屋）のもので、京福バスの条件ではない（県・ODPTの公式掲載に条件なし）。2026年10月3日確認。",
+   "publish_status": "ok",
+   "agency": "京福バス",
+   "valid_from": "2026-06-01",
+   "valid_to": "2027-05-31"
+  },
+  {
+   "id": "katsuyama_city_bus",
+   "name": "Katsuyama City community bus",
+   "name_ja": "勝山市コミュニティバス",
+   "mode": "bus",
+   "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/gtfs_katsuyamashi.zip",
+   "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
+   "licence": "CC BY 4.0",
+   "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+   "caveat": null,
+   "caveat_ja": null,
+   "publish_status": "ok",
+   "agency": "勝山市コミュニティ",
+   "valid_from": "2026-03-19",
+   "valid_to": "2027-03-31"
+  },
+  {
+   "id": "eiheiji_town_bus",
+   "name": "Eiheiji Town community bus",
+   "name_ja": "永平寺町コミュニティバス",
+   "mode": "bus",
+   "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/eiheiji_bus.zip",
+   "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
+   "licence": "CC BY 4.0",
+   "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+   "caveat": null,
+   "caveat_ja": null,
+   "publish_status": "ok",
+   "agency": "永平寺町",
+   "valid_from": "2026-04-26",
+   "valid_to": "2027-03-31"
+  },
+  {
+   "id": "sakai_city_bus",
+   "name": "Sakai City community bus",
+   "name_ja": "坂井市コミュニティバス",
+   "mode": "bus",
+   "url": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp_d/fil/sakaisi_bus.zip",
+   "page": "https://www.pref.fukui.lg.jp/doc/dx-suishin/opendata/gtfs_jp.html",
+   "licence": "CC BY 4.0",
+   "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+   "caveat": null,
+   "caveat_ja": null,
+   "publish_status": "ok",
+   "agency": "坂井市コミュニティバス",
+   "valid_from": "2023-10-01",
+   "valid_to": "2027-03-31"
+  }
+ ],
+ "nodes": {
+  "tojinbo": {
+   "anchor": {
+    "lat": 36.2376685,
+    "lon": 136.1265737,
+    "label": "Tojinbo",
+    "label_ja": "東尋坊"
+   },
+   "radius_m": 800,
+   "note": null,
+   "note_ja": null,
+   "days": {
+    "weekday": {
+     "departures": 26,
+     "arrivals": 26,
+     "departures_by_mode": {
+      "bus": 26
+     },
+     "first_departure": "07:01",
+     "last_departure": "18:53",
+     "first_arrival": "07:01",
+     "last_arrival": "18:53",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      }
+     ],
+     "from_hub": {
+      "journeys": 11,
+      "fastest_min": 130,
+      "fastest": {
+       "depart": "10:14",
+       "arrive": "12:24",
+       "stop": 639,
+       "fare_yen": 1760,
+       "minutes": 130,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三國湊北前通り",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三國湊北前通り",
+         "depart": "11:25",
+         "to": "龍翔博物館前",
+         "arrive": "11:35",
+         "fare_yen": 170
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "龍翔博物館前",
+         "depart": "12:10",
+         "to": "東尋坊",
+         "arrive": "12:24",
+         "fare_yen": 320
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:14",
+       "arrive": "12:24",
+       "stop": 639,
+       "fare_yen": 1590,
+       "minutes": 130,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "12:11",
+         "to": "東尋坊",
+         "arrive": "12:24",
+         "fare_yen": 320
+        }
+       ]
+      },
+      "typical_min": 147,
+      "first_arrival": "10:24",
+      "after_0900": {
+       "depart": "10:14",
+       "arrive": "12:24",
+       "stop": 639,
+       "fare_yen": 1760,
+       "minutes": 130,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三國湊北前通り",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三國湊北前通り",
+         "depart": "11:25",
+         "to": "龍翔博物館前",
+         "arrive": "11:35",
+         "fare_yen": 170
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "龍翔博物館前",
+         "depart": "12:10",
+         "to": "東尋坊",
+         "arrive": "12:24",
+         "fare_yen": 320
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "18:53",
+      "from_stop": "東尋坊",
+      "arrive_hub": "20:16",
+      "minutes": 83,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "85 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "18:53",
+        "to": "三国駅",
+        "arrive": "19:03",
+        "fare_yen": 280
+       },
+       {
+        "mode": "walk",
+        "from": "三国駅",
+        "to": "三国駅",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "98 海岸線",
+        "feed": "keifuku_bus",
+        "from": "三国駅",
+        "depart": "19:10",
+        "to": "浜中",
+        "arrive": "19:33",
+        "fare_yen": 660
+       },
+       {
+        "mode": "walk",
+        "from": "浜中",
+        "to": "浜中",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "10 越前海岸ブルーライン",
+        "feed": "keifuku_bus",
+        "from": "浜中",
+        "depart": "19:37",
+        "to": "駅前大通り",
+        "arrive": "20:16",
+        "fare_yen": 730
+       }
+      ],
+      "fare_yen": 1670
+     },
+     "car_only_after": "18:53",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "saturday": {
+     "departures": 35,
+     "arrivals": 35,
+     "departures_by_mode": {
+      "bus": 35
+     },
+     "first_departure": "08:44",
+     "last_departure": "18:24",
+     "first_arrival": "08:44",
+     "last_arrival": "18:24",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      }
+     ],
+     "from_hub": {
+      "journeys": 10,
+      "fastest_min": 100,
+      "fastest": {
+       "depart": "10:14",
+       "arrive": "11:54",
+       "stop": 639,
+       "fare_yen": 1760,
+       "minutes": 100,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三國湊北前通り",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三國湊北前通り",
+         "depart": "11:25",
+         "to": "龍翔博物館前",
+         "arrive": "11:35",
+         "fare_yen": 170
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "龍翔博物館前",
+         "depart": "11:40",
+         "to": "東尋坊",
+         "arrive": "11:54",
+         "fare_yen": 320
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:14",
+       "arrive": "11:54",
+       "stop": 639,
+       "fare_yen": 1590,
+       "minutes": 100,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三国図書館",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三国図書館",
+         "depart": "11:41",
+         "to": "東尋坊",
+         "arrive": "11:54",
+         "fare_yen": 320
+        }
+       ]
+      },
+      "typical_min": 140,
+      "first_arrival": "09:54",
+      "after_0900": {
+       "depart": "10:14",
+       "arrive": "11:54",
+       "stop": 639,
+       "fare_yen": 1760,
+       "minutes": 100,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三國湊北前通り",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三國湊北前通り",
+         "depart": "11:25",
+         "to": "龍翔博物館前",
+         "arrive": "11:35",
+         "fare_yen": 170
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "龍翔博物館前",
+         "depart": "11:40",
+         "to": "東尋坊",
+         "arrive": "11:54",
+         "fare_yen": 320
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "17:23",
+      "from_stop": "東尋坊",
+      "arrive_hub": "19:37",
+      "minutes": 134,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "85 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "17:23",
+        "to": "三国駅",
+        "arrive": "17:33",
+        "fare_yen": 280
+       },
+       {
+        "mode": "bus",
+        "route": "80 鶉三国線",
+        "feed": "keifuku_bus",
+        "from": "三国駅",
+        "depart": "18:30",
+        "to": "福井総合病院",
+        "arrive": "18:56",
+        "fare_yen": 700
+       },
+       {
+        "mode": "walk",
+        "from": "福井総合病院",
+        "to": "福井医療大学",
+        "minutes": 8
+       },
+       {
+        "mode": "bus",
+        "route": "10 越前海岸ブルーライン",
+        "feed": "keifuku_bus",
+        "from": "福井医療大学",
+        "depart": "19:12",
+        "to": "駅前大通り",
+        "arrive": "19:37",
+        "fare_yen": 570
+       }
+      ],
+      "fare_yen": 1550
+     },
+     "car_only_after": "17:23",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "sunday": {
+     "departures": 35,
+     "arrivals": 35,
+     "departures_by_mode": {
+      "bus": 35
+     },
+     "first_departure": "08:44",
+     "last_departure": "18:24",
+     "first_arrival": "08:44",
+     "last_arrival": "18:24",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      }
+     ],
+     "from_hub": {
+      "journeys": 6,
+      "fastest_min": 147,
+      "fastest": {
+       "depart": "10:50",
+       "arrive": "13:17",
+       "stop": 639,
+       "fare_yen": 2520,
+       "minutes": 147,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "東尋坊",
+         "arrive": "13:17",
+         "fare_yen": 790
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "13:17",
+       "stop": 639,
+       "fare_yen": 2350,
+       "minutes": 147,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "東尋坊",
+         "arrive": "13:17",
+         "fare_yen": 790
+        }
+       ]
+      },
+      "typical_min": 150,
+      "first_arrival": "13:17",
+      "after_0900": {
+       "depart": "10:50",
+       "arrive": "13:17",
+       "stop": 639,
+       "fare_yen": 2520,
+       "minutes": 147,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "東尋坊",
+         "arrive": "13:17",
+         "fare_yen": 790
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "13:24",
+      "from_stop": "東尋坊",
+      "arrive_hub": "15:45",
+      "minutes": 141,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "96 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "東尋坊",
+        "depart": "13:24",
+        "to": "芦原温泉駅",
+        "arrive": "14:05",
+        "fare_yen": 790
+       },
+       {
+        "mode": "bus",
+        "route": "86 芦原丸岡永平寺線（長屋経由）",
+        "feed": "keifuku_bus",
+        "from": "芦原温泉駅",
+        "depart": "14:25",
+        "to": "丸岡城",
+        "arrive": "14:43",
+        "fare_yen": 570
+       },
+       {
+        "mode": "bus",
+        "route": "36 県立病院丸岡線",
+        "feed": "keifuku_bus",
+        "from": "丸岡城",
+        "depart": "14:50",
+        "to": "福井駅",
+        "arrive": "15:45",
+        "fare_yen": 670
+       }
+      ],
+      "fare_yen": 2030
+     },
+     "car_only_after": "13:24",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 67,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 142,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 37,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    }
+   },
+   "stops": [
+    {
+     "id": "keifuku_bus:656_01",
+     "name": "東尋坊",
+     "feed": "keifuku_bus",
+     "lat": 36.235826,
+     "lon": 136.129519,
+     "distance_m": 334,
+     "walk_min": 5
+    }
+   ],
+   "modes": [
+    "bus",
+    "car"
+   ],
+   "feeds": [
+    "keifuku_bus"
+   ]
+  },
+  "fukui_station": {
+   "anchor": {
+    "lat": 36.0614,
+    "lon": 136.2217,
+    "label": "Fukui Station East Entrance",
+    "label_ja": "福井駅東口"
+   },
+   "radius_m": 400,
+   "note": null,
+   "note_ja": null,
+   "days": {
+    "weekday": {
+     "departures": 345,
+     "arrivals": 377,
+     "departures_by_mode": {
+      "bus": 345
+     },
+     "first_departure": "06:00",
+     "last_departure": "21:13",
+     "first_arrival": "06:58",
+     "last_arrival": "23:00",
+     "routes": [
+      {
+       "id": "keifuku_bus:大和田大学病院線_A",
+       "name": "38 大和田大学病院線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 33
+      },
+      {
+       "id": "keifuku_bus:学園線_A",
+       "name": "12 学園線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 30
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_A",
+       "name": "74 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 23
+      },
+      {
+       "id": "keifuku_bus:県立病院丸岡線_A",
+       "name": "36 県立病院丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:大和田丸岡線_A",
+       "name": "39 大和田丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:高速バス名古屋線_A",
+       "name": "名古屋線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 20
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_A",
+       "name": "10 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 20
+      },
+      {
+       "id": "keifuku_bus:運動公園線（道守高校先回り）_A",
+       "name": "70 運動公園線（道守高校先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 17
+      },
+      {
+       "id": "keifuku_bus:運動公園線（ベル前先回り）_A",
+       "name": "71 運動公園線（ベル前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 16
+      },
+      {
+       "id": "keifuku_bus:エンゼルランド線_A",
+       "name": "25 エンゼルランド線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 16
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_A",
+       "name": "すまいるバス南ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_C",
+       "name": "すまいるバス北ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_D",
+       "name": "すまいるバス西ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:一乗谷東郷線_A",
+       "name": "62 一乗谷東郷線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:大野線_A",
+       "name": "55 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:小松空港線_A",
+       "name": "小松空港線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:福井総合病院線_A",
+       "name": "26 福井総合病院線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 8
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_B",
+       "name": "15 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:済生会問屋団地線_A",
+       "name": "51 済生会問屋団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:丸岡線_A",
+       "name": "31 丸岡線（田原町経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（福井大学前先回り）_A",
+       "name": "21 幾久・新田塚線（福井大学前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:済生会問屋団地線_B",
+       "name": "52 済生会問屋団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:羽水高校線_A",
+       "name": "60 羽水高校線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:大安寺線_A",
+       "name": "11 大安寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（幾久先回り）_A",
+       "name": "20 幾久・新田塚線（幾久先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:運転者教育センター線_A",
+       "name": "28 運転者教育センター線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:大野線_B",
+       "name": "59 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_C",
+       "name": "75 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_B",
+       "name": "73 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_D",
+       "name": "19 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:川西三国線_A",
+       "name": "16 川西三国線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:丸岡線_B",
+       "name": "32 丸岡線（町屋町経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_C",
+       "name": "14 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      },
+      {
+       "id": "keifuku_bus:高木線_A",
+       "name": "30 高木線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "saturday": {
+     "departures": 265,
+     "arrivals": 292,
+     "departures_by_mode": {
+      "bus": 265
+     },
+     "first_departure": "06:00",
+     "last_departure": "20:51",
+     "first_arrival": "07:13",
+     "last_arrival": "23:00",
+     "routes": [
+      {
+       "id": "keifuku_bus:大和田大学病院線_A",
+       "name": "38 大和田大学病院線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 25
+      },
+      {
+       "id": "keifuku_bus:大和田丸岡線_A",
+       "name": "39 大和田丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:県立病院丸岡線_A",
+       "name": "36 県立病院丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:高速バス名古屋線_A",
+       "name": "名古屋線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 20
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_A",
+       "name": "74 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 19
+      },
+      {
+       "id": "keifuku_bus:学園線_A",
+       "name": "12 学園線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 18
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_A",
+       "name": "10 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 17
+      },
+      {
+       "id": "keifuku_bus:エンゼルランド線_A",
+       "name": "25 エンゼルランド線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 16
+      },
+      {
+       "id": "keifuku_bus:運動公園線（道守高校先回り）_A",
+       "name": "70 運動公園線（道守高校先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:運動公園線（ベル前先回り）_A",
+       "name": "71 運動公園線（ベル前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:一乗谷東郷線_A",
+       "name": "62 一乗谷東郷線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_A",
+       "name": "すまいるバス南ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_D",
+       "name": "すまいるバス西ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_C",
+       "name": "すまいるバス北ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:小松空港線_A",
+       "name": "小松空港線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:大野線_A",
+       "name": "55 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:丸岡線_A",
+       "name": "31 丸岡線（田原町経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（福井大学前先回り）_A",
+       "name": "21 幾久・新田塚線（福井大学前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（幾久先回り）_A",
+       "name": "20 幾久・新田塚線（幾久先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:恐竜バス_A",
+       "name": "恐竜バス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:大野線_B",
+       "name": "59 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_B",
+       "name": "15 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:川西三国線_A",
+       "name": "16 川西三国線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_B",
+       "name": "73 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_C",
+       "name": "14 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_D",
+       "name": "19 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "sunday": {
+     "departures": 255,
+     "arrivals": 282,
+     "departures_by_mode": {
+      "bus": 255
+     },
+     "first_departure": "06:00",
+     "last_departure": "20:51",
+     "first_arrival": "07:13",
+     "last_arrival": "23:00",
+     "routes": [
+      {
+       "id": "keifuku_bus:大和田大学病院線_A",
+       "name": "38 大和田大学病院線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 25
+      },
+      {
+       "id": "keifuku_bus:大和田丸岡線_A",
+       "name": "39 大和田丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:県立病院丸岡線_A",
+       "name": "36 県立病院丸岡線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 22
+      },
+      {
+       "id": "keifuku_bus:高速バス名古屋線_A",
+       "name": "名古屋線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 20
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_A",
+       "name": "74 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 19
+      },
+      {
+       "id": "keifuku_bus:エンゼルランド線_A",
+       "name": "25 エンゼルランド線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 16
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_A",
+       "name": "10 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 15
+      },
+      {
+       "id": "keifuku_bus:運動公園線（道守高校先回り）_A",
+       "name": "70 運動公園線（道守高校先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:運動公園線（ベル前先回り）_A",
+       "name": "71 運動公園線（ベル前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:一乗谷東郷線_A",
+       "name": "62 一乗谷東郷線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:学園線_A",
+       "name": "12 学園線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 14
+      },
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_B",
+       "name": "すまいるバス東ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_A",
+       "name": "すまいるバス南ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_D",
+       "name": "すまいるバス西ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:すまいるバス_C",
+       "name": "すまいるバス北ルート",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:小松空港線_A",
+       "name": "小松空港線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:桜ヶ丘団地線_A",
+       "name": "13 桜ヶ丘団地線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:大野線_A",
+       "name": "55 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:丸岡線_A",
+       "name": "31 丸岡線（田原町経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（福井大学前先回り）_A",
+       "name": "21 幾久・新田塚線（福井大学前先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      },
+      {
+       "id": "keifuku_bus:幾久・新田塚線（幾久先回り）_A",
+       "name": "20 幾久・新田塚線（幾久先回り）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:恐竜バス_A",
+       "name": "恐竜バス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:大野線_B",
+       "name": "59 大野線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 3
+      },
+      {
+       "id": "keifuku_bus:清水グリーンライン_B",
+       "name": "73 清水グリーンライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_B",
+       "name": "15 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      },
+      {
+       "id": "keifuku_bus:越前海岸ブルーライン_C",
+       "name": "14 越前海岸ブルーライン",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      }
+     ],
+     "from_far": {
+      "kanazawa": {
+       "minutes": 25,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 0,
+       "local_min": 0,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    }
+   },
+   "stops": [
+    {
+     "id": "keifuku_bus:2_01",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.061929,
+     "lon": 136.222821,
+     "distance_m": 117,
+     "walk_min": 2
+    },
+    {
+     "id": "keifuku_bus:2_02",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.061736,
+     "lon": 136.222678,
+     "distance_m": 96,
+     "walk_min": 2
+    },
+    {
+     "id": "keifuku_bus:2_03",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.061711,
+     "lon": 136.222454,
+     "distance_m": 76,
+     "walk_min": 1
+    },
+    {
+     "id": "keifuku_bus:2_04",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.061778,
+     "lon": 136.222259,
+     "distance_m": 66,
+     "walk_min": 1
+    },
+    {
+     "id": "keifuku_bus:2_05",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.061938,
+     "lon": 136.222182,
+     "distance_m": 74,
+     "walk_min": 1
+    },
+    {
+     "id": "keifuku_bus:2_06",
+     "name": "福井駅",
+     "feed": "keifuku_bus",
+     "lat": 36.062097,
+     "lon": 136.222357,
+     "distance_m": 97,
+     "walk_min": 2
+    },
+    {
+     "id": "keifuku_bus:47_01",
+     "name": "駅前大通り",
+     "feed": "keifuku_bus",
+     "lat": 36.062439,
+     "lon": 136.218899,
+     "distance_m": 277,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:47_02",
+     "name": "駅前大通り",
+     "feed": "keifuku_bus",
+     "lat": 36.062438,
+     "lon": 136.219048,
+     "distance_m": 265,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:47_03",
+     "name": "駅前大通り",
+     "feed": "keifuku_bus",
+     "lat": 36.062437,
+     "lon": 136.219247,
+     "distance_m": 249,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:47_04",
+     "name": "駅前大通り",
+     "feed": "keifuku_bus",
+     "lat": 36.06268,
+     "lon": 136.21941,
+     "distance_m": 250,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:3025_01",
+     "name": "駅前南通り商店街",
+     "feed": "keifuku_bus",
+     "lat": 36.060734,
+     "lon": 136.221211,
+     "distance_m": 86,
+     "walk_min": 1
+    },
+    {
+     "id": "keifuku_bus:3027_01",
+     "name": "東大通り",
+     "feed": "keifuku_bus",
+     "lat": 36.06134,
+     "lon": 136.225343,
+     "distance_m": 328,
+     "walk_min": 5
+    },
+    {
+     "id": "keifuku_bus:3047_01",
+     "name": "福井駅北",
+     "feed": "keifuku_bus",
+     "lat": 36.064055,
+     "lon": 136.224124,
+     "distance_m": 367,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:3047_02",
+     "name": "福井駅北",
+     "feed": "keifuku_bus",
+     "lat": 36.063963,
+     "lon": 136.224326,
+     "distance_m": 370,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:3085_01",
+     "name": "駅前電車通り",
+     "feed": "keifuku_bus",
+     "lat": 36.06207,
+     "lon": 136.219969,
+     "distance_m": 173,
+     "walk_min": 3
+    },
+    {
+     "id": "keifuku_bus:5012_01",
+     "name": "福井駅東口",
+     "feed": "keifuku_bus",
+     "lat": 36.061225,
+     "lon": 136.223549,
+     "distance_m": 167,
+     "walk_min": 3
+    },
+    {
+     "id": "keifuku_bus:5012_02",
+     "name": "福井駅東口",
+     "feed": "keifuku_bus",
+     "lat": 36.06102,
+     "lon": 136.2236,
+     "distance_m": 176,
+     "walk_min": 3
+    },
+    {
+     "id": "keifuku_bus:8376_01",
+     "name": "豊島二丁目",
+     "feed": "keifuku_bus",
+     "lat": 36.057995,
+     "lon": 136.222469,
+     "distance_m": 385,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:8376_02",
+     "name": "豊島二丁目",
+     "feed": "keifuku_bus",
+     "lat": 36.05793,
+     "lon": 136.222318,
+     "distance_m": 390,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:8378_01",
+     "name": "アオッサ前",
+     "feed": "keifuku_bus",
+     "lat": 36.060407,
+     "lon": 136.22396,
+     "distance_m": 231,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:8378_02",
+     "name": "アオッサ前",
+     "feed": "keifuku_bus",
+     "lat": 36.060459,
+     "lon": 136.223778,
+     "distance_m": 214,
+     "walk_min": 3
+    }
+   ],
+   "modes": [
+    "bus",
+    "car"
+   ],
+   "feeds": [
+    "keifuku_bus"
+   ]
+  },
+  "katsuyama": {
+   "anchor": {
+    "lat": 36.0837,
+    "lon": 136.5062,
+    "label": "Fukui Prefectural Dinosaur Museum",
+    "label_ja": "福井県立恐竜博物館"
+   },
+   "radius_m": 800,
+   "note": "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings). Echizen Railway to Katsuyama station is not counted: it has no open timetable.",
+   "note_ja": "恐竜博物館を基準点とする（この地点の来訪指標は博物館の予約）。えちぜん鉄道（勝山駅）はオープンな時刻表がないため含めていない。",
+   "days": {
+    "weekday": {
+     "departures": 7,
+     "arrivals": 7,
+     "departures_by_mode": {
+      "bus": 7
+     },
+     "first_departure": "08:17",
+     "last_departure": "17:07",
+     "first_arrival": "08:17",
+     "last_arrival": "17:07",
+     "routes": [
+      {
+       "id": "katsuyama_city_bus:R1",
+       "name": "ぐるりん中部方面",
+       "mode": "bus",
+       "feed": "katsuyama_city_bus",
+       "trips": 7
+      }
+     ],
+     "from_hub": {
+      "journeys": 3,
+      "fastest_min": 239,
+      "fastest": {
+       "depart": "13:08",
+       "arrive": "17:07",
+       "stop": 1560,
+       "fare_yen": 2060,
+       "minutes": 239,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "59 大野線",
+         "feed": "keifuku_bus",
+         "from": "アオッサ前",
+         "depart": "13:08",
+         "to": "ヴィオ",
+         "arrive": "14:21",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "bus",
+         "route": "46 勝山大野線",
+         "feed": "keifuku_bus",
+         "from": "ヴィオ",
+         "depart": "15:30",
+         "to": "勝山駅前",
+         "arrive": "16:07",
+         "fare_yen": 720
+        },
+        {
+         "mode": "walk",
+         "from": "勝山駅前",
+         "to": "勝山駅前",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "16:53",
+         "to": "恐竜博物館前",
+         "arrive": "17:07",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "13:08",
+       "arrive": "17:07",
+       "stop": 1560,
+       "fare_yen": 2060,
+       "minutes": 239,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "59 大野線",
+         "feed": "keifuku_bus",
+         "from": "アオッサ前",
+         "depart": "13:08",
+         "to": "ヴィオ",
+         "arrive": "14:21",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "bus",
+         "route": "46 勝山大野線",
+         "feed": "keifuku_bus",
+         "from": "ヴィオ",
+         "depart": "15:30",
+         "to": "勝山駅前",
+         "arrive": "16:07",
+         "fare_yen": 720
+        },
+        {
+         "mode": "walk",
+         "from": "勝山駅前",
+         "to": "勝山駅前",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "16:53",
+         "to": "恐竜博物館前",
+         "arrive": "17:07",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "typical_min": 249,
+      "first_arrival": "12:07",
+      "after_0900": {
+       "depart": "11:23",
+       "arrive": "16:07",
+       "stop": 1560,
+       "fare_yen": 2060,
+       "minutes": 284,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "55 大野線",
+         "feed": "keifuku_bus",
+         "from": "アオッサ前",
+         "depart": "11:23",
+         "to": "ヴィオ",
+         "arrive": "12:25",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "bus",
+         "route": "46 勝山大野線",
+         "feed": "keifuku_bus",
+         "from": "ヴィオ",
+         "depart": "13:00",
+         "to": "勝山駅前",
+         "arrive": "13:37",
+         "fare_yen": 720
+        },
+        {
+         "mode": "walk",
+         "from": "勝山駅前",
+         "to": "勝山駅前",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "ぐるりん中部方面",
+         "feed": "katsuyama_city_bus",
+         "from": "勝山駅前",
+         "depart": "15:53",
+         "to": "恐竜博物館前",
+         "arrive": "16:07",
+         "fare_yen": 300
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "17:07",
+      "from_stop": "恐竜博物館前",
+      "arrive_hub": "20:15",
+      "minutes": 188,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "ぐるりん中部方面",
+        "feed": "katsuyama_city_bus",
+        "from": "恐竜博物館前",
+        "depart": "17:07",
+        "to": "福井勝山総合病院",
+        "arrive": "17:17",
+        "fare_yen": 100
+       },
+       {
+        "mode": "walk",
+        "from": "福井勝山総合病院",
+        "to": "福井勝山総合病院",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "46 勝山大野線",
+        "feed": "keifuku_bus",
+        "from": "福井勝山総合病院",
+        "depart": "18:14",
+        "to": "ヴィオ",
+        "arrive": "19:01",
+        "fare_yen": 690
+       },
+       {
+        "mode": "bus",
+        "route": "55 大野線",
+        "feed": "keifuku_bus",
+        "from": "ヴィオ",
+        "depart": "19:10",
+        "to": "アオッサ前",
+        "arrive": "20:15",
+        "fare_yen": 1040
+       }
+      ],
+      "fare_yen": 1830
+     },
+     "car_only_after": "17:07",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 269,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 239,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 334,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 239,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "katsuyama_city_bus",
+      "keifuku_bus"
+     ]
+    },
+    "saturday": {
+     "departures": 9,
+     "arrivals": 9,
+     "departures_by_mode": {
+      "bus": 9
+     },
+     "first_departure": "08:17",
+     "last_departure": "17:07",
+     "first_arrival": "08:17",
+     "last_arrival": "17:07",
+     "routes": [
+      {
+       "id": "katsuyama_city_bus:R1",
+       "name": "ぐるりん中部方面",
+       "mode": "bus",
+       "feed": "katsuyama_city_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:恐竜バス_A",
+       "name": "恐竜バス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      }
+     ],
+     "from_hub": {
+      "journeys": 4,
+      "fastest_min": 60,
+      "fastest": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
+      "typical_min": 90,
+      "first_arrival": "10:30",
+      "after_0900": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:30",
+      "from_stop": "恐竜博物館",
+      "arrive_hub": "17:30",
+      "minutes": 60,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "恐竜バス",
+        "feed": "keifuku_bus",
+        "from": "恐竜博物館",
+        "depart": "16:30",
+        "to": "福井駅東口",
+        "arrive": "17:30",
+        "fare_yen": 2400
+       }
+      ],
+      "fare_yen": 2400
+     },
+     "car_only_after": "16:30",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 155,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "katsuyama_city_bus",
+      "keifuku_bus"
+     ]
+    },
+    "sunday": {
+     "departures": 8,
+     "arrivals": 8,
+     "departures_by_mode": {
+      "bus": 8
+     },
+     "first_departure": "09:47",
+     "last_departure": "17:07",
+     "first_arrival": "09:47",
+     "last_arrival": "17:07",
+     "routes": [
+      {
+       "id": "katsuyama_city_bus:R1",
+       "name": "ぐるりん中部方面",
+       "mode": "bus",
+       "feed": "katsuyama_city_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:恐竜バス_A",
+       "name": "恐竜バス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      }
+     ],
+     "from_hub": {
+      "journeys": 4,
+      "fastest_min": 60,
+      "fastest": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      },
+      "typical_min": 90,
+      "first_arrival": "10:30",
+      "after_0900": {
+       "depart": "09:30",
+       "arrive": "10:30",
+       "stop": 1529,
+       "fare_yen": 2400,
+       "minutes": 60,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "恐竜バス",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:30",
+         "to": "恐竜博物館",
+         "arrive": "10:30",
+         "fare_yen": 2400
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:30",
+      "from_stop": "恐竜博物館",
+      "arrive_hub": "17:30",
+      "minutes": 60,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "恐竜バス",
+        "feed": "keifuku_bus",
+        "from": "恐竜博物館",
+        "depart": "16:30",
+        "to": "福井駅東口",
+        "arrive": "17:30",
+        "fare_yen": 2400
+       }
+      ],
+      "fare_yen": 2400
+     },
+     "car_only_after": "16:30",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 90,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 155,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 60,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "katsuyama_city_bus",
+      "keifuku_bus"
+     ]
+    }
+   },
+   "stops": [
+    {
+     "id": "katsuyama_city_bus:S17_0",
+     "name": "恐竜博物館前",
+     "feed": "katsuyama_city_bus",
+     "lat": 36.08365,
+     "lon": 136.50637,
+     "distance_m": 16,
+     "walk_min": 0
+    }
+   ],
+   "modes": [
+    "bus",
+    "car"
+   ],
+   "feeds": [
+    "katsuyama_city_bus",
+    "keifuku_bus"
+   ]
+  },
+  "rainbow_line": {
+   "anchor": {
+    "lat": 35.601189,
+    "lon": 135.8688963,
+    "label": "Rainbow Line",
+    "label_ja": "レインボーライン"
+   },
+   "radius_m": 800,
+   "note": "A toll road: the summit park is reached by car. JR Obama Line trains (Mikata, Kiyama) and the seasonal summit bus have no open timetable.",
+   "note_ja": "有料道路のため山頂公園へは車で。JR小浜線（三方・気山）と季節運行の山頂バスにはオープンな時刻表がない。",
+   "days": {
+    "weekday": {
+     "departures": 0,
+     "arrivals": 0,
+     "routes": [],
+     "from_hub": null,
+     "to_hub": null,
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": []
+    },
+    "saturday": {
+     "departures": 0,
+     "arrivals": 0,
+     "routes": [],
+     "from_hub": null,
+     "to_hub": null,
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": []
+    },
+    "sunday": {
+     "departures": 0,
+     "arrivals": 0,
+     "routes": [],
+     "from_hub": null,
+     "to_hub": null,
+     "car_only_after": "all day",
+     "from_far": {
+      "kanazawa": {
+       "minutes": null,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": null,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": []
+    }
+   },
+   "stops": [],
+   "modes": [
+    "car"
+   ],
+   "feeds": []
+  },
+  "awara_onsen": {
+   "anchor": {
+    "lat": 36.2256037,
+    "lon": 136.1941521,
+    "label": "Awara Onsen",
+    "label_ja": "あわら温泉"
+   },
+   "radius_m": 800,
+   "note": null,
+   "note_ja": null,
+   "days": {
+    "weekday": {
+     "departures": 26,
+     "arrivals": 26,
+     "departures_by_mode": {
+      "bus": 26
+     },
+     "first_departure": "07:25",
+     "last_departure": "18:48",
+     "first_arrival": "07:34",
+     "last_arrival": "18:57",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 7
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      }
+     ],
+     "from_hub": {
+      "journeys": 8,
+      "fastest_min": 118,
+      "fastest": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 2030,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "typical_min": 119,
+      "first_arrival": "10:50",
+      "after_0900": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 2030,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "18:27",
+      "from_stop": "舟津",
+      "arrive_hub": "20:16",
+      "minutes": 109,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "85 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "舟津",
+        "depart": "18:27",
+        "to": "三国駅",
+        "arrive": "19:03",
+        "fare_yen": 700
+       },
+       {
+        "mode": "walk",
+        "from": "三国駅",
+        "to": "三国駅",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "98 海岸線",
+        "feed": "keifuku_bus",
+        "from": "三国駅",
+        "depart": "19:10",
+        "to": "浜中",
+        "arrive": "19:33",
+        "fare_yen": 660
+       },
+       {
+        "mode": "walk",
+        "from": "浜中",
+        "to": "浜中",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "10 越前海岸ブルーライン",
+        "feed": "keifuku_bus",
+        "from": "浜中",
+        "depart": "19:37",
+        "to": "駅前大通り",
+        "arrive": "20:16",
+        "fare_yen": 730
+       }
+      ],
+      "fare_yen": 2090
+     },
+     "car_only_after": "18:27",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "saturday": {
+     "departures": 35,
+     "arrivals": 35,
+     "departures_by_mode": {
+      "bus": 35
+     },
+     "first_departure": "08:49",
+     "last_departure": "18:48",
+     "first_arrival": "08:57",
+     "last_arrival": "18:57",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      }
+     ],
+     "from_hub": {
+      "journeys": 10,
+      "fastest_min": 118,
+      "fastest": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 2030,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "typical_min": 122,
+      "first_arrival": "10:20",
+      "after_0900": {
+       "depart": "10:14",
+       "arrive": "12:20",
+       "stop": 1150,
+       "fare_yen": 2170,
+       "minutes": 126,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "10 越前海岸ブルーライン",
+         "feed": "keifuku_bus",
+         "from": "駅前大通り",
+         "depart": "10:14",
+         "to": "福井総合病院",
+         "arrive": "10:39",
+         "fare_yen": 570
+        },
+        {
+         "mode": "bus",
+         "route": "80 鶉三国線",
+         "feed": "keifuku_bus",
+         "from": "福井総合病院",
+         "depart": "10:50",
+         "to": "三国駅",
+         "arrive": "11:16",
+         "fare_yen": 700
+        },
+        {
+         "mode": "walk",
+         "from": "三国駅",
+         "to": "三國湊北前通り",
+         "minutes": 7
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "三國湊北前通り",
+         "depart": "11:25",
+         "to": "龍翔博物館前",
+         "arrive": "11:35",
+         "fare_yen": 170
+        },
+        {
+         "mode": "bus",
+         "route": "96 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "龍翔博物館前",
+         "depart": "11:40",
+         "to": "温泉街入口第２",
+         "arrive": "12:20",
+         "fare_yen": 730
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:57",
+      "from_stop": "舟津",
+      "arrive_hub": "19:37",
+      "minutes": 160,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "85 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "舟津",
+        "depart": "16:57",
+        "to": "三国駅",
+        "arrive": "17:33",
+        "fare_yen": 700
+       },
+       {
+        "mode": "bus",
+        "route": "80 鶉三国線",
+        "feed": "keifuku_bus",
+        "from": "三国駅",
+        "depart": "18:30",
+        "to": "福井総合病院",
+        "arrive": "18:56",
+        "fare_yen": 700
+       },
+       {
+        "mode": "walk",
+        "from": "福井総合病院",
+        "to": "福井医療大学",
+        "minutes": 8
+       },
+       {
+        "mode": "bus",
+        "route": "10 越前海岸ブルーライン",
+        "feed": "keifuku_bus",
+        "from": "福井医療大学",
+        "depart": "19:12",
+        "to": "駅前大通り",
+        "arrive": "19:37",
+        "fare_yen": 570
+       }
+      ],
+      "fare_yen": 1970
+     },
+     "car_only_after": "16:57",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "sunday": {
+     "departures": 35,
+     "arrivals": 35,
+     "departures_by_mode": {
+      "bus": 35
+     },
+     "first_departure": "08:49",
+     "last_departure": "18:48",
+     "first_arrival": "08:57",
+     "last_arrival": "18:57",
+     "routes": [
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_A",
+       "name": "96 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線（木村病院）_B",
+       "name": "97 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 12
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_A",
+       "name": "84 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:東尋坊線_B",
+       "name": "85 東尋坊線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 5
+      }
+     ],
+     "from_hub": {
+      "journeys": 6,
+      "fastest_min": 118,
+      "fastest": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 2030,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 1860,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "京善",
+         "arrive": "11:09",
+         "fare_yen": 520
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "京善",
+         "depart": "11:20",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1040
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      },
+      "typical_min": 118,
+      "first_arrival": "12:48",
+      "after_0900": {
+       "depart": "10:50",
+       "arrive": "12:48",
+       "stop": 754,
+       "fare_yen": 2030,
+       "minutes": 118,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "10:50",
+         "to": "荒谷",
+         "arrive": "11:12",
+         "fare_yen": 630
+        },
+        {
+         "mode": "walk",
+         "from": "荒谷",
+         "to": "荒谷",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "86 芦原丸岡永平寺線（長屋経由）",
+         "feed": "keifuku_bus",
+         "from": "荒谷",
+         "depart": "11:17",
+         "to": "芦原温泉駅",
+         "arrive": "12:14",
+         "fare_yen": 1100
+        },
+        {
+         "mode": "walk",
+         "from": "芦原温泉駅",
+         "to": "芦原温泉駅",
+         "minutes": 3
+        },
+        {
+         "mode": "bus",
+         "route": "97 東尋坊線",
+         "feed": "keifuku_bus",
+         "from": "芦原温泉駅",
+         "depart": "12:40",
+         "to": "あわら湯のまち駅",
+         "arrive": "12:48",
+         "fare_yen": 300
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "13:52",
+      "from_stop": "あわら湯のまち駅",
+      "arrive_hub": "15:45",
+      "minutes": 113,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "96 東尋坊線",
+        "feed": "keifuku_bus",
+        "from": "あわら湯のまち駅",
+        "depart": "13:52",
+        "to": "芦原温泉駅",
+        "arrive": "14:05",
+        "fare_yen": 300
+       },
+       {
+        "mode": "bus",
+        "route": "86 芦原丸岡永平寺線（長屋経由）",
+        "feed": "keifuku_bus",
+        "from": "芦原温泉駅",
+        "depart": "14:25",
+        "to": "丸岡城",
+        "arrive": "14:43",
+        "fare_yen": 570
+       },
+       {
+        "mode": "bus",
+        "route": "36 県立病院丸岡線",
+        "feed": "keifuku_bus",
+        "from": "丸岡城",
+        "depart": "14:50",
+        "to": "福井駅",
+        "arrive": "15:45",
+        "fare_yen": 670
+       }
+      ],
+      "fare_yen": 1540
+     },
+     "car_only_after": "13:52",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 38,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 113,
+       "via": "Awara-Onsen Station",
+       "via_ja": "芦原温泉駅",
+       "jr_min": 100,
+       "change_min": 5,
+       "local_min": 8,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    }
+   },
+   "stops": [
+    {
+     "id": "keifuku_bus:750_01",
+     "name": "国影",
+     "feed": "keifuku_bus",
+     "lat": 36.227086,
+     "lon": 136.202469,
+     "distance_m": 764,
+     "walk_min": 12
+    },
+    {
+     "id": "keifuku_bus:750_02",
+     "name": "国影",
+     "feed": "keifuku_bus",
+     "lat": 36.227148,
+     "lon": 136.202555,
+     "distance_m": 773,
+     "walk_min": 13
+    },
+    {
+     "id": "keifuku_bus:751_01",
+     "name": "二面",
+     "feed": "keifuku_bus",
+     "lat": 36.228514,
+     "lon": 136.197319,
+     "distance_m": 431,
+     "walk_min": 7
+    },
+    {
+     "id": "keifuku_bus:751_02",
+     "name": "二面",
+     "feed": "keifuku_bus",
+     "lat": 36.228619,
+     "lon": 136.197266,
+     "distance_m": 436,
+     "walk_min": 7
+    },
+    {
+     "id": "keifuku_bus:752_01",
+     "name": "セントピアあわら",
+     "feed": "keifuku_bus",
+     "lat": 36.225395,
+     "lon": 136.194076,
+     "distance_m": 24,
+     "walk_min": 0
+    },
+    {
+     "id": "keifuku_bus:752_02",
+     "name": "セントピアあわら",
+     "feed": "keifuku_bus",
+     "lat": 36.225458,
+     "lon": 136.193919,
+     "distance_m": 26,
+     "walk_min": 0
+    },
+    {
+     "id": "keifuku_bus:753_01",
+     "name": "あわら湯のまち駅",
+     "feed": "keifuku_bus",
+     "lat": 36.223229,
+     "lon": 136.193591,
+     "distance_m": 269,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:753_02",
+     "name": "あわら湯のまち駅",
+     "feed": "keifuku_bus",
+     "lat": 36.22323,
+     "lon": 136.193761,
+     "distance_m": 266,
+     "walk_min": 4
+    },
+    {
+     "id": "keifuku_bus:755_01",
+     "name": "舟津",
+     "feed": "keifuku_bus",
+     "lat": 36.226179,
+     "lon": 136.187742,
+     "distance_m": 579,
+     "walk_min": 9
+    },
+    {
+     "id": "keifuku_bus:755_02",
+     "name": "舟津",
+     "feed": "keifuku_bus",
+     "lat": 36.226256,
+     "lon": 136.187867,
+     "distance_m": 568,
+     "walk_min": 9
+    },
+    {
+     "id": "keifuku_bus:858_01",
+     "name": "温泉街入口",
+     "feed": "keifuku_bus",
+     "lat": 36.228877,
+     "lon": 136.193888,
+     "distance_m": 365,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:858_02",
+     "name": "温泉街入口",
+     "feed": "keifuku_bus",
+     "lat": 36.228951,
+     "lon": 136.193924,
+     "distance_m": 373,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:2034_01",
+     "name": "温泉街入口第２",
+     "feed": "keifuku_bus",
+     "lat": 36.228856,
+     "lon": 136.193059,
+     "distance_m": 375,
+     "walk_min": 6
+    },
+    {
+     "id": "keifuku_bus:2034_02",
+     "name": "温泉街入口第２",
+     "feed": "keifuku_bus",
+     "lat": 36.228957,
+     "lon": 136.19293,
+     "distance_m": 389,
+     "walk_min": 6
+    }
+   ],
+   "modes": [
+    "bus",
+    "car"
+   ],
+   "feeds": [
+    "keifuku_bus"
+   ]
+  },
+  "eiheiji": {
+   "anchor": {
+    "lat": 36.0567754,
+    "lon": 136.3568759,
+    "label": "Eiheiji Temple",
+    "label_ja": "永平寺"
+   },
+   "radius_m": 800,
+   "note": null,
+   "note_ja": null,
+   "days": {
+    "weekday": {
+     "departures": 21,
+     "arrivals": 20,
+     "departures_by_mode": {
+      "bus": 21
+     },
+     "first_departure": "06:45",
+     "last_departure": "18:19",
+     "first_arrival": "07:30",
+     "last_arrival": "18:14",
+     "routes": [
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:永平寺線_A",
+       "name": "88 永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 11
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線（長屋経由）_A",
+       "name": "86 芦原丸岡永平寺線（長屋経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線_A",
+       "name": "87 芦原丸岡永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 1
+      }
+     ],
+     "from_hub": {
+      "journeys": 11,
+      "fastest_min": 28,
+      "fastest": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "typical_min": 28,
+      "first_arrival": "10:04",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:56",
+      "from_stop": "永平寺",
+      "arrive_hub": "19:42",
+      "minutes": 166,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "88 永平寺線",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "16:56",
+        "to": "東古市第２",
+        "arrive": "17:09",
+        "fare_yen": 430
+       },
+       {
+        "mode": "walk",
+        "from": "東古市第２",
+        "to": "永平寺口駅",
+        "minutes": 6
+       },
+       {
+        "mode": "bus",
+        "route": "82 丸岡永平寺線",
+        "feed": "keifuku_bus",
+        "from": "永平寺口駅",
+        "depart": "18:10",
+        "to": "丸岡バスターミナル",
+        "arrive": "18:43",
+        "fare_yen": 520
+       },
+       {
+        "mode": "walk",
+        "from": "丸岡バスターミナル",
+        "to": "丸岡バスターミナル",
+        "minutes": 3
+       },
+       {
+        "mode": "bus",
+        "route": "39 大和田丸岡線",
+        "feed": "keifuku_bus",
+        "from": "丸岡バスターミナル",
+        "depart": "18:55",
+        "to": "城町",
+        "arrive": "19:35",
+        "fare_yen": 670
+       },
+       {
+        "mode": "walk",
+        "from": "城町",
+        "to": "福井駅北",
+        "minutes": 8
+       }
+      ],
+      "fare_yen": 1620
+     },
+     "car_only_after": "16:56",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "saturday": {
+     "departures": 18,
+     "arrivals": 17,
+     "departures_by_mode": {
+      "bus": 18
+     },
+     "first_departure": "09:11",
+     "last_departure": "16:45",
+     "first_arrival": "08:59",
+     "last_arrival": "16:20",
+     "routes": [
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線（長屋経由）_A",
+       "name": "86 芦原丸岡永平寺線（長屋経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:永平寺線_A",
+       "name": "88 永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線_A",
+       "name": "87 芦原丸岡永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      }
+     ],
+     "from_hub": {
+      "journeys": 10,
+      "fastest_min": 28,
+      "fastest": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "typical_min": 28,
+      "first_arrival": "09:54",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:45",
+      "from_stop": "永平寺",
+      "arrive_hub": "17:30",
+      "minutes": 45,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "朝倉・永平寺ダイレクトバス",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "16:45",
+        "to": "福井駅東口",
+        "arrive": "17:30",
+        "fare_yen": 750
+       }
+      ],
+      "fare_yen": 750
+     },
+     "car_only_after": "16:45",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    },
+    "sunday": {
+     "departures": 18,
+     "arrivals": 17,
+     "departures_by_mode": {
+      "bus": 18
+     },
+     "first_departure": "09:11",
+     "last_departure": "16:45",
+     "first_arrival": "08:59",
+     "last_arrival": "16:20",
+     "routes": [
+      {
+       "id": "keifuku_bus:永平寺ライナー_A",
+       "name": "永平寺ライナー",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 13
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線（長屋経由）_A",
+       "name": "86 芦原丸岡永平寺線（長屋経由）",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 10
+      },
+      {
+       "id": "keifuku_bus:朝倉・永平寺ダイレクトバス_A",
+       "name": "朝倉・永平寺ダイレクトバス",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 6
+      },
+      {
+       "id": "keifuku_bus:永平寺線_A",
+       "name": "88 永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 4
+      },
+      {
+       "id": "keifuku_bus:芦原丸岡永平寺線_A",
+       "name": "87 芦原丸岡永平寺線",
+       "mode": "bus",
+       "feed": "keifuku_bus",
+       "trips": 2
+      }
+     ],
+     "from_hub": {
+      "journeys": 9,
+      "fastest_min": 28,
+      "fastest": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "recommended": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      },
+      "typical_min": 28,
+      "first_arrival": "10:18",
+      "after_0900": {
+       "depart": "09:50",
+       "arrive": "10:18",
+       "stop": 896,
+       "fare_yen": 1000,
+       "minutes": 28,
+       "legs": [
+        {
+         "mode": "bus",
+         "route": "永平寺ライナー",
+         "feed": "keifuku_bus",
+         "from": "福井駅東口",
+         "depart": "09:50",
+         "to": "永平寺",
+         "arrive": "10:18",
+         "fare_yen": 1000
+        }
+       ]
+      }
+     },
+     "to_hub": {
+      "leave": "16:45",
+      "from_stop": "永平寺",
+      "arrive_hub": "17:30",
+      "minutes": 45,
+      "legs": [
+       {
+        "mode": "bus",
+        "route": "朝倉・永平寺ダイレクトバス",
+        "feed": "keifuku_bus",
+        "from": "永平寺",
+        "depart": "16:45",
+        "to": "福井駅東口",
+        "arrive": "17:30",
+        "fare_yen": 750
+       }
+      ],
+      "fare_yen": 750
+     },
+     "car_only_after": "16:45",
+     "from_far": {
+      "kanazawa": {
+       "minutes": 58,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 25,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kanazawa",
+       "name_ja": "金沢",
+       "status": "estimated",
+       "basis": "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable."
+      },
+      "kyoto": {
+       "minutes": 123,
+       "via": "Fukui Station",
+       "via_ja": "福井駅",
+       "jr_min": 90,
+       "change_min": 5,
+       "local_min": 28,
+       "name": "Kyoto",
+       "name_ja": "京都",
+       "status": "estimated",
+       "basis": "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable."
+      }
+     },
+     "feeds_used": [
+      "keifuku_bus"
+     ]
+    }
+   },
+   "stops": [
+    {
+     "id": "keifuku_bus:860_01",
+     "name": "永平寺",
+     "feed": "keifuku_bus",
+     "lat": 36.056765,
+     "lon": 136.350832,
+     "distance_m": 543,
+     "walk_min": 9
+    },
+    {
+     "id": "keifuku_bus:860_02",
+     "name": "永平寺",
+     "feed": "keifuku_bus",
+     "lat": 36.056629,
+     "lon": 136.350855,
+     "distance_m": 541,
+     "walk_min": 9
+    }
+   ],
+   "modes": [
+    "bus",
+    "car"
+   ],
+   "feeds": [
+    "keifuku_bus"
+   ]
+  }
+ }
+}
