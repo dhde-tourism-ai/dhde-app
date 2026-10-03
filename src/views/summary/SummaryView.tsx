@@ -110,7 +110,9 @@ export default function SummaryView({ data }: { data: ProductData }) {
   const actions = useMemo(() => {
     if (!live) return []
     return computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, thresholds)
-      .filter((n) => n.day >= nextDay && n.day < nextDay + 7)
+      // Real nudges only (Sohail: "real is real"): one made on demo inputs never reaches
+      // the Summary. The map's Action nudges panel still lists them, labelled Demo.
+      .filter((n) => n.real && n.day >= nextDay && n.day < nextDay + 7)
       .sort((a, b) => RANK[priorityOf(a.sev)] - RANK[priorityOf(b.sev)] || b.magnitude - a.magnitude)
       .slice(0, 3)
   }, [live, market, registry, nextDay, thresholds])
@@ -248,7 +250,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
         <section className="s-card sum-actions" style={{ ['--span' as string]: 7 }}>
           <h2 className="card-title">{t('Top 3 actions this week', '今週の優先アクション（上位3件）')}</h2>
           {actions.length === 0 ? (
-            <p className="card-sub">{t('No action nudges this week.', '今週の推奨アクションはありません。')}</p>
+            <p className="card-sub">{t('No action nudges from real data this week.', '今週、実データによる推奨アクションはありません。')}</p>
           ) : (
             <ol className="sum-actions-list">
               {actions.map((n) => {
@@ -261,13 +263,6 @@ export default function SummaryView({ data }: { data: ProductData }) {
                     </span>
                     <strong className="sum-act-title">{t(n.title_en, n.title_ja)}</strong>
                     <span className="sum-act-do">{t(n.action_en, n.action_ja)}</span>
-                    {/* As in the Action nudges panel: a nudge on demo inputs says so, so a made-up one never reads as real. */}
-                    {!n.real && (
-                      <span className="pill pill-illustrative sum-act-demo">
-                        <span className="pill-dot" aria-hidden="true"></span>
-                        {t('Demo', 'デモ')}
-                      </span>
-                    )}
                   </li>
                 )
               })}
