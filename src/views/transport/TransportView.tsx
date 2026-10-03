@@ -110,8 +110,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   const modeSites = modes ? Object.keys(modes.nodes) : []
   const periodLabel = period === 'last_30_days' ? t('last 30 days', '直近30日') : t('latest official year', '最新の公式年度')
   const dayLabel = t(...DAY_LABEL[day])
-  const onDay = t(...({ weekday: ['on weekdays', '平日は'], saturday: ['on Saturdays', '土曜は'], sunday: ['on Sundays and holidays', '日祝は'] } as Record<DayType, [string, string]>)[day])
-  const OnDay = onDay.charAt(0).toUpperCase() + onDay.slice(1)
 
   // --- visitors by mode for the chosen period and site
   const byMode = !modes
@@ -174,30 +172,24 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
 
   const siteBack = site !== 'all' ? lastBack(site) : null
   const kpis = [
-    { value: total != null ? compact(total) : '—', label: t(`Visitors, ${periodLabel}`, `来訪者（${periodLabel}）`) },
-    { value: pct(carShare), label: t('Arrive by car', '車で来訪'), accent: true },
-    { value: pct(ptShare), label: t('Arrive by bus or train', 'バス・鉄道で来訪') },
+    { value: total != null ? compact(total) : '—', label: t(`Visitors · ${periodLabel}`, `来訪者・${periodLabel}`) },
+    { value: pct(carShare), label: t('By car', '車'), accent: true },
+    { value: pct(ptShare), label: t('By bus or train', 'バス・鉄道') },
     site === 'all'
-      ? { value: `${early.length} / ${linked.length}`, label: t(`Sites whose last bus back leaves by 17:30 (${dayLabel})`, `最終バスが17:30までの地点（${dayLabel}）`), warn: early.length > 0 }
+      ? { value: `${early.length} / ${linked.length}`, label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`), warn: early.length > 0 }
       : {
           value: siteBack != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'),
-          label: t(`Last bus back to ${hub} (${dayLabel})`, `${hub}への最終バス（${dayLabel}）`),
+          label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`),
           warn: siteBack != null && siteBack <= EARLY_LAST_RETURN_MIN,
         },
-    { value: revenueTotal ? yen(revenueTotal) : '—', label: t('Published transport revenue a year (taxi, bus, Hapi-line)', '公表されている交通の年間収入（タクシー・バス・ハピライン）') },
+    { value: revenueTotal ? yen(revenueTotal) : '—', label: t('Transport revenue a year', '交通の年間収入') },
   ]
 
   return (
     <div className="page td">
       <header className="td-head">
         <div>
-          <div className="eyebrow">{t('Transport', '交通')}</div>
           <h1 className="td-title">{t('How visitors reach Fukui’s priority sites', '福井の重点地点への来訪者の交通')}</h1>
-          <p className="td-asof">
-            {modes?.totals.last_30_days.period && t(`Visitor estimates to ${modes.totals.last_30_days.period[1]}`, `来訪者推計は${modes.totals.last_30_days.period[1]}まで`)}
-            {t(` · bus timetables for the week of ${data.reference_days.weekday}`, `・${data.reference_days.weekday}の週のバス時刻表`)}
-            {market && t(' · operator figures FY2024–25', '・事業者データは2024〜25年度')}
-          </p>
         </div>
         <div className="td-slicers">
           <Slicer
@@ -223,22 +215,14 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         ))}
       </div>
 
-      <p className="td-sowhat">
-        <strong>{t('So what', '示唆')}</strong>
-        {t(
-          `Most visitors drive, and those who don't must leave early: ${onDay} the last bus back to ${hub} leaves by 17:30 at ${early.length} of ${linked.length} sites. Later weekend buses on the Tojinbo, Eiheiji and Katsuyama routes are the clearest lever to test for longer stays.`,
-          `来訪者の多くは車で、車なしの来訪者は早く帰る必要がある：${dayLabel}は${linked.length}地点中${early.length}地点で${hub}への最終バスが17:30まで。東尋坊・永平寺・勝山方面の週末最終バスの延長が、滞在延長に向けて最初に検証すべき施策。`,
-        )}
-      </p>
-
       {/* Row 1: how visitors arrive */}
       <h2 className="td-row-h">{t('How visitors arrive', '来訪者の交通手段')}</h2>
       <div className="td-row">
         <Card
           className="td-5"
-          title={t(`${pct(carShare)} of visitors arrive by car; ${pct(ptShare)} by bus or train`, `来訪者の${pct(carShare)}が車、${pct(ptShare)}がバス・鉄道`)}
-          sub={t(`Estimated visitors by mode, ${site === 'all' ? 'five sites' : name(site)}, ${periodLabel}`, `交通手段別の推計来訪者数（${site === 'all' ? '5地点' : name(site)}、${periodLabel}）`)}
-          source={t('Estimate: site visitor estimates × prefecture tourism survey answers. Note 1.', '推計：各地点の来訪者推計×県観光アンケート。注1。')}
+          title={t(`${pct(carShare)} arrive by car`, `${pct(carShare)}が車で来訪`)}
+          sub={t(`Visitors by mode · ${periodLabel}`, `交通手段別の来訪者・${periodLabel}`)}
+          source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
         >
           <div className="td-chart" style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -261,13 +245,13 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           title={
             transitSite
               ? t(
-                  `Car leads at every site; ${name(transitSite)} has the most bus and train use (${pct(siteShare(transitSite, ['bus', 'train']))})`,
-                  `どの地点も車が最多。バス・鉄道が最も多いのは${name(transitSite)}（${pct(siteShare(transitSite, ['bus', 'train']))}）`,
+                  `Car leads everywhere; most transit at ${name(transitSite)} (${pct(siteShare(transitSite, ['bus', 'train']))})`,
+                  `どこも車が最多、公共交通は${name(transitSite)}が最多（${pct(siteShare(transitSite, ['bus', 'train']))}）`,
                 )
               : t('How visitors travel, by site', '地点別の交通手段')
           }
-          sub={t('Share of visitors by mode, %, last 12 months of survey answers', '交通手段の割合（%、直近12か月のアンケート回答）')}
-          source={t('Fukui Prefecture tourism survey, 福井県内での交通手段. Note 1.', '福井県観光アンケート（福井県内での交通手段）。注1。')}
+          sub={t('Mode share by site, %', '地点別の交通手段（%）')}
+          source={t('Fukui Prefecture tourism survey', '福井県観光アンケート')}
         >
           <div className="td-chart" style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -301,11 +285,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           className="td-5"
           title={
             early.length === linked.length && linked.length
-              ? t(`${OnDay}, the last bus back leaves by 17:30 at every site it serves`, `${dayLabel}はバスが通るすべての地点で最終便が17:30まで`)
-              : t(`Last bus back leaves by 17:30 at ${early.length} of ${linked.length} sites`, `${linked.length}地点中${early.length}地点で最終便が17:30まで`)
+              ? t(`Last bus back by 17:30 at every site`, `全地点で最終バスが17:30まで`)
+              : t(`Last bus back by 17:30 at ${early.length} of ${linked.length} sites`, `${linked.length}地点中${early.length}地点で最終バスが17:30まで`)
           }
-          sub={t(`Last bus from each site that still reaches ${hub}, ${dayLabel}`, `${hub}へ戻れる最終バス（${dayLabel}）`)}
-          source={t('Operators’ bus timetables (GTFS-JP, Fukui Prefecture open data). Bus only. Note 2.', '事業者のバス時刻表（GTFS-JP、県オープンデータ）。バスのみ。注2。')}
+          sub={t(`Last bus to ${hub} · ${dayLabel}`, `${hub}への最終バス・${dayLabel}`)}
+          source={t('Bus timetables (GTFS-JP)', 'バス時刻表（GTFS-JP）')}
         >
           <div className="td-chart" style={{ height: 240 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -328,11 +312,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           className="td-7"
           title={
             noBus.length && thinnest
-              ? t(`${name(noBus[0])} has no public transport; ${name(thinnest.id)} has ${thinnest.deps} buses a weekday`, `${name(noBus[0])}は公共交通なし、${name(thinnest.id)}は平日${thinnest.deps}本`)
+              ? t(`${name(noBus[0])}: no public transport · ${name(thinnest.id)}: ${thinnest.deps} buses a weekday`, `${name(noBus[0])}：公共交通なし・${name(thinnest.id)}：平日${thinnest.deps}本`)
               : t('Service level by site', '地点別の運行水準')
           }
-          sub={t(`Bus service from ${hub}, ${dayLabel}; visitors ${periodLabel}`, `${hub}からのバス（${dayLabel}）、来訪者は${periodLabel}`)}
-          source={t('Bus timetables and fare tables (GTFS-JP); Eiheiji Liner ¥1,000 from 2026-10-01 (Keifuku Bus). Fares: adult, one way, quickest trip. Note 2.', 'バス時刻表・運賃表（GTFS-JP）。永平寺ライナーは2026年10月1日から1,000円。運賃は大人・片道・最短経路。注2。')}
+          sub={t(`From ${hub} · ${dayLabel}`, `${hub}から・${dayLabel}`)}
+          source={t('Bus timetables and fares (GTFS-JP) · adult, one way', 'バス時刻表・運賃（GTFS-JP）・大人片道')}
         >
           <div className="td-table-wrap">
             <table className="td-table">
@@ -379,9 +363,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
           <div className="td-row">
             <Card
               className="td-6"
-              title={revenue.length >= 2 ? t('Taxis and route buses each take in over ¥3bn a year', 'タクシーと路線バスがそれぞれ年30億円超') : t('Published transport revenue', '公表されている交通の収入')}
-              sub={t('Annual revenue in Fukui Prefecture, FY2024, yen', '福井県内の年間収入（2024年度、円）')}
-              source={t('Chubu District Transport Bureau (taxis, buses; official); Fukui Shimbun (Hapi-line; press). Note 3.', '中部運輸局（タクシー・バス、公式）、福井新聞（ハピライン、報道）。注3。')}
+              title={revenue.length >= 2 ? t('Taxis and buses each earn over ¥3bn a year', 'タクシーとバスがそれぞれ年30億円超') : t('Transport revenue', '交通の収入')}
+              sub={t('Revenue · FY2024', '収入・2024年度')}
+              source={t('Chubu District Transport Bureau · Fukui Shimbun', '中部運輸局・福井新聞')}
             >
               <div className="td-chart" style={{ height: 40 + revenue.length * 46 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -406,9 +390,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             </Card>
             <Card
               className="td-6"
-              title={t('Rail carries the most passengers: the Shinkansen and Hapi-line 7–8M each a year', '最多は鉄道：北陸新幹線とハピラインがそれぞれ年700〜800万人')}
-              sub={t('Passengers a year, latest published period', '年間輸送人員（最新の公表期間）')}
-              source={t('JR West (via Wakasa Bay), Fukui Shimbun, Chunichi (press); Chubu District Transport Bureau (official). Periods differ. Note 3.', 'JR西日本（若狭湾経由）、福井新聞、中日新聞（報道）、中部運輸局（公式）。期間は異なる。注3。')}
+              title={t('Rail carries the most passengers', '最多は鉄道')}
+              sub={t('Passengers a year', '年間輸送人員')}
+              source={t('JR West · Fukui Shimbun · Chunichi · Chubu District Transport Bureau', 'JR西日本・福井新聞・中日新聞・中部運輸局')}
             >
               <div className="td-chart" style={{ height: 40 + ridership.length * 38 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -449,12 +433,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             {spendRows.length > 0 && spend && (
               <Card
                 className="td-5"
-                title={spendRatio ? t(`Visitors who rent a car spend ${spendRatio}× more on transport than drivers`, `レンタカー利用者の交通費は自家用車の${spendRatio}倍`) : t('Transport spend per visitor', '来訪者1人当たりの交通費')}
-                sub={t('Average transport spend per visitor for the whole trip, visitors from outside Fukui', '県外来訪者1人当たりの旅行全体の交通費')}
-                source={t(
-                  `Estimate: survey 交通費 bands (midpoints), ${spend.responses.toLocaleString()} answers; includes getting to Fukui. Grey: Fukui residents.`,
-                  `推計：アンケートの交通費（区分の中央値）、回答${spend.responses.toLocaleString()}件。福井までを含む。灰色は県内在住者。`,
-                )}
+                title={spendRatio ? t(`Rental-car visitors spend ${spendRatio}× more on transport`, `レンタカー利用者の交通費は${spendRatio}倍`) : t('Transport spend per visitor', '1人当たりの交通費')}
+                sub={t('Transport spend per visitor · grey: residents', '1人当たりの交通費・灰色：県内在住')}
+                source={t('Estimate · prefecture tourism survey', '推計・県観光アンケート')}
               >
                 <div className="td-chart" style={{ height: 40 + spendRows.length * 44 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -491,9 +472,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             {trends && trends.terms.length > 0 && (
               <Card
                 className="td-7"
-                title={t('Echizen Railway draws the most transport searches; bike rental almost none', '交通の検索はえちぜん鉄道が最多、レンタサイクルはほぼゼロ')}
-                sub={t('Google Trends, Japan, weekly, last 12 months; 100 = busiest week of any term', 'Googleトレンド（日本・週次・直近12か月）、いずれかの語の最多週＝100')}
-                source={t(`Relative search interest, not traveller numbers. Collected ${trends.generated_at.slice(0, 10)}.`, `相対的な検索関心で利用者数ではない。${trends.generated_at.slice(0, 10)}取得。`)}
+                title={t('Echizen Railway leads transport searches', '交通の検索はえちぜん鉄道が最多')}
+                sub={t('Search interest · 12 months', '検索関心・12か月')}
+                source={t('Google Trends · relative index', 'Googleトレンド・相対指数')}
               >
                 <div className="td-chart" style={{ height: 210 }}>
                   <ResponsiveContainer width="100%" height="100%">
