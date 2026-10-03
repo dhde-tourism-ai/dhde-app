@@ -1,5 +1,53 @@
 {
- "generated_at": "2026-10-02T06:40:05Z",
+ "generated_at": "2026-10-03T00:30:56Z",
+ "spend_per_visitor": {
+  "note": "Survey 交通費: transport spend for the trip per person, band midpoints; includes getting to Fukui.",
+  "responses": 22066,
+  "visitors_from_outside": {
+   "train": {
+    "yen": 21700.0,
+    "n": 1111
+   },
+   "bus": {
+    "yen": 24400.0,
+    "n": 1400
+   },
+   "own_car": {
+    "yen": 11800.0,
+    "n": 11504
+   },
+   "rental_car": {
+    "yen": 32500.0,
+    "n": 1858
+   },
+   "other": {
+    "yen": 23200.0,
+    "n": 978
+   }
+  },
+  "fukui_residents": {
+   "train": {
+    "yen": 3900.0,
+    "n": 100
+   },
+   "bus": {
+    "yen": 6400.0,
+    "n": 57
+   },
+   "own_car": {
+    "yen": 3900.0,
+    "n": 4928
+   },
+   "rental_car": {
+    "yen": 15000.0,
+    "n": 42
+   },
+   "other": {
+    "yen": 7300.0,
+    "n": 86
+   }
+  }
+ },
  "status": "modelled",
  "method": "Visitors by mode = each site's visitor estimate x its mode share from the Fukui Prefecture tourism survey (how respondents got around in Fukui, last 12 months of responses at that site). Several answers split equally; walking counts only when it is the only answer. Ranges: 95% interval on each share from the number of responses. Survey respondents choose to answer, so shares can lean towards app users.",
  "survey": {

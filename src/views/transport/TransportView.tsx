@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import type { ReactNode } from 'react'
 import type { NodeRegistry } from '../../types/nodes'
-import type { DayType, TransportFile, TransportModesFile, TransportTrendsFile } from '../../types/transport'
+import type { DayType, TransportFile, TransportMarketFile, TransportModesFile, TransportTrendsFile } from '../../types/transport'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { useLang } from '../../lib/i18n'
 import { Loading, LoadError } from '../../components/StateMsg'
@@ -9,6 +8,8 @@ import { DAY_LABEL, EARLY_LAST_RETURN_MIN, clockLabel, clockMinutes, fmtMinutes 
 import { sparkPath } from '../../lib/market'
 import { ModeShare, modeTotals } from './ModeShare'
 import { TransportOverview } from './TransportOverview'
+import { Exhibit } from './Exhibit'
+import { TransportMarket } from './TransportMarket'
 import '../../styles/pages.css'
 import '../../styles/transport.css'
 
@@ -23,6 +24,7 @@ const NAV: [Tab, string, string][] = [
   ['modes', 'How visitors travel', '交通手段'],
   ['lastbus', 'Last bus back', '最終便'],
   ['service', 'Service by site', '地点別の運行'],
+  ['market', 'Fares and revenue', '運賃と収入'],
   ['notes', 'Notes and sources', '注記と出典'],
 ]
 const TERM_JA: Record<string, string> = {
@@ -31,41 +33,6 @@ const TERM_JA: Record<string, string> = {
   'Hokuriku Shinkansen Fukui': '北陸新幹線 福井',
   'Car rental Fukui': 'レンタカー 福井',
   'Bike rental Fukui': 'レンタサイクル 福井',
-}
-
-/** One exhibit: number, action title (the finding), what is measured, the body, and its source. */
-function Exhibit({
-  n,
-  title,
-  sub,
-  actions,
-  source,
-  children,
-}: {
-  n: number
-  title: string
-  sub: string
-  actions?: ReactNode
-  source: ReactNode
-  children: ReactNode
-}) {
-  const { t } = useLang()
-  return (
-    <section className="tx-exhibit" aria-labelledby={`tx-ex-${n}`} id={`tx-exhibit-${n}`}>
-      <header className="tx-ex-head">
-        <div>
-          <div className="tx-ex-n">{t(`Exhibit ${n}`, `図表${n}`)}</div>
-          <h2 id={`tx-ex-${n}`} className="tx-ex-title">
-            {title}
-          </h2>
-          <p className="tx-ex-sub">{sub}</p>
-        </div>
-        {actions}
-      </header>
-      <div className="tx-ex-body">{children}</div>
-      <footer className="tx-ex-source">{source}</footer>
-    </section>
-  )
 }
 
 function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; label: string }) {
@@ -80,7 +47,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
   )
 }
 
-type Tab = 'overview' | 'findings' | 'modes' | 'lastbus' | 'service' | 'notes'
+type Tab = 'overview' | 'findings' | 'modes' | 'lastbus' | 'service' | 'market' | 'notes'
 
 /**
  * Transport view, laid out as a report canvas with a side navigation:
@@ -94,6 +61,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   const res = useJsonResource<TransportFile>('transport.json')
   const modes = useJsonResource<TransportModesFile>('transport_modes.json').data
   const trends = useJsonResource<TransportTrendsFile>('transport_trends.json').data
+  const market = useJsonResource<TransportMarketFile>('transport_market.json').data
   const [day, setDay] = useState<DayType>('saturday')
   const [tab, setTab] = useState<Tab>('overview')
 
@@ -402,6 +370,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               </p>
             </Exhibit>
           )}
+
+          {tab === 'market' && market && <TransportMarket market={market} data={data} modes={modes} name={name} />}
 
           {tab === 'notes' && trends && trends.terms.length > 0 && (
             <section className="tx-aside" aria-label={t('Search interest', '検索関心')}>

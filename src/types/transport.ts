@@ -31,6 +31,8 @@ export interface Journey {
   depart: string
   arrive: string
   minutes: number
+  /** Adult cash fare, sum of the legs; null when a leg's fare is unknown. */
+  fare_yen?: number | null
   legs: JourneyLeg[]
 }
 
@@ -150,6 +152,7 @@ export interface ModeCount {
 }
 export interface TransportModesFile {
   generated_at: string
+  spend_per_visitor?: SpendPerVisitor
   status: 'modelled'
   method: string
   survey: { source: string; url: string; licence: string; from: string; to: string }
@@ -172,4 +175,32 @@ export interface TransportModesFile {
       note_ja?: string | null
     }
   >
+}
+
+/** public/data/transport_market.json: published fares, ridership and revenue (hand-maintained, sourced). */
+export type MarketStatus = 'official' | 'press' | 'not_published'
+interface MarketItem {
+  id: string
+  label: string
+  label_ja: string
+  period: string
+  status: MarketStatus
+  detail: string
+  detail_ja: string
+  url: string
+}
+export interface TransportMarketFile {
+  generated_at: string
+  note: string
+  revenue: (MarketItem & { mode: string; yen: number | null; source: string })[]
+  ridership: (MarketItem & { mode: string; passengers: number; source: string })[]
+  utilisation: (MarketItem & { value: string })[]
+  fares: { group: 'rail' | 'long' | 'taxi'; from: string; from_ja: string; to: string; to_ja: string; yen: number; operator: string; operator_ja: string; status: MarketStatus; period: string; url: string }[]
+}
+
+export interface SpendPerVisitor {
+  note: string
+  responses: number
+  visitors_from_outside: Record<ModeId, { yen: number | null; n: number }>
+  fukui_residents: Record<ModeId, { yen: number | null; n: number }>
 }

@@ -224,5 +224,17 @@
         ]
       }
     }
-  }
+  },
+  "fare_overrides": [
+    {
+      "feed": "keifuku_bus",
+      "route": "永平寺ライナー",
+      "yen": 1000,
+      "from": "2026-10-01",
+      "source": "https://bus.keifuku.co.jp/rosen-season/eiheiji-liner/",
+      "note": "Eiheiji Liner, Fukui Station East Exit to Eiheiji: ¥750 → ¥1,000 from 2026-10-01; the June 2026 GTFS still has ¥750. Applies to that stop pair only.",
+      "from_stop": "福井駅東口",
+      "to_stop": "永平寺"
+    }
+  ]
 }

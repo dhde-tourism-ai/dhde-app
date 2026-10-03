@@ -73,6 +73,9 @@ class Feed:
     agency: str
     valid_from: date | None
     valid_to: date | None
+    # fare tables: (route_id, origin zone, destination zone) -> yen; stop_id -> zone_id
+    fares: dict[tuple[str, str, str], int] = field(default_factory=dict)
+    zones: dict[str, str] = field(default_factory=dict)
 
 
 def _ymd(s: str) -> date:
@@ -130,8 +133,17 @@ def load_feed(path: Path, feed_id: str, mode: str) -> Feed:
         vf, vt = _ymd(info.iloc[0]["feed_start_date"]), _ymd(info.iloc[0]["feed_end_date"])
     elif len(cal):
         vf, vt = min(_ymd(s) for s in cal["start_date"]), max(_ymd(s) for s in cal["end_date"])
+    fares: dict[tuple[str, str, str], int] = {}
+    fa, fr = _table(z, "fare_attributes"), _table(z, "fare_rules")
+    if fa is not None and fr is not None and len(fr):
+        price = {r.fare_id: int(float(r.price)) for r in fa.itertuples() if str(r.price).strip()}
+        for r in fr.itertuples():
+            if r.fare_id in price:
+                key = (p + r.route_id if getattr(r, "route_id", "") else "", getattr(r, "origin_id", "") or "", getattr(r, "destination_id", "") or "")
+                fares[key] = min(price[r.fare_id], fares.get(key, 10**9))
+    zones = dict(zip(stops["stop_id"], stops["zone_id"])) if "zone_id" in stops else {}
     return Feed(feed_id, mode, stops, routes, trips, st, cal, cd, shapes,
-                ag.iloc[0]["agency_name"] if ag is not None and len(ag) else feed_id, vf, vt)
+                ag.iloc[0]["agency_name"] if ag is not None and len(ag) else feed_id, vf, vt, fares, zones)
 
 
 WEEKDAY_COLS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
@@ -182,8 +194,9 @@ class Network:
     conn_deps: list[int] = field(default_factory=list)  # conns' departure times, for bisect
     stop_index: dict[str, int] = field(default_factory=dict)
     footpaths: dict[int, list[tuple[int, int]]] = field(default_factory=dict)  # idx -> [(idx, seconds)]
-    trip_info: dict[str, tuple[str, str, str]] = field(default_factory=dict)  # trip -> (mode, route name, feed)
+    trip_info: dict[str, tuple[str, str, str, str]] = field(default_factory=dict)  # trip -> (mode, route name, feed, route_id)
     used_dates: dict[str, str] = field(default_factory=dict)
+    feeds: dict[str, "Feed"] = field(default_factory=dict)
 
 
 def build_network(feeds: list[Feed], wanted: date, walk: dict) -> Network:
@@ -201,10 +214,10 @@ def build_network(feeds: list[Feed], wanted: date, walk: dict) -> Network:
     calls = pd.concat(calls_parts, ignore_index=True).sort_values(["trip_id", "seq"]).reset_index(drop=True)
     stops = pd.concat([f.stops[["stop_id", "stop_name", "lat", "lon"]].assign(feed=f.id) for f in feeds],
                       ignore_index=True).drop_duplicates("stop_id").reset_index(drop=True)
-    net = Network(stops=stops, calls=calls, used_dates=used)
+    net = Network(stops=stops, calls=calls, used_dates=used, feeds={f.id: f for f in feeds})
     net.stop_index = {s: i for i, s in enumerate(stops["stop_id"])}
     first_calls = calls.drop_duplicates("trip_id")
-    net.trip_info = dict(zip(first_calls["trip_id"], zip(first_calls["mode"], first_calls["name"], first_calls["feed"])))
+    net.trip_info = dict(zip(first_calls["trip_id"], zip(first_calls["mode"], first_calls["name"], first_calls["feed"], first_calls["route_id"])))
     idx = calls["stop_id"].map(net.stop_index)
     calls = calls[idx.notna()]
     idx = idx[idx.notna()].astype(int).to_numpy()
@@ -315,14 +328,16 @@ def journey(net: Network, sources: dict[int, int], targets: set[int]) -> dict | 
     if best is None or ea[best] >= INF:
         return None
     names = net.stops["stop_name"]
+    stop_ids = net.stops["stop_id"]
     legs, s = [], best
     while parent[s][0] != "src":
         p = parent[s]
         if p[0] == "ride":
             bc, c = net.conns[p[1]], net.conns[p[2]]
-            mode, route, feed = net.trip_info[c[4]]
+            mode, route, feed, route_id = net.trip_info[c[4]]
             legs.append({"mode": mode, "route": route, "feed": feed, "from": names[bc[2]], "depart": hhmm(bc[0]),
-                         "to": names[s], "arrive": hhmm(c[1]), "_dep": bc[0]})
+                         "to": names[s], "arrive": hhmm(c[1]), "_dep": bc[0],
+                         "_route_id": route_id, "_from_id": stop_ids[bc[2]], "_to_id": stop_ids[s]})
             s = bc[2]
         else:
             legs.append({"mode": "walk", "from": names[p[1]], "to": names[s],
@@ -335,6 +350,26 @@ def journey(net: Network, sources: dict[int, int], targets: set[int]) -> dict | 
         depart = rides[0]["_dep"] - legs[0]["minutes"] * 60
     for leg in legs:
         leg.pop("_dep")
+        if leg["mode"] != "walk":
+            leg["fare_yen"] = leg_fare(net, leg)
+        for k in ("_route_id", "_from_id", "_to_id"):
+            leg.pop(k, None)
+    fares = [leg.get("fare_yen") for leg in legs if leg["mode"] != "walk"]
     return {"depart": hhmm(depart), "arrive": hhmm(ea[best]), "stop": int(best),
+            # adult cash fare, sum of the legs (each bus boarded is paid separately); None if any leg's fare is unknown
+            "fare_yen": sum(fares) if fares and all(f is not None for f in fares) else None,
             # whole minutes between the displayed clock times, so the numbers always add up
             "minutes": ea[best] // 60 - depart // 60, "legs": legs}
+
+
+def leg_fare(net: Network, leg: dict) -> int | None:
+    """Adult fare for one ride from the operator's fare table: by route and
+    origin/destination zone, then any route, then a flat fare."""
+    f = net.feeds.get(leg["feed"])
+    if f is None or not f.fares:
+        return None
+    o, d = f.zones.get(leg["_from_id"], ""), f.zones.get(leg["_to_id"], "")
+    for key in ((leg["_route_id"], o, d), ("", o, d), (leg["_route_id"], "", ""), ("", "", "")):
+        if key in f.fares:
+            return f.fares[key]
+    return None

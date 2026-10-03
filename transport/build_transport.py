@@ -147,6 +147,21 @@ def journeys_from(net: Network, origin: list[dict], nodes: dict[str, list[dict]]
     return out
 
 
+def apply_fare_overrides(j: dict | None, overrides: list[dict], d: date) -> None:
+    """Fares changed after the feed was published (config fare_overrides), applied
+    to a journey's legs in place, then the journey total is recomputed."""
+    if not j:
+        return
+    for leg in j["legs"]:
+        for o in overrides:
+            same_trip = leg.get("from") == o.get("from_stop", leg.get("from")) and leg.get("to") == o.get("to_stop", leg.get("to"))
+            back_trip = leg.get("from") == o.get("to_stop") and leg.get("to") == o.get("from_stop")
+            if leg.get("feed") == o["feed"] and leg.get("route") == o["route"] and (same_trip or back_trip) and d.isoformat() >= o["from"]:
+                leg["fare_yen"] = o["yen"]
+    fares = [leg.get("fare_yen") for leg in j["legs"] if leg["mode"] != "walk"]
+    j["fare_yen"] = sum(fares) if fares and all(f is not None for f in fares) else None
+
+
 def clock(hm: str) -> int:
     h, m = hm.split(":")
     return int(h) * 60 + int(m)
@@ -319,6 +334,8 @@ def main() -> None:
                 entry["to_hub"] = last_return(net, hub, served) if served else None
                 entry["car_only_after"] = entry["to_hub"]["leave"] if entry["to_hub"] else "all day"
                 fh = entry["from_hub"] or {}
+                for j in (fh.get("fastest"), fh.get("after_0900"), entry["to_hub"]):
+                    apply_fare_overrides(j, cfg.get("fare_overrides", []), d)
                 legs = [leg for j in (fh.get("fastest"), fh.get("after_0900"), entry["to_hub"]) if j for leg in j["legs"]]
             entry["from_far"] = far[k]
             used = {r["feed"] for r in entry["routes"]} | {leg["feed"] for leg in legs if "feed" in leg}

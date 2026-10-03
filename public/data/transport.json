@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-02T06:02:22Z",
+ "generated_at": "2026-10-03T00:30:55Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
@@ -159,6 +159,7 @@
        "depart": "10:14",
        "arrive": "12:24",
        "stop": 639,
+       "fare_yen": 1760,
        "minutes": 130,
        "legs": [
         {
@@ -168,7 +169,8 @@
          "from": "駅前大通り",
          "depart": "10:14",
          "to": "福井総合病院",
-         "arrive": "10:39"
+         "arrive": "10:39",
+         "fare_yen": 570
         },
         {
          "mode": "bus",
@@ -177,7 +179,8 @@
          "from": "福井総合病院",
          "depart": "10:50",
          "to": "三国駅",
-         "arrive": "11:16"
+         "arrive": "11:16",
+         "fare_yen": 700
         },
         {
          "mode": "walk",
@@ -192,7 +195,8 @@
          "from": "三國湊北前通り",
          "depart": "11:25",
          "to": "龍翔博物館前",
-         "arrive": "11:35"
+         "arrive": "11:35",
+         "fare_yen": 170
         },
         {
          "mode": "bus",
@@ -201,7 +205,8 @@
          "from": "龍翔博物館前",
          "depart": "12:10",
          "to": "東尋坊",
-         "arrive": "12:24"
+         "arrive": "12:24",
+         "fare_yen": 320
         }
        ]
       },
@@ -211,6 +216,7 @@
        "depart": "10:14",
        "arrive": "12:24",
        "stop": 639,
+       "fare_yen": 1760,
        "minutes": 130,
        "legs": [
         {
@@ -220,7 +226,8 @@
          "from": "駅前大通り",
          "depart": "10:14",
          "to": "福井総合病院",
-         "arrive": "10:39"
+         "arrive": "10:39",
+         "fare_yen": 570
         },
         {
          "mode": "bus",
@@ -229,7 +236,8 @@
          "from": "福井総合病院",
          "depart": "10:50",
          "to": "三国駅",
-         "arrive": "11:16"
+         "arrive": "11:16",
+         "fare_yen": 700
         },
         {
          "mode": "walk",
@@ -244,7 +252,8 @@
          "from": "三國湊北前通り",
          "depart": "11:25",
          "to": "龍翔博物館前",
-         "arrive": "11:35"
+         "arrive": "11:35",
+         "fare_yen": 170
         },
         {
          "mode": "bus",
@@ -253,7 +262,8 @@
          "from": "龍翔博物館前",
          "depart": "12:10",
          "to": "東尋坊",
-         "arrive": "12:24"
+         "arrive": "12:24",
+         "fare_yen": 320
         }
        ]
       }
@@ -271,7 +281,8 @@
         "from": "東尋坊",
         "depart": "18:53",
         "to": "三国駅",
-        "arrive": "19:03"
+        "arrive": "19:03",
+        "fare_yen": 280
        },
        {
         "mode": "walk",
@@ -286,7 +297,8 @@
         "from": "三国駅",
         "depart": "19:10",
         "to": "浜中",
-        "arrive": "19:33"
+        "arrive": "19:33",
+        "fare_yen": 660
        },
        {
         "mode": "walk",
@@ -301,9 +313,11 @@
         "from": "浜中",
         "depart": "19:37",
         "to": "駅前大通り",
-        "arrive": "20:16"
+        "arrive": "20:16",
+        "fare_yen": 730
        }
-      ]
+      ],
+      "fare_yen": 1670
      },
      "car_only_after": "18:53",
      "from_far": {
@@ -383,6 +397,7 @@
        "depart": "10:14",
        "arrive": "11:54",
        "stop": 639,
+       "fare_yen": 1760,
        "minutes": 100,
        "legs": [
         {
@@ -392,7 +407,8 @@
          "from": "駅前大通り",
          "depart": "10:14",
          "to": "福井総合病院",
-         "arrive": "10:39"
+         "arrive": "10:39",
+         "fare_yen": 570
         },
         {
          "mode": "bus",
@@ -401,7 +417,8 @@
          "from": "福井総合病院",
          "depart": "10:50",
          "to": "三国駅",
-         "arrive": "11:16"
+         "arrive": "11:16",
+         "fare_yen": 700
         },
         {
          "mode": "walk",
@@ -416,7 +433,8 @@
          "from": "三國湊北前通り",
          "depart": "11:25",
          "to": "龍翔博物館前",
-         "arrive": "11:35"
+         "arrive": "11:35",
+         "fare_yen": 170
         },
         {
          "mode": "bus",
@@ -425,7 +443,8 @@
          "from": "龍翔博物館前",
          "depart": "11:40",
          "to": "東尋坊",
-         "arrive": "11:54"
+         "arrive": "11:54",
+         "fare_yen": 320
         }
        ]
       },
@@ -435,6 +454,7 @@
        "depart": "10:14",
        "arrive": "11:54",
        "stop": 639,
+       "fare_yen": 1760,
        "minutes": 100,
        "legs": [
         {
@@ -444,7 +464,8 @@
          "from": "駅前大通り",
          "depart": "10:14",
          "to": "福井総合病院",
-         "arrive": "10:39"
+         "arrive": "10:39",
+         "fare_yen": 570
         },
         {
          "mode": "bus",
@@ -453,7 +474,8 @@
          "from": "福井総合病院",
          "depart": "10:50",
          "to": "三国駅",
-         "arrive": "11:16"
+         "arrive": "11:16",
+         "fare_yen": 700
         },
         {
          "mode": "walk",
@@ -468,7 +490,8 @@
          "from": "三國湊北前通り",
          "depart": "11:25",
          "to": "龍翔博物館前",
-         "arrive": "11:35"
+         "arrive": "11:35",
+         "fare_yen": 170
         },
         {
          "mode": "bus",
@@ -477,7 +500,8 @@
          "from": "龍翔博物館前",
          "depart": "11:40",
          "to": "東尋坊",
-         "arrive": "11:54"
+         "arrive": "11:54",
+         "fare_yen": 320
         }
        ]
       }
@@ -495,7 +519,8 @@
         "from": "東尋坊",
         "depart": "17:23",
         "to": "三国駅",
-        "arrive": "17:33"
+        "arrive": "17:33",
+        "fare_yen": 280
        },
        {
         "mode": "bus",
@@ -504,7 +529,8 @@
         "from": "三国駅",
         "depart": "18:30",
         "to": "福井総合病院",
-        "arrive": "18:56"
+        "arrive": "18:56",
+        "fare_yen": 700
        },
        {
         "mode": "walk",
@@ -519,9 +545,11 @@
         "from": "福井医療大学",
         "depart": "19:12",
         "to": "駅前大通り",
-        "arrive": "19:37"
+        "arrive": "19:37",
+        "fare_yen": 570
        }
-      ]
+      ],
+      "fare_yen": 1550
      },
      "car_only_after": "17:23",
      "from_far": {
@@ -601,6 +629,7 @@
        "depart": "10:50",
        "arrive": "13:17",
        "stop": 639,
+       "fare_yen": 2520,
        "minutes": 147,
        "legs": [
         {
@@ -610,7 +639,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -625,7 +655,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -640,7 +671,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "東尋坊",
-         "arrive": "13:17"
+         "arrive": "13:17",
+         "fare_yen": 790
         }
        ]
       },
@@ -650,6 +682,7 @@
        "depart": "10:50",
        "arrive": "13:17",
        "stop": 639,
+       "fare_yen": 2520,
        "minutes": 147,
        "legs": [
         {
@@ -659,7 +692,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -674,7 +708,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -689,7 +724,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "東尋坊",
-         "arrive": "13:17"
+         "arrive": "13:17",
+         "fare_yen": 790
         }
        ]
       }
@@ -707,7 +743,8 @@
         "from": "東尋坊",
         "depart": "13:24",
         "to": "芦原温泉駅",
-        "arrive": "14:05"
+        "arrive": "14:05",
+        "fare_yen": 790
        },
        {
         "mode": "bus",
@@ -716,7 +753,8 @@
         "from": "芦原温泉駅",
         "depart": "14:25",
         "to": "丸岡城",
-        "arrive": "14:43"
+        "arrive": "14:43",
+        "fare_yen": 570
        },
        {
         "mode": "bus",
@@ -725,9 +763,11 @@
         "from": "丸岡城",
         "depart": "14:50",
         "to": "福井駅",
-        "arrive": "15:45"
+        "arrive": "15:45",
+        "fare_yen": 670
        }
-      ]
+      ],
+      "fare_yen": 2030
      },
      "car_only_after": "13:24",
      "from_far": {
@@ -1826,6 +1866,7 @@
        "depart": "13:08",
        "arrive": "17:07",
        "stop": 1560,
+       "fare_yen": 2060,
        "minutes": 239,
        "legs": [
         {
@@ -1835,7 +1876,8 @@
          "from": "アオッサ前",
          "depart": "13:08",
          "to": "ヴィオ",
-         "arrive": "14:21"
+         "arrive": "14:21",
+         "fare_yen": 1040
         },
         {
          "mode": "bus",
@@ -1844,7 +1886,8 @@
          "from": "ヴィオ",
          "depart": "15:30",
          "to": "勝山駅前",
-         "arrive": "16:07"
+         "arrive": "16:07",
+         "fare_yen": 720
         },
         {
          "mode": "walk",
@@ -1859,7 +1902,8 @@
          "from": "勝山駅前",
          "depart": "16:53",
          "to": "恐竜博物館前",
-         "arrive": "17:07"
+         "arrive": "17:07",
+         "fare_yen": 300
         }
        ]
       },
@@ -1869,6 +1913,7 @@
        "depart": "11:23",
        "arrive": "16:07",
        "stop": 1560,
+       "fare_yen": 2060,
        "minutes": 284,
        "legs": [
         {
@@ -1878,7 +1923,8 @@
          "from": "アオッサ前",
          "depart": "11:23",
          "to": "ヴィオ",
-         "arrive": "12:25"
+         "arrive": "12:25",
+         "fare_yen": 1040
         },
         {
          "mode": "bus",
@@ -1887,7 +1933,8 @@
          "from": "ヴィオ",
          "depart": "13:00",
          "to": "勝山駅前",
-         "arrive": "13:37"
+         "arrive": "13:37",
+         "fare_yen": 720
         },
         {
          "mode": "walk",
@@ -1902,7 +1949,8 @@
          "from": "勝山駅前",
          "depart": "15:53",
          "to": "恐竜博物館前",
-         "arrive": "16:07"
+         "arrive": "16:07",
+         "fare_yen": 300
         }
        ]
       }
@@ -1920,7 +1968,8 @@
         "from": "恐竜博物館前",
         "depart": "17:07",
         "to": "福井勝山総合病院",
-        "arrive": "17:17"
+        "arrive": "17:17",
+        "fare_yen": 100
        },
        {
         "mode": "walk",
@@ -1935,7 +1984,8 @@
         "from": "福井勝山総合病院",
         "depart": "18:14",
         "to": "ヴィオ",
-        "arrive": "19:01"
+        "arrive": "19:01",
+        "fare_yen": 690
        },
        {
         "mode": "bus",
@@ -1944,9 +1994,11 @@
         "from": "ヴィオ",
         "depart": "19:10",
         "to": "アオッサ前",
-        "arrive": "20:15"
+        "arrive": "20:15",
+        "fare_yen": 1040
        }
-      ]
+      ],
+      "fare_yen": 1830
      },
      "car_only_after": "17:07",
      "from_far": {
@@ -2013,6 +2065,7 @@
        "depart": "09:30",
        "arrive": "10:30",
        "stop": 1529,
+       "fare_yen": 2400,
        "minutes": 60,
        "legs": [
         {
@@ -2022,7 +2075,8 @@
          "from": "福井駅東口",
          "depart": "09:30",
          "to": "恐竜博物館",
-         "arrive": "10:30"
+         "arrive": "10:30",
+         "fare_yen": 2400
         }
        ]
       },
@@ -2032,6 +2086,7 @@
        "depart": "09:30",
        "arrive": "10:30",
        "stop": 1529,
+       "fare_yen": 2400,
        "minutes": 60,
        "legs": [
         {
@@ -2041,7 +2096,8 @@
          "from": "福井駅東口",
          "depart": "09:30",
          "to": "恐竜博物館",
-         "arrive": "10:30"
+         "arrive": "10:30",
+         "fare_yen": 2400
         }
        ]
       }
@@ -2059,9 +2115,11 @@
         "from": "恐竜博物館",
         "depart": "16:30",
         "to": "福井駅東口",
-        "arrive": "17:30"
+        "arrive": "17:30",
+        "fare_yen": 2400
        }
-      ]
+      ],
+      "fare_yen": 2400
      },
      "car_only_after": "16:30",
      "from_far": {
@@ -2128,6 +2186,7 @@
        "depart": "09:30",
        "arrive": "10:30",
        "stop": 1529,
+       "fare_yen": 2400,
        "minutes": 60,
        "legs": [
         {
@@ -2137,7 +2196,8 @@
          "from": "福井駅東口",
          "depart": "09:30",
          "to": "恐竜博物館",
-         "arrive": "10:30"
+         "arrive": "10:30",
+         "fare_yen": 2400
         }
        ]
       },
@@ -2147,6 +2207,7 @@
        "depart": "09:30",
        "arrive": "10:30",
        "stop": 1529,
+       "fare_yen": 2400,
        "minutes": 60,
        "legs": [
         {
@@ -2156,7 +2217,8 @@
          "from": "福井駅東口",
          "depart": "09:30",
          "to": "恐竜博物館",
-         "arrive": "10:30"
+         "arrive": "10:30",
+         "fare_yen": 2400
         }
        ]
       }
@@ -2174,9 +2236,11 @@
         "from": "恐竜博物館",
         "depart": "16:30",
         "to": "福井駅東口",
-        "arrive": "17:30"
+        "arrive": "17:30",
+        "fare_yen": 2400
        }
-      ]
+      ],
+      "fare_yen": 2400
      },
      "car_only_after": "16:30",
      "from_far": {
@@ -2382,6 +2446,7 @@
        "depart": "10:50",
        "arrive": "12:48",
        "stop": 754,
+       "fare_yen": 2030,
        "minutes": 118,
        "legs": [
         {
@@ -2391,7 +2456,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -2406,7 +2472,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -2421,7 +2488,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "あわら湯のまち駅",
-         "arrive": "12:48"
+         "arrive": "12:48",
+         "fare_yen": 300
         }
        ]
       },
@@ -2431,6 +2499,7 @@
        "depart": "10:50",
        "arrive": "12:48",
        "stop": 754,
+       "fare_yen": 2030,
        "minutes": 118,
        "legs": [
         {
@@ -2440,7 +2509,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -2455,7 +2525,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -2470,7 +2541,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "あわら湯のまち駅",
-         "arrive": "12:48"
+         "arrive": "12:48",
+         "fare_yen": 300
         }
        ]
       }
@@ -2488,7 +2560,8 @@
         "from": "舟津",
         "depart": "18:27",
         "to": "三国駅",
-        "arrive": "19:03"
+        "arrive": "19:03",
+        "fare_yen": 700
        },
        {
         "mode": "walk",
@@ -2503,7 +2576,8 @@
         "from": "三国駅",
         "depart": "19:10",
         "to": "浜中",
-        "arrive": "19:33"
+        "arrive": "19:33",
+        "fare_yen": 660
        },
        {
         "mode": "walk",
@@ -2518,9 +2592,11 @@
         "from": "浜中",
         "depart": "19:37",
         "to": "駅前大通り",
-        "arrive": "20:16"
+        "arrive": "20:16",
+        "fare_yen": 730
        }
-      ]
+      ],
+      "fare_yen": 2090
      },
      "car_only_after": "18:27",
      "from_far": {
@@ -2600,6 +2676,7 @@
        "depart": "10:50",
        "arrive": "12:48",
        "stop": 754,
+       "fare_yen": 2030,
        "minutes": 118,
        "legs": [
         {
@@ -2609,7 +2686,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -2624,7 +2702,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -2639,7 +2718,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "あわら湯のまち駅",
-         "arrive": "12:48"
+         "arrive": "12:48",
+         "fare_yen": 300
         }
        ]
       },
@@ -2649,6 +2729,7 @@
        "depart": "10:14",
        "arrive": "12:20",
        "stop": 1150,
+       "fare_yen": 2170,
        "minutes": 126,
        "legs": [
         {
@@ -2658,7 +2739,8 @@
          "from": "駅前大通り",
          "depart": "10:14",
          "to": "福井総合病院",
-         "arrive": "10:39"
+         "arrive": "10:39",
+         "fare_yen": 570
         },
         {
          "mode": "bus",
@@ -2667,7 +2749,8 @@
          "from": "福井総合病院",
          "depart": "10:50",
          "to": "三国駅",
-         "arrive": "11:16"
+         "arrive": "11:16",
+         "fare_yen": 700
         },
         {
          "mode": "walk",
@@ -2682,7 +2765,8 @@
          "from": "三國湊北前通り",
          "depart": "11:25",
          "to": "龍翔博物館前",
-         "arrive": "11:35"
+         "arrive": "11:35",
+         "fare_yen": 170
         },
         {
          "mode": "bus",
@@ -2691,7 +2775,8 @@
          "from": "龍翔博物館前",
          "depart": "11:40",
          "to": "温泉街入口第２",
-         "arrive": "12:20"
+         "arrive": "12:20",
+         "fare_yen": 730
         }
        ]
       }
@@ -2709,7 +2794,8 @@
         "from": "舟津",
         "depart": "16:57",
         "to": "三国駅",
-        "arrive": "17:33"
+        "arrive": "17:33",
+        "fare_yen": 700
        },
        {
         "mode": "bus",
@@ -2718,7 +2804,8 @@
         "from": "三国駅",
         "depart": "18:30",
         "to": "福井総合病院",
-        "arrive": "18:56"
+        "arrive": "18:56",
+        "fare_yen": 700
        },
        {
         "mode": "walk",
@@ -2733,9 +2820,11 @@
         "from": "福井医療大学",
         "depart": "19:12",
         "to": "駅前大通り",
-        "arrive": "19:37"
+        "arrive": "19:37",
+        "fare_yen": 570
        }
-      ]
+      ],
+      "fare_yen": 1970
      },
      "car_only_after": "16:57",
      "from_far": {
@@ -2815,6 +2904,7 @@
        "depart": "10:50",
        "arrive": "12:48",
        "stop": 754,
+       "fare_yen": 2030,
        "minutes": 118,
        "legs": [
         {
@@ -2824,7 +2914,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -2839,7 +2930,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -2854,7 +2946,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "あわら湯のまち駅",
-         "arrive": "12:48"
+         "arrive": "12:48",
+         "fare_yen": 300
         }
        ]
       },
@@ -2864,6 +2957,7 @@
        "depart": "10:50",
        "arrive": "12:48",
        "stop": 754,
+       "fare_yen": 2030,
        "minutes": 118,
        "legs": [
         {
@@ -2873,7 +2967,8 @@
          "from": "福井駅東口",
          "depart": "10:50",
          "to": "荒谷",
-         "arrive": "11:12"
+         "arrive": "11:12",
+         "fare_yen": 630
         },
         {
          "mode": "walk",
@@ -2888,7 +2983,8 @@
          "from": "荒谷",
          "depart": "11:17",
          "to": "芦原温泉駅",
-         "arrive": "12:14"
+         "arrive": "12:14",
+         "fare_yen": 1100
         },
         {
          "mode": "walk",
@@ -2903,7 +2999,8 @@
          "from": "芦原温泉駅",
          "depart": "12:40",
          "to": "あわら湯のまち駅",
-         "arrive": "12:48"
+         "arrive": "12:48",
+         "fare_yen": 300
         }
        ]
       }
@@ -2921,7 +3018,8 @@
         "from": "あわら湯のまち駅",
         "depart": "13:52",
         "to": "芦原温泉駅",
-        "arrive": "14:05"
+        "arrive": "14:05",
+        "fare_yen": 300
        },
        {
         "mode": "bus",
@@ -2930,7 +3028,8 @@
         "from": "芦原温泉駅",
         "depart": "14:25",
         "to": "丸岡城",
-        "arrive": "14:43"
+        "arrive": "14:43",
+        "fare_yen": 570
        },
        {
         "mode": "bus",
@@ -2939,9 +3038,11 @@
         "from": "丸岡城",
         "depart": "14:50",
         "to": "福井駅",
-        "arrive": "15:45"
+        "arrive": "15:45",
+        "fare_yen": 670
        }
-      ]
+      ],
+      "fare_yen": 1540
      },
      "car_only_after": "13:52",
      "from_far": {
@@ -3176,6 +3277,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3185,7 +3287,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       },
@@ -3195,6 +3298,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3204,7 +3308,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       }
@@ -3222,7 +3327,8 @@
         "from": "永平寺",
         "depart": "16:56",
         "to": "東古市第２",
-        "arrive": "17:09"
+        "arrive": "17:09",
+        "fare_yen": 430
        },
        {
         "mode": "walk",
@@ -3237,7 +3343,8 @@
         "from": "永平寺口駅",
         "depart": "18:10",
         "to": "丸岡バスターミナル",
-        "arrive": "18:43"
+        "arrive": "18:43",
+        "fare_yen": 520
        },
        {
         "mode": "walk",
@@ -3252,7 +3359,8 @@
         "from": "丸岡バスターミナル",
         "depart": "18:55",
         "to": "城町",
-        "arrive": "19:35"
+        "arrive": "19:35",
+        "fare_yen": 670
        },
        {
         "mode": "walk",
@@ -3260,7 +3368,8 @@
         "to": "福井駅北",
         "minutes": 8
        }
-      ]
+      ],
+      "fare_yen": 1620
      },
      "car_only_after": "16:56",
      "from_far": {
@@ -3347,6 +3456,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3356,7 +3466,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       },
@@ -3366,6 +3477,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3375,7 +3487,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       }
@@ -3393,9 +3506,11 @@
         "from": "永平寺",
         "depart": "16:45",
         "to": "福井駅東口",
-        "arrive": "17:30"
+        "arrive": "17:30",
+        "fare_yen": 750
        }
-      ]
+      ],
+      "fare_yen": 750
      },
      "car_only_after": "16:45",
      "from_far": {
@@ -3482,6 +3597,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3491,7 +3607,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       },
@@ -3501,6 +3618,7 @@
        "depart": "09:50",
        "arrive": "10:18",
        "stop": 896,
+       "fare_yen": 1000,
        "minutes": 28,
        "legs": [
         {
@@ -3510,7 +3628,8 @@
          "from": "福井駅東口",
          "depart": "09:50",
          "to": "永平寺",
-         "arrive": "10:18"
+         "arrive": "10:18",
+         "fare_yen": 1000
         }
        ]
       }
@@ -3528,9 +3647,11 @@
         "from": "永平寺",
         "depart": "16:45",
         "to": "福井駅東口",
-        "arrive": "17:30"
+        "arrive": "17:30",
+        "fare_yen": 750
        }
-      ]
+      ],
+      "fare_yen": 750
      },
      "car_only_after": "16:45",
      "from_far": {

@@ -1062,3 +1062,150 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- fares and revenue (TransportMarket.tsx) ---------- */
+.mk-util {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.mk-util-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  color: inherit;
+  text-decoration: none;
+}
+
+.mk-util-tile:hover {
+  border-color: var(--line-strong);
+}
+
+.mk-util-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.mk-util-label {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.mk-util-meta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.mk-chart {
+  margin: 0 -4px 8px;
+}
+
+.mk-rows,
+.mk-fares {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.mk-rows li,
+.mk-fares li {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.mk-fares li {
+  grid-template-columns: 300px minmax(0, 1fr) 90px auto;
+}
+
+.mk-rows li:last-child,
+.mk-fares li:last-child {
+  border-bottom: 0;
+}
+
+.mk-rows .muted,
+.mk-fares .muted {
+  font-size: 12.5px;
+}
+
+.mk-missing > span:first-child {
+  color: var(--muted);
+}
+
+.mk-fare-yen {
+  text-align: right;
+  font-weight: 600;
+}
+
+.mk-h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 24px 0 2px;
+}
+
+.mk-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 99px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.mk-badge.off {
+  color: #04160a;
+  background: #6fdc93;
+}
+
+.mk-badge.press {
+  color: var(--text);
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+}
+
+.mk-badge.none {
+  color: var(--muted);
+  border: 1px dashed var(--line-strong);
+}
+
+@media (max-width: 1100px) {
+  .mk-util {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mk-rows li,
+  .mk-fares li {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mk-rows li .muted,
+  .mk-fares li .muted {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.tx-canvas .tx-exhibit + .tx-exhibit,
+.tx-canvas .mk-util + .tx-exhibit {
+  margin-top: 36px;
+}

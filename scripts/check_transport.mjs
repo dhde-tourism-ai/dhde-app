@@ -99,6 +99,18 @@ if (modes) {
   }
 }
 
+const market = load('transport_market.json')
+if (market) {
+  const STATUS = ['official', 'press', 'not_published']
+  for (const r of market.revenue ?? []) {
+    if (!STATUS.includes(r.status)) fail(`transport_market.json: revenue ${r.id} status`)
+    if (r.yen != null && (!isNum(r.yen) || r.yen <= 0)) fail(`transport_market.json: revenue ${r.id} yen`)
+    if (r.yen != null && !r.url) fail(`transport_market.json: revenue ${r.id} has a value but no source`)
+  }
+  for (const r of market.ridership ?? []) if (!isNum(r.passengers) || !r.url) fail(`transport_market.json: ridership ${r.id}`)
+  for (const f of market.fares ?? []) if (!Number.isInteger(f.yen) || !f.url) fail(`transport_market.json: fare ${f.from}->${f.to}`)
+}
+
 if (errors.length) {
   for (const e of errors) console.error(`ERROR: ${e}`)
   process.exit(1)

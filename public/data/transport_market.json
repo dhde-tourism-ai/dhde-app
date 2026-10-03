@@ -1,0 +1,232 @@
+{
+  "generated_at": "2026-10-03T00:00:00Z",
+  "note": "Hand-maintained published figures for Fukui Prefecture transport (transport/README.md). Every value carries its period and source; 'official' = operator, prefecture, MLIT or JR document, 'press' = a newspaper citing an operator release. Nothing here is estimated. Update when operators publish new figures.",
+  "revenue": [
+    {
+      "id": "taxi",
+      "mode": "taxi",
+      "label": "Taxis (corporate and individual)",
+      "label_ja": "タクシー（法人・個人）",
+      "yen": 3572998000,
+      "period": "FY2024",
+      "status": "official",
+      "detail": "Corporate ¥3,440,672k + individual ¥132,326k, excluding tax",
+      "detail_ja": "法人3,440,672千円＋個人132,326千円（税抜き）",
+      "source": "Chubu District Transport Bureau, 数字でみる中部の運輸 2026, taxi table (福井県, R6)",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-4-3.pdf"
+    },
+    {
+      "id": "bus",
+      "mode": "bus",
+      "label": "Route buses (all 36 operators)",
+      "label_ja": "路線バス（全36事業者）",
+      "yen": 3187378000,
+      "period": "FY2024",
+      "status": "official",
+      "detail": "乗合バス operating revenue, includes city and community buses",
+      "detail_ja": "乗合バスの営業収入（市町のコミュニティバスを含む）",
+      "source": "Chubu District Transport Bureau, 数字でみる中部の運輸 2026, route bus table (福井, R6)",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-3-1-1.pdf"
+    },
+    {
+      "id": "hapi",
+      "mode": "rail",
+      "label": "Hapi-line Fukui (fare revenue)",
+      "label_ja": "ハピラインふくい（運賃収入）",
+      "yen": 2001000000,
+      "period": "FY2024",
+      "status": "press",
+      "detail": "Former JR Hokuriku line, Tsuruga–Fukui–Awara-Onsen",
+      "detail_ja": "旧JR北陸本線（敦賀〜福井〜芦原温泉）",
+      "source": "Fukui Shimbun",
+      "url": "https://www.fukuishimbun.co.jp/articles/-/2336181"
+    },
+    {
+      "id": "echizen",
+      "mode": "rail",
+      "label": "Echizen Railway",
+      "label_ja": "えちぜん鉄道",
+      "yen": null,
+      "period": "FY2024",
+      "status": "not_published",
+      "detail": "Revenue not published; net loss ¥18M, about ¥0.89bn a year in public support (FY2022–26)",
+      "detail_ja": "収入は非公表。純損失1,800万円、公的支援は年約8.9億円（2022〜26年度）",
+      "source": "Verepo, citing the company's FY2024 results",
+      "url": "https://verepo.com/etetsu24/"
+    },
+    {
+      "id": "fukutetsu",
+      "mode": "rail",
+      "label": "Fukui Railway (tram line)",
+      "label_ja": "福井鉄道（福武線）",
+      "yen": null,
+      "period": "FY2024",
+      "status": "not_published",
+      "detail": "Rail revenue not published; company total ¥3,797M includes its buses",
+      "detail_ja": "鉄道単独の収入は非公表。会社全体37.97億円はバス事業を含む",
+      "source": "Verepo, citing the company's FY2024 results",
+      "url": "https://verepo.com/fukutetsu24/"
+    },
+    {
+      "id": "shinkansen",
+      "mode": "rail",
+      "label": "Hokuriku Shinkansen (Fukui section)",
+      "label_ja": "北陸新幹線（福井県内区間）",
+      "yen": null,
+      "period": "FY2024",
+      "status": "not_published",
+      "detail": "JR West does not publish revenue by section",
+      "detail_ja": "JR西日本は区間別の収入を公表していない",
+      "source": "",
+      "url": ""
+    },
+    {
+      "id": "rental",
+      "mode": "car",
+      "label": "Rental cars",
+      "label_ja": "レンタカー",
+      "yen": null,
+      "period": "",
+      "status": "not_published",
+      "detail": "No public count or revenue for Fukui",
+      "detail_ja": "福井県の台数・収入の公表値なし",
+      "source": "",
+      "url": ""
+    }
+  ],
+  "ridership": [
+    {
+      "id": "shinkansen",
+      "mode": "rail",
+      "label": "Hokuriku Shinkansen, Kanazawa–Fukui",
+      "label_ja": "北陸新幹線（金沢〜福井）",
+      "passengers": 8161000,
+      "period": "Mar 2024 – Mar 2025",
+      "status": "press",
+      "detail": "22,000 a day, 125% of the limited expresses it replaced",
+      "detail_ja": "1日2.2万人、旧特急の125%",
+      "source": "Wakasa Bay (JR West figures)",
+      "url": "https://wakasabay.jp/articles/-/2388"
+    },
+    {
+      "id": "hapi",
+      "mode": "rail",
+      "label": "Hapi-line Fukui",
+      "label_ja": "ハピラインふくい",
+      "passengers": 7618341,
+      "period": "FY2024",
+      "status": "press",
+      "detail": "21,060 a day (target 20,167); commuter passes 65%",
+      "detail_ja": "1日21,060人（目標20,167人）、定期65%",
+      "source": "Fukui Shimbun",
+      "url": "https://www.fukuishimbun.co.jp/articles/-/2332568"
+    },
+    {
+      "id": "bus",
+      "mode": "bus",
+      "label": "Route buses (all operators)",
+      "label_ja": "路線バス（全事業者）",
+      "passengers": 4895000,
+      "period": "FY2024",
+      "status": "official",
+      "detail": "506 buses, 56 passengers per bus per working day",
+      "detail_ja": "車両506両、実働1日1車当たり56人",
+      "source": "Chubu District Transport Bureau, 数字でみる中部の運輸 2026",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-3-1-1.pdf"
+    },
+    {
+      "id": "echizen",
+      "mode": "rail",
+      "label": "Echizen Railway",
+      "label_ja": "えちぜん鉄道",
+      "passengers": 4064118,
+      "period": "FY2025",
+      "status": "press",
+      "detail": "Record, first year over 4 million; 1,624,479 (40%) non-commuter",
+      "detail_ja": "過去最多・初の400万人超。非日常型（定期外等）1,624,479人（40%）",
+      "source": "Fukui Shimbun",
+      "url": "https://www.fukuishimbun.co.jp/articles/-/2595901"
+    },
+    {
+      "id": "taxi",
+      "mode": "taxi",
+      "label": "Taxis (corporate and individual)",
+      "label_ja": "タクシー（法人・個人）",
+      "passengers": 2626150,
+      "period": "FY2024",
+      "status": "official",
+      "detail": "838 vehicles; 1.8 million trips",
+      "detail_ja": "838両、輸送回数181万回",
+      "source": "Chubu District Transport Bureau, 数字でみる中部の運輸 2026",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-4-3.pdf"
+    },
+    {
+      "id": "fukutetsu",
+      "mode": "rail",
+      "label": "Fukui Railway (tram line), half year",
+      "label_ja": "福井鉄道（福武線）、上半期",
+      "passengers": 959054,
+      "period": "Apr–Sep 2024",
+      "status": "press",
+      "detail": "First half of FY2024 only; full year not published",
+      "detail_ja": "2024年度上半期のみ。通年値は非公表",
+      "source": "Chunichi Shimbun",
+      "url": "https://www.chunichi.co.jp/article/988553"
+    }
+  ],
+  "utilisation": [
+    {
+      "id": "taxi_paid",
+      "label": "Taxi distance with a paying passenger",
+      "label_ja": "タクシーの実車率",
+      "value": "42%",
+      "period": "FY2024, corporate taxis",
+      "status": "official",
+      "detail": "41.97% of kilometres driven carried a fare",
+      "detail_ja": "走行キロの41.97%が実車",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-4-3.pdf"
+    },
+    {
+      "id": "shinkansen_density",
+      "label": "Shinkansen passengers per day, Kanazawa–Fukui",
+      "label_ja": "北陸新幹線の輸送密度（金沢〜福井）",
+      "value": "21,443",
+      "period": "FY2024",
+      "status": "official",
+      "detail": "Average passengers per day over the section (JR West 輸送密度); Fukui–Tsuruga 19,456",
+      "detail_ja": "区間の1日平均通過人員（JR西日本）。福井〜敦賀は19,456",
+      "url": "https://www.westjr.co.jp/press/article/items/250806_00_press_yusoumitsudo_1.pdf"
+    },
+    {
+      "id": "echizen_tourist",
+      "label": "Echizen Railway trips that are not commuting",
+      "label_ja": "えちぜん鉄道の非日常型の割合",
+      "value": "40%",
+      "period": "FY2025",
+      "status": "press",
+      "detail": "1.62M of 4.06M passengers, mostly visitors and occasional riders",
+      "detail_ja": "406万人中162万人（観光・非日常利用）",
+      "url": "https://www.fukuishimbun.co.jp/articles/-/2595901"
+    },
+    {
+      "id": "bus_per_vehicle",
+      "label": "Route bus passengers per bus per day",
+      "label_ja": "路線バス1日1車当たり輸送人員",
+      "value": "56",
+      "period": "FY2024",
+      "status": "official",
+      "detail": "Per bus in service per day, all Fukui operators",
+      "detail_ja": "実働1日1車当たり、県内全事業者",
+      "url": "https://wwwtb.mlit.go.jp/chubu/kousei/suuji/data/2-3-1-1.pdf"
+    }
+  ],
+  "fares": [
+    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Katsuyama (Dinosaur Museum by bus)", "to_ja": "勝山（恐竜博物館へはバス）", "yen": 820, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
+    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Eiheiji-guchi (Eiheiji by bus)", "to_ja": "永平寺口（永平寺へはバス）", "yen": 490, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
+    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Awara-yunomachi", "to_ja": "あわら湯のまち", "yen": 730, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
+    { "group": "rail", "from": "Fukui", "from_ja": "福井", "to": "Mikuni-minato (Tojinbo by bus)", "to_ja": "三国港（東尋坊へはバス）", "yen": 820, "operator": "Echizen Railway", "operator_ja": "えちぜん鉄道", "status": "official", "period": "from 2024-03-16", "url": "https://www.echizen-tetudo.co.jp/.assets/%E6%97%85%E5%AE%A2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
+    { "group": "rail", "from": "Tsuruga", "from_ja": "敦賀", "to": "Fukui", "to_ja": "福井", "yen": 1140, "operator": "Hapi-line Fukui", "operator_ja": "ハピラインふくい", "status": "official", "period": "since 2024-03-16", "url": "https://www.hapi-line.co.jp/files/uploads/1-2%E9%81%8B%E8%B3%83%E8%A1%A8.pdf" },
+    { "group": "long", "from": "Tokyo", "from_ja": "東京", "to": "Fukui", "to_ja": "福井", "yen": 16030, "operator": "Hokuriku Shinkansen, reserved seat", "operator_ja": "北陸新幹線（指定席）", "status": "press", "period": "regular season", "url": "https://jr-shinkansen.net/articles/tokyo-fukui/" },
+    { "group": "taxi", "from": "Taxi", "from_ja": "タクシー", "to": "first 1.06 km", "to_ja": "初乗り1.06km", "yen": 650, "operator": "Fukui taxis (standard car)", "operator_ja": "福井県のタクシー（普通車）", "status": "official", "period": "from 2026-09-01; then ¥100 per 233 m", "url": "https://wwwtb.mlit.go.jp/chubu/press/pdf/jikou2026072802.pdf" }
+  ]
+}

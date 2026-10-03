@@ -137,3 +137,18 @@ def test_reference_days_are_wed_sat_sun():
     days = bt.reference_days(date(2026, 10, 2))
     assert [d.weekday() for d in days.values()] == [2, 5, 6]
     assert all(d >= date(2026, 10, 2) for d in days.values())
+
+
+def test_fare_override_only_for_its_stop_pair():
+    over = [{"feed": "k", "route": "Liner", "yen": 1000, "from": "2026-10-01", "from_stop": "Station", "to_stop": "Temple"}]
+    full = {"legs": [{"mode": "bus", "feed": "k", "route": "Liner", "from": "Station", "to": "Temple", "fare_yen": 750}]}
+    part = {"legs": [{"mode": "bus", "feed": "k", "route": "Liner", "from": "Station", "to": "Midway", "fare_yen": 630},
+                     {"mode": "walk", "from": "Midway", "to": "X", "minutes": 4},
+                     {"mode": "bus", "feed": "k", "route": "Other", "from": "X", "to": "Y", "fare_yen": 300}]}
+    bt.apply_fare_overrides(full, over, date(2026, 10, 7))
+    bt.apply_fare_overrides(part, over, date(2026, 10, 7))
+    assert full["fare_yen"] == 1000
+    assert part["fare_yen"] == 930  # partial ride keeps its own fare
+    before = {"legs": [{"mode": "bus", "feed": "k", "route": "Liner", "from": "Station", "to": "Temple", "fare_yen": 750}]}
+    bt.apply_fare_overrides(before, over, date(2026, 9, 30))
+    assert before["fare_yen"] == 750  # not yet in force

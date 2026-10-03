@@ -55,6 +55,14 @@ MODE_OF = {
 WALK = "徒歩"
 MODES = ["train", "bus", "own_car", "rental_car", "other"]
 BUS_KIND = {"路線バス": "route", "旅行会社ツアーバス": "tour"}
+# 交通費 (transport spend for the trip, per person) answer bands -> yen, the band's midpoint
+# (open top band: 120,000). "使わない" = spent nothing.
+SPEND_MID = {
+    "使わない": 0, "1,000円未満": 500, "1,000円以上 3,000円未満": 2000, "3,000円以上 5,000円未満": 4000,
+    "5,000円以上 10,000円未満": 7500, "10,000円以上 20,000円未満": 15000, "20,000円以上 30,000円未満": 25000,
+    "30,000円以上 40,000円未満": 35000, "40,000円以上 50,000円未満": 45000, "50,000円以上 100,000円未満": 75000,
+    "100,000円以上": 120000,
+}
 Z = 1.96
 
 
@@ -115,6 +123,26 @@ def counts(visitors: float | None, s: dict) -> dict | None:
             for m, v in s["modes"].items()}
 
 
+
+def spend_by_mode(survey: pd.DataFrame) -> dict:
+    """Average transport spend per visitor for the whole trip (交通費, band midpoints),
+    by how they got around in Fukui, for visitors from outside and inside Fukui.
+    Several modes split the respondent equally, as for the shares."""
+    df = survey.dropna(subset=["交通費"]).copy()
+    df["yen"] = df["交通費"].str.strip().map(SPEND_MID)
+    df = df.dropna(subset=["yen"])
+    out = {"note": "Survey 交通費: transport spend for the trip per person, band midpoints; includes getting to Fukui.",
+           "responses": int(len(df))}
+    for group, rows in (("visitors_from_outside", df[df["都道府県"] != "福井県"]), ("fukui_residents", df[df["都道府県"] == "福井県"])):
+        acc: dict[str, list[float]] = {m: [0.0, 0.0] for m in MODES}
+        for answer, yen in zip(rows[MODES_COL], rows["yen"]):
+            for m, w in split(answer).items():
+                acc[m][0] += w * yen
+                acc[m][1] += w
+        out[group] = {m: {"yen": round(v[0] / v[1], -2) if v[1] else None, "n": round(v[1])} for m, v in acc.items()}
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ws = os.environ.get("DHDE_WORKSPACE_ROOT")
@@ -129,7 +157,7 @@ def main() -> int:
 
     cfg = json.loads((HERE / "config.json").read_text())["mode_share"]
     sd = Path(args.survey_dir)
-    survey = pd.read_csv(sd / "all.csv", dtype=str, usecols=["回答日時", "回答エリア", MODES_COL])
+    survey = pd.read_csv(sd / "all.csv", dtype=str, usecols=["回答日時", "回答エリア", MODES_COL, "交通費", "都道府県"])
     area = pd.read_csv(sd / "area.csv", dtype=str)
     survey["area"] = survey["回答エリア"].str.strip()
     survey = survey.dropna(subset=[MODES_COL])
@@ -187,6 +215,7 @@ def main() -> int:
 
     out = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "spend_per_visitor": spend_by_mode(survey),
         "status": "modelled",
         "method": "Visitors by mode = each site's visitor estimate x its mode share from the Fukui Prefecture tourism survey "
                   "(how respondents got around in Fukui, last 12 months of responses at that site). Several answers split "
@@ -211,3 +240,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

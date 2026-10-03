@@ -45,6 +45,23 @@ node scripts/check_transport.mjs               # also runs in the Pages deploy
 python transport/build_modes.py --survey-dir path/to/fukui-kanko-survey   # default $DHDE_WORKSPACE_ROOT/fukui-kanko-survey
 ```
 
+## Fares and revenue (sidebar page)
+
+- **`public/data/transport_market.json`** is hand-maintained: published revenue, ridership, utilisation and fares,
+  each with its period, source URL and status (`official` operator/prefecture/MLIT/JR document, `press`
+  newspaper citing an operator, `not_published`). `check_transport.mjs` rejects a value without a source.
+  - Revenue FY2024: taxis ¥3.57bn and route buses ¥3.19bn (Chubu District Transport Bureau, official),
+    Hapi-line fares ¥2.00bn (press). Echizen Railway, Fukui Railway rail, the Shinkansen section and rental cars
+    publish none.
+  - Ridership: Shinkansen Kanazawa–Fukui 8.16M (Mar 2024–Mar 2025), Hapi-line 7.62M, route buses 4.90M, Echizen
+    Railway 4.06M (FY2025, 40% non-commuter), taxis 2.63M.
+- **Bus fares to each site** come from the operators' GTFS fare tables (`fare_attributes` / `fare_rules`), summed
+  over the buses in the quickest trip (`fare_yen` on each journey and leg). `config.json` `fare_overrides` covers
+  fares changed after the feed was published (Eiheiji Liner ¥750 → ¥1,000 from 2026-10-01, that stop pair only).
+- **Transport spend per visitor** (`spend_per_visitor` in `transport_modes.json`): the survey's 交通費 bands
+  (midpoints) by how the respondent got around in Fukui, visitors from outside Fukui vs residents. It covers the
+  whole trip including getting to Fukui, so it is not revenue at the sites.
+
 ## Step 0: sources checked
 
 | Mode | Source | What's in it | Licence | Status |
