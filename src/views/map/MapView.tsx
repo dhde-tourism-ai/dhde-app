@@ -10,7 +10,7 @@ import type { RegionalEconomics } from '../../types/economics'
 import type { LiveData } from '../../types/live'
 import type { RoutesFile } from '../../types/routes'
 import type { MarketVoiceData } from '../../types/market'
-import type { TransportFile, TransportMapFile } from '../../types/transport'
+import type { TransportFile, TransportMapFile, TransportTripsFile } from '../../types/transport'
 import { buildMapNodes } from '../../lib/nodes'
 import { frameAt, timeLabel } from '../../lib/live'
 import { computeAlerts, SEV_COLOUR, topAlert } from '../../lib/alerts'
@@ -40,6 +40,8 @@ import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
 import { TransportLayer } from './layers/TransportLayer'
 import { VehiclesLayer } from './layers/VehiclesLayer'
+import { buildRuns } from '../../lib/railModel'
+import type { RailRun } from '../../lib/railModel'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
 import { SiteCards } from './layers/SiteCards'
 import { Declutter } from './Declutter'
@@ -143,6 +145,9 @@ function KeepCardsInView() {
   }, [map])
   return null
 }
+
+/** Stable empty list, so the vehicle canvas keeps its cache while the Train routes layer is off. */
+const NO_RUNS: RailRun[] = []
 
 const ESRI_ATTR = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community · Labels &copy; Esri'
 
@@ -271,6 +276,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
   // Optional: public transport access (built daily by dhde-preprocessing-model). Without it the card and layer just don't show.
   const transport = useJsonResource<TransportFile>('transport.json').data
   const transportMap = useJsonResource<TransportMapFile>('transport_map.json').data
+  const transportOn = active.has('transport') || active.has('rail')
+  // Bus trips (for moving buses and stop schedules) only load while the Bus routes layer is on.
+  const trips = useJsonResource<TransportTripsFile>(active.has('transport') ? 'transport_trips.json' : null).data
+  const railRuns = useMemo(() => buildRuns(transportMap?.rail), [transportMap])
   const nudges = useMemo(
     () => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, hotelThresholds) : []),
     [live, market, registry, hotelThresholds],
@@ -356,9 +365,19 @@ export default function MapView({ registry, dashboard, economics, economicsError
         )}
         {market && layerOn('hotels') && <HotelsLayer data={market} day={day} nodes={registry?.nodes ?? []} />}
         {market && layerOn('rsi') && <RsiLayer data={market} />}
-        {(layerOn('transport') || layerOn('rail')) && transportMap && <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} />}
-        {(layerOn('transport') || layerOn('rail')) && transportMap && live && (
-          <VehiclesLayer start={live.start} t={t} playing={playing} speed={speed} bus={layerOn('transport')} rail={layerOn('rail') ? (transportMap.rail ?? null) : null} />
+        {transportOn && transportMap && (
+          <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} trips={trips} runs={railRuns} />
+        )}
+        {transportOn && transportMap && live && (
+          <VehiclesLayer
+            trips={layerOn('transport') ? trips : null}
+            runs={layerOn('rail') ? railRuns : NO_RUNS}
+            start={live.start}
+            t={t}
+            live={!playing && t === (live.now_index ?? live.observed_until)}
+            playing={playing}
+            speed={speed}
+          />
         )}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
         {(layerOn('people') || layerOn('flow')) && (
@@ -433,7 +452,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <div className="map-right">{rightPanel}</div>
 
         <div className="map-bottom">
-          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} />}
+          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} vehicles={transportOn} />}
           {narrow && (
             <div className="sheet-tabs" role="group" aria-label={tr('Panels', 'パネル')}>
               <button className="btn" aria-pressed={sheetState === 'left'} onClick={() => { onSelect(undefined); setSheet(sheet === 'layers' ? null : 'layers') }}>

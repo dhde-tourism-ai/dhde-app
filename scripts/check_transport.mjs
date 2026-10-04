@@ -92,6 +92,8 @@ if (trips) {
   const ns = trips.stops?.length ?? 0
   const nr = trips.routes?.length ?? 0
   if (!ns || !trips.stops.every(isLatLon)) fail('transport_trips.json: stops')
+  for (const k of ['stop_ids', 'stop_names'])
+    if (trips[k] !== undefined && (!Array.isArray(trips[k]) || trips[k].length !== ns)) fail(`transport_trips.json: ${k}`)
   for (const day of ['weekday', 'saturday', 'sunday']) {
     const list = trips.trips?.[day]
     if (!Array.isArray(list)) {

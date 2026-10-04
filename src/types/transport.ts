@@ -161,6 +161,9 @@ export interface TransportTripsFile {
   days: Record<DayType, string>
   /** [lat, lon] per stop index */
   stops: [number, number][]
+  /** GTFS stop id and name per stop index (absent in files built before stop schedules). */
+  stop_ids?: string[]
+  stop_names?: string[]
   routes: { id: string; name: string }[]
   /** day type -> [route index, stop indexes, departure minute at each stop] */
   trips: Record<DayType, [number, number[], number[]][]>

@@ -1,8 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import type { LiveData } from '../../../types/live'
 import { useLang } from '../../../lib/i18n'
 import { dayLabel, hourLabel } from '../../../lib/live'
+import { clock, vehicleClock } from '../../../lib/vehicleClock'
 import { Icon } from '../../../components/icons'
 import { SourceBadge } from '../../../components/SourceBadge'
 
@@ -44,9 +45,23 @@ interface Props {
   setPlaying: (p: boolean) => void
   speed: number
   setSpeed: (s: number) => void
+  /** Moving buses or trains are on: show their clock (live at Now, else a preview of the hour). */
+  vehicles?: boolean
 }
 
-export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed }: Props) {
+/** The vehicle clock, ticking: HH:MM:SS live, HH:MM in a preview. */
+function VehicleTime({ live }: { live: boolean }) {
+  const [, tick] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => tick((n) => n + 1), live ? 1000 : 250)
+    return () => window.clearInterval(id)
+  }, [live])
+  const m = vehicleClock.minute()
+  const secs = Math.floor((m % 1) * 60)
+  return <span className="tl-hour num">{clock(m)}{live ? `:${String(secs).padStart(2, '0')}` : ''}</span>
+}
+
+export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, vehicles = false }: Props) {
   const { t: tr, lang } = useLang()
   const track = useRef<HTMLDivElement>(null)
   const H = live.hours
@@ -55,6 +70,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed }
   const sc = scaleFor(live)
   const todayDay = live.today_day ?? 0
   const observed = t <= now
+  const isLive = !playing && t === nowIdx
 
   // Total people on site across all nodes, per hour: the day's rhythm behind the scrubber.
   const spark = useMemo(() => {
@@ -100,9 +116,15 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed }
       <div className="tl-readout">
         <div className="tl-time">
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
-          <span className="tl-hour num">{hourLabel(t)}</span>
+          {vehicles ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
         </div>
-        <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{observed ? tr('Observed', '実測') : tr('Forecast', '予測')}</span>
+        {vehicles && isLive ? (
+          <span className="tl-mode live" title={tr('Buses and trains on the real clock (scheduled positions, not GPS)', '実時刻のバス・列車（時刻表上の位置、GPSではない）')}>
+            {tr('Live', 'ライブ')}
+          </span>
+        ) : (
+          <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{observed ? tr('Observed', '実測') : tr('Forecast', '予測')}</span>
+        )}
       </div>
 
       <div className="tl-track-wrap">
