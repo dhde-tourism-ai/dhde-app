@@ -16,6 +16,8 @@ import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
 import { BRIEFING_LAYERS, LEVEL, useBriefing } from '../../../lib/briefing'
 
+import { RailLegend, TransportLegend } from './TransportLegend'
+
 interface Props {
   basemap: BasemapId
   setBasemap: (b: BasemapId) => void
@@ -217,6 +219,8 @@ export function LayersPanel(p: Props) {
         </div>
       </>
     ),
+    transport: <TransportLegend />,
+    rail: <RailLegend />,
     weather: (
       <>
         <p className="lg-note">{t('Chip: sky, temperature, chance of rain, wind. ⚠ = JMA-style advisory in force.', 'チップ：天気・気温・降水確率・風速。⚠＝注意報発表中。')}</p>

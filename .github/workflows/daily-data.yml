@@ -120,6 +120,29 @@ jobs:
       - name: Validate real_data.json
         run: node scripts/check_data.mjs
 
+      # Transport page and the map's Public transport layer (dhde-preprocessing-model
+      # scripts/build_transport.py): access per site from the bus timetables (GTFS-JP,
+      # downloaded fresh), visitors by mode (the prefecture survey fetch_data.py just
+      # downloaded x the real_data.json above) and Google Trends. A part that fails
+      # writes nothing, and the files are only taken if they validate, so the app
+      # keeps yesterday's. Not fatal: the rest of the refresh goes on.
+      - name: Build transport data
+        continue-on-error: true
+        run: |
+          python "$PREPROC/scripts/build_transport.py" --output-dir "$OUT/transport" \
+            --real-data public/data/real_data.json --refresh \
+            || echo "::warning::bus timetables not built; the app keeps yesterday's transport.json"
+          for f in $TRANSPORT_FILES; do
+            if [ -f "$OUT/transport/$f" ]; then cp "$OUT/transport/$f" public/data/; fi
+          done
+          if ! node scripts/check_transport.mjs; then
+            echo "::warning::today's transport files failed validation; the app keeps yesterday's"
+            git checkout -- $(printf 'public/data/%s ' $TRANSPORT_FILES)
+            exit 1
+          fi
+        env:
+          TRANSPORT_FILES: transport.json transport_map.json transport_trips.json transport_modes.json transport_trends.json
+
       # Loop #3's occupancy thresholds per hotel area, from the same master tables.
       # Not fatal: without the file the app keeps the demo rule.
       - name: Build hotel thresholds
@@ -177,7 +200,8 @@ jobs:
 
       # Training history (Monday: "Keep all training history in S3"). The live-data
       # branch and the JMA cache only live in git and the Actions cache, which can be
-      # rewritten or evicted; copying them to raw/ keeps every day for model training.
+      # rewritten or evicted, and the code4fukui data repos are someone else's; copying
+      # them to raw/ keeps every day for model training.
       # Their files grow in place, so each day goes to its own date=YYYY-MM-DD/ folder
       # and is uploaded create-only (If-None-Match: *): a key is never overwritten, and
       # a re-run of the same day gets a 412, treated as "already saved". aws s3 sync
@@ -216,6 +240,37 @@ jobs:
           else
             echo "::warning::no JMA cache; raw/weather/jma/ not saved today"
           fi
+          # The code4fukui data repos fetch_data.py downloaded today (cameras, tourism
+          # survey, hotel and museum reservations, search trends), as read by the
+          # pipeline: one tar.gz per repo (the survey CSV alone is ~100 MB; gzip and one
+          # object keep it small), tagged with the repo's commit.
+          saved=0
+          for d in "$DHDE_WORKSPACE_ROOT"/*/; do
+            repo=$(basename "$d")
+            [ -e "$d/.git" ] || continue
+            case $(git -C "$d" remote get-url origin 2>/dev/null) in
+              https://github.com/code4fukui/*) ;;
+              *) continue ;;
+            esac
+            tgz="$RUNNER_TEMP/$repo.tar.gz"
+            tar -czf "$tgz" --exclude=.git -C "$DHDE_WORKSPACE_ROOT" "$repo"
+            key="raw/code4fukui/$repo/date=$day/$repo.tar.gz"
+            if err=$(aws s3api put-object --bucket "$DATA_BUCKET" --key "$key" --body "$tgz" \
+                --metadata "commit=$(git -C "$d" rev-parse HEAD)" --if-none-match '*' 2>&1 >/dev/null); then
+              saved=$((saved + 1))
+            else
+              case $err in
+                *PreconditionFailed*) saved=$((saved + 1)) ;;  # already saved by an earlier run today
+                *) echo "::warning::could not save $key: $err"; failed=1 ;;
+              esac
+            fi
+            rm -f "$tgz"
+          done
+          echo "code4fukui repos saved to raw/code4fukui/: $saved"
+          if [ "$saved" -eq 0 ]; then
+            echo "::warning::no code4fukui repo saved to raw/code4fukui/ today"
+            failed=1
+          fi
           # continue-on-error hides a failed step behind a near-green run; fail it visibly.
           if [ "$failed" -ne 0 ]; then
             echo "::warning::training history not fully saved to s3://$DATA_BUCKET/raw/ for $day"
@@ -225,14 +280,15 @@ jobs:
       - name: Commit if changed
         id: commit
         run: |
-          if git diff --quiet -- public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json; then
-            echo "No change in real_data.json, hotel_thresholds.json or monthly_forecast.json."
+          files="public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json public/data/transport.json public/data/transport_map.json public/data/transport_trips.json public/data/transport_modes.json public/data/transport_trends.json"
+          if git diff --quiet -- $files; then
+            echo "No change in the data files."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/real_data.json public/data/hotel_thresholds.json public/data/monthly_forecast.json
+          git add $files
           git commit -m "data: daily real data $(TZ=Asia/Tokyo date +%F) (preprocessing $PREPROC_SHA)"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

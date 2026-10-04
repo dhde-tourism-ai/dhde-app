@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import type { LiveData } from '../types/live'
+import type { LiveData, RealNodeMeta } from '../types/live'
 
 /**
  * Briefing mode: the view for officials. Only real data and model forecasts are shown: no demo
@@ -42,8 +42,13 @@ export function useBriefing(): boolean {
   )
 }
 
-/** Layers whose content is real (or a model forecast) in briefing mode; the rest are hidden there. */
-export const BRIEFING_LAYERS = ['people', 'hotels', 'nudges', 'weather'] as const
+/**
+ * Layers briefing mode offers, each showing its real part only: the four defaults (visitors, hotels,
+ * actions, bus access), then real layers to switch on (train lines without the illustrative moving
+ * trains; weather; survey, sentiment and search where a site has real values). Simulated flow and
+ * density, demo road traffic, fictional reviews and social feed, and partial economics are left out.
+ */
+export const BRIEFING_LAYERS = ['people', 'hotels', 'nudges', 'transport', 'rail', 'weather', 'survey', 'sentiment', 'rsi'] as const
 
 export type DayLevel = 'busy' | 'normal' | 'quiet'
 
@@ -55,6 +60,22 @@ export interface DayFigure {
   normal: number | null
   level: DayLevel | null
 }
+
+/**
+ * The one-line method behind a site's visitor estimate. Eiheiji's comes from survey responses
+ * scaled to its annual count, so it carries the low-confidence disclaimer.
+ */
+export function methodNote(m: RealNodeMeta | undefined, lang: 'en' | 'ja'): string | null {
+  if (!m) return null
+  if (m.measure === 'proxy_survey') {
+    return lang === 'ja' ? 'アンケート回答と周辺データからの推計。信頼度は低い。' : 'Estimated from survey responses and nearby data, low confidence.'
+  }
+  const text = lang === 'ja' ? (m.method_text_ja ?? m.method_text) : m.method_text
+  return text ? (lang === 'ja' ? `推計方法：${text}` : `Estimated: ${text}`) : null
+}
+
+/** Map circle radius: area grows with the day's visitors (a day total, not people on site at once). */
+export const dayRadius = (v: number | null) => (v === null ? 9 : 7 + Math.sqrt(Math.max(0, v)) * 0.3)
 
 /** Within 20% of a usual day counts as usual. */
 const BAND = 0.2

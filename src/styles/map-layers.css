@@ -15,6 +15,13 @@
   min-width: 290px;
   max-width: 360px;
   padding: 12px 14px;
+  /* A site's detail with several layers on can be taller than the map between the top
+     strip and the timeline: it stops there and fades out (clicking the site opens the
+     drawer with all of it). 230px = app bar, strip and timeline with their gaps. */
+  max-height: calc(100vh - 230px);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
 }
 
 .leaflet-tooltip.econ-note {
@@ -911,4 +918,168 @@
   .tl-day-seg.past .tl-day-lab {
     display: none;
   }
+}
+
+/* Transport track: access card in the node drawer, transport layer legend */
+.access-days {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+
+.access-days button {
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text-2);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+
+.access-days button[aria-selected='true'] {
+  color: var(--accent-ink);
+  background: var(--accent);
+  font-weight: 600;
+}
+
+.access-list + .access-list {
+  margin-top: 6px;
+}
+
+.access-list .kv-v {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.mode-chip {
+  font-size: 10.5px;
+  border: 1px solid;
+  border-radius: 99px;
+  padding: 0 6px;
+  color: var(--text-2);
+}
+
+.warn-text {
+  color: var(--warn-text);
+  font-weight: 600;
+}
+
+.access-note {
+  margin: 8px 0 0;
+  line-height: 1.45;
+}
+
+.access-note a {
+  color: var(--accent-strong);
+}
+
+.trend-rows {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.trend-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 26px;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.trend-row svg {
+  width: 90px;
+  height: 18px;
+}
+
+.trend-row path {
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.access-expired {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--warn-text);
+}
+
+.access-itins {
+  margin-top: 8px;
+}
+
+.access-itins .eyebrow {
+  margin-top: 6px;
+}
+
+/* ---------- next departures in a bus stop's or station's card ---------- */
+.sched {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+  min-width: 230px;
+}
+
+.sched-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.sched-clock {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.sched-clock.live {
+  color: var(--good-text);
+}
+
+.sched-ill {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #b4410c;
+  background: #fde7da;
+  border-radius: 99px;
+  padding: 0 6px;
+}
+
+.sched-row {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sched-row .num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sched-to {
+  color: var(--muted);
+}
+
+.sched-none {
+  font-size: 12px;
+  color: var(--muted);
 }

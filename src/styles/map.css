@@ -191,6 +191,168 @@
   transform: translate(-50%, calc(-100% - var(--r)));
 }
 
+/* SiteCards.tsx: one card per site, the name and a row per active layer. */
+.site-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 8px 4px 7px;
+  border-radius: 10px;
+  background: rgba(var(--chip-rgb), 0.88);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(var(--shadow-rgb), calc(0.35 * var(--shadow-k)));
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+}
+
+/* The name sits level with the site; rows hang below it. */
+.site-card.dir-right {
+  transform: translate(var(--r), -11px);
+}
+
+.site-card.dir-left {
+  transform: translate(calc(-100% - var(--r)), -11px);
+}
+
+.site-card.dir-top {
+  transform: translate(-50%, calc(-100% - var(--r)));
+}
+
+.site-card.dir-bottom {
+  transform: translate(-50%, var(--r));
+}
+
+/* A short pointer on the side facing the site, so a card that moved (or flipped to the
+   site's other side, like Katsuyama next to the board) still shows whose it is. It sits
+   level with the site: the name row's middle (11px), minus however far Declutter moved
+   the card (--dy), kept inside the card's edge. */
+.site-card.dir-right::before,
+.site-card.dir-left::before {
+  content: '';
+  position: absolute;
+  top: clamp(3px, calc(11px - var(--dy, 0px) - 6px), calc(100% - 15px));
+  border: 6px solid transparent;
+  pointer-events: none;
+}
+
+.site-card.dir-right::before {
+  left: -12px;
+  border-right-color: var(--card-pointer);
+}
+
+.site-card.dir-left::before {
+  right: -12px;
+  border-left-color: var(--card-pointer);
+}
+
+.site-card.dc-dot::before {
+  display: none;
+}
+
+/* Town cards (hotels, search intent) are centred on the town. */
+.site-card.town {
+  transform: translate(-50%, -50%);
+  cursor: default;
+  font-size: 11.5px;
+}
+
+.site-card.sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 157, 255, 0.35);
+}
+
+.site-card.muted-tag .sc-head {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.sc-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  min-height: 18px;
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 2px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+}
+
+.sc-row b {
+  font-weight: 700;
+}
+
+.sc-row svg {
+  color: var(--text-2);
+  flex: none;
+}
+
+.sc-row.attn {
+  color: var(--warn-text, #fab219);
+}
+
+.sc-ic {
+  display: grid;
+  place-items: center;
+}
+
+.sc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.sc-note {
+  color: var(--text-2);
+  font-size: 10.5px;
+}
+
+/* Declutter.tsx: a card with no room shrinks to its name and what needs attention... */
+.site-card.dc-mini .sc-row:not(.attn),
+.site-card.dc-mini .sc-note,
+.site-card.dc-mini .nt-est {
+  display: none;
+}
+
+/* ...then, with no room for that either, to a dot at its site. */
+.site-card.town.dc-mini .sc-row {
+  /* A town card is there for its number: when short of room it keeps the number and drops
+     the extras (sparkline, sub-label, area note), instead of shrinking to a bare name. */
+  display: flex;
+}
+
+.site-card.town.dc-mini .ov-spark,
+.site-card.town.dc-mini .ov-sub {
+  display: none;
+}
+
+.site-card.dc-dot {
+  width: 10px;
+  height: 10px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--text-2);
+  transform: translate(calc(var(--r, 0px) - 2px), -5px);
+}
+
+.site-card.dc-dot > * {
+  display: none;
+}
+
 .node-tag.dir-bottom {
   transform: translate(-50%, var(--r));
 }
@@ -399,12 +561,40 @@
   pointer-events: auto;
 }
 
+/* The strip sits between the side panels, so its message needs every pixel: its
+   badge shows only the dot (the same badge, with its words, is on the layers card,
+   the board and the timeline; hover gives the text), and a long message takes a
+   second line instead of being cut. */
+@media (max-width: 1600px) {
+  .status-strip .src-label,
+  .status-strip .src-date {
+    display: none;
+  }
+
+  .status-strip .src-badge {
+    padding: 4px;
+    gap: 0;
+  }
+
+  /* .status-strip in front: the base .ss-msg rule comes later in this file and would win. */
+  .status-strip .ss-msg {
+    white-space: normal;
+    line-height: 1.25;
+    max-height: 2.5em;
+  }
+
+  .status-strip {
+    border-radius: 18px;
+  }
+}
+
 .status-strip {
   position: absolute;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: calc(100% - 800px);
+  /* Between the layers card (12 + 316px) and the board (12 + 348px), with a little air. */
+  max-width: calc(100% - 744px);
   min-width: 320px;
   display: flex;
   align-items: center;
@@ -1455,8 +1645,13 @@ button.al-item:hover {
   }
 
   .sheet-tabs .btn {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     justify-content: center;
+    gap: 5px;
+    padding-inline: 8px;
+    white-space: nowrap;
+    overflow: hidden;
     background: var(--glass);
     backdrop-filter: blur(10px);
   }
@@ -1489,6 +1684,11 @@ button.al-item:hover {
   .node-tag {
     font-size: 11px;
     padding: 2px 7px 2px 6px;
+  }
+
+  .site-card {
+    font-size: 11px;
+    padding: 2px 7px 3px 6px;
   }
 }
 
@@ -1541,4 +1741,34 @@ button.al-item:hover {
 .kddi-pending {
   flex: none;
   white-space: nowrap;
+}
+
+/* Live tag: buses and trains on the real clock (timeline at Now, not playing) */
+.tl-mode.live {
+  color: var(--good-text);
+  background: rgba(12, 163, 12, 0.14);
+}
+
+.tl-mode.live::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 1px;
+  animation: tlLivePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tlLivePulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-mode.live::before {
+    animation: none;
+  }
 }

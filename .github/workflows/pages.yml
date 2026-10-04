@@ -30,6 +30,7 @@ jobs:
       - run: npm run lint
       # A malformed real_data.json fails the deploy here; the previous site stays up.
       - run: node scripts/check_data.mjs
+      - run: node scripts/check_transport.mjs
       # Live data origin (CloudFront). Empty -> the app reads the bundled public/data snapshot.
       - run: npm run build
         env:

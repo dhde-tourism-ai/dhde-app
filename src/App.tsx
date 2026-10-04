@@ -16,11 +16,13 @@ const MapView = lazy(() => import('./views/map/MapView'))
 const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
 const NodesView = lazy(() => import('./views/nodes/NodesView'))
 const SummaryView = lazy(() => import('./views/summary/SummaryView'))
+const TransportView = lazy(() => import('./views/transport/TransportView'))
 
 const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
   { id: 'summary', en: 'Summary', ja: '概要', icon: 'home' },
   { id: 'map', en: 'Map', ja: '地図', icon: 'map' },
   { id: 'nodes', en: 'Nodes', ja: 'ノード', icon: 'nodes' },
+  { id: 'transport', en: 'Transport', ja: '交通', icon: 'bus' },
   { id: 'strategy', en: 'Strategy', ja: '戦略', icon: 'strategy' },
 ]
 
@@ -145,6 +147,12 @@ export default function App() {
         {route.view === 'nodes' && (
           <Suspense fallback={<Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />}>
             <NodesView data={data} selected={route.node} onSelect={(id) => navigate({ view: 'nodes', node: id })} />
+          </Suspense>
+        )}
+
+        {route.view === 'transport' && (
+          <Suspense fallback={<Loading what={t('Loading transport…', '交通データを読み込み中…')} />}>
+            <TransportView registry={registry.data} onOpenMap={(id) => (window.location.href = `?layers=transport#/map/${id}`)} />
           </Suspense>
         )}
 

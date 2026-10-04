@@ -115,6 +115,7 @@
   --real-text: #b8f0c7;
   --accent-text: #d8ddff;
   --s7-text: #b3aaf3;
+  --card-pointer: rgba(201, 212, 255, 0.75);
 }
 
 /*
@@ -181,4 +182,5 @@
   --accent-text: #0f4a69;
   --s7-text: #5b4bc4;
   --brand-tile: #165e83;
+  --card-pointer: rgba(43, 40, 35, 0.35);
 }

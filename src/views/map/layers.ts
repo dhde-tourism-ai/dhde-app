@@ -5,6 +5,8 @@ export type LayerId =
   | 'density'
   | 'flow'
   | 'traffic'
+  | 'transport'
+  | 'rail'
   | 'weather'
   | 'survey'
   | 'social'
@@ -46,6 +48,8 @@ export const LAYERS: LayerDef[] = [
   { id: 'density', group: 'movement', en: 'Regional density', ja: '地域の密度', icon: 'density', demo: true, hint_en: 'Where visitors concentrate', hint_ja: '来訪者が集中する地域', tip_en: 'Shading shows where visitors gather across the region.', tip_ja: '地域内で来訪者が集まる場所を色の濃さで表示。' },
   { id: 'flow', group: 'movement', en: 'People flow', ja: '人流', icon: 'flow', demo: true, hint_en: 'Arrivals and departures on real roads', hint_ja: '実際の道路上の到着・出発', tip_en: 'Moving dots show visitors travelling to and from each site on the main roads.', tip_ja: '動く点は主要道路で各地点へ行き来する来訪者。' },
   { id: 'traffic', group: 'movement', en: 'Traffic flow', ja: '交通状況', icon: 'traffic', demo: true, hint_en: 'Road congestion and reroutes', hint_ja: '道路の混雑と迂回推奨', tip_en: 'Road colour shows congestion. Green lines are suggested detours.', tip_ja: '道路の色は混雑度。緑の線は推奨迂回路。' },
+  { id: 'transport', group: 'movement', en: 'Bus routes', ja: 'バス路線', icon: 'bus', demo: false, hint_en: 'Bus routes, every stop, walking areas', hint_ja: 'バス路線、全停留所、徒歩圏', tip_en: 'How visitors can reach each site by bus: the routes serving the six sites from the operators’ timetables, every stop on them, and how far you can walk in 15 or 30 minutes from each site. Select a site for journey times and the last bus back.', tip_ja: '各地点へバスで行く方法：事業者の時刻表による6地点を結ぶ路線、その全停留所、各地点から徒歩15分・30分圏。地点を選ぶと所要時間と最終バスを表示。' },
+  { id: 'rail', group: 'movement', en: 'Train routes', ja: '鉄道路線', icon: 'train', demo: false, hint_en: 'Railway lines and stations', hint_ja: '鉄道路線と駅', tip_en: 'Railway lines and stations in and around Fukui: Hokuriku Shinkansen, Hapi-line Fukui, Echizen Railway, Fukui Railway and the JR lines. From MLIT railway data (CC BY 4.0): routes only, since rail timetables are not open data.', tip_ja: '福井県内と周辺の鉄道路線と駅：北陸新幹線、ハピラインふくい、えちぜん鉄道、福井鉄道、JR線。国土数値情報（鉄道データ、CC BY 4.0）。鉄道の時刻表はオープンデータでないため路線のみ。' },
   { id: 'weather', group: 'conditions', en: 'Weather', ja: '気象', icon: 'weather', demo: true, hint_en: 'Weather and warnings at each site', hint_ja: '各地点の天気と注意報', tip_en: 'Weather at each site and any weather warnings in force.', tip_ja: '各地点の天気と発表中の気象注意報・警報。' },
   { id: 'survey', group: 'voice', en: 'Survey', ja: 'アンケート', icon: 'survey', demo: true, hint_en: 'Satisfaction, recommendation, reasons, home area', hint_ja: '満足度・推奨意向・来訪理由・居住地', tip_en: 'Visitor survey results: satisfaction, how likely visitors are to recommend the site, why they came and where they live.', tip_ja: '来訪者アンケート：満足度、人に勧めたいか、来訪理由、居住地。' },
   { id: 'social', group: 'voice', en: 'Social media', ja: 'SNS', icon: 'social', demo: true, hint_en: 'Instagram, YouTube, Bluesky and Reddit posts about each site', hint_ja: '各地点についてのInstagram・YouTube・Bluesky・Reddit投稿', tip_en: 'Real where collected: Instagram posts tagged at each site, plus Bluesky, YouTube and Reddit posts and comments naming it, counted weekly with language and sentiment. Other sites, and the feed, are fictional demo.', tip_ja: '収集済みの地点は実データ：各地点にタグ付けされたInstagram投稿と、地点に触れたBluesky・YouTube・Redditの投稿・コメントを毎週集計（言語・感情付き）。その他の地点とフィードは架空のデモ。' },
@@ -56,17 +60,20 @@ export const LAYERS: LayerDef[] = [
   { id: 'economics', group: 'economics', en: 'Economics', ja: '経済', icon: 'economics', demo: false, hint_en: 'Visitors, revenue and opportunity lost', hint_ja: '来訪者・収入・機会損失', tip_en: 'Tourism revenue per town, and revenue missed from day-trips instead of overnight stays, bad weather and empty rooms.', tip_ja: '市町ごとの観光収入と、宿泊せず日帰りになった分・悪天候・空室による取りこぼし。' },
 ]
 
+/** Layers drawn as cards on towns rather than on sites: only one at a time (MapView's toggle). */
+export const TOWN_LAYERS: LayerId[] = ['hotels', 'rsi']
+
 /** Tooltip for a "Partly estimated or demo" badge that covers several layers. */
 export const OVERVIEW_NOTE = [
   'Some layers use real data; the rest is estimated or demo. Turn a layer on to see which part is estimated or demo.',
   '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
 ] as const
 
-/** The briefing view: visitors, hotels and what to do, readable in about 20 seconds. */
-export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges']
+/** The briefing view, readable in about 20 seconds: visitors, hotels, what to do, and bus access. */
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges', 'transport']
 
 // v2 since the briefing defaults: earlier visitors saved an empty or older choice.
-const LAYERS_KEY = 'dhde.layers.v2'
+const LAYERS_KEY = 'dhde.layers.v3'
 
 /** The viewer's last layer choice, or null on a first visit. */
 export function readStoredLayers(): LayerId[] | null {
