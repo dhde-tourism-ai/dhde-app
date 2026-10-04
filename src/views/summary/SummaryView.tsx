@@ -16,7 +16,7 @@ import { StatusPill } from '../../components/StatusPill'
 import { localize } from '../../lib/localize'
 import JA from '../../i18n/strategy.ja.json'
 import { LAYERS } from '../map/layers'
-import { BRIEFING_LAYERS, useBriefing } from '../../lib/briefing'
+import { BRIEFING_LAYERS, briefingSource, useBriefing } from '../../lib/briefing'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
@@ -288,7 +288,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
               return (
                 <li key={id}>
                   <span className="sum-label">{layer ? t(layer.en, layer.ja) : id}</span>
-                  <SourceBadge info={info} />
+                  <SourceBadge info={briefing ? briefingSource(id, info) : info} />
                 </li>
               )
             })}

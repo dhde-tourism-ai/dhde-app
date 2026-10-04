@@ -14,7 +14,7 @@ import type { MarketVoiceData } from '../../../types/market'
 import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
 import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
-import { BRIEFING_LAYERS, LEVEL, useBriefing } from '../../../lib/briefing'
+import { BRIEFING_LAYERS, LEVEL, briefingSource, useBriefing } from '../../../lib/briefing'
 
 import { RailLegend, TransportLegend } from './TransportLegend'
 
@@ -322,7 +322,7 @@ export function LayersPanel(p: Props) {
                       <span className="layer-text">
                         <span className="layer-name">
                           {t(l.en, l.ja)}
-                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact note={REAL_NOTE[l.id]} />}
+                          {l.demo && p.isDemo && on && <SourceBadge info={briefing && src(l.id) ? briefingSource(l.id, src(l.id)!) : src(l.id)} compact note={REAL_NOTE[l.id]} />}
                         </span>
                         <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
                       </span>

@@ -77,6 +77,16 @@ export function methodNote(m: RealNodeMeta | undefined, lang: 'en' | 'ja'): stri
 /** Map circle radius: area grows with the day's visitors (a day total, not people on site at once). */
 export const dayRadius = (v: number | null) => (v === null ? 9 : 7 + Math.sqrt(Math.max(0, v)) * 0.3)
 
+/**
+ * A layer's provenance as briefing shows it. Briefing drops the demo part of a mixed layer, so a
+ * measured layer (survey responses, Google search figures, sentiment scores, hotel bookings,
+ * weather) is Real there; visitor numbers and the nudges built on them stay Estimated (mixed).
+ */
+const VISITOR_LAYERS = new Set(['people', 'density', 'flow', 'nudges'])
+export function briefingSource<T extends { status: string }>(id: string, info: T): T {
+  return info.status === 'mixed' && !VISITOR_LAYERS.has(id) ? { ...info, status: 'real' } : info
+}
+
 /** Within 20% of a usual day counts as usual. */
 const BAND = 0.2
 
