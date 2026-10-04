@@ -289,7 +289,7 @@ function Forecast({ card }: { card: ForecastCard }) {
           <div className="chart-key">
             <span>
               <i className="k-line" style={{ borderColor: S[0] }}></i>
-              {t('Counted', '実測')}
+              {t('Estimated (daily)', '推計（日別）')}
             </span>
             <span>
               <i className="k-line dash" style={{ borderColor: S[1] }}></i>
@@ -317,7 +317,7 @@ function Forecast({ card }: { card: ForecastCard }) {
                 formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(name)]}
               />
               <Area dataKey="range" name={t('Forecast range', '予測幅')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
-              <Line dataKey="actual" name={t('Counted', '実測')} stroke={S[0]} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
+              <Line dataKey="actual" name={t('Estimated (daily)', '推計（日別）')} stroke={S[0]} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
               <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
               {site.points
                 .filter((p) => p.severe_weather)

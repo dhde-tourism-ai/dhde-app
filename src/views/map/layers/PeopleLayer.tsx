@@ -97,7 +97,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
               <Tooltip className="map-tip wide" direction="top" offset={[0, -10]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
-                  <span className="tt-real">{t('Real signal', '実シグナル')}</span>
+                  <span className="tt-real">{t('Camera count', 'カメラ計測')}</span>
                 </div>
                 <div className="tt-hero">
                   <b className="num">{sig ? Math.round(sig.v).toLocaleString('en-US') : '—'}</b>
@@ -150,7 +150,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
               <Tooltip className="map-tip wide" direction="top" offset={[0, -rNow]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
-                  {realV !== null ? <span className="tt-real">{t('Real day total', '実日合計')}</span> : m ? <span className="tt-demo">{t('Forecast', '予測')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
+                  {realV !== null ? <span className="tt-est">{t('Estimated day total', '推計日合計')}</span> : m ? <span className="tt-demo">{t('Forecast', '予測')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
                 </div>
                 {realV !== null && (
                   <div className="tt-hero">

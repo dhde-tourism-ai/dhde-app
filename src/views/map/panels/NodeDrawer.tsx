@@ -159,7 +159,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <div className="real-card">
                 <div className="rc-head">
                   <span className="eyebrow">{tr('Camera detections', 'カメラ検知数')}</span>
-                  <span className="tt-real">{tr('Real signal', '実シグナル')}</span>
+                  <span className="tt-real">{tr('Camera count', 'カメラ計測')}</span>
                 </div>
                 <span className="dk-val">{lastSig ? Math.round(lastSig.v).toLocaleString('en-US') : '—'}</span>
                 {lastSig?.index != null && (
@@ -179,12 +179,12 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                   {fig ? (
                     <>
                       <span className="eyebrow">{fig.kind === 'real' ? tr('Visitors this day (estimate from real counts)', 'この日の来訪者数（実測からの推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
-                      {fig.kind === 'real' ? <span className="tt-real">{tr('Real data', '実データ')}</span> : fig.kind === 'forecast' ? <span className="tt-real">{tr('Model forecast', 'モデル予測')}</span> : null}
+                      {fig.kind === 'real' ? <span className="tt-est">{tr('Estimated', '推計')}</span> : fig.kind === 'forecast' ? <span className="tt-real">{tr('Model forecast', 'モデル予測')}</span> : null}
                     </>
                   ) : (
                     <>
                       <span className="eyebrow">{frame.realDay?.visitors != null ? tr('Visitors this day (modelled)', 'この日の来訪者数（推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
-                      {frame.realDay?.visitors != null ? <span className="tt-real">{tr('Real', '実データ')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
+                      {frame.realDay?.visitors != null ? <span className="tt-est">{tr('Estimated', '推計')}</span> : <span className="tt-demo">{tr('Forecast', '予測')}</span>}
                     </>
                   )}
                 </div>

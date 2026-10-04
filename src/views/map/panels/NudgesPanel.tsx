@@ -99,7 +99,11 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
                       {n.real ? (
                         <span className="pill pill-modelled">
                           <span className="pill-dot" aria-hidden="true"></span>
-                          {t('Real data + forecast', '実データ＋予測')}
+                          {live.node_meta?.[n.node]?.measure === 'proxy_survey'
+                            ? t('Estimated, low confidence', '推計（信頼度低）')
+                            : n.loop === 3
+                              ? t('Real bookings + forecast', '実予約＋予測')
+                              : t('Estimated + forecast', '推計＋予測')}
                         </span>
                       ) : (
                         <span className="pill pill-illustrative">

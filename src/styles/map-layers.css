@@ -867,6 +867,19 @@
   padding: 1px 7px;
 }
 
+/* A calibrated visitor number: estimated from real counts, never tagged Real (the Estimated pill's blue). */
+.tt-est {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: var(--modelled);
+  border-radius: 99px;
+  padding: 1px 7px;
+}
+
 .real-card {
   display: flex;
   flex-direction: column;
