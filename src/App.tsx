@@ -64,7 +64,7 @@ export default function App() {
         </a>
 
         <nav className="tabs" aria-label={t('Views', 'ビュー')}>
-          {TABS.map((tab) => (
+          {TABS.filter((tab) => !(briefing && tab.id === 'nodes')).map((tab) => (
             <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
               <Icon name={tab.icon} />
               <span className="tab-label">{t(tab.en, tab.ja)}</span>

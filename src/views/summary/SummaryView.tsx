@@ -152,9 +152,11 @@ export default function SummaryView({ data }: { data: ProductData }) {
           <a className="btn btn-accent" href="#/map">
             <Icon name="map" /> {t('Map', '地図')}
           </a>
-          <a className="btn" href="#/nodes">
-            <Icon name="nodes" /> {t('Nodes', 'ノード')}
-          </a>
+          {!briefing && (
+            <a className="btn" href="#/nodes">
+              <Icon name="nodes" /> {t('Nodes', 'ノード')}
+            </a>
+          )}
           <a className="btn" href="#/strategy">
             <Icon name="strategy" /> {t('Strategy', '戦略')}
           </a>

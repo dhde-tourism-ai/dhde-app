@@ -4,6 +4,7 @@ import { Loading, LoadError } from '../../components/StateMsg'
 import { Icon } from '../../components/icons'
 import { isEstimatedMeasure, MEASURE_LABEL, nodeSwitcherIds } from '../../lib/nodes'
 import { useLang } from '../../lib/i18n'
+import { fmtDate } from '../../lib/format'
 import NodeDashboard from './NodeDashboard'
 import '../../styles/pages.css'
 
@@ -14,11 +15,14 @@ interface Props {
 }
 
 export default function NodesView({ data: product, selected, onSelect }: Props) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { dashboard, registry } = product
   const data = dashboard.data
   if (dashboard.isLoading) return <Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />
   if (dashboard.error || !data) return <LoadError file="dashboard_data.json" error={dashboard.error} />
+  // Days between dashboard_data.json and the app's latest real data (it stopped refreshing on 12 Sep).
+  const latest = product.merged?.real?.shared_date
+  const staleDays = data.generated_at && latest ? Math.floor((Date.parse(latest) - Date.parse(data.generated_at.slice(0, 10))) / 86400000) : null
 
   const liveNodes = data.nodes ?? {}
   const inRegistry = (id: string) => !!registry.data?.nodes.some((n) => n.id === id)
@@ -52,6 +56,17 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
           {measure && <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>}
         </div>
       </div>
+
+      {staleDays !== null && staleDays > 3 && (
+        <div className="banner banner-warn stale-banner" role="status">
+          <Icon name="alert" />
+          <span>
+            <strong>{t(`Not current: this page's data is ${staleDays} days old`, `最新ではありません：このページのデータは${staleDays}日前のものです`)}</strong>{' '}
+            ({fmtDate(data.generated_at!, lang)}).{' '}
+            {t('For current visitors and forecasts, use the Summary and the Map.', '最新の来訪者数と予測は概要と地図をご覧ください。')}
+          </span>
+        </div>
+      )}
 
       <nav className="node-switch" aria-label={t('Choose a node', 'ノードを選択')}>
         <button className={`ns-btn ${selectedNode === 'all' ? 'on' : ''}`} aria-pressed={selectedNode === 'all'} onClick={() => onSelect(undefined)}>

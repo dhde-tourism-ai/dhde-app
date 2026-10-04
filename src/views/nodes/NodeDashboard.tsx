@@ -89,15 +89,10 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
 
         {selectedNode === 'all' && data.aggregate && (
           <div className="tile-grid two">
-            <div className="tile tile-lead">
-              <div className="tile-label">{t('Annual opportunity gap (¥)', '年間の機会損失（円）')}</div>
-              <div className="tile-value">¥{fmtNum(data.aggregate.opportunity_gap_yen)}</div>
-              <div className="tile-foot">{t('Weather-induced demand deficit', '天候による需要不足')}</div>
-            </div>
             <div className="tile">
               <div className="tile-label">{t('Opportunity gap (visitors)', '機会損失（来訪者数）')}</div>
               <div className="tile-value">{fmtNum(data.aggregate.opportunity_gap_visitors)}</div>
-              <div className="tile-foot">{t('Annual deficit across active nodes', '稼働ノード合計の年間不足')}</div>
+              <div className="tile-foot">{t('Annual weather-induced deficit across active nodes, a rough estimate', '稼働ノード合計の天候による年間不足（概算）')}</div>
             </div>
           </div>
         )}
@@ -173,7 +168,7 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           <div>
             <h3 className="card-title">{t('Actual vs model forecast', '実績とモデル予測')}</h3>
             <p className="card-sub">
-              {t('Last 60 days · Random Forest', '直近60日・ランダムフォレスト')} {selectedNode === ('fukui_station' as NodeKey) ? t('(with hotel reservation lags)', '（ホテル予約ラグ込み）') : ''}
+              {t('Last 60 days · model forecast', '直近60日・モデル予測')} {selectedNode === ('fukui_station' as NodeKey) ? t('(with hotel reservation lags)', '（ホテル予約ラグ込み）') : ''}
             </p>
           </div>
           {modelAccuracy && modelAccuracy.mae_pct_of_mean !== null && (
