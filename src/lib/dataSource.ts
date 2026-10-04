@@ -83,9 +83,16 @@ export function getFallbackState(): { date: string | null } | null {
 
 // ---- loader ----------------------------------------------------------------
 
+/**
+ * Files that ship with the app and aren't published to the live source (the weekly GTFS bus
+ * timetable). They load from the bundle directly, so a missing live copy isn't reported as
+ * "showing saved data".
+ */
+const BUNDLED_ONLY = new Set(['transport_trips.json'])
+
 /** Load one data file: live source first when configured, bundled snapshot otherwise or on failure. */
 export async function loadDataFile<T>(file: string, signal: AbortSignal): Promise<T> {
-  const live = liveUrl(file)
+  const live = BUNDLED_ONLY.has(file) ? null : liveUrl(file)
   if (live) {
     try {
       return (await fetchJson(live, file, signal)) as T
