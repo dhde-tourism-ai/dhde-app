@@ -417,8 +417,17 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
           a site's daily figures (Tojinbo's August days add up to 109k; Sakai city's month is 326k). */}
       {s.kind !== 'guest_nights' && (
         <p className="scope-label">
-          <strong>{t('Town-level visitors (municipality)', '市町単位の来訪者数（自治体）')}</strong>{' '}
-          {t('The whole town is counted, not only the site, so these totals are larger than the site figures on the map.', '地点だけでなく市町全体を数えるため、地図上の地点の数値より大きくなります。')}
+          {/prefecture/i.test(s.label) ? (
+            <>
+              <strong>{t('Prefecture-level visitors', '県全体の来訪者数')}</strong>{' '}
+              {t('The whole prefecture is counted, not the six sites.', '6地点ではなく県全体を数えています。')}
+            </>
+          ) : (
+            <>
+              <strong>{t('Town-level visitors (municipality)', '市町単位の来訪者数（自治体）')}</strong>{' '}
+              {t('The whole town is counted, not only the site, so these totals are larger than the site figures on the map.', '地点だけでなく市町全体を数えるため、地図上の地点の数値より大きくなります。')}
+            </>
+          )}
         </p>
       )}
       <div className="forecast-layout">

@@ -257,13 +257,13 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             </>
             )}
 
-            <h3 className="drawer-h">{meta ? tr('Daily visitors: last 7 days (real) and next 7 (forecast)', '1日の来訪者数：直近7日（実）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
+            <h3 className="drawer-h">{meta ? tr('Daily visitors: last 7 days (estimated) and next 7 (forecast)', '1日の来訪者数：直近7日（推計）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={110}>
                 <BarChart data={daily} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
                   <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
-                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString('en-US'), it?.payload?.isReal ? tr('Visitors (real estimate)', '来訪者（実推計）') : tr('Forecast', '予測')]} />
+                  <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString('en-US'), it?.payload?.isReal ? tr('Visitors (estimated)', '来訪者（推計）') : tr('Forecast', '予測')]} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false}>
                     {daily.map((d) => (
                       <Cell key={d.d} fill={d.d === day ? '#8b9dff' : d.isReal ? S1 : '#6d86ad'} fillOpacity={d.d === day ? 1 : d.isReal ? 0.9 : 0.55} />
@@ -273,7 +273,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               </ResponsiveContainer>
               {meta && (
                 <div className="chart-key">
-                  <span><i className="k-band" style={{ background: S1 }}></i>{tr('Real estimate', '実推計')}</span>
+                  <span><i className="k-band" style={{ background: S1 }}></i>{tr('Estimated', '推計')}</span>
                   <span><i className="k-band" style={{ background: '#6d86ad', opacity: 0.6 }}></i>{tr('Forecast', '予測')}</span>
                   <span><i className="k-band" style={{ background: '#8b9dff' }}></i>{tr('Selected day', '選択日')}</span>
                 </div>

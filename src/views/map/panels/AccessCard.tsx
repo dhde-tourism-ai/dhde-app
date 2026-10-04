@@ -4,6 +4,7 @@ import { useLang } from '../../../lib/i18n'
 import { isHoliday } from '../../../lib/holidays'
 import { Icon } from '../../../components/icons'
 import { Itinerary } from '../../../components/Itinerary'
+import { useBriefing } from '../../../lib/briefing'
 import {
   DAY_LABEL,
   EARLY_LAST_RETURN_MIN,
@@ -31,6 +32,7 @@ const todayIso = () => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slic
  */
 export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nodeId: string; hubName: [string, string] }) {
   const { t: tr, lang } = useLang()
+  const briefing = useBriefing()
   const [day, setDay] = useState<DayType>(() => dayTypeOf(new Date(`${todayIso()}T12:00:00`), (d) => isHoliday(d.toISOString().slice(0, 10))))
   const node = data.nodes[nodeId]
   if (!node) return null
@@ -191,10 +193,13 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
             </span>
           </li>
         ))}
-        <li className="kv">
-          <span>{tr('How visitors arrive (mode share)', '来訪手段の割合')}</span>
-          <span className="kv-v muted small">{tr('[pending] Survey v2 question', '[pending] アンケートv2の設問')}</span>
-        </li>
+        {/* Briefing shows no placeholders: this row waits for a survey question. */}
+        {!briefing && (
+          <li className="kv">
+            <span>{tr('How visitors arrive (mode share)', '来訪手段の割合')}</span>
+            <span className="kv-v muted small">{tr('[pending] Survey v2 question', '[pending] アンケートv2の設問')}</span>
+          </li>
+        )}
       </ul>
 
       {node.note && <p className="muted small access-note">{tr(node.note, node.note_ja ?? node.note)}</p>}
