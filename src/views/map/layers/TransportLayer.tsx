@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { CircleMarker, Pane, Polygon, Polyline, useMapEvents } from 'react-leaflet'
-import type { TransportMapFile } from '../../../types/transport'
+import type { TransportMapFile, TransportTripsFile } from '../../../types/transport'
+import type { RailRun } from '../../../lib/railModel'
+import { BusStopSchedule, StationSchedule } from './Schedules'
 import { MODE_COLOUR, MODE_LABEL, RAIL_LINE_COLOUR } from '../../../lib/transport'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
@@ -31,7 +33,21 @@ function useZoom() {
  * operators' GTFS shapes where published, otherwise the stop sequence. Railway
  * lines and stations come from MLIT's railway data (track only, no timetables).
  */
-export function TransportLayer({ data, bus, rail: showRail }: { data: TransportMapFile; bus: boolean; rail: boolean }) {
+export function TransportLayer({
+  data,
+  bus,
+  rail: showRail,
+  trips,
+  runs,
+}: {
+  data: TransportMapFile
+  bus: boolean
+  rail: boolean
+  /** Bus timetables, for each stop's next departures. */
+  trips: TransportTripsFile | null
+  /** Illustrative train service, for each station's next trains. */
+  runs: RailRun[]
+}) {
   const { t: tr } = useLang()
   const zoom = useZoom()
   const stopR = zoom >= 13 ? 5 : zoom >= 11 ? 4 : 2.6
@@ -89,6 +105,7 @@ export function TransportLayer({ data, bus, rail: showRail }: { data: TransportM
               <Tip>
                 <strong>{s.name}</strong>
                 <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
+                <BusStopSchedule trips={trips} stopId={s.id} />
               </Tip>
             </CircleMarker>
           ))}
@@ -102,6 +119,7 @@ export function TransportLayer({ data, bus, rail: showRail }: { data: TransportM
             <Tip>
               <strong>{s.name_ja}</strong>
               <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
+              <StationSchedule runs={runs} stationId={s.id} />
             </Tip>
           </CircleMarker>
         ))}

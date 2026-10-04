@@ -37,8 +37,8 @@ export function TransportLegend() {
       </div>
       <p className="lg-note">
         {t(
-          'Bus timetables (GTFS-JP), not live. Vehicles move through the timeline hour, a minute a second. Walking areas: OpenStreetMap via Valhalla.',
-          'バス時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。車両はタイムラインの1時間を1秒1分で移動。徒歩圏：OpenStreetMap（Valhalla）。',
+          'Bus timetables (GTFS-JP): scheduled positions, not GPS. At Now (Live) buses run on the real clock; at any other hour, or with Play, they preview that hour a minute a second. Hover a stop for its next buses. Walking areas: OpenStreetMap via Valhalla.',
+          'バス時刻表（GTFS-JP）上の位置で、GPSではない。「現在」（ライブ）では実時刻で、他の時間や再生中はその1時間を1秒1分でプレビュー。停留所にカーソルを合わせると次のバスを表示。徒歩圏：OpenStreetMap（Valhalla）。',
         )}
       </p>
       {trends && trends.terms.length > 0 && (
@@ -96,8 +96,8 @@ export function RailLegend() {
       </div>
       <p className="lg-note">
         {t(
-          'Lines and stations: MLIT railway data (CC BY 4.0). Trains are illustrative: a typical interval per line, not a timetable (rail timetables are not open data).',
-          '路線・駅：国土数値情報（鉄道データ、CC BY 4.0）。列車は参考表示：路線ごとの標準的な間隔で、時刻表ではない（鉄道の時刻表は非公開）。',
+          'Lines and stations: MLIT railway data (CC BY 4.0). Trains are illustrative: a typical interval per line, stopping at each station, not a timetable (rail timetables are not open data). Hover a station for its next trains.',
+          '路線・駅：国土数値情報（鉄道データ、CC BY 4.0）。列車は参考表示：路線ごとの標準的な間隔で各駅に停車し、時刻表ではない（鉄道の時刻表は非公開）。駅にカーソルを合わせると次の列車を表示。',
         )}
       </p>
     </>

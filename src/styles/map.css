@@ -1711,3 +1711,33 @@ button.al-item:hover {
   flex: none;
   white-space: nowrap;
 }
+
+/* Live tag: buses and trains on the real clock (timeline at Now, not playing) */
+.tl-mode.live {
+  color: var(--good-text);
+  background: rgba(12, 163, 12, 0.14);
+}
+
+.tl-mode.live::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 1px;
+  animation: tlLivePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tlLivePulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-mode.live::before {
+    animation: none;
+  }
+}
