@@ -76,7 +76,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const spark = useMemo(() => {
     const s2 = scaleFor(live)
     const tot = Array.from({ length: live.hours }, (_, i) =>
-      Object.values(live.nodes).reduce((a, n) => a + (n.on_site.actual[i] ?? n.on_site.predicted[i] ?? 0), 0),
+      Object.values(live.nodes).reduce((a, n) => a + ((i <= live.observed_until ? n.on_site.actual[i] : null) ?? n.on_site.predicted[i] ?? 0), 0),
     )
     const max = Math.max(1, ...tot)
     const pts = tot.map((v, i) => `${(xOf(i + 0.5, s2) * 1000).toFixed(1)},${(40 - (v / max) * 36).toFixed(1)}`)

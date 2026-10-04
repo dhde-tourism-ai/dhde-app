@@ -160,7 +160,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 )}
                 <div className="tt-hero">
                   <b className="num">{Math.round(f.onSite).toLocaleString('en-US')}</b>
-                  <span>{f.observed ? t('people on site now', '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
+                  <span>{f.observed ? t('people on site this hour (simulated shape)', 'この時間の人数（模擬の時間分布）') : t('people on site this hour (forecast, simulated shape)', 'この時間の予測人数（模擬の時間分布）')}</span>
                 </div>
                 <div className="tt-grid">
                   <span className="tt-k">{t('Crowding', '混雑')}</span>

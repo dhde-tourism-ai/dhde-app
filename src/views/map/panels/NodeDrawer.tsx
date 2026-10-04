@@ -103,7 +103,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
         const i = day * 24 + h
         return {
           h,
-          actual: ln.on_site.actual[i],
+          actual: live && i <= live.observed_until ? ln.on_site.actual[i] : null,
           forecast: ln.on_site.predicted[i],
           band: ln.on_site.lo && ln.on_site.hi ? [ln.on_site.lo[i], ln.on_site.hi[i]] : null,
         }
@@ -191,7 +191,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 <span className="dk-val">{fig ? (fig.value !== null ? Math.round(fig.value).toLocaleString('en-US') : tr('No forecast yet', '予測なし')) : Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString('en-US')}</span>
                 <div className="tt-grid">
                   <span className="tt-k">{tr('Method', '方法')}</span>
-                  <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
+                  <span className="tt-v">{meta.measure === 'proxy_survey' ? tr('Estimated from survey responses and nearby data, low confidence', 'アンケート回答と周辺データからの推計、信頼度は低い') : meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
                   <span className="tt-k">{tr(`Official ${meta.official_period_label ?? '2025'}`, `${meta.official_period_label_ja ?? '2025年'}公式`)}</span>
                   <span className="tt-v num">{meta.official_2025?.toLocaleString('en-US') ?? '—'}</span>
                   <span className="tt-k">{tr('Confidence', '信頼度')}</span>
@@ -214,7 +214,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             <>
             <div className="drawer-kpis">
               <div className="dk">
-                <span className="eyebrow">{frame.observed ? tr('On site now', '現在の人数') : tr('Forecast on site', '予測人数')}</span>
+                <span className="eyebrow">{frame.observed ? tr('This hour (simulated shape)', 'この時間（模擬の時間分布）') : tr('This hour (forecast, simulated shape)', 'この時間（予測・模擬の時間分布）')}</span>
                 <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString('en-US')}</span>
                 <StatusTag tier={frame.tier} />
               </div>
@@ -235,7 +235,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             <p className="meter-lab muted">
               {Math.round(frame.load * 100)}% {tr('of comfortable capacity', 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
-            <h3 className="drawer-h">{tr('Today’s rhythm, people on site', '1日の推移（現地人数）')}</h3>
+            <h3 className="drawer-h">{tr('Simulated hourly shape (scaled to the day’s estimate)', '模擬の時間分布（日別推計に合わせて配分）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={130}>
                 <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
@@ -244,12 +244,12 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                   <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(n)]} />
                   <Area dataKey="band" name={tr('Range', '予測幅')} stroke="none" fill={S1} fillOpacity={0.12} isAnimationActive={false} />
                   <Line dataKey="forecast" name={tr('Forecast', '予測')} stroke={S1} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
-                  <Line dataKey="actual" name={tr('Counted', '実測')} stroke={ink} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
+                  <Line dataKey="actual" name={tr('Simulated hourly shape', '模擬の時間分布')} stroke={ink} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
                   {t >= day * 24 && t < day * 24 + 24 && <ReferenceLine x={t % 24} stroke="#8b9dff" strokeWidth={1.5} />}
                 </ComposedChart>
               </ResponsiveContainer>
               <div className="chart-key">
-                <span><i className="k-line" style={{ borderColor: ink }}></i>{tr('Counted', '実測')}</span>
+                <span><i className="k-line" style={{ borderColor: ink }}></i>{tr('Simulated hourly shape', '模擬の時間分布')}</span>
                 <span><i className="k-line dash" style={{ borderColor: S1 }}></i>{tr('Forecast', '予測')}</span>
                 <span><i className="k-band" style={{ background: 'rgba(57,135,229,.25)' }}></i>{tr('Range', '予測幅')}</span>
               </div>

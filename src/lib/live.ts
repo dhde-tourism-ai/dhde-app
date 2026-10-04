@@ -55,8 +55,12 @@ export interface NodeFrame {
 export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
   const out: Record<string, NodeFrame> = {}
   const d = Math.min(live.days.length - 1, Math.floor(i / 24))
+  // Today's number is a forecast until it has been counted: after observed_until (the latest day
+  // every site shares), advance figures such as Katsuyama's and Awara's bookings are not "actual".
+  const counted = i <= live.observed_until
+  const countedDay = d <= Math.floor(live.observed_until / 24)
   for (const [id, n] of Object.entries(live.nodes)) {
-    const actual = n.on_site.actual[i] ?? null
+    const actual = counted ? (n.on_site.actual[i] ?? null) : null
     const predicted = n.on_site.predicted[i] ?? 0
     const onSite = actual ?? predicted
     const load = onSite / Math.max(1, n.comfortable_capacity)
@@ -70,7 +74,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
       hi: n.on_site.hi?.[i] ?? null,
       load,
       tier: crowdTier(load),
-      arrivals: n.arrivals.actual[i] ?? n.arrivals.predicted[i] ?? 0,
+      arrivals: (counted ? n.arrivals.actual[i] : null) ?? n.arrivals.predicted[i] ?? 0,
       weather: {
         temp: n.weather.temp_c[i],
         pop: n.weather.precip_pct[i],
@@ -84,7 +88,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
       alerts: live.weather_alerts.filter((a) => a.nodes.includes(id) && i >= a.start && i <= a.end),
       realDay: (() => {
         const m = live.node_meta?.[id]
-        if (!m) return null
+        if (!m || !countedDay) return null
         const v = m.visitors_daily[d] ?? null
         const sg = m.signal_daily[d] ?? null
         return v === null && sg === null ? null : { visitors: v, signal: sg }
@@ -150,7 +154,8 @@ export function dailyArrivals(live: LiveData, id: string) {
   if (!n) return []
   return live.days.map((_, d) => {
     const pred = n.arrivals.predicted.slice(d * 24, d * 24 + 24).reduce((a, b) => a + b, 0)
-    const act = n.arrivals.actual.slice(d * 24, d * 24 + 24)
+    // After observed_until (today's bookings, say) a value is a forecast, not a count.
+    const act = n.arrivals.actual.slice(d * 24, d * 24 + 24).map((v, h) => (d * 24 + h <= live.observed_until ? v : null))
     const hasActual = act.some((v) => v !== null)
     const actualSoFar = hasActual ? act.reduce<number>((a, b) => a + (b ?? 0), 0) : null
     return { d, predicted: pred, actualSoFar }
