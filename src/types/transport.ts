@@ -125,7 +125,16 @@ export interface RailLines {
   url: string
   licence: string
   credit: string
-  lines: { id: string; name: string; name_ja: string; operator_ja: string; kind: 'shinkansen' | 'rail' | 'tram'; paths: [number, number][][] }[]
+  lines: {
+    id: string
+    name: string
+    name_ja: string
+    operator_ja: string
+    kind: 'shinkansen' | 'rail' | 'tram'
+    paths: [number, number][][]
+    /** Illustrative service for the map's moving trains (rail timetables are not open data). */
+    service?: { basis: 'illustrative'; interval_min: number; speed_kmh: number; first: string; last: string }
+  }[]
   stations: { id: string; name_ja: string; lat: number; lon: number; lines: string[] }[]
 }
 
@@ -143,6 +152,18 @@ export interface TransportMapFile {
   } | null
   /** Absent in files built before the railway lines were added. */
   rail?: RailLines | null
+}
+
+/** public/data/transport_trips.json: scheduled bus trips per day type, for the map's moving buses. */
+export interface TransportTripsFile {
+  generated_at: string
+  note: string
+  days: Record<DayType, string>
+  /** [lat, lon] per stop index */
+  stops: [number, number][]
+  routes: { id: string; name: string }[]
+  /** day type -> [route index, stop indexes, departure minute at each stop] */
+  trips: Record<DayType, [number, number[], number[]][]>
 }
 
 /** public/data/transport_trends.json: Google Trends interest in transport terms (Illustrative). */
