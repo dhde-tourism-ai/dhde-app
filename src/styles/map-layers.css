@@ -20,6 +20,11 @@
      drawer with all of it). 230px = app bar, strip and timeline with their gaps. */
   max-height: calc(100vh - 230px);
   overflow: hidden;
+}
+
+/* Only a card that was cut off fades (TipClip.tsx): faded always, the bottom of every card
+   was see-through and the cards and notes under it showed through. */
+.leaflet-tooltip.map-tip.wide.clipped {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
 }
@@ -29,6 +34,15 @@
   max-width: none;
   white-space: nowrap;
   font-size: 12px;
+}
+
+/* A hover card opens above the economics notes that stay on the map in the same pane. */
+.leaflet-tooltip.map-tip {
+  z-index: 1;
+}
+
+.leaflet-tooltip.map-tip.econ-note {
+  z-index: 0;
 }
 
 .tt-head {

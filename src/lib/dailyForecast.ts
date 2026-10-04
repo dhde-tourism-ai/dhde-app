@@ -1,5 +1,6 @@
 import type { ForecastSite, StrategicQuestion } from '../types/strategy'
 import { DEMAND_THRESHOLD } from './nudges'
+import { weekdayNormal } from './normal'
 
 /** The parts of public/data/real_data.json this uses (raw, as published). */
 export interface RealDailyFile {
@@ -29,9 +30,7 @@ const SITES: { id: string; en: string; ja: string; signalOnly?: boolean }[] = [
 const HISTORY_DAYS = 56
 // "Extend hours" uses the demand alerts' own rule (nudges.ts, loop #1), so the Strategy card and the
 // map's alerts never disagree about the same day: the forecast at least DEMAND_THRESHOLD (35%) above
-// the site's normal day, which is its mean daily visitors over the whole history in real_data.json
-// (about 90 days; real.ts normal_daily). No 'quiet day' flag: that history holds the summer and
-// Silver Week peaks, so an ordinary autumn day would read as quiet.
+// that day's normal, the median of recent same weekdays with holidays left out (lib/normal.ts).
 const BUSY = 1 + DEMAND_THRESHOLD
 
 const DOW_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -58,10 +57,10 @@ function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja')
   if (!n || !fc || fc.days.length === 0) return null
   const val = (r: { signal: number | null; visitors_est: number | null }) => (s.signalOnly ? r.signal : r.visitors_est)
   const history = n.daily.filter((r) => val(r) !== null && (!file.shared_date || r.date <= file.shared_date)).slice(-HISTORY_DAYS)
-  // The demand alerts' normal day: mean daily visitors over the whole history (see BUSY).
-  // Fukui Station has no visitor count, and the alerts skip it, so it gets no action either.
-  const all = n.daily.map((r) => r.visitors_est).filter((v): v is number => v !== null)
-  const normal = s.signalOnly || all.length === 0 ? null : all.reduce((a, b) => a + b, 0) / all.length
+  // The demand alerts' normal for each day (see BUSY). Fukui Station has no visitor count,
+  // and the alerts skip it, so it gets no action either.
+  const byDate = new Map(n.daily.map((r) => [r.date, r.visitors_est]))
+  const normalOn = (date: string) => (s.signalOnly ? null : weekdayNormal((day) => byDate.get(day), date))
   const days = fc.days.map((d) => ({
     date: d.date,
     v: s.signalOnly ? d.signal : d.visitors_est,
@@ -77,7 +76,9 @@ function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja')
   if (lastActual) lastActual.forecast = lastActual.actual
   const fmt = (v: number | null) => (v === null ? '–' : Math.round(v).toLocaleString('en-US'))
   const next7 = days.slice(0, 7).map((d) => {
-    const a = s.signalOnly ? ACTION.none : normal !== null && d.v !== null && d.v >= normal * BUSY ? ACTION.busy : ACTION.normal
+    const normal = normalOn(d.date)
+    // Like the alerts: the forecast past the threshold, and its low bound above normal.
+    const a = s.signalOnly ? ACTION.none : normal !== null && d.v !== null && d.v >= normal * BUSY && (d.lo === null || d.lo > normal) ? ACTION.busy : ACTION.normal
     return { day: dayLabel(d.date, lang), range: `${fmt(d.lo)}–${fmt(d.hi)}`, action: a[lang] }
   })
   return { id: s.id, label: s[lang], points, next7 }
@@ -105,8 +106,8 @@ export function withRealForecast(questions: StrategicQuestion[], file: RealDaily
             status: 'modelled' as const,
             note:
               lang === 'ja'
-                ? `直近8週間の実績（実線）と7日間予測（破線、約80%の範囲）。予測は dhde-preprocessing-model の日次モデルで毎日更新。${range ? `検証誤差は地点により${range}。` : ''}対応：地点の平常日（データ全期間の1日平均、約90日）より${pct}%以上多い日＝営業時間を延長（地図の需要アラートと同じ基準）。福井駅は公式の来訪者数がないためカメラ検知数で、対応は表示しない。`
-                : `Last 8 weeks measured (line) and the 7-day forecast (dashed) with its roughly 80% range, from the daily model in dhde-preprocessing-model, refreshed daily. ${range ? `Typical error in tests: ${range} depending on the site. ` : ''}Action: ${pct}% or more above the site's normal day (its mean daily visitors over the data, about 90 days) = extend hours, the same rule as the map's demand alerts. Fukui Station has no official visitor count, so it shows camera detections and no action.`,
+                ? `直近8週間の実績（実線）と7日間予測（破線、約80%の範囲）。予測は dhde-preprocessing-model の日次モデルで毎日更新。${range ? `検証誤差は地点により${range}。` : ''}対応：その曜日の平常（最近の同じ曜日の中央値、祝日を除く）より${pct}%以上多く、予測範囲の下限も平常を上回る日＝営業時間を延長（地図の需要アラートと同じ基準）。福井駅は公式の来訪者数がないためカメラ検知数で、対応は表示しない。`
+                : `Last 8 weeks measured (line) and the 7-day forecast (dashed) with its roughly 80% range, from the daily model in dhde-preprocessing-model, refreshed daily. ${range ? `Typical error in tests: ${range} depending on the site. ` : ''}Action: ${pct}% or more above that weekday's normal (the median of the same weekday over recent weeks, holidays left out) = extend hours, when the forecast's low bound is above normal too: the same rule as the map's demand alerts. Fukui Station has no official visitor count, so it shows camera detections and no action.`,
           }
         : c,
     ),

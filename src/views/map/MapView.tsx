@@ -45,6 +45,7 @@ import type { RailRun } from '../../lib/railModel'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
 import { SiteCards } from './layers/SiteCards'
 import { Declutter } from './Declutter'
+import { TipClip } from './TipClip'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const VIEW_BOUNDS: [[number, number], [number, number]] = [
@@ -409,6 +410,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <FlyTo target={fly} />
         <KeepCardsInView />
         <Declutter />
+        <TipClip />
       </MapContainer>
 
       <div className="map-ui">
