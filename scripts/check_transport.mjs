@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Validate public/data/transport.json, transport_map.json and transport_trends.json
+// Validate public/data/transport.json, transport_map.json, transport_trips.json and transport_trends.json
 // (dhde-preprocessing-model scripts/build_transport.py, run daily). Each file is optional:
 // a missing file is OK (the app hides the card or layer), a malformed one exits 1
 // so the deploy stops and the previous site stays up.
@@ -47,7 +47,11 @@ if (tr) {
       if (d.to_hub && !TIME.test(d.to_hub.leave)) fail(`${where}.to_hub.leave`)
       if (d.from_hub && !isNum(d.from_hub.fastest_min)) fail(`${where}.from_hub.fastest_min`)
       // every trip's minutes must equal its displayed arrive - depart
-      const trips = [d.from_hub?.fastest, d.from_hub?.after_0900, d.to_hub && { depart: d.to_hub.leave, arrive: d.to_hub.arrive_hub, minutes: d.to_hub.minutes }]
+      const trips = [
+        d.from_hub?.fastest,
+        d.from_hub?.after_0900,
+        d.to_hub && { depart: d.to_hub.leave, arrive: d.to_hub.arrive_hub, minutes: d.to_hub.minutes },
+      ]
       for (const j of trips.filter(Boolean)) {
         if (mins(j.arrive) - mins(j.depart) !== j.minutes) fail(`${where}: ${j.depart} -> ${j.arrive} is not ${j.minutes} min`)
       }
@@ -79,6 +83,34 @@ if (trends) {
     if (!Array.isArray(t.values) || t.values.length !== n || !t.values.every((v) => isNum(v) && v >= 0 && v <= 100)) {
       fail(`transport_trends.json: ${t.term} values`)
     }
+  }
+}
+
+// Moving buses: every trip needs valid stops and departure minutes that never go backwards.
+const trips = load('transport_trips.json')
+if (trips) {
+  const ns = trips.stops?.length ?? 0
+  const nr = trips.routes?.length ?? 0
+  if (!ns || !trips.stops.every(isLatLon)) fail('transport_trips.json: stops')
+  for (const day of ['weekday', 'saturday', 'sunday']) {
+    const list = trips.trips?.[day]
+    if (!Array.isArray(list)) {
+      fail(`transport_trips.json: ${day} missing`)
+      continue
+    }
+    list.forEach(([r, s, m], i) => {
+      const ok =
+        Number.isInteger(r) &&
+        r >= 0 &&
+        r < nr &&
+        Array.isArray(s) &&
+        Array.isArray(m) &&
+        s.length >= 2 &&
+        s.length === m.length &&
+        s.every((x) => Number.isInteger(x) && x >= 0 && x < ns) &&
+        m.every((x, j) => isNum(x) && x >= 0 && x < 30 * 60 && (j === 0 || x >= m[j - 1]))
+      if (!ok) fail(`transport_trips.json: ${day} trip ${i}`)
+    })
   }
 }
 

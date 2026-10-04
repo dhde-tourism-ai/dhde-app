@@ -24,6 +24,10 @@ export function TransportLegend() {
         {t('Bus routes serving the six sites', '6地点に停まる路線バス')}
       </div>
       <div className="lg-row">
+        <span className="lg-dot" style={{ background: MODE_COLOUR.bus, border: '1.5px solid #ffffff', width: 10, height: 10 }}></span>
+        {t('Buses, where the timetable puts them', 'バス（時刻表上の位置）')}
+      </div>
+      <div className="lg-row">
         <span className="lg-dot" style={{ background: '#ffffff', border: '1.5px solid #0a1120', width: 10, height: 10 }}></span>
         {t('Bus stops', 'バス停')}
       </div>
@@ -33,8 +37,8 @@ export function TransportLegend() {
       </div>
       <p className="lg-note">
         {t(
-          'Bus routes serving the six sites, from the bus timetables (GTFS-JP), not live. Walking areas: OpenStreetMap via Valhalla. Select a site for journey times and the last bus back.',
-          '6地点を結ぶバス路線（時刻表GTFS-JPに基づく予定で、リアルタイムではない）。徒歩圏：OpenStreetMap（Valhalla）。地点を選ぶと所要時間と最終バスを表示。',
+          'Bus timetables (GTFS-JP), not live. Vehicles move through the timeline hour, a minute a second. Walking areas: OpenStreetMap via Valhalla.',
+          'バス時刻表（GTFS-JP）に基づく予定で、リアルタイムではない。車両はタイムラインの1時間を1秒1分で移動。徒歩圏：OpenStreetMap（Valhalla）。',
         )}
       </p>
       {trends && trends.terms.length > 0 && (
@@ -83,13 +87,17 @@ export function RailLegend() {
         {t('Fukui Railway (tram)', '福井鉄道（路面電車）')}
       </div>
       <div className="lg-row">
+        <span className="lg-dot" style={{ background: RAIL_LINE_COLOUR, border: '2px solid #ffffff', width: 11, height: 11 }}></span>
+        {t('Trains (illustrative)', '列車（参考）')}
+      </div>
+      <div className="lg-row">
         <span className="lg-dot" style={{ background: '#ffffff', border: `2px solid ${RAIL_LINE_COLOUR}`, width: 10, height: 10 }}></span>
         {t('Stations', '駅')}
       </div>
       <p className="lg-note">
         {t(
-          'MLIT railway data (国土数値情報, CC BY 4.0): routes and stations only. Rail timetables are not open data, so journey times on this map are by bus.',
-          '国土数値情報（鉄道データ、CC BY 4.0）：路線と駅のみ。鉄道の時刻表はオープンデータでないため、所要時間はバスで計算。',
+          'Lines and stations: MLIT railway data (CC BY 4.0). Trains are illustrative: a typical interval per line, not a timetable (rail timetables are not open data).',
+          '路線・駅：国土数値情報（鉄道データ、CC BY 4.0）。列車は参考表示：路線ごとの標準的な間隔で、時刻表ではない（鉄道の時刻表は非公開）。',
         )}
       </p>
     </>

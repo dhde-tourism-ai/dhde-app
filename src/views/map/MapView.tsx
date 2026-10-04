@@ -39,6 +39,7 @@ import { Timeline } from './panels/Timeline'
 import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
 import { TransportLayer } from './layers/TransportLayer'
+import { VehiclesLayer } from './layers/VehiclesLayer'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
 import { SiteCards } from './layers/SiteCards'
 import { Declutter } from './Declutter'
@@ -356,6 +357,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {market && layerOn('hotels') && <HotelsLayer data={market} day={day} nodes={registry?.nodes ?? []} />}
         {market && layerOn('rsi') && <RsiLayer data={market} />}
         {(layerOn('transport') || layerOn('rail')) && transportMap && <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} />}
+        {(layerOn('transport') || layerOn('rail')) && transportMap && live && (
+          <VehiclesLayer start={live.start} t={t} playing={playing} speed={speed} bus={layerOn('transport')} rail={layerOn('rail') ? (transportMap.rail ?? null) : null} />
+        )}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
         {(layerOn('people') || layerOn('flow')) && (
           <PeopleLayer
