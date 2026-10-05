@@ -63,12 +63,12 @@ export class VehicleCanvas extends CanvasOverlay {
     const h = this.size.y
     // Small at the prefecture view, a little larger as you zoom in (matching the stop and station dots).
     const z = this._map.getZoom()
-    const trainR = z >= 14 ? 4 : z >= 12 ? 3.4 : 2.8
-    const busR = z >= 14 ? 3.4 : z >= 12 ? 2.8 : 2.3
+    const trainR = z >= 14 ? 3 : z >= 12 ? 2.4 : 2
+    const busR = z >= 14 ? 2.6 : z >= 12 ? 2 : 1.6
     const dot = (p: L.Point, r: number, fill: string) => {
       if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) return
       ctx.beginPath()
-      ctx.arc(p.x, p.y, r + 1, 0, Math.PI * 2)
+      ctx.arc(p.x, p.y, r + 0.75, 0, Math.PI * 2)
       ctx.fillStyle = '#ffffff'
       ctx.fill()
       ctx.beginPath()

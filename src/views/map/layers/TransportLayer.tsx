@@ -60,8 +60,8 @@ export function TransportLayer({
   const zoom = useZoom()
   /** Bus stops from zoom 12 (city streets); stations at every zoom, but small. */
   const showStops = zoom >= 12
-  const stopR = zoom >= 14 ? 3.2 : zoom >= 13 ? 2.6 : 2
-  const stationR = zoom >= 14 ? 4 : zoom >= 12 ? 3.2 : zoom >= 10.5 ? 2.6 : 2.2
+  const stopR = zoom >= 14 ? 2.4 : zoom >= 13 ? 1.9 : 1.5
+  const stationR = zoom >= 14 ? 3 : zoom >= 12 ? 2.3 : zoom >= 10.5 ? 1.8 : 1.5
   const walk = data.walk_areas
   const rail = showRail ? data.rail : null
   const railName = Object.fromEntries((rail?.lines ?? []).map((l) => [l.id, tr(l.name, l.name_ja)]))
@@ -112,7 +112,7 @@ export function TransportLayer({
         <Pane name="dhde-transport-stops" style={{ zIndex: 455 }}>
           {data.stops.map((s) => (
             <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stopR}
-              pathOptions={{ color: '#0a1120', weight: 0.8, fillColor: '#ffffff', fillOpacity: 1 }}>
+              pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }}>
               <Tip above>
                 {named(placeEn(s.name), s.name)}
                 <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
@@ -126,7 +126,7 @@ export function TransportLayer({
       <Pane name="dhde-transport-stations" style={{ zIndex: 460 }}>
         {rail?.stations.map((s) => (
           <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stationR}
-            pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1.2, fillColor: '#ffffff', fillOpacity: 1 }}>
+            pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }}>
             <Tip above>
               {named(placeEn(s.name_ja), s.name_ja)}
               <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
