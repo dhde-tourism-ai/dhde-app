@@ -380,6 +380,9 @@ export function Ripple({ card }: { card: RippleCard }) {
           </div>
         </div>
       </div>
+      <div className="ripple-legend muted">
+        {t('Under each round: the sectors that gain most, with the GDP they add and the jobs it supports.', '各段階の下：効果の大きい部門（付加価値と就業者数）。')}
+      </div>
     </div>
   )
 }

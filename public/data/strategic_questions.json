@@ -111,6 +111,7 @@
           "title": "Jobs supported",
           "value_text": "33,900",
           "detail": "7.9% of workers; 26,800 in the businesses visitors pay. FY2008: ~12,000 (2.8%); 2019 (prefecture): 23,320 (5.5%)",
+          "note": "People in work, part-time included (就業者), not new hires. 2020 was a pandemic year, so jobs per yen may run high.",
           "source": "Same model: output × jobs per yen by sector (就業係数, 2020). Workers FY2023: 427,326 (ESRI). https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx"
         },
         {
@@ -228,6 +229,7 @@
               "status": "modelled"
             }
           ],
+          "note": "Nominal GDP (県内総生産): FY2014–FY2023 as published; from FY2024 estimated by growing FY2023 at Fukui's own FY2011–23 trend, +1.55% a year. Orange = GDP added by tourism in that year (direct + indirect ① + indirect ②), from the model below. Power-sector value added swings Fukui's GDP: FY2022 −5.6%, FY2023 +11.5% (of which power +9.9pt).",
           "source": "ESRI 県民経済計算 FY2011–FY2023 (released 7 Aug 2026), soukatu1.xlsx, https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/main_2023.html; tourism contribution: Fukui R2 input-output tool."
         },
         {
@@ -640,6 +642,7 @@
               "jobs": 23320
             }
           ],
+          "note": "Each year's visitor spend (calendar year) run through the same 2020 model and split into the three rounds; share = GDP added ÷ that fiscal year's Fukui GDP (from FY2024 estimated at Fukui's own FY2011–23 trend). The spend series steps up in 2016 when its estimate changed, so compare earlier years with care. Projection: base 2026 = visitors +2.9% and guest-nights −2.0% (the team's monthly forecast) plus 2.2% prices = +2.8%, then +3% a year; low −2% then +1% a year; high +6.6% a year, the 2019–25 pace. White ring: the prefecture's own 2019 estimate, made with the 2015 table and higher local sourcing.",
           "source": "福井県観光客入込数（推計）令和7年, table 8 (spend 2014–2025), https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf; Fukui R2 IO tool; 観光を取り巻く状況 p.18 (2019 estimate), https://www.pref.fukui.lg.jp/doc/kankou/visionsakutei_d/fil/1_04.pdf"
         },
         {
@@ -770,6 +773,7 @@
             "multiplier_spend": 1.25,
             "multiplier_direct": 1.57
           },
+          "note": "Direct = spend that becomes output of Fukui businesses; indirect ① = what they buy from other Fukui firms, round after round (第1次間接波及効果); indirect ② = the part of the extra wages households spend in Fukui (第2次間接波及効果). Spend is split by the 2025 unit-spend mix (table 7): accommodation ¥48.7bn → hotels; souvenirs ¥47.0bn → food and drink 60%, fresh seafood and produce 15%, crafts and eyewear 15%, textiles 5%, knives 5%; meals, admissions and local transport ¥103.1bn → hotels, restaurants and leisure 75%, transport 25% (assumed split). Purchaser prices with trade and freight margins moved to commerce and transport, as the tool does; the table's self-sufficiency rates decide what stays in Fukui (souvenirs made in Fukui at 50% instead: GDP ¥143.4bn, 35,200 jobs). Second round: employee income × 0.572 (Fukui City households' propensity to consume, 2024) × household spending mix.",
           "source": "Fukui Prefecture 経済波及効果分析ツール (令和2年福井県産業連関表, 37 sectors, [I−(I−M)A]⁻¹ inverse), https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx. Replica checked against the tool's published ¥10bn construction example (02.pdf): same result to within 0.01%."
         },
         {
@@ -795,6 +799,7 @@
           "max_pct": 50,
           "step_pct": 1,
           "default_pct": 10,
+          "note": "Linear, as input-output models are: it assumes rooms, staff and suppliers can keep up, and holds 2025 prices and GDP (FY2025 estimate). A yen spent on stays adds more GDP (≈¥0.74) than a day-trip yen (≈¥0.66), because day trips put more into souvenirs, many made outside Fukui.",
           "source": "Same model; per ¥1bn effects from the 2025 spend mix."
         },
         {
@@ -3159,6 +3164,7 @@
           "span": 12,
           "status": "illustrative",
           "title": "Gap-to-target builder",
+          "note": "Move the levers to see how far each closes the gap to the 2029 vision targets. Gaps use 2025 actuals: 108.6k foreign and 3.93M total guest-nights (JTA 宿泊旅行統計調査 2025 確定). A2 riders count toward all overnight guests only: each rider is a day-tripper who stays a night instead (¥24,675 extra), and their nationality isn't known, so they aren't counted toward the foreign gap. Not a forecast.",
           "levers": [
             {
               "id": "A1",
