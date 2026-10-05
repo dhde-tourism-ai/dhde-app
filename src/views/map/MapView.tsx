@@ -446,9 +446,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {transportOn && transportMap && (
           <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} trips={trips} runs={briefing ? NO_RUNS : railRuns} />
         )}
+        {/* Briefing: no moving buses or trains. They are timetable positions drawn in straight lines between stops, not GPS. */}
         {transportOn && transportMap && live && (
           <VehiclesLayer
-            trips={layerOn('transport') ? trips : null}
+            trips={layerOn('transport') && !briefing ? trips : null}
             runs={layerOn('rail') && !briefing ? railRuns : NO_RUNS}
             start={live.start}
             t={t}
