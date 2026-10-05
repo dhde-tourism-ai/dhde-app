@@ -116,9 +116,10 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       <div className="tl-readout">
         <div className="tl-time">
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
-          {vehicles ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
+          {/* While playing, the timeline's hour (the vehicles run on at their own, slower pace). */}
+          {vehicles && !playing ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
         </div>
-        {vehicles && !isLive ? (
+        {vehicles && !isLive && !playing ? (
           <span className="tl-mode run" title={tr('Off Now, buses and trains are simulated from the time shown (scheduled positions)', '現在以外の時刻：表示時刻からのシミュレーション（時刻表上の位置）')}>
             {tr('Simulated', 'シミュレーション')}
           </span>

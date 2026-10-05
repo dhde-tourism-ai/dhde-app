@@ -380,7 +380,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
             t={t}
             live={!playing && t === (live.now_index ?? live.observed_until)}
             playing={playing}
-            speed={speed}
           />
         )}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
