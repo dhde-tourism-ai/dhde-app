@@ -1468,13 +1468,6 @@
   margin: 0;
 }
 
-.strat-foot {
-  border-top: 1px solid var(--line);
-  padding-top: var(--sp-5);
-  color: var(--text-2);
-  font-size: 13px;
-}
-
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
   .s-card {

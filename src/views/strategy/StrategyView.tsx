@@ -123,17 +123,11 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
         <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
       ))}
 
-      <footer className="strat-foot">
-        <p>{meta.footer}</p>
-        <p className="muted">
-          {t('Source', '出典')}: {meta.source_doc}
-        </p>
-      </footer>
     </div>
   )
 }
 
-/** Questions shown lean: no long answer paragraph, card notes or sources, just the figures and charts. */
+/** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card details, notes or sources). */
 const LEAN_QUESTIONS = new Set(['q1', 'q5'])
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
@@ -147,14 +141,18 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
-          <p className="q-why">{q.why}</p>
-          <div className="q-subs">
-            {q.subs.map((s) => (
-              <span key={s} className="chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          {!lean && (
+            <>
+              <p className="q-why">{q.why}</p>
+              <div className="q-subs">
+                {q.subs.map((s) => (
+                  <span key={s} className="chip">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </header>
       {!lean && (

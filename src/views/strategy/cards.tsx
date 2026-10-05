@@ -38,7 +38,7 @@ function usePending() {
   return t(PENDING, '[未取得]')
 }
 
-/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the notes, sources and TODOs. */
+/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the detail line, notes, sources and TODOs. */
 export function StrategyCardView({ card, lean = false }: { card: StrategyCard; lean?: boolean }) {
   const { t } = useLang()
   return (
@@ -51,7 +51,7 @@ export function StrategyCardView({ card, lean = false }: { card: StrategyCard; l
         <StatusPill status={card.status} />
       </header>
       <div className="s-card-body">
-        <CardBody card={card} />
+        <CardBody card={card} lean={lean} />
       </div>
       {!lean && (card.note || card.pending_on || card.source || card.todo) && (
         <footer className="s-card-foot">
@@ -77,10 +77,10 @@ export function StrategyCardView({ card, lean = false }: { card: StrategyCard; l
   )
 }
 
-function CardBody({ card }: { card: StrategyCard }): ReactNode {
+function CardBody({ card, lean }: { card: StrategyCard; lean: boolean }): ReactNode {
   switch (card.type) {
     case 'stat':
-      return <Stat card={card} />
+      return <Stat card={card} lean={lean} />
     case 'progress':
       return <Progress card={card} />
     case 'formula_table':
@@ -122,7 +122,7 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
   }
 }
 
-function Stat({ card }: { card: StatCard }) {
+function Stat({ card, lean }: { card: StatCard; lean: boolean }) {
   const pending = usePending()
   return (
     <div className="stat">
@@ -130,7 +130,7 @@ function Stat({ card }: { card: StatCard }) {
         {card.value_text ?? pending}
         {card.value_text !== null && card.unit}
       </div>
-      {card.detail && <div className="stat-detail">{card.detail}</div>}
+      {!lean && card.detail && <div className="stat-detail">{card.detail}</div>}
     </div>
   )
 }
