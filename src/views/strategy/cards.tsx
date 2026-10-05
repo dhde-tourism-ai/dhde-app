@@ -329,26 +329,29 @@ function Forecast({ card }: { card: ForecastCard }) {
         </div>
         <div className="next7">
           <h4 className="mini-h">{t('Next 7 days', '今後7日間')}</h4>
-          <table className="data-table compact">
-            <thead>
-              <tr>
-                <th>{t('Day', '日')}</th>
-                <th className="num">{t('Expected', '見込み')}</th>
-                <th>{t('Action', '対応')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {site.next7.map((r) => (
-                <tr key={r.day}>
-                  <td>{r.day}</td>
-                  <td className="num">{r.range}</td>
-                  <td>
-                    <span className={`action-tag a-${ACTION_TONE[r.action] ?? 'ok'}`}>{r.action}</span>
-                  </td>
+          {/* Fixed height for every site: a longer action or more rows scroll instead of resizing the card. */}
+          <div className="next7-scroll">
+            <table className="data-table compact">
+              <thead>
+                <tr>
+                  <th>{t('Day', '日')}</th>
+                  <th className="num">{t('Expected', '見込み')}</th>
+                  <th>{t('Action', '対応')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {site.next7.map((r) => (
+                  <tr key={r.day}>
+                    <td>{r.day}</td>
+                    <td className="num">{r.range}</td>
+                    <td>
+                      <span className={`action-tag a-${ACTION_TONE[r.action] ?? 'ok'}`}>{r.action}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

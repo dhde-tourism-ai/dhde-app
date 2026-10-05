@@ -983,6 +983,24 @@
 }
 
 /* forecast */
+/* Next 7 days beside the forecast chart: the same size on every site tab; scrolls when it needs more */
+.next7-scroll {
+  height: 270px;
+  overflow: auto;
+}
+
+.next7-scroll th,
+.next7-scroll td {
+  white-space: nowrap;
+}
+
+.next7-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
 .forecast-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
