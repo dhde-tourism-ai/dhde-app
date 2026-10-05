@@ -38,7 +38,7 @@ export function liveUrl(file: string): string | null {
   return hasLiveSource ? `${LIVE_BASE}/data/${file}` : null
 }
 
-async function fetchJson(url: string, file: string, signal: AbortSignal): Promise<unknown> {
+async function fetchJson(url: string, file: string, signal?: AbortSignal): Promise<unknown> {
   const res = await fetch(withCacheBust(url), { signal })
   if (!res.ok) throw new Error(`Failed to load ${file}: ${res.status} ${res.statusText}`)
   return res.json()
@@ -89,6 +89,15 @@ export function getFallbackState(): { date: string | null } | null {
  * by the daily run, and until then an older version there would hide an edit.
  */
 const APP_CONTENT = new Set(['strategic_questions.json'])
+
+/**
+ * Load a file that only the live source has (written there by AWS, never bundled):
+ * null when no live source is configured, an error when it can't be read.
+ */
+export async function loadLiveFile<T>(file: string, signal?: AbortSignal): Promise<T | null> {
+  const live = liveUrl(file)
+  return live ? ((await fetchJson(live, file, signal)) as T) : null
+}
 
 /** Load one data file: live source first when configured, bundled snapshot otherwise or on failure. */
 export async function loadDataFile<T>(file: string, signal: AbortSignal): Promise<T> {

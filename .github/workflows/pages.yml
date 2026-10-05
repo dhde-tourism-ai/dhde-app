@@ -28,6 +28,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       # A malformed real_data.json fails the deploy here; the previous site stays up.
       - run: node scripts/check_data.mjs
       - run: node scripts/check_transport.mjs
