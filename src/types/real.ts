@@ -148,6 +148,11 @@ export interface RealNode {
   survey: RealSurvey | null
   /** Missing when no model forecast was published for the node. */
   forecast?: RealForecast
+  /**
+   * The model's camera forecast by date, kept even where it has no visitor figure: `forecast`
+   * drops those days, and Fukui Station (no official count) has only these.
+   */
+  signal_forecast?: Record<string, number>
 }
 
 export interface RealSurvey {

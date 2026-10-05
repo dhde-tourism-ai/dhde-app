@@ -171,6 +171,18 @@ function parseSurvey(v: unknown): RealNode['survey'] {
   }
 }
 
+/** The forecast's camera detections by date (days the model ran without its week-ahead data left out). */
+function parseSignalForecast(f: unknown): Record<string, number> | undefined {
+  if (!isObj(f) || !Array.isArray(f.days)) return undefined
+  const out: Record<string, number> = {}
+  for (const r of f.days) {
+    if (!isObj(r) || typeof r.date !== 'string' || !DATE_RE.test(r.date) || r.week_ahead_missing === true) continue
+    const v = num(r.signal)
+    if (v !== null && v >= 0) out[r.date] = v
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
 /** The model forecast block, or undefined when it's missing or has no usable day. */
 function parseForecast(f: unknown): RealForecast | undefined {
   if (!isObj(f) || !Array.isArray(f.days)) return undefined
@@ -249,6 +261,7 @@ export function parseReal(raw: unknown): RealData | null {
       rakuten: parseRakuten(n.rakuten),
       survey: parseSurvey(n.survey),
       forecast: parseForecast(n.forecast),
+      signal_forecast: parseSignalForecast(n.forecast),
     }
   }
   if (Object.keys(nodes).length === 0) return null
@@ -615,7 +628,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         forecast_method: forecastMethod(rn),
         forecast_source_daily: fcSource,
         forecast_daily: fcDaily,
-        signal_forecast_daily: dates.map((dt) => modelDay(dt)?.signal ?? null),
+        signal_forecast_daily: dates.map((dt) => rn.signal_forecast?.[dt] ?? null),
         signal_normal: mean((rn.daily ?? []).map((r) => r.signal).filter((v): v is number => v !== null)),
       }
     }
