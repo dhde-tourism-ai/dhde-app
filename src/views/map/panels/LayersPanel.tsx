@@ -180,8 +180,8 @@ export function LayersPanel(p: Props) {
     flow: (
       <p className="lg-note">
         {t(
-          `Dots fade in and out around each site: people arriving and leaving. Each dot is about ${PER_DOT} of the day's visitors (estimated, or forecast for later days). Positions are illustrative, not tracked.`,
-          `各地点の周りで点が現れては消え、人の到着と出発を表します。1点は当日の来訪者約${PER_DOT}人（推計、以降の日は予測）。位置は表示上のもので、追跡ではありません。`,
+          `Figures walking in = arriving, walking out = leaving. Each figure is about ${PER_DOT} of the day's visitors (estimated, or forecast for later days), so busier sites have more. Positions are illustrative, not tracked.`,
+          `内側へ歩く人＝到着、外側へ歩く人＝出発。1人の図は当日の来訪者約${PER_DOT}人（推計、以降の日は予測）で、混む地点ほど多い。位置は表示上のもので、追跡ではありません。`,
         )}
       </p>
     ),

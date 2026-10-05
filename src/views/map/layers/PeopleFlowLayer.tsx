@@ -5,13 +5,13 @@ import type { MapNode } from '../../../lib/nodes'
 import { PresenceCanvas } from '../canvas/PresenceCanvas'
 import { useLeafletLayer } from '../canvas/useLeafletLayer'
 
-/** Visitors a dot stands for. */
+/** Visitors a figure stands for. */
 export const PER_DOT = 100
-const MAX_DOTS = 80
+const MAX_DOTS = 40
 const NEUTRAL = '#7a8aa6'
 
 /**
- * People flow: people fading in and out around each site, from the day's visitor figure
+ * People flow: small figures walking in to and out of each site, from the day's visitor figure
  * (estimated, or forecast for later days). Sites without a visitor number (Fukui Station's
  * camera busyness, or no figure yet) get no dots.
  */
