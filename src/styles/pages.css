@@ -1342,10 +1342,6 @@
   min-height: 2.7em;
 }
 
-.lever-card .lever-help {
-  margin-top: auto;
-}
-
 @media (max-width: 1100px) {
   .builder-levers {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1451,6 +1447,45 @@
   top: 0;
   bottom: 0;
   box-shadow: 2px 0 0 var(--surface);
+  cursor: default;
+}
+
+.stack-seg.rest {
+  box-shadow: none;
+}
+
+.stack-seg.on:not(.rest) {
+  filter: brightness(1.25);
+}
+
+.stack-seg.rest.on {
+  background: rgba(160, 185, 230, 0.12) !important;
+}
+
+/* Hover label over the gap bars */
+.stack-wrap {
+  position: relative;
+}
+
+.stack-tip {
+  position: absolute;
+  top: -6px;
+  z-index: 5;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-2);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.stack-tip-title {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .stack-key {

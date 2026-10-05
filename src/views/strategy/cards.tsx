@@ -772,6 +772,7 @@ function Builder({ card }: { card: BuilderCard }) {
     return { lever: l, guests, spend: guests * l.spend_per, colour: S[k % S.length] }
   })
   const totalSpend = added.reduce((a, b) => a + b.spend, 0)
+  const [tip, setTip] = useState<{ gap: string; key: string } | null>(null)
   return (
     <div className="builder">
       <div className="builder-levers">
@@ -793,7 +794,6 @@ function Builder({ card }: { card: BuilderCard }) {
                 tickFormat={tick}
                 label={l.label}
               />
-              <div className="lever-help">{l.help}</div>
             </div>
           )
         })}
@@ -803,7 +803,36 @@ function Builder({ card }: { card: BuilderCard }) {
           const parts = added.filter((a) => a.lever.counts.includes(g.id))
           const closed = parts.reduce((s, a) => s + a.guests, 0)
           const share = Math.min(1, closed / g.gap)
+          // Each package's piece of the bar, then the part still to close; all hoverable.
+          const segs: { key: string; left: number; w: number; colour: string; title: string; lines: string[] }[] = []
           let acc = 0
+          for (const p of parts) {
+            const w = Math.max(0, Math.min(1 - acc, p.guests / g.gap))
+            if (w > 0)
+              segs.push({
+                key: p.lever.id,
+                left: acc,
+                w,
+                colour: p.colour,
+                title: p.lever.label,
+                lines: [
+                  `${fmtCompact(p.guests)} ${t('guest-nights', '泊')}`,
+                  `${Math.round((p.guests / g.gap) * 100)}% ${t('of the gap', '（ギャップ比）')}`,
+                  `${fmtYen(p.spend)} ${t('revenue a year', '/年の消費')}`,
+                ],
+              })
+            acc += w
+          }
+          if (acc < 1)
+            segs.push({
+              key: 'rest',
+              left: acc,
+              w: 1 - acc,
+              colour: 'transparent',
+              title: t('Still to close', '残りのギャップ'),
+              lines: [`${fmtCompact(Math.max(0, g.gap - closed))} ${t('guest-nights', '泊')} (${Math.round((1 - acc) * 100)}%)`],
+            })
+          const hovered = tip?.gap === g.id ? segs.find((x) => x.key === tip.key) : undefined
           return (
             <div key={g.id} className="gap-row">
               <div className="progress-top">
@@ -812,15 +841,28 @@ function Builder({ card }: { card: BuilderCard }) {
                   {fmtCompact(closed)} {t('of', '/')} {fmtCompact(g.gap)} <strong>({Math.round(share * 100)}%)</strong>
                 </span>
               </div>
-              <div className="stack-track" role="img" aria-label={`${g.label}: ${Math.round(share * 100)}%`}>
-                {parts.map((p) => {
-                  const w = Math.max(0, Math.min(1 - acc, p.guests / g.gap))
-                  const left = acc
-                  acc += w
-                  return w > 0 ? (
-                    <span key={p.lever.id} className="stack-seg" style={{ left: `${left * 100}%`, width: `${w * 100}%`, background: p.colour }} title={`${p.lever.id}: ${fmtCompact(p.guests)}`}></span>
-                  ) : null
-                })}
+              <div className="stack-wrap" onMouseLeave={() => setTip(null)}>
+                <div className="stack-track" role="img" aria-label={`${g.label}: ${Math.round(share * 100)}%`}>
+                  {segs.map((x) => (
+                    <span
+                      key={x.key}
+                      className={`stack-seg ${x.key === 'rest' ? 'rest' : ''} ${hovered?.key === x.key ? 'on' : ''}`}
+                      style={{ left: `${x.left * 100}%`, width: `${x.w * 100}%`, background: x.colour }}
+                      onMouseEnter={() => setTip({ gap: g.id, key: x.key })}
+                    ></span>
+                  ))}
+                </div>
+                {hovered && (
+                  // Centred on the piece, but kept inside the bar at either end.
+                  <div className="stack-tip" style={{ left: `${(hovered.left + hovered.w / 2) * 100}%`, transform: `translate(${-(hovered.left + hovered.w / 2) * 100}%, -100%)` }}>
+                    <div className="stack-tip-title">{hovered.title}</div>
+                    {hovered.lines.map((l) => (
+                      <div key={l} className="num">
+                        {l}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="stack-key">
                 {parts.map((p) => (
