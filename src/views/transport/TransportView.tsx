@@ -86,12 +86,17 @@ function Card({
   return (
     <section className={`td-card ${className}`}>
       <header>
-        {tag}
         <h3 className="td-card-title">{title}</h3>
         {sub && <p className="td-card-sub">{sub}</p>}
       </header>
       <div className="td-card-body">{children}</div>
-      {source && <footer className="td-card-source">{source}</footer>}
+      {/* The tag (e.g. "Tourists only · survey") sits at the foot with the source, not above the title. */}
+      {(source || tag) && (
+        <footer className="td-card-source">
+          {tag}
+          {source && <span>{source}</span>}
+        </footer>
+      )}
     </section>
   )
 }
