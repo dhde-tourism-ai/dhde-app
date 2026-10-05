@@ -7,6 +7,27 @@
  */
 import type { RailLines } from '../types/transport'
 
+type Service = NonNullable<RailLines['lines'][number]['service']>
+
+/**
+ * The illustrative service per line, built into the app: the daily transport build
+ * (and so the live CloudFront copy of transport_map.json) doesn't carry it, and
+ * without it no trains run. A `service` in the data file overrides these.
+ */
+const illustrative = (interval_min: number, speed_kmh: number): Service => ({ basis: 'illustrative', interval_min, speed_kmh, first: '06:00', last: '23:00' })
+const LINE_SERVICE: Record<string, Service> = {
+  hokuriku_shinkansen: illustrative(30, 180),
+  hapi_line: illustrative(30, 55),
+  echizen_mikuni_awara: illustrative(30, 35),
+  echizen_katsuyama_eiheiji: illustrative(30, 35),
+  fukui_railway_fukubu: illustrative(20, 22),
+  jr_etsumi_hoku: illustrative(120, 40),
+  jr_obama: illustrative(60, 45),
+  jr_hokuriku: illustrative(60, 55),
+}
+/** A line not listed above (added to the data later) still gets trains, by kind. */
+const KIND_SERVICE: Record<string, Service> = { shinkansen: illustrative(30, 180), rail: illustrative(60, 45), tram: illustrative(20, 22) }
+
 /** Rail paths shorter than this (spurs, twin-track pieces) get no trains. */
 export const MIN_RUN_KM = 15
 const DWELL_MIN = 0.5
@@ -47,12 +68,56 @@ function cumKm(path: [number, number][]): number[] {
   return out
 }
 
+/** Track pieces whose ends are this close (km) are the same track and get joined. */
+const JOIN_KM = 0.08
+
+const gap = (a: [number, number], b: [number, number]) => {
+  const dy = (b[0] - a[0]) * 111.2
+  const dx = (b[1] - a[1]) * 111.2 * Math.cos((a[0] * Math.PI) / 180)
+  return Math.hypot(dx, dy)
+}
+
+/**
+ * Join a line's track pieces end to end into the longest runs. The daily transport
+ * build can give a line as station-to-station pieces (each too short for a train run);
+ * joined, they are the whole line again. Pieces already whole pass through unchanged.
+ */
+export function stitch(paths: [number, number][][]): [number, number][][] {
+  const pool = paths.filter((p) => p.length > 1).map((p) => p.slice())
+  const out: [number, number][][] = []
+  while (pool.length) {
+    // Grow from the longest remaining piece, at either end, while a piece meets it.
+    pool.sort((a, b) => b.length - a.length)
+    let run = pool.shift()!
+    for (let grew = true; grew; ) {
+      grew = false
+      for (let i = 0; i < pool.length; i++) {
+        const q = pool[i]
+        const [h, t] = [run[0], run[run.length - 1]]
+        let joined: [number, number][] | null = null
+        if (gap(t, q[0]) < JOIN_KM) joined = run.concat(q.slice(1))
+        else if (gap(t, q[q.length - 1]) < JOIN_KM) joined = run.concat(q.slice(0, -1).reverse())
+        else if (gap(h, q[q.length - 1]) < JOIN_KM) joined = q.concat(run.slice(1))
+        else if (gap(h, q[0]) < JOIN_KM) joined = q.slice().reverse().concat(run.slice(1))
+        if (joined) {
+          run = joined
+          pool.splice(i, 1)
+          grew = true
+          break
+        }
+      }
+    }
+    out.push(run)
+  }
+  return out
+}
+
 export function buildRuns(rail: RailLines | null | undefined): RailRun[] {
   if (!rail) return []
   return rail.lines.flatMap((l, li) => {
-    const svc = l.service
+    const svc = l.service ?? LINE_SERVICE[l.id] ?? KIND_SERVICE[l.kind]
     if (!svc) return []
-    return l.paths.flatMap((path, pi) => {
+    return stitch(l.paths).flatMap((path, pi) => {
       const km = cumKm(path)
       if (km[km.length - 1] < MIN_RUN_KM) return []
       const stops: RailStop[] = []

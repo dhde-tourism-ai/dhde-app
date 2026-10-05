@@ -83,9 +83,16 @@ export function getFallbackState(): { date: string | null } | null {
 
 // ---- loader ----------------------------------------------------------------
 
+/**
+ * Files written by hand in this repo, not by the daily data build: they ship with each
+ * deploy, so they're always read from the app's own copy. The live copy is only synced
+ * by the daily run, and until then an older version there would hide an edit.
+ */
+const APP_CONTENT = new Set(['strategic_questions.json'])
+
 /** Load one data file: live source first when configured, bundled snapshot otherwise or on failure. */
 export async function loadDataFile<T>(file: string, signal: AbortSignal): Promise<T> {
-  const live = liveUrl(file)
+  const live = APP_CONTENT.has(file) ? null : liveUrl(file)
   if (live) {
     try {
       return (await fetchJson(live, file, signal)) as T
