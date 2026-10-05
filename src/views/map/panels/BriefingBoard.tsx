@@ -87,7 +87,7 @@ export function BriefingBoard({
           <p className="board-note">
             {t(
               'Past days: estimates from real counts. Later days: the forecast model. "Usual" is each site\'s average real day.',
-              '過去の日：実測からの推計。以降の日：予測モデル。「通常」は各地点の実データの平均日。',
+              '過去の日：実データからの推計。以降の日：予測モデル。「通常」は各地点の実データの平均日。',
             )}
           </p>
         </div>

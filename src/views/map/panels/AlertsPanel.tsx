@@ -91,7 +91,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         {frame && (
           <div className="board">
             <div className="board-total">
-              <span className="eyebrow">{withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`)}</span>
+              <span className="eyebrow">{withEst.length === 6 ? t('People this hour (simulated shape), six nodes', 'この時間の人数（模擬の時間分布）、6ノード') : t(`People this hour (simulated shape), ${withEst.length} nodes with estimates`, `この時間の人数（模擬の時間分布）、推計のある${withEst.length}ノード`)}</span>
               <span className="board-num">{Math.round(total).toLocaleString('en-US')}</span>
             </div>
             <ul className="board-list">

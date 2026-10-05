@@ -50,7 +50,7 @@ const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
 
 /** Briefing mode's notes: what each shown layer is, in plain words, with no demo parts to explain. */
 const BRIEF_NOTE: Partial<Record<LayerId, [string, string]>> = {
-  people: ["Each site's visitors for the selected day. Past days: estimates from real counts (cameras, bookings or cars, scaled to the site's official 2025 count). Later days: the 7-day forecast model. The colour compares the day with the site's usual day.", '選択日の各地点の来訪者数。過去の日：実測（カメラ・予約・車両を2025年の公式年間値で換算）からの推計。以降の日：7日間予測モデル。色は各地点の通常の日との比較。'],
+  people: ["Each site's visitors for the selected day. Past days: estimates from real counts (cameras, bookings or cars, scaled to the site's official 2025 count). Later days: the 7-day forecast model. The colour compares the day with the site's usual day.", '選択日の各地点の来訪者数。過去の日：実データ（カメラ・予約・車両を2025年の公式年間値で換算）からの推計。以降の日：7日間予測モデル。色は各地点の通常の日との比較。'],
   weather: ["JMA observations and forecasts at each site, and JMA's warnings in force.", '各地点の気象庁の観測・予報と、発表中の警報・注意報。'],
   hotels: ['Hotel occupancy from FTAS reservation feeds, on days with reservation data. "Area" means a regional feed covering several sites.', 'FTAS予約データによるホテル稼働率（予約データのある日）。「周辺」は複数地点をまとめた地域データ。'],
   nudges: ['Actions triggered by real visitor history, the forecast model and forward bookings.', '来訪者の実績・予測モデル・先行予約から出した推奨アクション。'],
@@ -152,7 +152,7 @@ export function LayersPanel(p: Props) {
       <>
         <div className="lg-row">
           <span className="lg-dot" style={{ background: '#aeb9cd' }}></span>
-          {t('Solid = counted on site', '塗り＝実測')}
+          {t('Solid = estimated from real counts', '塗り＝実データからの推計')}
         </div>
         <div className="lg-row">
           <span className="lg-ring" style={{ borderColor: '#fff' }}></span>

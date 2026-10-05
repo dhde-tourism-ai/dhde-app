@@ -215,6 +215,7 @@ table th {
   border-radius: var(--r-pill);
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
   color: var(--text-2);
   cursor: pointer;
 }
@@ -232,6 +233,11 @@ table th {
 @media (max-width: 720px) {
   .mode-toggle {
     display: none;
+  }
+
+  /* "日本語" stays on one line in the narrow phone header. */
+  .lang-toggle button {
+    padding: 4px 7px;
   }
 }
 

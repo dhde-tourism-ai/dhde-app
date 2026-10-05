@@ -105,7 +105,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   }
 
   const day = Math.floor(t / 24)
-  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${observed ? tr('observed', '実測') : tr('forecast', '予測')}`
+  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${observed ? tr('estimated', '推計') : tr('forecast', '予測')}`
 
   return (
     <div className="timeline" aria-label={tr('Timeline', 'タイムライン')}>
@@ -123,7 +123,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
             {tr('Live', 'ライブ')}
           </span>
         ) : (
-          <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{observed ? tr('Observed', '実測') : tr('Forecast', '予測')}</span>
+          <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{observed ? tr('Estimated', '推計') : tr('Forecast', '予測')}</span>
         )}
       </div>
 
@@ -165,8 +165,8 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
               {String(h).padStart(2, '0')}
             </span>
           ))}
-          <div className="tl-now" style={{ left: `${xOf(now + 0.5, sc) * 100}%` }} title={tr('Latest observation', '最新の観測')}>
-            <span>{todayDay > 0 ? tr('data', '実測') : tr('now', '現在')}</span>
+          <div className="tl-now" style={{ left: `${xOf(now + 0.5, sc) * 100}%` }} title={tr('Latest real data', '最新の実データ')}>
+            <span>{todayDay > 0 ? tr('data', 'データ') : tr('now', '現在')}</span>
           </div>
           {nowIdx !== now && <div className="tl-clock" style={{ left: `${xOf(nowIdx + 0.5, sc) * 100}%` }} title={tr('Now', '現在')}></div>}
           <div className="tl-thumb" style={{ left: `${xOf(t + 0.5, sc) * 100}%` }}></div>

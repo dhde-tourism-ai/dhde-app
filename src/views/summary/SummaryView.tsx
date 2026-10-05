@@ -185,7 +185,13 @@ export default function SummaryView({ data }: { data: ProductData }) {
               <tbody>
                 {sites.map((s) => (
                   <tr key={s.id}>
-                    <th scope="row">{t(s.name, s.name_ja)}</th>
+                    <th scope="row">
+                      {t(s.name, s.name_ja)}
+                      {/* Eiheiji's figure comes from survey responses, so it carries the low-confidence note. */}
+                      {live?.node_meta?.[s.id]?.measure === 'proxy_survey' && (
+                        <span className="sum-note">{t('Estimated from survey responses and nearby data, low confidence', 'アンケート回答と周辺データからの推計。信頼度は低い')}</span>
+                      )}
+                    </th>
                     {s.noEstimate ? (
                       <td colSpan={3} className="sum-muted" title={t('No official visitor count to scale the camera signal to.', 'カメラ信号を換算する公式来訪者数がありません。')}>
                         {t('No official count yet', '公式値なし')}

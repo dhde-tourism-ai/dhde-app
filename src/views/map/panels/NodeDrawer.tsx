@@ -178,7 +178,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 <div className="rc-head">
                   {fig ? (
                     <>
-                      <span className="eyebrow">{fig.kind === 'real' ? tr('Visitors this day (estimate from real counts)', 'この日の来訪者数（実測からの推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
+                      <span className="eyebrow">{fig.kind === 'real' ? tr('Visitors this day (estimate from real counts)', 'この日の来訪者数（実データからの推計）') : tr('Visitors this day (forecast)', 'この日の来訪者数（予測）')}</span>
                       {fig.kind === 'real' ? <span className="tt-est">{tr('Estimated', '推計')}</span> : fig.kind === 'forecast' ? <span className="tt-real">{tr('Model forecast', 'モデル予測')}</span> : null}
                     </>
                   ) : (

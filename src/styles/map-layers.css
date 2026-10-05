@@ -751,6 +751,11 @@
     width: 392px;
   }
 
+  /* The centred status strip keeps clear of the wider board: 2 x (12 + 392 + 12px). */
+  .map-ui .status-strip {
+    max-width: calc(100% - 832px);
+  }
+
   .leaflet-right .leaflet-control {
     margin-right: 416px;
   }
@@ -779,6 +784,10 @@
 @media (max-width: 1180px) and (min-width: 721px) {
   .map-right {
     width: 360px;
+  }
+
+  .map-ui .status-strip {
+    max-width: calc(100% - 768px);
   }
 
   .leaflet-right .leaflet-control {

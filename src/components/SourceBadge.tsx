@@ -20,7 +20,7 @@ export function SourceBadge({ info, compact = false, note }: { info?: SourceInfo
   const title = real
     ? t(`Real data, latest ${info.as_of ?? ''}`, `実データ（最新 ${info.as_of ?? ''}）`)
     : briefing
-      ? t('Estimated from real counts (cameras, bookings, cars, survey) scaled to official annual figures, or a model forecast.', '実測（カメラ・予約・車両・アンケート）を公式年間値で換算した推計、またはモデル予測。') + latest
+      ? t('Estimated from real counts (cameras, bookings, cars, survey) scaled to official annual figures, or a model forecast.', '実データ（カメラ・予約・車両・アンケート）を公式年間値で換算した推計、またはモデル予測。') + latest
       : (note
           ? t(note[0], note[1])
           : t(`Partly estimated or demo: real data for ${info.real.length} item(s), the rest is estimated or demo.`, `一部推計・デモ：${info.real.length}件は実データ、残りは推計またはデモ。`)) + latest

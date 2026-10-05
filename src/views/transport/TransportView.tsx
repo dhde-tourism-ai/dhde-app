@@ -226,7 +226,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   )
   const siteBack = site !== 'all' ? lastBack(site) : null
   const kpis = [
-    { value: total != null ? compact(total) : '—', label: t(`Visitors · ${periodLabel}`, `来訪者・${periodLabel}`) },
+    { value: total != null ? compact(total) : '—', label: t(`Estimated visitors · ${periodLabel}`, `推計来訪者数・${periodLabel}`) },
     { value: pct(carShare), label: t('Tourists by car', '車で来る観光客'), accent: true, tag: true },
     { value: pct(ptShare), label: t('Tourists by bus or train', 'バス・鉄道で来る観光客'), tag: true },
     site === 'all'
