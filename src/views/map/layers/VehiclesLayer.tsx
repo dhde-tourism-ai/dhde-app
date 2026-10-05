@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { TransportTripsFile } from '../../../types/transport'
+import type { TransportMapFile, TransportTripsFile } from '../../../types/transport'
+import { snapTrip } from '../../../lib/busPath'
+import type { SnappedTrip } from '../../../lib/busPath'
 import { MODE_COLOUR, RAIL_LINE_COLOUR } from '../../../lib/transport'
 import { dayTypeOf, vehicleClock } from '../../../lib/vehicleClock'
 import type { RailRun } from '../../../lib/railModel'
@@ -22,6 +24,7 @@ function dateOfHour(start: string, t: number): string {
  */
 export function VehiclesLayer({
   trips,
+  lines,
   runs,
   start,
   t,
@@ -30,6 +33,8 @@ export function VehiclesLayer({
   speed,
 }: {
   trips: TransportTripsFile | null
+  /** Drawn bus lines: buses run along their route's line, and routes without one get no buses. */
+  lines: TransportMapFile['lines']
   runs: RailRun[]
   start: string
   t: number
@@ -55,7 +60,22 @@ export function VehiclesLayer({
   }, [live])
   const day = dayTypeOf(live ? vehicleClock.date() : iso)
 
-  const buses = useMemo<BusTrip[]>(() => (trips ? (trips.trips[day] ?? []).map(([, s, min]) => ({ pts: s.map((i) => trips.stops[i]), min })) : []), [trips, day])
+  // Each stop pattern is placed on its line once (a few dozen patterns behind hundreds of trips).
+  const buses = useMemo<BusTrip[]>(() => {
+    if (!trips) return []
+    const lineOf = new Map(lines.map((l) => [l.id, l.path]))
+    const snaps = new Map<string, SnappedTrip | null>()
+    const out: BusTrip[] = []
+    for (const [r, s, min] of trips.trips[day] ?? []) {
+      const path = lineOf.get(trips.routes[r]?.id ?? '')
+      if (!path) continue // not drawn on the map: a bus there would float off the network
+      const pts = s.map((i) => trips.stops[i])
+      const key = `${r}:${s.join(',')}`
+      if (!snaps.has(key)) snaps.set(key, snapTrip(path, pts))
+      out.push({ pts, min, snap: snaps.get(key) ?? null })
+    }
+    return out
+  }, [trips, lines, day])
 
   useEffect(() => {
     canvas.setData(buses, runs)

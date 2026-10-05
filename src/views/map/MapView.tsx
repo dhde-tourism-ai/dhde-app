@@ -371,6 +371,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {transportOn && transportMap && live && (
           <VehiclesLayer
             trips={layerOn('transport') ? trips : null}
+            lines={transportMap.lines}
             runs={layerOn('rail') ? railRuns : NO_RUNS}
             start={live.start}
             t={t}
