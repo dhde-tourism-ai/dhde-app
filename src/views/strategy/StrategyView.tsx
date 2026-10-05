@@ -162,14 +162,16 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
-          <p className="q-why">{q.why}</p>
-          <div className="q-subs">
-            {q.subs.map((s) => (
-              <span key={s} className="chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          {q.why && <p className="q-why">{q.why}</p>}
+          {q.subs.length > 0 && (
+            <div className="q-subs">
+              {q.subs.map((s) => (
+                <span key={s} className="chip">
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </header>
       <div className="answer">
