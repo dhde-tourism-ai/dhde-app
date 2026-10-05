@@ -392,6 +392,8 @@ export function Ripple({ card }: { card: RippleCard }) {
 const THUMB = 18
 const RULER_STEP = 5
 const RULER_LABEL = 10
+/** Height of the actual-growth row over the track (pages.css .whatif-actual-row). */
+const ACTUAL_ROW = 24
 
 export function WhatIf({ card }: { card: WhatIfCard }) {
   const { t } = useLang()
@@ -411,6 +413,9 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
   const onThumb = `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${fill / 100})`
   const ticks: number[] = []
   for (let v = Math.ceil(card.min_pct / RULER_STEP) * RULER_STEP; v <= card.max_pct; v += RULER_STEP) ticks.push(v)
+  // Last year's real growth in spend (prev_year → base_year), marked on the slider when it's in range.
+  const actual = card.prev_spend_bn ? Math.round((card.base_spend_bn / card.prev_spend_bn - 1) * 100) : null
+  const showActual = actual !== null && actual >= card.min_pct && actual <= card.max_pct
   const signed = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)}%`
   const tiles = [
     { label: t('Tourism spend', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
@@ -437,7 +442,23 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
           }}
           onPointerLeave={() => setNear(false)}
         >
-          <span className={`whatif-readout num ${near || active ? 'on' : ''}`} style={{ left: onThumb }} aria-hidden="true">
+          {showActual && (
+            <span className="whatif-actual-row">
+              <button
+                type="button"
+                className="whatif-actual num"
+                style={{ left: `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${at(actual) / 100})` }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  setP(actual)
+                }}
+                title={t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`)}
+              >
+                {t(`${card.base_year} actual`, `${card.base_year}年実績`)} {signed(actual)}
+              </button>
+            </span>
+          )}
+          <span className={`whatif-readout num ${near || active ? 'on' : ''}`} style={{ left: onThumb, top: showActual ? ACTUAL_ROW : 0 }} aria-hidden="true">
             {signed(p)} {t('growth', '成長')}
           </span>
           <input
@@ -486,12 +507,6 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
           </div>
         ))}
       </div>
-      <p className="whatif-rule muted small">
-        {t(
-          `Each extra ¥1bn of spend adds ${bn(card.per_bn.va_bn, 2)} of GDP, ${Math.round(card.per_bn.jobs)} jobs and ${bn(card.per_bn.output_bn, 2)} of output (same mix as ${card.base_year}).`,
-          `観光消費10億円の増加ごとに、${bn(card.per_bn.va_bn, 2)}の付加価値、${Math.round(card.per_bn.jobs)}人の就業、${bn(card.per_bn.output_bn, 2)}の生産（消費構成は${card.base_year}年と同じ）。`,
-        )}
-      </p>
     </div>
   )
 }

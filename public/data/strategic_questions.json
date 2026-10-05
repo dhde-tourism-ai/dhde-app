@@ -785,6 +785,8 @@
           "title": "If tourism spend changes",
           "base_year": "2025",
           "base_spend_bn": 198.7,
+          "prev_year": "2024",
+          "prev_spend_bn": 151.3,
           "base_va_bn": 139,
           "base_jobs": 33943,
           "gdp_bn": 4078,

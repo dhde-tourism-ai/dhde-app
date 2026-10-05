@@ -295,6 +295,9 @@ export interface WhatIfCard extends CardBase {
   type: 'what_if'
   base_year: string
   base_spend_bn: number
+  /** The year before base_year, for the actual-growth marker on the slider (optional). */
+  prev_year?: string
+  prev_spend_bn?: number
   base_va_bn: number
   base_jobs: number
   gdp_bn: number
