@@ -662,6 +662,15 @@
   line-height: 1.55;
 }
 
+.q-themes {
+  margin: var(--sp-5) 0 var(--sp-4);
+}
+
+.q-themes button {
+  padding: 7px 16px;
+  font-size: 13px;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1296,15 +1305,57 @@
 
 /* builder */
 .builder {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--sp-6);
-}
-
-.builder-levers {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--sp-5);
+}
+
+/* The four packages A1–A4 as vertical cards, side by side */
+.builder-levers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.lever-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--c);
+}
+
+.lever-card-id {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c);
+}
+
+.lever-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  min-height: 2.7em;
+}
+
+.lever-card .lever-help {
+  margin-top: auto;
+}
+
+@media (max-width: 1100px) {
+  .builder-levers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .builder-levers {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .lever {
@@ -2341,107 +2392,107 @@
   gap: 12px;
 }
 
-.whatif-slider {
+/* ---- Scenario slider (Q1 what-if, Q5 packages): full bar, dashed marker with the value above, ruler ---- */
+.scn {
   position: relative;
-  display: block;
-  margin-top: 4px;
 }
 
-/* Last year's actual growth, marked over the track */
-.whatif-actual-row {
+.scn-value-row {
   position: relative;
-  display: block;
-  height: 27px;
+  height: 22px;
 }
 
-.whatif-actual {
+.scn-value {
   position: absolute;
-  bottom: 8px;
-  transform: translateX(-50%);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--real);
-  font: inherit;
-  font-size: 11.5px;
+  bottom: 2px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: var(--text);
   white-space: nowrap;
+}
+
+.scn-track {
+  position: relative;
+}
+
+/* Dashed line through the bar at the current position, from the value down to the ruler */
+.scn-marker {
+  position: absolute;
+  top: -5px;
+  bottom: -13px;
+  margin-left: -0.75px;
+  width: 0;
+  border-left: 1.5px dashed var(--c);
+  pointer-events: none;
+}
+
+.scn input[type='range'] {
+  position: relative;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: transparent;
   cursor: pointer;
 }
 
-.whatif-actual::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -4px;
-  border: 4px solid transparent;
-  border-top: 5px solid var(--real);
+.scn input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--c) var(--pct), var(--surface-3) var(--pct));
 }
 
-.whatif-actual:hover {
-  text-decoration: underline;
+.scn input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--c) var(--pct), var(--surface-3) var(--pct));
 }
 
-/* Growth readout over the thumb: shown on hover, drag or keyboard focus */
-.whatif-readout {
-  position: absolute;
-  transform: translate(-50%, calc(-100% + 4px));
-  padding: 3px 8px;
-  border-radius: 6px;
+.scn input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border-radius: 50%;
   background: var(--text);
-  color: var(--bg);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.12s, transform 0.12s;
-  z-index: 2;
+  border: 3px solid var(--c);
+  box-shadow: 0 0 0 3px var(--surface);
 }
 
-.whatif-readout::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border: 5px solid transparent;
-  border-top-color: var(--text);
+.scn input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 3px solid var(--c);
 }
 
-.whatif-readout.on {
-  opacity: 1;
-  transform: translate(-50%, calc(-100% - 6px));
-}
-
-/* Ruler under the track, on the span the thumb's centre travels */
-.whatif-ruler {
+.scn-ruler {
   position: relative;
-  display: block;
-  height: 22px;
-  margin: -4px 9px 0;
+  height: 24px;
+  margin: 2px 9px 0;
 }
 
-.whatif-tick {
+.scn-tick {
   position: absolute;
   top: 0;
   width: 1px;
-  height: 5px;
+  height: 4px;
   background: var(--line-strong);
 }
 
-.whatif-tick.major {
-  height: 8px;
+.scn-tick.major {
+  height: 7px;
   background: var(--muted);
 }
 
-.whatif-tick.zero {
-  height: 9px;
+.scn-tick.zero {
   background: var(--text-2);
 }
 
-.whatif-tick-label {
+.scn-tick-label {
   position: absolute;
   top: 9px;
   left: 50%;
@@ -2451,28 +2502,40 @@
   white-space: nowrap;
 }
 
-.whatif-tick.zero .whatif-tick-label {
+.scn-tick.zero .scn-tick-label {
   color: var(--text-2);
 }
 
-/* Where the slider is now, on the ruler */
-.whatif-here {
+/* Reference value (e.g. last year's actual growth): green tick and label on the ruler; click to jump there */
+.scn-ref {
   position: absolute;
-  top: -2px;
-  width: 0;
-  height: 0;
-  margin-left: -5px;
-  border: 5px solid transparent;
-  border-bottom: 7px solid #6da7ec;
-  border-top: 0;
-  transition: left 0.05s;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 8px 0 0;
+  border: 0;
+  background: none;
+  color: var(--real);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .whatif-readout,
-  .whatif-here {
-    transition: none;
-  }
+.scn-ref::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 7px;
+  margin-left: -1px;
+  background: var(--real);
+}
+
+.scn-ref:hover {
+  text-decoration: underline;
 }
 
 .whatif-marks {

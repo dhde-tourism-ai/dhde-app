@@ -133,6 +133,9 @@ const LEAN_QUESTIONS = new Set(['q1', 'q5'])
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
   const lean = LEAN_QUESTIONS.has(q.id)
+  const themes = q.themes ?? []
+  const [picked, setTheme] = useState<string | undefined>(undefined)
+  const theme = themes.find((th) => th.id === picked)?.id ?? themes[0]?.id ?? ''
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
@@ -161,13 +164,38 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <p>{q.answer}</p>
         </div>
       )}
-      <div className="card-grid">
-        {q.cards
-          .filter((c) => !c.hidden)
-          .map((c) => (
-            <StrategyCardView key={c.id} card={c} lean={lean} />
-          ))}
-      </div>
+      {(() => {
+        const shown = q.cards.filter((c) => !c.hidden)
+        const fixed = shown.filter((c) => !themes.length || !c.theme)
+        const inTheme = themes.length ? shown.filter((c) => c.theme?.includes(theme)) : []
+        return (
+          <>
+            {fixed.length > 0 && (
+              <div className="card-grid">
+                {fixed.map((c) => (
+                  <StrategyCardView key={c.id} card={c} lean={lean} />
+                ))}
+              </div>
+            )}
+            {themes.length > 0 && (
+              <>
+                <div className="q-themes seg" role="tablist" aria-label={t('Themes', 'テーマ')}>
+                  {themes.map((th) => (
+                    <button key={th.id} role="tab" aria-selected={theme === th.id} aria-pressed={theme === th.id} onClick={() => setTheme(th.id)}>
+                      {th.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="card-grid" role="tabpanel">
+                  {inTheme.map((c) => (
+                    <StrategyCardView key={c.id} card={c} lean={lean} theme={theme} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )
+      })()}
       {showSpecs && (
         <div className="spec">
           <div className="spec-title">{t('Build spec', 'ビルド仕様')}</div>

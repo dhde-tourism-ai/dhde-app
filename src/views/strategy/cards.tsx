@@ -31,6 +31,7 @@ import { GuestNightsMonths, TargetPace } from './guestNights'
 import { GdpTrend, Ripple, TourismTrend, WhatIf } from './economy'
 import { FlowSankey } from './flowSankey'
 import { SearchTrends } from './searchTrends'
+import { ScenarioSlider } from './slider'
 
 /** "[pending]" in the current language, for values not measured yet. */
 function usePending() {
@@ -39,7 +40,7 @@ function usePending() {
 }
 
 /** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the New/Updated badge, detail line, notes, sources and TODOs. */
-export function StrategyCardView({ card, lean = false }: { card: StrategyCard; lean?: boolean }) {
+export function StrategyCardView({ card, lean = false, theme }: { card: StrategyCard; lean?: boolean; theme?: string }) {
   const { t } = useLang()
   return (
     <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
@@ -51,7 +52,7 @@ export function StrategyCardView({ card, lean = false }: { card: StrategyCard; l
         <StatusPill status={card.status} />
       </header>
       <div className="s-card-body">
-        <CardBody card={card} lean={lean} />
+        <CardBody card={card} lean={lean} theme={theme} />
       </div>
       {!lean && (card.note || card.pending_on || card.source || card.todo) && (
         <footer className="s-card-foot">
@@ -77,7 +78,7 @@ export function StrategyCardView({ card, lean = false }: { card: StrategyCard; l
   )
 }
 
-function CardBody({ card, lean }: { card: StrategyCard; lean: boolean }): ReactNode {
+function CardBody({ card, lean, theme }: { card: StrategyCard; lean: boolean; theme?: string }): ReactNode {
   switch (card.type) {
     case 'stat':
       return <Stat card={card} lean={lean} />
@@ -114,7 +115,7 @@ function CardBody({ card, lean }: { card: StrategyCard; lean: boolean }): ReactN
     case 'gdp_trend':
       return <GdpTrend card={card} />
     case 'tourism_trend':
-      return <TourismTrend card={card} />
+      return <TourismTrend card={card} theme={theme} />
     case 'ripple':
       return <Ripple card={card} />
     case 'what_if':
@@ -774,27 +775,28 @@ function Builder({ card }: { card: BuilderCard }) {
   return (
     <div className="builder">
       <div className="builder-levers">
-        {card.levers.map((l, k) => (
-          <label key={l.id} className="lever">
-            <span className="lever-head">
-              <span className="lever-name">
-                <i className="lever-sw" style={{ background: S[k % S.length] }}></i>
-                {l.label}
-              </span>
-              <span className="num lever-val">{l.unit === '%' ? `${vals[l.id]}%` : `${(vals[l.id] ?? 0).toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`}</span>
-            </span>
-            <input
-              type="range"
-              min={l.min}
-              max={l.max}
-              step={l.step}
-              value={vals[l.id]}
-              style={{ ['--pct' as string]: `${(((vals[l.id] ?? 0) - l.min) / (l.max - l.min)) * 100}%`, ['--c' as string]: S[k % S.length] }}
-              onChange={(e) => setVals((s) => ({ ...s, [l.id]: Number(e.target.value) }))}
-            />
-            <span className="lever-help">{l.help}</span>
-          </label>
-        ))}
+        {card.levers.map((l, k) => {
+          const fmt = (v: number) => (l.unit === '%' ? `${v}%` : `${v.toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`)
+          const tick = (v: number) => (l.unit === '%' ? `${v}%` : v >= 1e3 ? `${v / 1e3}k` : String(v))
+          return (
+            <div key={l.id} className="lever-card" style={{ ['--c' as string]: S[k % S.length] }}>
+              <div className="lever-card-id">{l.id}</div>
+              <div className="lever-card-name">{l.label.replace(new RegExp(`^${l.id}\\s+`), '')}</div>
+              <ScenarioSlider
+                min={l.min}
+                max={l.max}
+                step={l.step}
+                value={vals[l.id] ?? 0}
+                onChange={(v) => setVals((s) => ({ ...s, [l.id]: v }))}
+                colour={S[k % S.length]}
+                format={fmt}
+                tickFormat={tick}
+                label={l.label}
+              />
+              <div className="lever-help">{l.help}</div>
+            </div>
+          )
+        })}
       </div>
       <div className="builder-out">
         {card.gaps.map((g) => {

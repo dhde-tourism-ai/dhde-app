@@ -3,6 +3,7 @@ import { Bar, CartesianGrid, Cell, ComposedChart, ReferenceArea, ReferenceDot, R
 import type { GdpTrendCard, RippleCard, RippleTierId, TourismTrendCard, TourismTrendPoint, WhatIfCard } from '../../types/strategy'
 import { useLang } from '../../lib/i18n'
 import { AXIS, S } from './chartTheme'
+import { ScenarioSlider } from './slider'
 
 // Q1 economy block: Fukui's GDP, tourism's share of it, the ripple by round and a what-if.
 
@@ -15,6 +16,10 @@ const RING = '#e9eef8'
 const GDP_REST = '#3a4a6b'
 const TOURISM = '#d95926'
 const PROJ_FILL = '#8b9dff'
+/** Axis titles: every chart says what its axes measure. */
+const AXIS_TITLE = { fill: '#7f8ba3', fontSize: 11 }
+const yTitle = (value: string) => ({ value, angle: -90, position: 'insideLeft' as const, offset: 4, style: { ...AXIS_TITLE, textAnchor: 'middle' as const } })
+const xTitle = (value: string) => ({ value, position: 'insideBottom' as const, offset: 0, style: AXIS_TITLE })
 
 function useTierNames(): Record<RippleTierId, string> {
   const { t } = useLang()
@@ -99,12 +104,12 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={236}>
-        <ComposedChart data={rows} margin={{ top: 18, right: 8, left: 0, bottom: 0 }} barCategoryGap="18%">
+      <ResponsiveContainer width="100%" height={262}>
+        <ComposedChart data={rows} margin={{ top: 18, right: 8, left: 6, bottom: 0 }} barCategoryGap="18%">
           <CartesianGrid stroke={GRID} vertical={false} />
           {firstProj && <ReferenceArea x1={firstProj} x2={last.x} fill={PROJ_FILL} fillOpacity={0.06} ifOverflow="visible" />}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `FY${v.slice(2)}`} />
-          <YAxis tick={AXIS} width={46} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : `¥${(v / 1e3).toFixed(0)}tn`)} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `FY${v.slice(2)}`} height={40} label={xTitle(t('Fiscal year', '年度'))} />
+          <YAxis tick={AXIS} width={58} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : `¥${(v / 1e3).toFixed(0)}tn`)} label={yTitle(t('GDP (¥ trillion)', '県内総生産（兆円）'))} />
           <Tooltip
             cursor={{ fill: 'rgba(160,185,230,0.06)' }}
             content={({ active, payload }) => {
@@ -151,10 +156,13 @@ function byRound(p: TourismTrendPoint, m: Measure): [number, number, number, num
 }
 
 /** Tourism's share of GDP, GDP added or jobs each year, stacked by round, with the low–high range on projected years. */
-export function TourismTrend({ card }: { card: TourismTrendCard }) {
+export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: string }) {
   const { t } = useLang()
   const names = useTierNames()
-  const [m, setM] = useState<Measure>('share')
+  // Under Q1's themes the GDP theme shows share and GDP added, the Jobs theme jobs only.
+  const measures: Measure[] = theme === 'jobs' ? ['jobs'] : theme === 'gdp' ? ['share', 'va'] : ['share', 'va', 'jobs']
+  const [picked, setM] = useState<Measure>('share')
+  const m = measures.includes(picked) ? picked : measures[0]
   const fmt = (v: number) => (m === 'share' ? pct(v, 2) : m === 'va' ? bn(v) : jobs(v))
   const tick = (v: number) => (m === 'share' ? `${v}%` : m === 'va' ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
   const rows = card.points.map((p) => {
@@ -175,19 +183,17 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
 
   return (
     <div>
-      <div className="eco-controls">
-        <div className="seg" role="group" aria-label={t('Measure', '指標')}>
-          <button aria-pressed={m === 'share'} onClick={() => setM('share')}>
-            {t('Share of GDP', 'GDP比')}
-          </button>
-          <button aria-pressed={m === 'va'} onClick={() => setM('va')}>
-            {t('GDP added', '付加価値額')}
-          </button>
-          <button aria-pressed={m === 'jobs'} onClick={() => setM('jobs')}>
-            {t('Jobs', '就業者')}
-          </button>
+      {measures.length > 1 && (
+        <div className="eco-controls">
+          <div className="seg" role="group" aria-label={t('Measure', '指標')}>
+            {measures.map((id) => (
+              <button key={id} aria-pressed={m === id} onClick={() => setM(id)}>
+                {id === 'share' ? t('Share of GDP', 'GDP比') : id === 'va' ? t('GDP added', '付加価値額') : t('Jobs', '就業者')}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div className="chart-key">
         {TIERS.map((id) => (
           <span key={id}>
@@ -198,7 +204,7 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
         {ranged.length > 0 && (
           <span>
             <i className="k-range"></i>
-            {t('Low to high spend', '観光消費の低位〜高位')}
+            {t('Low to high revenue', '観光消費の低位〜高位')}
           </span>
         )}
         {marks.length > 0 && (
@@ -208,8 +214,8 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={250}>
-        <ComposedChart data={rows} margin={{ top: 20, right: 14, left: 0, bottom: 0 }} barCategoryGap="22%">
+      <ResponsiveContainer width="100%" height={276}>
+        <ComposedChart data={rows} margin={{ top: 20, right: 14, left: 6, bottom: 0 }} barCategoryGap="22%">
           <CartesianGrid stroke={GRID} vertical={false} />
           {firstProj && (
             <ReferenceArea
@@ -221,8 +227,17 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
               label={{ value: t('Projection', '予測'), position: 'insideTopLeft', fill: '#7f8ba3', fontSize: 10.5 }}
             />
           )}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `'${v.slice(2)}`} />
-          <YAxis tick={AXIS} width={46} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={tick} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `'${v.slice(2)}`} height={40} label={xTitle(t('Year', '年'))} />
+          <YAxis
+            tick={AXIS}
+            width={58}
+            tickLine={false}
+            axisLine={false}
+            domain={[0, top]}
+            ticks={ticks}
+            tickFormatter={tick}
+            label={yTitle(m === 'share' ? t('Share of Fukui GDP (%)', '県内総生産比（%）') : m === 'va' ? t('GDP added (¥ billion)', '付加価値（10億円）') : t('Jobs supported', '就業者数'))}
+          />
           <Tooltip
             cursor={{ fill: 'rgba(139,157,255,.08)' }}
             content={({ active, payload }) => {
@@ -230,7 +245,7 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
               if (!r) return null
               const tipRows: TipRow[] = TIERS.map((id, i) => ({ key: TIER[id], label: names[id], value: fmt([r.d, r.i1, r.i2][i]) }))
               tipRows.push({ label: t('total', '合計'), value: fmt(r.tot), strong: true })
-              if (r.lo !== null && r.hi !== null) tipRows.push({ key: S[1], label: t('low to high spend', '低位〜高位'), value: `${fmt(r.lo)} – ${fmt(r.hi)}` })
+              if (r.lo !== null && r.hi !== null) tipRows.push({ key: S[1], label: t('low to high revenue', '低位〜高位'), value: `${fmt(r.lo)} – ${fmt(r.hi)}` })
               const b = marks.find((x) => String(x.year) === r.x)
               if (b?.v !== undefined) tipRows.push({ key: RING, label: b.label, value: fmt(b.v) })
               const est = r.p.gdp_kind === 'actual' ? '' : t(' (estimate)', '（推計）')
@@ -238,7 +253,7 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
                 <EcoTip
                   title={`${r.x}${r.forecast ? t(' · base projection', '・基準予測') : ''}`}
                   rows={tipRows}
-                  foot={`${t('Tourism spend', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
+                  foot={`${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
                 />
               )
             }}
@@ -299,7 +314,7 @@ export function Ripple({ card }: { card: RippleCard }) {
       <div className="ripple-flow">
         <div className="ripple-box spend">
           <div className="ripple-kicker">
-            {t('Tourism spend', '観光消費額')} {card.year}
+            {t('Tourism revenue', '観光消費額')} {card.year}
           </div>
           <div className="ripple-big">{bn(card.spend_bn)}</div>
           <div className="ripple-sub">
@@ -387,104 +402,50 @@ export function Ripple({ card }: { card: RippleCard }) {
   )
 }
 
-/** Slide the change in tourism spend; GDP, jobs and share follow at the base year's effect per ¥1bn. */
-/** What-if slider: thumb diameter (pages.css), and the ruler's tick and label spacing in percent. */
-const THUMB = 18
-const RULER_STEP = 5
-const RULER_LABEL = 10
-/** Height of the actual-growth row over the track (pages.css .whatif-actual-row). */
-const ACTUAL_ROW = 27
-
+/** Slide the change in tourism revenue; GDP, jobs and share follow at the base year's effect per ¥1bn. */
 export function WhatIf({ card }: { card: WhatIfCard }) {
   const { t } = useLang()
   const [p, setP] = useState(card.default_pct)
-  // The readout over the thumb shows while the pointer is on the thumb, or while dragging or keyboard-focused.
-  const [near, setNear] = useState(false)
-  const [active, setActive] = useState(false)
   const dSpend = (card.base_spend_bn * p) / 100
   const dVa = dSpend * card.per_bn.va_bn
   const dJobs = dSpend * card.per_bn.jobs
   const share = ((card.base_va_bn + dVa) / card.gdp_bn) * 100
   const baseShare = (card.base_va_bn / card.gdp_bn) * 100
   const sign = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '±')
-  const at = (v: number) => ((v - card.min_pct) / (card.max_pct - card.min_pct)) * 100
-  const fill = at(p)
-  // The thumb's centre runs from THUMB/2 to (width − THUMB/2), so the readout and the ruler sit on that span.
-  const onThumb = `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${fill / 100})`
-  const ticks: number[] = []
-  for (let v = Math.ceil(card.min_pct / RULER_STEP) * RULER_STEP; v <= card.max_pct; v += RULER_STEP) ticks.push(v)
-  // Last year's real growth in spend (prev_year → base_year), marked on the slider when it's in range.
-  const actual = card.prev_spend_bn ? Math.round((card.base_spend_bn / card.prev_spend_bn - 1) * 100) : null
-  const showActual = actual !== null && actual >= card.min_pct && actual <= card.max_pct
   const signed = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)}%`
+  // Last year's real growth in revenue (prev_year → base_year), marked on the ruler.
+  const actual = card.prev_spend_bn ? Math.round((card.base_spend_bn / card.prev_spend_bn - 1) * 100) : null
   const tiles = [
-    { label: t('Tourism spend', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
+    { label: t('Tourism revenue', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
     { label: t('GDP added', '付加価値'), value: `${sign(dVa)}${bn(Math.abs(dVa))}`, detail: `${sign(dVa)}${Math.abs(share - baseShare).toFixed(2)} ${t('pt of GDP', 'pt（GDP比）')}` },
     { label: t('Jobs', '就業者'), value: `${sign(dJobs)}${jobs(Math.abs(dJobs))}`, detail: `${jobs(card.base_jobs + dJobs)} ${t('in total', '（合計）')}` },
     { label: t("Tourism's share of GDP", 'GDPに占める割合'), value: pct(share), detail: t(`from ${pct(baseShare)} in ${card.base_year}`, `基準 ${pct(baseShare)}（${card.base_year}年）`) },
   ]
+  const name = t(`Change in tourism revenue vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`)
   return (
     <div className="whatif">
-      <label className="lever">
-        <span className="lever-head">
-          <span className="lever-name">{t(`Change in tourism spend vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`)}</span>
-          <span className="num lever-val">
-            {p > 0 ? '+' : ''}
-            {p}%
-          </span>
-        </span>
-        <span
-          className="whatif-slider"
-          onPointerMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect()
-            const x = THUMB / 2 + ((r.width - THUMB) * fill) / 100
-            setNear(Math.abs(e.clientX - r.left - x) <= THUMB)
-          }}
-          onPointerLeave={() => setNear(false)}
-        >
-          {showActual && (
-            <span className="whatif-actual-row">
-              <button
-                type="button"
-                className="whatif-actual num"
-                style={{ left: `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${at(actual) / 100})` }}
-                onClick={(e) => {
-                  e.preventDefault()
-                  setP(actual)
-                }}
-                title={t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`)}
-              >
-                {t(`${card.base_year} actual`, `${card.base_year}年実績`)} {signed(actual)}
-              </button>
-            </span>
-          )}
-          <span className={`whatif-readout num ${near || active ? 'on' : ''}`} style={{ left: onThumb, top: showActual ? ACTUAL_ROW : 0 }} aria-hidden="true">
-            {signed(p)} {t('growth', '成長')}
-          </span>
-          <input
-            type="range"
-            min={card.min_pct}
-            max={card.max_pct}
-            step={card.step_pct}
-            value={p}
-            style={{ ['--pct' as string]: `${fill}%`, ['--c' as string]: TIER.indirect1 }}
-            onChange={(e) => setP(Number(e.target.value))}
-            onPointerDown={() => setActive(true)}
-            onPointerUp={() => setActive(false)}
-            onFocus={(e) => e.currentTarget.matches(':focus-visible') && setActive(true)}
-            onBlur={() => setActive(false)}
-            aria-valuetext={`${signed(p)} ${t('growth', '成長')}`}
-          />
-          <span className="whatif-ruler" aria-hidden="true">
-            {ticks.map((v) => (
-              <span key={v} className={`whatif-tick ${v % RULER_LABEL === 0 ? 'major' : ''} ${v === 0 ? 'zero' : ''}`} style={{ left: `${at(v)}%` }}>
-                {v % RULER_LABEL === 0 && <span className="whatif-tick-label num">{v === 0 ? '0%' : signed(v)}</span>}
-              </span>
-            ))}
-            <span className="whatif-here" style={{ left: `${fill}%` }} />
-          </span>
-        </span>
-      </label>
+      <div className="lever-name">{name}</div>
+      <ScenarioSlider
+        min={card.min_pct}
+        max={card.max_pct}
+        step={card.step_pct}
+        value={p}
+        onChange={setP}
+        colour={TIER.indirect1}
+        format={(v) => `${signed(v)} ${t('growth', '成長')}`}
+        tickFormat={(v) => (v === 0 ? '0%' : signed(v))}
+        label={name}
+        labelStep={10}
+        reference={
+          actual === null
+            ? null
+            : {
+                value: actual,
+                label: t(`${card.base_year} actual ${signed(actual)}`, `${card.base_year}年実績 ${signed(actual)}`),
+                title: t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`),
+              }
+        }
+      />
       {card.marks && card.marks.length > 0 && (
         <div className="whatif-marks">
           {card.marks.map((mk) => (

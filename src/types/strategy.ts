@@ -21,6 +21,8 @@ interface CardBase {
   hidden?: boolean
   /** Short marker next to the title, e.g. "New" or "Updated". */
   badge?: string
+  /** Theme ids (the question's `themes`) this card shows under; without it the card shows above the theme switch. */
+  theme?: string[]
 }
 
 export interface StatCard extends CardBase {
@@ -290,7 +292,7 @@ export interface RippleCard extends CardBase {
   }
 }
 
-/** Slider: change in tourism spend → GDP, jobs and share, at the base year's effect per ¥1bn. */
+/** Slider: change in tourism revenue (visitor spend) → GDP, jobs and share, at the base year's effect per ¥1bn. */
 export interface WhatIfCard extends CardBase {
   type: 'what_if'
   base_year: string
@@ -374,6 +376,8 @@ export interface StrategicQuestion {
   subs: string[]
   answer: string
   cards: StrategyCard[]
+  /** One graph at a time: a switch over these themes, each showing the cards that list its id in `theme`. */
+  themes?: { id: string; label: string }[]
   spec: BuildSpec
 }
 
