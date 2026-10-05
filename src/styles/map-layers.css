@@ -17,9 +17,13 @@
   padding: 12px 14px;
   /* A site's detail with several layers on can be taller than the map between the top
      strip and the timeline: it stops there and fades out (clicking the site opens the
-     drawer with all of it). 230px = app bar, strip and timeline with their gaps. */
+     drawer with all of it); short cards don't fade. 230px = app bar, strip and timeline with their gaps. */
   max-height: calc(100vh - 230px);
   overflow: hidden;
+}
+
+/* Only a card that is actually cut off fades at the bottom (Tip sets .clipped). */
+.leaflet-tooltip.map-tip.wide.clipped {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent);
 }

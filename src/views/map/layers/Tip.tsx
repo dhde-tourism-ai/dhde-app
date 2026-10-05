@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { LeafletEvent, Tooltip as LeafletTooltip } from 'leaflet'
 import { Popup, Tooltip } from 'react-leaflet'
 import { useIsNarrow } from '../../../hooks/useIsNarrow'
 
@@ -8,6 +9,13 @@ import { useIsNarrow } from '../../../hooks/useIsNarrow'
  * Always in Leaflet's own tooltip / popup pane: inside a react-leaflet <Pane> it would
  * otherwise land in that pane (the site cards'), under the other sites' cards.
  */
+/** Fade the card's bottom edge only when it is taller than the space it gets (re-checked as it opens). */
+function markClipped(e: LeafletEvent) {
+  const el = (e.target as LeafletTooltip).getElement()
+  if (!el) return
+  requestAnimationFrame(() => el.classList.toggle('clipped', el.scrollHeight > el.clientHeight + 1))
+}
+
 export function Tip({ children, sticky = false }: { children: ReactNode; sticky?: boolean }) {
   const narrow = useIsNarrow()
   if (narrow) {
@@ -18,7 +26,7 @@ export function Tip({ children, sticky = false }: { children: ReactNode; sticky?
     )
   }
   return (
-    <Tooltip pane="tooltipPane" className="map-tip wide" direction="auto" sticky={sticky}>
+    <Tooltip pane="tooltipPane" className="map-tip wide" direction="auto" sticky={sticky} eventHandlers={{ add: markClipped }}>
       {children}
     </Tooltip>
   )

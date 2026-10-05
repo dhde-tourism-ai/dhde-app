@@ -84,7 +84,7 @@ export class VehicleCanvas extends CanvasOverlay {
       ctx.fill()
     }
 
-    for (const r of this.rail) for (const ll of trainsAt(r, m, this.legCache)) dot(this.toCanvas(ll), 6, this.style.train, '#ffffff', 2)
+    for (const r of this.rail) for (const ll of trainsAt(r, m, this.legCache)) dot(this.toCanvas(ll), 4.5, this.style.train, '#ffffff', 1.5)
 
     for (const b of this.buses) {
       const n = b.min.length
@@ -95,7 +95,7 @@ export class VehicleCanvas extends CanvasOverlay {
       const f = span > 0 ? Math.min(1, (m - b.min[i]) / span) : 0
       const a = b.pts[i]
       const c = b.pts[i + 1]
-      dot(this.toCanvas([a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f]), 5, this.style.bus, '#ffffff', 1.5)
+      dot(this.toCanvas([a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f]), 3.5, this.style.bus, '#ffffff', 1.2)
     }
   }
 }
