@@ -16,7 +16,8 @@ export type ClockMode = 'live' | 'preview' | 'run'
 
 const JST_MS = 9 * 3600000
 
-let mode: ClockMode = 'preview'
+// Real time until the vehicle layer sets it (it loads after the timeline shows the clock).
+let mode: ClockMode = 'live'
 let hourMin = 0
 let rate = 1
 let iso = ''
