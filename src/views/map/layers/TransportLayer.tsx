@@ -6,6 +6,7 @@ import { BusStopSchedule, StationSchedule } from './Schedules'
 import { MODE_COLOUR, MODE_LABEL, RAIL_LINE_COLOUR } from '../../../lib/transport'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
+import { placeEn, routeEn } from '../../../lib/transportNames'
 
 /** All red: the Shinkansen wider, the Fukui Railway tram dashed. Kept thin so the map stays readable. */
 const RAIL_STYLE = {
@@ -48,7 +49,14 @@ export function TransportLayer({
   /** Illustrative train service, for each station's next trains. */
   runs: RailRun[]
 }) {
-  const { t: tr } = useLang()
+  const { t: tr, lang } = useLang()
+  // In English: the English name, with the Japanese under it (what's on the signs).
+  const named = (en: string, ja: string) => (
+    <>
+      <strong>{lang === 'ja' ? ja : en}</strong>
+      {lang !== 'ja' && en !== ja && <div className="tip-ja">{ja}</div>}
+    </>
+  )
   const zoom = useZoom()
   /** Bus stops from zoom 12 (city streets); stations at every zoom, but small. */
   const showStops = zoom >= 12
@@ -80,7 +88,7 @@ export function TransportLayer({
         ))}
         {rail?.lines.map((l) => (
           <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }}>
-            <Tip sticky>
+            <Tip sticky above>
               <strong>{tr(l.name, l.name_ja)}</strong>
               <div className="tip-sub">{l.kind === 'shinkansen' ? 'Shinkansen' : tr(...MODE_LABEL.rail)}</div>
             </Tip>
@@ -92,8 +100,8 @@ export function TransportLayer({
           {data.lines.map((l) => (
             <Polyline key={l.id} positions={l.path}
               pathOptions={{ color: l.mode === 'rail' ? (l.colour ?? MODE_COLOUR.rail) : MODE_COLOUR.bus, weight: l.mode === 'rail' ? 2.5 : 1.5, opacity: 0.85 }}>
-              <Tip sticky>
-                <strong>{l.name}</strong>
+              <Tip sticky above>
+                {named(routeEn(l.name), l.name)}
                 <div className="tip-sub">{tr(...MODE_LABEL[l.mode])}</div>
               </Tip>
             </Polyline>
@@ -105,8 +113,8 @@ export function TransportLayer({
           {data.stops.map((s) => (
             <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stopR}
               pathOptions={{ color: '#0a1120', weight: 0.8, fillColor: '#ffffff', fillOpacity: 1 }}>
-              <Tip>
-                <strong>{s.name}</strong>
+              <Tip above>
+                {named(placeEn(s.name), s.name)}
                 <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
                 <BusStopSchedule trips={trips} stopId={s.id} />
               </Tip>
@@ -119,8 +127,8 @@ export function TransportLayer({
         {rail?.stations.map((s) => (
           <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stationR}
             pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1.2, fillColor: '#ffffff', fillOpacity: 1 }}>
-            <Tip>
-              <strong>{s.name_ja}</strong>
+            <Tip above>
+              {named(placeEn(s.name_ja), s.name_ja)}
               <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
               <StationSchedule runs={runs} stationId={s.id} />
             </Tip>

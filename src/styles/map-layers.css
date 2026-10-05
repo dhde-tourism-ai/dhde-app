@@ -1011,6 +1011,13 @@
   margin-top: 6px;
 }
 
+/* The Japanese name under an English stop, station or route name */
+.tip-ja {
+  margin-top: -1px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* ---------- next departures in a bus stop's or station's card ---------- */
 .sched {
   margin-top: 8px;

@@ -16,7 +16,7 @@ function markClipped(e: LeafletEvent) {
   requestAnimationFrame(() => el.classList.toggle('clipped', el.scrollHeight > el.clientHeight + 1))
 }
 
-export function Tip({ children, sticky = false }: { children: ReactNode; sticky?: boolean }) {
+export function Tip({ children, sticky = false, above = false }: { children: ReactNode; sticky?: boolean; /** Open above the mark (or the cursor, when sticky) instead of beside it. */ above?: boolean }) {
   const narrow = useIsNarrow()
   if (narrow) {
     return (
@@ -26,7 +26,14 @@ export function Tip({ children, sticky = false }: { children: ReactNode; sticky?
     )
   }
   return (
-    <Tooltip pane="tooltipPane" className="map-tip wide" direction="auto" sticky={sticky} eventHandlers={{ add: markClipped }}>
+    <Tooltip
+      pane="tooltipPane"
+      className="map-tip wide"
+      direction={above ? 'top' : 'auto'}
+      offset={above ? [0, -10] : [0, 0]}
+      sticky={sticky}
+      eventHandlers={{ add: markClipped }}
+    >
       {children}
     </Tooltip>
   )

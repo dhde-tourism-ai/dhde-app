@@ -4,6 +4,7 @@ import { useLang } from '../../../lib/i18n'
 import { isHoliday } from '../../../lib/holidays'
 import { Icon } from '../../../components/icons'
 import { Itinerary } from '../../../components/Itinerary'
+import { placeEn } from '../../../lib/transportNames'
 import {
   DAY_LABEL,
   EARLY_LAST_RETURN_MIN,
@@ -155,7 +156,7 @@ export function AccessCard({ data, nodeId, hubName }: { data: TransportFile; nod
             <li className="kv">
               <span>{tr('Nearest stop', '最寄りの停留所・駅')}</span>
               <span className="kv-v">
-                {nearest.name} <span className="muted small">{tr(`+ ${nearest.walk_min} min walk to the site`, `地点まで徒歩${nearest.walk_min}分`)}</span>
+                {lang === 'ja' ? nearest.name : placeEn(nearest.name)} <span className="muted small">{tr(`+ ${nearest.walk_min} min walk to the site`, `地点まで徒歩${nearest.walk_min}分`)}</span>
               </span>
             </li>
           )}

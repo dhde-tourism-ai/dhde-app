@@ -5,6 +5,7 @@ import { nextTrains } from '../../../lib/railModel'
 import type { RailRun } from '../../../lib/railModel'
 import { clock, dayTypeOf, vehicleClock } from '../../../lib/vehicleClock'
 import { useLang } from '../../../lib/i18n'
+import { placeEn, routeEn } from '../../../lib/transportNames'
 
 /** Re-render every 2 s while shown (hover cards stay mounted once opened, so skip when hidden). */
 function useTicking() {
@@ -31,7 +32,7 @@ function ClockLabel() {
 
 /** A bus stop's next departures from the bus timetables, at the vehicle clock's time. */
 export function BusStopSchedule({ trips, stopId }: { trips: TransportTripsFile | null; stopId: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const ref = useTicking()
   if (!trips) return null
   const rows = nextBuses(trips, dayTypeOf(vehicleClock.date()), stopId, Math.floor(vehicleClock.minute()))
@@ -47,7 +48,7 @@ export function BusStopSchedule({ trips, stopId }: { trips: TransportTripsFile |
           <div key={i} className="sched-row">
             <span className="num">{clock(r.min)}</span>
             <span>
-              {r.route} <span className="sched-to">→ {r.to}</span>
+              {lang === 'ja' ? r.route : routeEn(r.route)} <span className="sched-to">→ {lang === 'ja' ? r.to : placeEn(r.to)}</span>
             </span>
           </div>
         ))
@@ -58,7 +59,7 @@ export function BusStopSchedule({ trips, stopId }: { trips: TransportTripsFile |
 
 /** A station's next trains on the illustrative rail model. */
 export function StationSchedule({ runs, stationId }: { runs: RailRun[]; stationId: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const ref = useTicking()
   const rows = nextTrains(runs, stationId, vehicleClock.minute())
   if (!runs.some((r) => r.stops.some((s) => s.id === stationId))) return null
@@ -74,7 +75,7 @@ export function StationSchedule({ runs, stationId }: { runs: RailRun[]; stationI
           <div key={i} className="sched-row">
             <span className="num">{clock(r.min)}</span>
             <span>
-              {t(...r.line)} <span className="sched-to">→ {r.to}</span>
+              {t(...r.line)} <span className="sched-to">→ {lang === 'ja' ? r.to : placeEn(r.to)}</span>
             </span>
           </div>
         ))
