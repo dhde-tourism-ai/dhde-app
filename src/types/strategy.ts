@@ -348,7 +348,8 @@ export interface SearchTrendsCard extends CardBase {
   }
   insight?: string
   insight_ja?: string
-  as_of: string
+  /** "Fixed snapshot: …" line under the chart; none when left out. */
+  as_of?: string
   as_of_ja?: string
 }
 

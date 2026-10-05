@@ -92,9 +92,6 @@ export function withRealForecast(questions: StrategicQuestion[], file: RealDaily
   if (!file) return questions
   const sites = SITES.map((s) => site(file, s, lang)).filter((x): x is ForecastSite => x !== null)
   if (sites.length === 0) return questions
-  const errors = SITES.map((s) => file.nodes[s.id]?.forecast?.backtest_wape).filter((w): w is number => typeof w === 'number')
-  const range = errors.length ? `${Math.round(Math.min(...errors) * 100)}–${Math.round(Math.max(...errors) * 100)}%` : null
-  const pct = Math.round(DEMAND_THRESHOLD * 100)
   return questions.map((q) => ({
     ...q,
     cards: q.cards.map((c) =>
@@ -103,10 +100,6 @@ export function withRealForecast(questions: StrategicQuestion[], file: RealDaily
             ...c,
             sites,
             status: 'modelled' as const,
-            note:
-              lang === 'ja'
-                ? `直近8週間の実績（実線）と7日間予測（破線、約80%の範囲）。予測は dhde-preprocessing-model の日次モデルで毎日更新。${range ? `検証誤差は地点により${range}。` : ''}対応：地点の平常日（データ全期間の1日平均、約90日）より${pct}%以上多い日＝営業時間を延長（地図の需要アラートと同じ基準）。福井駅は公式の来訪者数がないためカメラ検知数で、対応は表示しない。`
-                : `Last 8 weeks measured (line) and the 7-day forecast (dashed) with its roughly 80% range, from the daily model in dhde-preprocessing-model, refreshed daily. ${range ? `Typical error in tests: ${range} depending on the site. ` : ''}Action: ${pct}% or more above the site's normal day (its mean daily visitors over the data, about 90 days) = extend hours, the same rule as the map's demand alerts. Fukui Station has no official visitor count, so it shows camera detections and no action.`,
           }
         : c,
     ),

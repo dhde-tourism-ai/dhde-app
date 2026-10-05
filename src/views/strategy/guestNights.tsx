@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { GuestNightsMonthsCard, TargetPaceCard } from '../../types/strategy'
 import type { MonthlyForecastFile } from '../../types/monthly'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -99,85 +99,99 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
   )
 }
 
-/** Running total this year against the year's steady-growth target, one chart per series. */
+/**
+ * Running total this year against the year's steady-growth target, every series on one
+ * chart as % of its target to date (100% = on target). All guest-nights and foreign ones
+ * differ ~24x in size, so in raw numbers the smaller would sit flat at the bottom.
+ */
 export function TargetPace({ card }: { card: TargetPaceCard }) {
   const { t, lang } = useLang()
   const file = useMonthly()
   if (file.isLoading) return <p className="muted small">{t('Loading…', '読み込み中…')}</p>
   const names = lang === 'ja' ? MONTHS_JA : MONTHS_EN
 
+  const series = card.items.flatMap((it, k) => {
+    const s = file.data?.series.find((x) => x.id === it.series)
+    if (!s) return []
+    const year = s.data_through.slice(0, 4)
+    const prevTotal = measuredYear(s, String(Number(year) - 1))
+    if (prevTotal === null) return []
+    const target = pathTarget(it.baseline, it.baseline_year, it.target, it.target_year, Number(year))
+    const prevMonths = monthsOf(s, String(Number(year) - 1))
+    const now = monthsOf(s, year)
+    let cumT = 0
+    let cumA = 0
+    const pct: (number | null)[] = []
+    const cum: { actual: number; target: number }[] = []
+    names.forEach((_, i) => {
+      cumT += (target * (prevMonths[i] ?? 0)) / prevTotal
+      const a = now[i]
+      if (a !== null) cumA += a
+      pct.push(a !== null && cumT > 0 ? Math.round((cumA / cumT) * 1000) / 10 : null)
+      cum.push({ actual: cumA, target: Math.round(cumT) })
+    })
+    const last = pct.reduce<number>((acc, v, i) => (v !== null ? i : acc), -1)
+    return [{ key: `s${k}`, it, year, target, pct, cum, last, colour: S[k % S.length] }]
+  })
+  if (series.length === 0) return <p className="muted small">{t('Guest-night data is not published yet.', '宿泊データはまだ公開されていません。')}</p>
+
+  const rows = names.map((m, i) => Object.fromEntries([['m', m], ...series.map((x) => [x.key, x.pct[i]])]))
+  const values = series.flatMap((x) => x.pct.filter((v): v is number => v !== null))
+  const lo = Math.max(0, Math.floor((Math.min(100, ...values) - 10) / 10) * 10)
+  const hi = Math.ceil((Math.max(100, ...values) + 5) / 10) * 10
+
   return (
-    <div className="gn-pace">
-      {card.items.map((it) => {
-        const s = file.data?.series.find((x) => x.id === it.series)
-        if (!s) return null
-        const year = s.data_through.slice(0, 4)
-        const prev = String(Number(year) - 1)
-        const prevTotal = measuredYear(s, prev)
-        if (prevTotal === null) return null
-        const target = pathTarget(it.baseline, it.baseline_year, it.target, it.target_year, Number(year))
-        const prevMonths = monthsOf(s, prev)
-        const now = monthsOf(s, year)
-        let cumT = 0
-        let cumA = 0
-        const rows = names.map((m, i) => {
-          cumT += (target * (prevMonths[i] ?? 0)) / prevTotal
-          const a = now[i]
-          if (a !== null) cumA += a
-          return { m, target: Math.round(cumT), actual: a !== null ? cumA : null }
-        })
-        const last = rows.reduce((k, r, i) => (r.actual !== null ? i : k), -1)
-        const pct = last >= 0 ? (rows[last].actual! / rows[last].target) * 100 : null
-        const behind = pct !== null && pct < 90
-        return (
-          <div key={it.series} className="gn-pace-item">
-            <h4 className="mini-h">
-              {t(it.label, it.label_ja ?? it.label)} · {t(`${year} target`, `${year}年目標`)} <span className="num">{fmtFig(target)}</span>
-            </h4>
-            <div className="chart-key">
-              <span>
-                <i className="k-line" style={{ borderColor: S[0] }}></i>
-                {t('Actual, running total', '実績（累計）')}
+    <div>
+      <div className="chart-key">
+        {series.map((x) => (
+          <span key={x.key}>
+            <i className="k-line" style={{ borderColor: x.colour }}></i>
+            {t(x.it.label, x.it.label_ja ?? x.it.label)}
+          </span>
+        ))}
+        <span>
+          <i className="k-line dash" style={{ borderColor: '#aeb9cd' }}></i>
+          {t('Target (100%)', '目標（100%）')}
+        </span>
+      </div>
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke="#1f2a3f" vertical={false} />
+          <XAxis dataKey="m" tick={{ ...AXIS, fontSize: 9.5 }} tickLine={false} axisLine={{ stroke: '#34425e' }} interval="preserveStartEnd" />
+          <YAxis tick={AXIS} domain={[lo, hi]} tickFormatter={(v: number) => `${v}%`} width={44} tickLine={false} axisLine={false} />
+          <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} formatter={(v: unknown, name: unknown) => [`${Number(v).toFixed(1)}% ${t('of target to date', '（目標比・累計）')}`, String(name)]} />
+          <ReferenceLine y={100} stroke="#aeb9cd" strokeDasharray="5 4" strokeWidth={1.5} />
+          {series.map((x) => (
+            <Line
+              key={x.key}
+              dataKey={x.key}
+              name={t(x.it.label, x.it.label_ja ?? x.it.label)}
+              stroke={x.colour}
+              strokeWidth={2.5}
+              connectNulls={false}
+              isAnimationActive={false}
+              // A dot on the latest month, so it doesn't read as the next month's tick.
+              dot={(p: { cx?: number; cy?: number; index?: number }) => (p.index === x.last && p.cx !== undefined && p.cy !== undefined ? <circle key="end" cx={p.cx} cy={p.cy} r={4.5} fill={x.colour} stroke="#121c2f" strokeWidth={2} /> : <g key={`d${p.index}`} />)}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+      {series.map(
+        (x) =>
+          x.last >= 0 && (
+            <p key={x.key} className="gn-pace-note num">
+              <i className="k-band" style={{ background: x.colour }}></i> <strong>{fmtFig(x.cum[x.last].actual)}</strong> {t('nights', '泊')} ·{' '}
+              <span className={x.pct[x.last]! < 90 ? 'sum-down' : ''}>
+                {t(`${Math.round(x.pct[x.last]!)}% of the ${fmtFig(x.cum[x.last].target)} target to ${MONTHS_EN[x.last]}`, `${x.last + 1}月までの目標${fmtFig(x.cum[x.last].target)}の${Math.round(x.pct[x.last]!)}%`)}
               </span>
-              <span>
-                <i className="k-line dash" style={{ borderColor: '#aeb9cd' }}></i>
-                {t('Target, running total', '目標（累計）')}
+              <span className="muted small">
+                {' '}
+                · {t(`${x.year} target ${fmtFig(x.target)}`, `${x.year}年目標${fmtFig(x.target)}`)}
               </span>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#1f2a3f" vertical={false} />
-                <XAxis dataKey="m" tick={{ ...AXIS, fontSize: 9.5 }} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
-                <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
-                <Line dataKey="target" name={t('Target', '目標')} stroke="#aeb9cd" strokeDasharray="5 4" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-                <Line
-                  dataKey="actual"
-                  name={t('Actual', '実績')}
-                  stroke={S[0]}
-                  strokeWidth={2.5}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                  // A dot on the latest actual month, so it doesn't read as the next month's tick.
-                  dot={(p: { cx?: number; cy?: number; index?: number }) => (p.index === last && p.cx !== undefined && p.cy !== undefined ? <circle key="end" cx={p.cx} cy={p.cy} r={4.5} fill={S[0]} stroke="#121c2f" strokeWidth={2} /> : <g key={`d${p.index}`} />)}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-            {pct !== null && (
-              <p className="gn-pace-note num">
-                <strong>{fmtFig(rows[last].actual!)}</strong> {t('nights', '泊')} ·{' '}
-                <span className={behind ? 'sum-down' : ''}>
-                  {t(`${Math.round(pct)}% of the ${fmtFig(rows[last].target)} target to ${MONTHS_EN[last]}`, `${last + 1}月までの目標${fmtFig(rows[last].target)}の${Math.round(pct)}%`)}
-                </span>
-                <span className="muted small">
-                  {' '}
-                  · {t(`${MONTHS_EN[last]} ${year} is the latest month JTA has published`, `観光庁の最新公表月は${year}年${last + 1}月`)}
-                </span>
-              </p>
-            )}
-          </div>
-        )
-      })}
+            </p>
+          ),
+      )}
+      {series[0].last >= 0 && <p className="muted small">{t(`${MONTHS_EN[series[0].last]} ${series[0].year} is the latest month JTA has published.`, `観光庁の最新公表月は${series[0].year}年${series[0].last + 1}月。`)}</p>}
     </div>
   )
 }
