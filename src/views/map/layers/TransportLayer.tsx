@@ -15,6 +15,9 @@ const RAIL_STYLE = {
   tram: { color: RAIL_LINE_COLOUR, weight: 2.5, dashArray: '5 4' },
 }
 
+/** Light dashes running along the track and bus lines (styles/map-layers.css animates them), so the routes read as moving. */
+const FLOW_STYLE = { color: '#ffffff', lineCap: 'round' as const }
+
 const WALK_STYLE: Record<string, { color: string; fillOpacity: number; dashArray?: string }> = {
   '15': { color: '#6fdc93', fillOpacity: 0.16 },
   '30': { color: '#6fdc93', fillOpacity: 0.06, dashArray: '4 6' },
@@ -87,6 +90,10 @@ export function TransportLayer({
             </Tip>
           </Polyline>
         ))}
+        {rail?.lines.map((l) => (
+          <Polyline key={`${l.id}-flow`} positions={l.paths} className="route-flow route-flow--rail" interactive={false}
+            pathOptions={{ ...FLOW_STYLE, weight: Math.max(1.5, RAIL_STYLE[l.kind].weight - 1.5), opacity: 0.85, dashArray: '2 14' }} />
+        ))}
       </Pane>
       {bus && (
         <Pane name="dhde-transport-lines" style={{ zIndex: 430 }}>
@@ -98,6 +105,10 @@ export function TransportLayer({
                 <div className="tip-sub">{tr(...MODE_LABEL[l.mode])}</div>
               </Tip>
             </Polyline>
+          ))}
+          {data.lines.map((l) => (
+            <Polyline key={`${l.id}-flow`} positions={l.path} className="route-flow route-flow--bus" interactive={false}
+              pathOptions={{ ...FLOW_STYLE, weight: 1.6, opacity: 0.8, dashArray: '1 11' }} />
           ))}
         </Pane>
       )}
