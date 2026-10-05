@@ -393,7 +393,7 @@ const THUMB = 18
 const RULER_STEP = 5
 const RULER_LABEL = 10
 /** Height of the actual-growth row over the track (pages.css .whatif-actual-row). */
-const ACTUAL_ROW = 24
+const ACTUAL_ROW = 27
 
 export function WhatIf({ card }: { card: WhatIfCard }) {
   const { t } = useLang()
