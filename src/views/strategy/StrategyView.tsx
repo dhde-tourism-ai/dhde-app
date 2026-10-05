@@ -180,10 +180,24 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           ))}
         </div>
       )}
-      {(() => {
-        const inGroup = cards.filter((c) => shownGroup === undefined || !c.group || c.group === shownGroup)
-        const fixed = inGroup.filter((c) => !themes.length || !c.theme)
-        const inTheme = themes.length ? inGroup.filter((c) => c.theme?.includes(theme)) : []
+      {shownGroup !== undefined && (
+        // Every group is laid out in the same cell, the others hidden, so the panel is as tall as
+        // the tallest group and its cards stretch to it: the cards keep one size whichever tab is on.
+        <div className="q-group-stack" role="tabpanel">
+          {groups.map((g) => (
+            <div key={g} className={`card-grid q-group${g === shownGroup ? ' on' : ''}`} aria-hidden={g !== shownGroup} inert={g !== shownGroup}>
+              {cards
+                .filter((c) => !c.group || c.group === g)
+                .map((c) => (
+                  <StrategyCardView key={c.id} card={c} lean={lean} />
+                ))}
+            </div>
+          ))}
+        </div>
+      )}
+      {shownGroup === undefined && (() => {
+        const fixed = cards.filter((c) => !themes.length || !c.theme)
+        const inTheme = themes.length ? cards.filter((c) => c.theme?.includes(theme)) : []
         return (
           <>
             {fixed.length > 0 && (
