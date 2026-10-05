@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
-import { Icon } from '../../components/icons'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -100,20 +99,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
             </div>
           ))}
         </div>
-        <p className="eq-caption">{equation.caption}</p>
       </section>
-
-      {data.todos.map((td, i) => (
-        <div key={i} className="banner banner-warn research-note">
-          <Icon name="info" />
-          <span>
-            <strong>
-              {t('Research note for the', '研究メモ：')} {td.for}:
-            </strong>{' '}
-            {td.text}
-          </span>
-        </div>
-      ))}
 
       <nav className="q-nav" aria-label={t('Questions', '設問')}>
         {data.questions.map((q) => (
@@ -137,18 +123,22 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
         <QuestionSection key={q.id} q={q} showSpecs={showSpecs} />
       ))}
 
-      <footer className="strat-foot">
-        <p>{meta.footer}</p>
-        <p className="muted">
-          {t('Source', '出典')}: {meta.source_doc}
-        </p>
-      </footer>
     </div>
   )
 }
 
+/** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card badges, details, notes or sources). */
+const LEAN_QUESTIONS = new Set(['q1', 'q5'])
+/** Questions that keep their sub-question chips and cards but drop the why line and the answer paragraph. */
+const NO_INTRO = new Set(['q2'])
+
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
+  const lean = LEAN_QUESTIONS.has(q.id)
+  const noIntro = lean || NO_INTRO.has(q.id)
+  const themes = q.themes ?? []
+  const [picked, setTheme] = useState<string | undefined>(undefined)
+  const theme = themes.find((th) => th.id === picked)?.id ?? themes[0]?.id ?? ''
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
@@ -157,27 +147,58 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
-          <p className="q-why">{q.why}</p>
-          <div className="q-subs">
-            {q.subs.map((s) => (
-              <span key={s} className="chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          {!noIntro && <p className="q-why">{q.why}</p>}
+          {!lean && (
+            <>
+              <div className="q-subs">
+                {q.subs.map((s) => (
+                  <span key={s} className="chip">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </header>
-      <div className="answer">
-        <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
-        <p>{q.answer}</p>
-      </div>
-      <div className="card-grid">
-        {q.cards
-          .filter((c) => !c.hidden)
-          .map((c) => (
-            <StrategyCardView key={c.id} card={c} />
-          ))}
-      </div>
+      {!noIntro && (
+        <div className="answer">
+          <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
+          <p>{q.answer}</p>
+        </div>
+      )}
+      {(() => {
+        const shown = q.cards.filter((c) => !c.hidden)
+        const fixed = shown.filter((c) => !themes.length || !c.theme)
+        const inTheme = themes.length ? shown.filter((c) => c.theme?.includes(theme)) : []
+        return (
+          <>
+            {fixed.length > 0 && (
+              <div className="card-grid">
+                {fixed.map((c) => (
+                  <StrategyCardView key={c.id} card={c} lean={lean} />
+                ))}
+              </div>
+            )}
+            {themes.length > 0 && (
+              <>
+                <div className="q-themes seg" role="tablist" aria-label={t('Themes', 'テーマ')}>
+                  {themes.map((th) => (
+                    <button key={th.id} role="tab" aria-selected={theme === th.id} aria-pressed={theme === th.id} onClick={() => setTheme(th.id)}>
+                      {th.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="card-grid" role="tabpanel">
+                  {inTheme.map((c) => (
+                    <StrategyCardView key={c.id} card={c} lean={lean} theme={theme} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )
+      })()}
       {showSpecs && (
         <div className="spec">
           <div className="spec-title">{t('Build spec', 'ビルド仕様')}</div>

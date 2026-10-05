@@ -535,20 +535,6 @@
   font-weight: 300;
 }
 
-.eq-caption {
-  margin: var(--sp-4) 0 0;
-  color: var(--text-2);
-  font-size: 13px;
-}
-
-.research-note {
-  margin-bottom: var(--sp-4);
-}
-
-.research-note svg {
-  color: var(--warn);
-}
-
 .q-nav {
   position: sticky;
   top: var(--appbar-h);
@@ -674,6 +660,15 @@
   margin: 4px 0 0;
   font-size: 15px;
   line-height: 1.55;
+}
+
+.q-themes {
+  margin: var(--sp-5) 0 var(--sp-4);
+}
+
+.q-themes button {
+  padding: 7px 16px;
+  font-size: 13px;
 }
 
 .card-grid {
@@ -1310,15 +1305,53 @@
 
 /* builder */
 .builder {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--sp-6);
-}
-
-.builder-levers {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--sp-5);
+}
+
+/* The four packages A1–A4 as vertical cards, side by side */
+.builder-levers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.lever-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--c);
+}
+
+.lever-card-id {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c);
+}
+
+.lever-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  min-height: 2.7em;
+}
+
+@media (max-width: 1100px) {
+  .builder-levers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .builder-levers {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .lever {
@@ -1414,6 +1447,45 @@
   top: 0;
   bottom: 0;
   box-shadow: 2px 0 0 var(--surface);
+  cursor: default;
+}
+
+.stack-seg.rest {
+  box-shadow: none;
+}
+
+.stack-seg.on:not(.rest) {
+  filter: brightness(1.25);
+}
+
+.stack-seg.rest.on {
+  background: rgba(160, 185, 230, 0.12) !important;
+}
+
+/* Hover label over the gap bars */
+.stack-wrap {
+  position: relative;
+}
+
+.stack-tip {
+  position: absolute;
+  top: -6px;
+  z-index: 5;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-2);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.stack-tip-title {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .stack-key {
@@ -1480,13 +1552,6 @@
 
 .spec dd {
   margin: 0;
-}
-
-.strat-foot {
-  border-top: 1px solid var(--line);
-  padding-top: var(--sp-5);
-  color: var(--text-2);
-  font-size: 13px;
 }
 
 /* ---------- responsive ---------- */
@@ -2184,7 +2249,10 @@
 
 .ripple-flow {
   display: grid;
-  grid-template-columns: minmax(150px, 0.8fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(170px, 1fr);
+  /* five equal boxes with the operators between; the five shared rows are title, what, headline, figures, detail */
+  /* fixed-width operator columns: → is wider than + and =, which made the first gap wider */
+  grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr);
+  grid-template-rows: repeat(5, auto);
   align-items: stretch;
 }
 
@@ -2193,18 +2261,21 @@
 }
 
 .ripple-op {
+  grid-row: 1 / -1;
   display: grid;
   place-items: center;
-  padding: 0 7px;
+  padding: 0;
   font-size: 20px;
   font-weight: 300;
   color: var(--muted);
 }
 
 .ripple-box {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
+  align-content: start;
+  gap: 8px;
   min-width: 0;
   padding: 12px 14px;
   border-radius: var(--r-md);
@@ -2212,8 +2283,17 @@
   border: 1px solid var(--line-strong);
 }
 
+/* Every box has the same 3px top edge, so titles and rows start at the same height */
+.ripple-box {
+  border-top: 3px solid var(--line-strong);
+}
+
 .ripple-box.tier {
-  border-top: 3px solid var(--tier);
+  border-top-color: var(--tier);
+}
+
+.ripple-box.total {
+  border-top-color: rgba(139, 157, 255, 0.75);
 }
 
 .ripple-box.total {
@@ -2238,7 +2318,6 @@
 }
 
 .ripple-what {
-  min-height: 2.9em;
   font-size: 12px;
   line-height: 1.45;
   color: var(--muted);
@@ -2270,10 +2349,9 @@
 
 .ripple-figs {
   display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
   gap: 8px;
-  margin: 2px 0 6px;
 }
 
 .ripple-figs .ripple-mid {
@@ -2284,7 +2362,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 8px 0 0;
   border-top: 1px solid var(--line);
   list-style: none;
@@ -2292,7 +2370,8 @@
 
 .ripple-top li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  /* fixed value and jobs columns, so they line up in every box */
+  grid-template-columns: minmax(0, 1fr) 4.4em 5.6em;
   grid-template-areas:
     'name name name'
     'bar val jobs';
@@ -2330,17 +2409,21 @@
 
 .ripple-top .rt-jobs {
   grid-area: jobs;
-  min-width: 64px;
   text-align: right;
   white-space: nowrap;
   color: var(--muted);
+}
+
+.ripple-total-detail {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 
 .ripple-split {
   display: flex;
   gap: 2px;
   height: 8px;
-  margin-top: 10px;
+  margin-bottom: 6px;
 }
 
 .ripple-split span {
@@ -2351,15 +2434,156 @@
   font-size: 11px;
 }
 
-.ripple-legend {
-  margin-top: 8px;
-  font-size: 11.5px;
-}
-
 .whatif {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* ---- Scenario slider (Q1 what-if, Q5 packages): full bar, dashed marker with the value above, ruler ---- */
+.scn {
+  position: relative;
+}
+
+.scn-value-row {
+  position: relative;
+  height: 22px;
+}
+
+.scn-value {
+  position: absolute;
+  bottom: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.scn-track {
+  position: relative;
+}
+
+/* Dashed line through the bar at the current position, from the value down to the ruler */
+.scn-marker {
+  position: absolute;
+  top: -5px;
+  bottom: -13px;
+  margin-left: -0.75px;
+  width: 0;
+  border-left: 1.5px dashed var(--c);
+  pointer-events: none;
+}
+
+.scn input[type='range'] {
+  position: relative;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.scn input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--c) var(--pct), var(--surface-3) var(--pct));
+}
+
+.scn input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--c) var(--pct), var(--surface-3) var(--pct));
+}
+
+.scn input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 3px solid var(--c);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.scn input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 3px solid var(--c);
+}
+
+.scn-ruler {
+  position: relative;
+  height: 24px;
+  margin: 2px 9px 0;
+}
+
+.scn-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 4px;
+  background: var(--line-strong);
+}
+
+.scn-tick.major {
+  height: 7px;
+  background: var(--muted);
+}
+
+.scn-tick.zero {
+  background: var(--text-2);
+}
+
+.scn-tick-label {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.scn-tick.zero .scn-tick-label {
+  color: var(--text-2);
+}
+
+/* Reference value (e.g. last year's actual growth): green tick and label on the ruler; click to jump there */
+.scn-ref {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 8px 0 0;
+  border: 0;
+  background: none;
+  color: var(--real);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.scn-ref::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 7px;
+  margin-left: -1px;
+  background: var(--real);
+}
+
+.scn-ref:hover {
+  text-decoration: underline;
 }
 
 .whatif-marks {
@@ -2401,14 +2625,18 @@
   letter-spacing: -0.01em;
 }
 
-.whatif-rule {
-  margin: 0;
-}
-
 @media (max-width: 1100px) {
+  /* Two (then one) per row: every box the same size, and their rows at matching heights */
   .ripple-flow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: 1fr;
     gap: 10px;
+  }
+
+  .ripple-box {
+    grid-row: auto;
+    grid-template-rows: auto 4.4em auto auto 1fr;
   }
 
   .ripple-op {

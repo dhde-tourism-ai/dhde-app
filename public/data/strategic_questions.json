@@ -86,7 +86,7 @@
           "type": "stat",
           "span": 4,
           "status": "real",
-          "title": "Tourism spend 2025",
+          "title": "Tourism revenue 2025 (visitor spend)",
           "value_text": "¥198.7bn",
           "detail": "Target ¥170bn by 2029: already met (2024: ¥151.3bn)",
           "source": "Fukui Pref. 観光客入込数（推計）令和7年 観光消費額 1,987億円 (2025, calendar year; visitors counted once each, 実人数). https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf"
@@ -117,7 +117,10 @@
         {
           "id": "q1-gdp",
           "type": "gdp_trend",
-          "span": 5,
+          "span": 12,
+          "theme": [
+            "economy"
+          ],
           "status": "modelled",
           "badge": "New",
           "title": "Fukui's GDP and tourism's part of it, FY2014–FY2029",
@@ -235,7 +238,17 @@
         {
           "id": "q1-contrib",
           "type": "tourism_trend",
-          "span": 7,
+          "span": 12,
+          "theme": [
+            "spending",
+            "gdp",
+            "jobs"
+          ],
+          "theme_titles": {
+            "spending": "Tourism revenue, 2014–2029",
+            "gdp": "Tourism's contribution to GDP, 2014–2029",
+            "jobs": "Jobs supported by tourism, 2014–2029"
+          },
           "status": "modelled",
           "badge": "New",
           "title": "Tourism's contribution to GDP and jobs, 2014–2029",
@@ -649,9 +662,12 @@
           "id": "q1-ripple",
           "type": "ripple",
           "span": 12,
+          "theme": [
+            "overview"
+          ],
           "status": "modelled",
           "badge": "New",
-          "title": "How ¥198.7bn of visitor spend ripples through Fukui, 2025",
+          "title": "How ¥198.7bn of tourism revenue ripples through Fukui, 2025",
           "year": "2025",
           "spend_bn": 198.7,
           "retained_bn": 158.7,
@@ -780,11 +796,16 @@
           "id": "q1-whatif",
           "type": "what_if",
           "span": 12,
+          "theme": [
+            "forecast"
+          ],
           "status": "modelled",
           "badge": "New",
-          "title": "If tourism spend changes",
+          "title": "If tourism revenue changes",
           "base_year": "2025",
           "base_spend_bn": 198.7,
+          "prev_year": "2024",
+          "prev_spend_bn": 151.3,
           "base_va_bn": 139,
           "base_jobs": 33943,
           "gdp_bn": 4078,
@@ -951,8 +972,34 @@
           ]
         }
       ],
+      "themes": [
+        {
+          "id": "overview",
+          "label": "Overview"
+        },
+        {
+          "id": "spending",
+          "label": "Spending"
+        },
+        {
+          "id": "economy",
+          "label": "Economy"
+        },
+        {
+          "id": "gdp",
+          "label": "GDP"
+        },
+        {
+          "id": "jobs",
+          "label": "Jobs"
+        },
+        {
+          "id": "forecast",
+          "label": "Forecast"
+        }
+      ],
       "spec": {
-        "data": "Vision KPI table; 入込数 (spend 2014–2025, 2025 unit-spend mix); input-output table 産業連関表 (R2 tool, 37 sectors); ESRI prefectural GDP FY2011–23; Sakura survey + KDDI.",
+        "data": "Vision KPI table; 入込数 (spend 2014–2025, 2025 unit-spend mix); input-output table 産業連関表 (R2 tool, 37 sectors); ESRI prefectural GDP FY2011–23; Sakura survey.",
         "model": "Ripple = spend by category → sectors (purchaser prices, margins stripped) × [I−(I−M)A]⁻¹ for suppliers; wage spending = employee income × 0.572 × household mix, × inverse. Share = GDP added ÷ prefectural GDP; Fukui GDP after FY2023 grown at its own FY2011–23 trend.",
         "outputs": "Fukui GDP vs tourism contribution FY2014–2029; tourism share of GDP and jobs 2014–2029; ripple by round and sector; what-if slider.",
         "acceptance": "Every figure states its definition (実人数 vs 延べ, fiscal vs calendar) and matches the Federation report; the IO replica reproduces the prefecture's published tool example.",
@@ -3097,6 +3144,9 @@
           "id": "q5-returns",
           "type": "table",
           "span": 12,
+          "theme": [
+            "returns"
+          ],
           "status": "illustrative",
           "title": "Programme returns",
           "note": "Bracketed values are placeholders. Programmes without a baseline show \"not yet measurable\", never a number.",
@@ -3164,6 +3214,9 @@
           "id": "q5-builder",
           "type": "builder",
           "span": 12,
+          "theme": [
+            "packages"
+          ],
           "status": "illustrative",
           "title": "Gap-to-target builder",
           "note": "Move the levers to see how far each closes the gap to the 2029 vision targets. Gaps use 2025 actuals: 108.6k foreign and 3.93M total guest-nights (JTA 宿泊旅行統計調査 2025 確定). A2 riders count toward all overnight guests only: each rider is a day-tripper who stays a night instead (¥24,675 extra), and their nationality isn't known, so they aren't counted toward the foreign gap. Not a forecast.",
@@ -3246,6 +3299,16 @@
             }
           ],
           "source": "ネクストふくい観光ビジョン (Mar 2025), KPI table p.9: baseline 2023, target 2029, both calendar years. https://www.pref.fukui.lg.jp/doc/kankou/newvision_d/fil/4_02.pdf Actuals: JTA 宿泊旅行統計調査 2025 確定 (6 Jul 2026), guest-nights (延べ宿泊者数), calendar year. https://www.mlit.go.jp/kankocho/content/002010555.pdf"
+        }
+      ],
+      "themes": [
+        {
+          "id": "returns",
+          "label": "Programmes"
+        },
+        {
+          "id": "packages",
+          "label": "Packages A1–A4"
         }
       ],
       "spec": {

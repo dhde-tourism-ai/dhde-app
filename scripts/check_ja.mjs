@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs'
 
 // Keep in step with SKIP in src/lib/localize.ts: these keys hold code or ids.
-const SKIP = new Set(['id', 'type', 'status', 'series', 'total', 'domestic', 'foreign', 'unit', 'spec', 'formula', 'prefix', 'links', 'nodes', 'severity', 'counts', 'layers', 'node', 'year', 'kind', 'gdp_kind'])
+const SKIP = new Set(['id', 'type', 'status', 'series', 'total', 'domestic', 'foreign', 'unit', 'spec', 'formula', 'prefix', 'links', 'nodes', 'severity', 'counts', 'layers', 'node', 'year', 'kind', 'gdp_kind', 'theme'])
 // Not text to translate: numbers, dates, ids and figures such as "¥198.7bn" or "3 / 5".
 const HAS_WORDS = /[A-Za-z]{3,}/
 

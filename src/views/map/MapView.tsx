@@ -40,6 +40,8 @@ import { NudgesPanel } from './panels/NudgesPanel'
 import { NudgeLayer } from './layers/NudgeLayer'
 import { TransportLayer } from './layers/TransportLayer'
 import { VehiclesLayer } from './layers/VehiclesLayer'
+import type { VehicleRun } from './layers/VehiclesLayer'
+import { VehiclePlay } from './panels/VehiclePlay'
 import { buildRuns } from '../../lib/railModel'
 import type { RailRun } from '../../lib/railModel'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
@@ -95,7 +97,10 @@ function KeepCardsInView() {
       const top = Math.max(mapBox.top, strip ? strip.bottom : mapBox.top) + 8
       const bottom = Math.min(mapBox.bottom, timeline ? timeline.top : mapBox.bottom) - 8
       let d = 0
-      if (r.top < top) d = top - r.top
+      // A card that opens above the cursor (transport) and has no room there flips below it, rather than being pushed down over it.
+      const above = el.classList.contains('leaflet-tooltip-top')
+      if (above && r.top < top && r.bottom + r.height + 20 <= bottom) d = r.height + 20
+      else if (r.top < top) d = top - r.top
       else if (r.bottom > bottom) d = Math.max(top - r.top, bottom - r.bottom)
       if (d !== 0) el.style.marginTop = `${d}px`
       // Sideways: the visible part of the side panels (they're empty columns below their cards).
@@ -211,6 +216,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
+  // "Play buses & trains" (vehicles only); the timeline's play button stops it, and it stops the timeline.
+  const [run, setRunState] = useState<VehicleRun | null>(null)
+  const [runRate, setRunRate] = useState(5)
   const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
   const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
   const [showAllNudges, setShowAllNudges] = useState(false)
@@ -371,12 +379,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {transportOn && transportMap && live && (
           <VehiclesLayer
             trips={layerOn('transport') ? trips : null}
+            lines={transportMap.lines}
             runs={layerOn('rail') ? railRuns : NO_RUNS}
             start={live.start}
             t={t}
             live={!playing && t === (live.now_index ?? live.observed_until)}
             playing={playing}
             speed={speed}
+            run={transportOn ? run : null}
           />
         )}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
@@ -452,7 +462,38 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <div className="map-right">{rightPanel}</div>
 
         <div className="map-bottom">
-          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} vehicles={transportOn} />}
+          {live && transportOn && (
+            <VehiclePlay
+              run={run}
+              setRun={(r) => {
+                if (r) setPlaying(false)
+                setRunState(r)
+              }}
+              rate={runRate}
+              setRate={setRunRate}
+              bus={layerOn('transport')}
+              rail={layerOn('rail')}
+            />
+          )}
+          {live && (
+            <Timeline
+              live={live}
+              t={t}
+              setT={(i) => {
+                setRunState(null)
+                setT(i)
+              }}
+              playing={playing}
+              setPlaying={(p) => {
+                if (p) setRunState(null)
+                setPlaying(p)
+              }}
+              speed={speed}
+              setSpeed={setSpeed}
+              vehicles={transportOn}
+              running={transportOn && run ? run.rate : null}
+            />
+          )}
           {narrow && (
             <div className="sheet-tabs" role="group" aria-label={tr('Panels', 'パネル')}>
               <button className="btn" aria-pressed={sheetState === 'left'} onClick={() => { onSelect(undefined); setSheet(sheet === 'layers' ? null : 'layers') }}>

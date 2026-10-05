@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { CircleMarker, Pane, Polygon, Polyline, useMapEvents } from 'react-leaflet'
 import type { TransportMapFile, TransportTripsFile } from '../../../types/transport'
 import type { RailRun } from '../../../lib/railModel'
@@ -6,20 +6,25 @@ import { BusStopSchedule, StationSchedule } from './Schedules'
 import { MODE_COLOUR, MODE_LABEL, RAIL_LINE_COLOUR } from '../../../lib/transport'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
+import { placeEn, routeEn } from '../../../lib/transportNames'
 
-/** All red: the Shinkansen wider, the Fukui Railway tram dashed. */
+/** All red: the Shinkansen wider, the Fukui Railway tram dashed. Kept thin so the map stays readable. */
 const RAIL_STYLE = {
-  shinkansen: { color: RAIL_LINE_COLOUR, weight: 5 },
-  rail: { color: RAIL_LINE_COLOUR, weight: 3 },
-  tram: { color: RAIL_LINE_COLOUR, weight: 2.5, dashArray: '5 4' },
+  shinkansen: { color: RAIL_LINE_COLOUR, weight: 3 },
+  rail: { color: RAIL_LINE_COLOUR, weight: 2 },
+  tram: { color: RAIL_LINE_COLOUR, weight: 1.6, dashArray: '4 3' },
 }
+
+/** The dots are tiny; an invisible ring this size around each takes the hover, so they stay easy to point at. */
+const HIT_R = 7
+const HIT_STYLE = { stroke: false, fillColor: '#000', fillOpacity: 0 }
 
 const WALK_STYLE: Record<string, { color: string; fillOpacity: number; dashArray?: string }> = {
   '15': { color: '#6fdc93', fillOpacity: 0.16 },
   '30': { color: '#6fdc93', fillOpacity: 0.06, dashArray: '4 6' },
 }
 
-/** Stop and station dots grow as you zoom in, so the whole prefecture view isn't a carpet of dots. */
+/** Stop and station dots grow as you zoom in; bus stops only appear from street level, so the prefecture and city views aren't a carpet of dots. */
 function useZoom() {
   const map = useMapEvents({ zoomend: () => setZoom(map.getZoom()) })
   const [zoom, setZoom] = useState(() => map.getZoom())
@@ -48,9 +53,19 @@ export function TransportLayer({
   /** Illustrative train service, for each station's next trains. */
   runs: RailRun[]
 }) {
-  const { t: tr } = useLang()
+  const { t: tr, lang } = useLang()
+  // In English: the English name, with the Japanese under it (what's on the signs).
+  const named = (en: string, ja: string) => (
+    <>
+      <strong>{lang === 'ja' ? ja : en}</strong>
+      {lang !== 'ja' && en !== ja && <div className="tip-ja">{ja}</div>}
+    </>
+  )
   const zoom = useZoom()
-  const stopR = zoom >= 13 ? 5 : zoom >= 11 ? 4 : 2.6
+  /** Bus stops from zoom 12 (city streets); stations at every zoom, but small. */
+  const showStops = zoom >= 12
+  const stopR = zoom >= 14 ? 2.4 : zoom >= 13 ? 1.9 : 1.5
+  const stationR = zoom >= 14 ? 3 : zoom >= 12 ? 2.3 : zoom >= 10.5 ? 1.8 : 1.5
   const walk = data.walk_areas
   const rail = showRail ? data.rail : null
   const railName = Object.fromEntries((rail?.lines ?? []).map((l) => [l.id, tr(l.name, l.name_ja)]))
@@ -73,11 +88,11 @@ export function TransportLayer({
         {/* dark outline first, so the track stands out from the roads on the base map */}
         {rail?.lines.map((l) => (
           <Polyline key={`${l.id}-casing`} positions={l.paths} interactive={false}
-            pathOptions={{ color: '#0a1120', weight: RAIL_STYLE[l.kind].weight + 2.5, opacity: 0.75 }} />
+            pathOptions={{ color: '#0a1120', weight: RAIL_STYLE[l.kind].weight + 1.5, opacity: 0.7 }} />
         ))}
         {rail?.lines.map((l) => (
           <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }}>
-            <Tip sticky>
+            <Tip sticky above>
               <strong>{tr(l.name, l.name_ja)}</strong>
               <div className="tip-sub">{l.kind === 'shinkansen' ? 'Shinkansen' : tr(...MODE_LABEL.rail)}</div>
             </Tip>
@@ -88,40 +103,46 @@ export function TransportLayer({
         <Pane name="dhde-transport-lines" style={{ zIndex: 430 }}>
           {data.lines.map((l) => (
             <Polyline key={l.id} positions={l.path}
-              pathOptions={{ color: l.mode === 'rail' ? (l.colour ?? MODE_COLOUR.rail) : MODE_COLOUR.bus, weight: l.mode === 'rail' ? 3.5 : 2.2, opacity: 0.85 }}>
-              <Tip sticky>
-                <strong>{l.name}</strong>
+              pathOptions={{ color: l.mode === 'rail' ? (l.colour ?? MODE_COLOUR.rail) : MODE_COLOUR.bus, weight: l.mode === 'rail' ? 2.5 : 1.5, opacity: 0.85 }}>
+              <Tip sticky above>
+                {named(routeEn(l.name), l.name)}
                 <div className="tip-sub">{tr(...MODE_LABEL[l.mode])}</div>
               </Tip>
             </Polyline>
           ))}
         </Pane>
       )}
-      {bus && (
+      {bus && showStops && (
         <Pane name="dhde-transport-stops" style={{ zIndex: 455 }}>
           {data.stops.map((s) => (
-            <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stopR}
-              pathOptions={{ color: '#0a1120', weight: stopR < 3 ? 1 : 1.5, fillColor: '#ffffff', fillOpacity: 1 }}>
-              <Tip>
-                <strong>{s.name}</strong>
-                <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
-                <BusStopSchedule trips={trips} stopId={s.id} />
-              </Tip>
-            </CircleMarker>
+            <Fragment key={s.id}>
+              <CircleMarker center={[s.lat, s.lon]} radius={stopR} interactive={false}
+                pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }} />
+              <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+                <Tip above>
+                  {named(placeEn(s.name), s.name)}
+                  <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
+                  <BusStopSchedule trips={trips} stopId={s.id} />
+                </Tip>
+              </CircleMarker>
+            </Fragment>
           ))}
         </Pane>
       )}
       {/* stations above bus stops: fewer, and the main transfer points */}
       <Pane name="dhde-transport-stations" style={{ zIndex: 460 }}>
         {rail?.stations.map((s) => (
-          <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stopR + 1}
-            pathOptions={{ color: RAIL_LINE_COLOUR, weight: 2, fillColor: '#ffffff', fillOpacity: 1 }}>
-            <Tip>
-              <strong>{s.name_ja}</strong>
-              <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
-              <StationSchedule runs={runs} stationId={s.id} />
-            </Tip>
-          </CircleMarker>
+          <Fragment key={s.id}>
+            <CircleMarker center={[s.lat, s.lon]} radius={stationR} interactive={false}
+              pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }} />
+            <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+              <Tip above>
+                {named(placeEn(s.name_ja), s.name_ja)}
+                <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
+                <StationSchedule runs={runs} stationId={s.id} />
+              </Tip>
+            </CircleMarker>
+          </Fragment>
         ))}
       </Pane>
     </>

@@ -3,6 +3,7 @@ import { Bar, CartesianGrid, Cell, ComposedChart, ReferenceArea, ReferenceDot, R
 import type { GdpTrendCard, RippleCard, RippleTierId, TourismTrendCard, TourismTrendPoint, WhatIfCard } from '../../types/strategy'
 import { useLang } from '../../lib/i18n'
 import { AXIS, S } from './chartTheme'
+import { ScenarioSlider } from './slider'
 
 // Q1 economy block: Fukui's GDP, tourism's share of it, the ripple by round and a what-if.
 
@@ -15,6 +16,10 @@ const RING = '#e9eef8'
 const GDP_REST = '#3a4a6b'
 const TOURISM = '#d95926'
 const PROJ_FILL = '#8b9dff'
+/** Axis titles: every chart says what its axes measure. */
+const AXIS_TITLE = { fill: '#7f8ba3', fontSize: 11 }
+const yTitle = (value: string) => ({ value, angle: -90, position: 'insideLeft' as const, offset: 4, style: { ...AXIS_TITLE, textAnchor: 'middle' as const } })
+const xTitle = (value: string) => ({ value, position: 'insideBottom' as const, offset: 0, style: AXIS_TITLE })
 
 function useTierNames(): Record<RippleTierId, string> {
   const { t } = useLang()
@@ -99,12 +104,12 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={236}>
-        <ComposedChart data={rows} margin={{ top: 18, right: 8, left: 0, bottom: 0 }} barCategoryGap="18%">
+      <ResponsiveContainer width="100%" height={262}>
+        <ComposedChart data={rows} margin={{ top: 18, right: 8, left: 6, bottom: 0 }} barCategoryGap="18%">
           <CartesianGrid stroke={GRID} vertical={false} />
           {firstProj && <ReferenceArea x1={firstProj} x2={last.x} fill={PROJ_FILL} fillOpacity={0.06} ifOverflow="visible" />}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `FY${v.slice(2)}`} />
-          <YAxis tick={AXIS} width={46} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : `¥${(v / 1e3).toFixed(0)}tn`)} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `FY${v.slice(2)}`} height={40} label={xTitle(t('Fiscal year', '年度'))} />
+          <YAxis tick={AXIS} width={58} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : `¥${(v / 1e3).toFixed(0)}tn`)} label={yTitle(t('GDP (¥ trillion)', '県内総生産（兆円）'))} />
           <Tooltip
             cursor={{ fill: 'rgba(160,185,230,0.06)' }}
             content={({ active, payload }) => {
@@ -142,32 +147,38 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
   )
 }
 
-type Measure = 'share' | 'va' | 'jobs'
+type Measure = 'spend' | 'share' | 'va' | 'jobs'
 
 function byRound(p: TourismTrendPoint, m: Measure): [number, number, number, number] {
+  // Revenue isn't split by round: one bar.
+  if (m === 'spend') return [p.spend_bn, 0, 0, p.spend_bn]
   if (m === 'share') return [p.share_direct, p.share_indirect1, p.share_indirect2, p.share_total]
   if (m === 'va') return [p.va_direct, p.va_indirect1, p.va_indirect2, p.va_total]
   return [p.jobs_direct, p.jobs_indirect1, p.jobs_indirect2, p.jobs_total]
 }
 
-/** Tourism's share of GDP, GDP added or jobs each year, stacked by round, with the low–high range on projected years. */
-export function TourismTrend({ card }: { card: TourismTrendCard }) {
+/** Tourism revenue, or tourism's share of GDP, GDP added or jobs stacked by round, each year, with the low–high range on projected years. */
+export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: string }) {
   const { t } = useLang()
   const names = useTierNames()
-  const [m, setM] = useState<Measure>('share')
-  const fmt = (v: number) => (m === 'share' ? pct(v, 2) : m === 'va' ? bn(v) : jobs(v))
-  const tick = (v: number) => (m === 'share' ? `${v}%` : m === 'va' ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
+  // Under Q1's themes each shows its own measure only: Spending revenue, GDP share and GDP added, Jobs jobs.
+  const measures: Measure[] = theme === 'spending' ? ['spend'] : theme === 'jobs' ? ['jobs'] : theme === 'gdp' ? ['share', 'va'] : ['share', 'va', 'jobs']
+  const [picked, setM] = useState<Measure>('share')
+  const m = measures.includes(picked) ? picked : measures[0]
+  const money = m === 'va' || m === 'spend'
+  const fmt = (v: number) => (m === 'share' ? pct(v, 2) : money ? bn(v) : jobs(v))
+  const tick = (v: number) => (m === 'share' ? `${v}%` : money ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
   const rows = card.points.map((p) => {
     const [d, i1, i2, tot] = byRound(p, m)
-    const range = p.range ? p.range[m] : null
+    const range = p.range ? p.range[m === 'spend' ? 'spend_bn' : m] : null
     return { x: String(p.year), p, d, i1, i2, tot, lo: range ? range[0] : null, hi: range ? range[1] : null, forecast: p.kind === 'forecast' }
   })
   const firstProj = rows.find((r) => r.forecast)?.x
   const lastModelled = [...rows].reverse().find((r) => !r.forecast)
   const last = rows[rows.length - 1]
-  const marks = card.benchmarks.map((b) => ({ ...b, v: b[m] })).filter((b) => b.v !== undefined)
+  const marks = m === 'spend' ? [] : card.benchmarks.map((b) => ({ ...b, v: b[m] })).filter((b) => b.v !== undefined)
   const peak = Math.max(...rows.map((r) => Math.max(r.tot, r.hi ?? 0)), ...marks.map((b) => b.v ?? 0))
-  const step = m === 'share' ? 1 : m === 'va' ? 50 : 1e4
+  const step = m === 'share' ? 1 : m === 'va' || m === 'spend' ? 50 : 1e4
   const top = Math.ceil((peak * 1.08) / step) * step
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step)
   const faded = (f: boolean) => (f ? 0.5 : 1)
@@ -175,30 +186,35 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
 
   return (
     <div>
-      <div className="eco-controls">
-        <div className="seg" role="group" aria-label={t('Measure', '指標')}>
-          <button aria-pressed={m === 'share'} onClick={() => setM('share')}>
-            {t('Share of GDP', 'GDP比')}
-          </button>
-          <button aria-pressed={m === 'va'} onClick={() => setM('va')}>
-            {t('GDP added', '付加価値額')}
-          </button>
-          <button aria-pressed={m === 'jobs'} onClick={() => setM('jobs')}>
-            {t('Jobs', '就業者')}
-          </button>
+      {measures.length > 1 && (
+        <div className="eco-controls">
+          <div className="seg" role="group" aria-label={t('Measure', '指標')}>
+            {measures.map((id) => (
+              <button key={id} aria-pressed={m === id} onClick={() => setM(id)}>
+                {id === 'share' ? t('Share of GDP', 'GDP比') : id === 'va' ? t('GDP added', '付加価値額') : t('Jobs', '就業者')}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <div className="chart-key">
-        {TIERS.map((id) => (
-          <span key={id}>
-            <i className="k-band" style={{ background: TIER[id] }}></i>
-            {names[id]}
+        {m === 'spend' ? (
+          <span>
+            <i className="k-band" style={{ background: TIER.direct }}></i>
+            {t('Tourism revenue (visitor spend)', '観光消費額')}
           </span>
-        ))}
+        ) : (
+          TIERS.map((id) => (
+            <span key={id}>
+              <i className="k-band" style={{ background: TIER[id] }}></i>
+              {names[id]}
+            </span>
+          ))
+        )}
         {ranged.length > 0 && (
           <span>
             <i className="k-range"></i>
-            {t('Low to high spend', '観光消費の低位〜高位')}
+            {t('Low to high revenue', '観光消費の低位〜高位')}
           </span>
         )}
         {marks.length > 0 && (
@@ -208,8 +224,8 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={250}>
-        <ComposedChart data={rows} margin={{ top: 20, right: 14, left: 0, bottom: 0 }} barCategoryGap="22%">
+      <ResponsiveContainer width="100%" height={276}>
+        <ComposedChart data={rows} margin={{ top: 20, right: 14, left: 6, bottom: 0 }} barCategoryGap="22%">
           <CartesianGrid stroke={GRID} vertical={false} />
           {firstProj && (
             <ReferenceArea
@@ -221,16 +237,35 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
               label={{ value: t('Projection', '予測'), position: 'insideTopLeft', fill: '#7f8ba3', fontSize: 10.5 }}
             />
           )}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `'${v.slice(2)}`} />
-          <YAxis tick={AXIS} width={46} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={tick} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `'${v.slice(2)}`} height={40} label={xTitle(t('Year', '年'))} />
+          <YAxis
+            tick={AXIS}
+            width={58}
+            tickLine={false}
+            axisLine={false}
+            domain={[0, top]}
+            ticks={ticks}
+            tickFormatter={tick}
+            label={yTitle(
+              m === 'spend'
+                ? t('Tourism revenue (¥ billion)', '観光消費額（10億円）')
+                : m === 'share'
+                  ? t('Share of Fukui GDP (%)', '県内総生産比（%）')
+                  : m === 'va'
+                    ? t('GDP added (¥ billion)', '付加価値（10億円）')
+                    : t('Jobs supported', '就業者数'),
+            )}
+          />
           <Tooltip
             cursor={{ fill: 'rgba(139,157,255,.08)' }}
             content={({ active, payload }) => {
               const r = active ? (payload?.[0]?.payload as (typeof rows)[number] | undefined) : undefined
               if (!r) return null
-              const tipRows: TipRow[] = TIERS.map((id, i) => ({ key: TIER[id], label: names[id], value: fmt([r.d, r.i1, r.i2][i]) }))
-              tipRows.push({ label: t('total', '合計'), value: fmt(r.tot), strong: true })
-              if (r.lo !== null && r.hi !== null) tipRows.push({ key: S[1], label: t('low to high spend', '低位〜高位'), value: `${fmt(r.lo)} – ${fmt(r.hi)}` })
+              const tipRows: TipRow[] =
+                m === 'spend'
+                  ? [{ key: TIER.direct, label: t('tourism revenue', '観光消費額'), value: fmt(r.tot), strong: true }]
+                  : [...TIERS.map((id, i) => ({ key: TIER[id], label: names[id], value: fmt([r.d, r.i1, r.i2][i]) })), { label: t('total', '合計'), value: fmt(r.tot), strong: true }]
+              if (r.lo !== null && r.hi !== null) tipRows.push({ key: S[1], label: t('low to high revenue', '低位〜高位'), value: `${fmt(r.lo)} – ${fmt(r.hi)}` })
               const b = marks.find((x) => String(x.year) === r.x)
               if (b?.v !== undefined) tipRows.push({ key: RING, label: b.label, value: fmt(b.v) })
               const est = r.p.gdp_kind === 'actual' ? '' : t(' (estimate)', '（推計）')
@@ -238,7 +273,7 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
                 <EcoTip
                   title={`${r.x}${r.forecast ? t(' · base projection', '・基準予測') : ''}`}
                   rows={tipRows}
-                  foot={`${t('Tourism spend', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
+                  foot={m === 'spend' ? undefined : `${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
                 />
               )
             }}
@@ -287,7 +322,21 @@ export function TourismTrend({ card }: { card: TourismTrendCard }) {
   )
 }
 
-/** Spend → direct + indirect ① + indirect ② = total, with the sectors that gain most in each round. */
+/** A smaller figure in a ripple box: value over its label. */
+function Fig({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="ripple-mid num">{value}</div>
+      <div className="ripple-lab">{label}</div>
+    </div>
+  )
+}
+
+/**
+ * Revenue → direct + indirect ① + indirect ② = total, with the sectors that gain most in each round.
+ * Five equal boxes on shared rows (pages.css subgrid): title, what it is, headline figure, two
+ * smaller figures, detail, so the same kind of number sits at the same height in every box.
+ */
 export function Ripple({ card }: { card: RippleCard }) {
   const { t } = useLang()
   const names = useTierNames()
@@ -299,15 +348,18 @@ export function Ripple({ card }: { card: RippleCard }) {
       <div className="ripple-flow">
         <div className="ripple-box spend">
           <div className="ripple-kicker">
-            {t('Tourism spend', '観光消費額')} {card.year}
+            {t('Tourism revenue', '観光消費額')} {card.year}
           </div>
-          <div className="ripple-big">{bn(card.spend_bn)}</div>
-          <div className="ripple-sub">
-            {bn(card.retained_bn)} {t('reaches Fukui businesses', 'が県内の生産に')} ({Math.round((card.retained_bn / card.spend_bn) * 100)}%)
+          <div className="ripple-what">{t('What visitors spent in Fukui on stays, food, shopping, transport and attractions.', '来訪者が県内で宿泊・飲食・買物・交通・観光に消費した額。')}</div>
+          <div>
+            <div className="ripple-big">{bn(card.spend_bn)}</div>
+            <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
           </div>
-          <div className="ripple-sub muted">
-            {bn(card.leak_bn)} {t('buys goods and services made elsewhere', 'は県外・海外製品へ')}
+          <div className="ripple-figs">
+            <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${Math.round((card.retained_bn / card.spend_bn) * 100)}%)`, `県内（${Math.round((card.retained_bn / card.spend_bn) * 100)}%）`)} />
+            <Fig value={bn(card.leak_bn)} label={t('made elsewhere', '県外')} />
           </div>
+          <div></div>
         </div>
         <span className="ripple-op" aria-hidden="true">
           →
@@ -320,19 +372,13 @@ export function Ripple({ card }: { card: RippleCard }) {
                 {names[tier.id]}
               </div>
               <div className="ripple-what">{tier.what}</div>
+              <div>
+                <div className="ripple-big">{bn(tier.va_bn)}</div>
+                <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
+              </div>
               <div className="ripple-figs">
-                <div>
-                  <div className="ripple-big">{bn(tier.va_bn)}</div>
-                  <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
-                </div>
-                <div>
-                  <div className="ripple-mid num">{jobs(tier.jobs)}</div>
-                  <div className="ripple-lab">{t('jobs', '就業者')}</div>
-                </div>
-                <div>
-                  <div className="ripple-mid num">{bn(tier.output_bn)}</div>
-                  <div className="ripple-lab">{t('output', '生産額')}</div>
-                </div>
+                <Fig value={jobs(tier.jobs)} label={t('jobs', '就業者')} />
+                <Fig value={bn(tier.output_bn)} label={t('output', '生産額')} />
               </div>
               <ul className="ripple-top" aria-label={t('Sectors that gain most', '効果の大きい部門')}>
                 {tier.top.map((s) => (
@@ -358,36 +404,34 @@ export function Ripple({ card }: { card: RippleCard }) {
           <div className="ripple-kicker">
             {t('Total effect', '総合効果')} {card.year}
           </div>
-          <div className="ripple-big">{bn(tot.va_bn)}</div>
-          <div className="ripple-lab">
-            {t('GDP added', '付加価値')} = {pct(tot.share_pct)} {t(`of Fukui GDP (FY${card.year} est.)`, `（FY${card.year}県内総生産比・推計）`)}
+          <div className="ripple-what">{t('The direct effect and both indirect rounds added together, across the whole economy.', '直接効果と2段階の間接効果を合わせた、県経済全体への効果。')}</div>
+          <div>
+            <div className="ripple-big">{bn(tot.va_bn)}</div>
+            <div className="ripple-lab">
+              {t('GDP added', '付加価値')} ({pct(tot.share_pct)} {t('of Fukui GDP', '県内総生産比')})
+            </div>
           </div>
-          <div className="ripple-mid num">{jobs(tot.jobs)}</div>
-          <div className="ripple-lab">
-            {t('jobs', '就業者')} = {pct(tot.jobs_share_pct)} {t('of workers (FY2023 count)', '（FY2023県内就業者比）')}
+          <div className="ripple-figs">
+            <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
+            <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`)} />
           </div>
-          <div className="ripple-mid num">{bn(tot.output_bn)}</div>
-          <div className="ripple-lab">
-            {t('output', '生産額')} = {tot.multiplier_spend.toFixed(2)}× {t('spend', '消費額')} · {tot.multiplier_direct.toFixed(2)}× {t('direct', '直接効果')}
-          </div>
-          <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
-            {card.tiers.map((tier) => (
-              <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }} title={`${names[tier.id]}: ${partOf(tier.va_bn)}%`}></span>
-            ))}
-          </div>
-          <div className="ripple-split-key muted">
-            {card.tiers.map((tier) => `${partOf(tier.va_bn)}%`).join(' · ')} {t('of the GDP added', '（付加価値の内訳）')}
+          <div className="ripple-total-detail">
+            <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
+              {card.tiers.map((tier) => (
+                <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }} title={`${names[tier.id]}: ${partOf(tier.va_bn)}%`}></span>
+              ))}
+            </div>
+            <div className="ripple-split-key muted">
+              {card.tiers.map((tier) => `${partOf(tier.va_bn)}%`).join(' · ')} {t('of the GDP added', '（付加価値の内訳）')}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="ripple-legend muted">
-        {t('Under each round: the sectors that gain most, with the GDP they add and the jobs it supports.', '各段階の下：効果の大きい部門（付加価値と就業者数）。')}
       </div>
     </div>
   )
 }
 
-/** Slide the change in tourism spend; GDP, jobs and share follow at the base year's effect per ¥1bn. */
+/** Slide the change in tourism revenue; GDP, jobs and share follow at the base year's effect per ¥1bn. */
 export function WhatIf({ card }: { card: WhatIfCard }) {
   const { t } = useLang()
   const [p, setP] = useState(card.default_pct)
@@ -397,34 +441,40 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
   const share = ((card.base_va_bn + dVa) / card.gdp_bn) * 100
   const baseShare = (card.base_va_bn / card.gdp_bn) * 100
   const sign = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '±')
-  const fill = ((p - card.min_pct) / (card.max_pct - card.min_pct)) * 100
+  const signed = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)}%`
+  // Last year's real growth in revenue (prev_year → base_year), marked on the ruler.
+  const actual = card.prev_spend_bn ? Math.round((card.base_spend_bn / card.prev_spend_bn - 1) * 100) : null
   const tiles = [
-    { label: t('Tourism spend', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
+    { label: t('Tourism revenue', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
     { label: t('GDP added', '付加価値'), value: `${sign(dVa)}${bn(Math.abs(dVa))}`, detail: `${sign(dVa)}${Math.abs(share - baseShare).toFixed(2)} ${t('pt of GDP', 'pt（GDP比）')}` },
     { label: t('Jobs', '就業者'), value: `${sign(dJobs)}${jobs(Math.abs(dJobs))}`, detail: `${jobs(card.base_jobs + dJobs)} ${t('in total', '（合計）')}` },
     { label: t("Tourism's share of GDP", 'GDPに占める割合'), value: pct(share), detail: t(`from ${pct(baseShare)} in ${card.base_year}`, `基準 ${pct(baseShare)}（${card.base_year}年）`) },
   ]
+  const name = t(`Change in tourism revenue vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`)
   return (
     <div className="whatif">
-      <label className="lever">
-        <span className="lever-head">
-          <span className="lever-name">{t(`Change in tourism spend vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`)}</span>
-          <span className="num lever-val">
-            {p > 0 ? '+' : ''}
-            {p}%
-          </span>
-        </span>
-        <input
-          type="range"
-          min={card.min_pct}
-          max={card.max_pct}
-          step={card.step_pct}
-          value={p}
-          style={{ ['--pct' as string]: `${fill}%`, ['--c' as string]: TIER.indirect1 }}
-          onChange={(e) => setP(Number(e.target.value))}
-          aria-valuetext={`${p}%`}
-        />
-      </label>
+      <div className="lever-name">{name}</div>
+      <ScenarioSlider
+        min={card.min_pct}
+        max={card.max_pct}
+        step={card.step_pct}
+        value={p}
+        onChange={setP}
+        colour={TIER.indirect1}
+        format={(v) => `${signed(v)} ${t('growth', '成長')}`}
+        tickFormat={(v) => (v === 0 ? '0%' : signed(v))}
+        label={name}
+        labelStep={10}
+        reference={
+          actual === null
+            ? null
+            : {
+                value: actual,
+                label: t(`${card.base_year} actual ${signed(actual)}`, `${card.base_year}年実績 ${signed(actual)}`),
+                title: t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`),
+              }
+        }
+      />
       {card.marks && card.marks.length > 0 && (
         <div className="whatif-marks">
           {card.marks.map((mk) => (
@@ -447,12 +497,6 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
           </div>
         ))}
       </div>
-      <p className="whatif-rule muted small">
-        {t(
-          `Each extra ¥1bn of spend adds ${bn(card.per_bn.va_bn, 2)} of GDP, ${Math.round(card.per_bn.jobs)} jobs and ${bn(card.per_bn.output_bn, 2)} of output (same mix as ${card.base_year}).`,
-          `観光消費10億円の増加ごとに、${bn(card.per_bn.va_bn, 2)}の付加価値、${Math.round(card.per_bn.jobs)}人の就業、${bn(card.per_bn.output_bn, 2)}の生産（消費構成は${card.base_year}年と同じ）。`,
-        )}
-      </p>
     </div>
   )
 }

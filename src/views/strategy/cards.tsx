@@ -31,6 +31,7 @@ import { GuestNightsMonths, TargetPace } from './guestNights'
 import { GdpTrend, Ripple, TourismTrend, WhatIf } from './economy'
 import { FlowSankey } from './flowSankey'
 import { SearchTrends } from './searchTrends'
+import { ScenarioSlider } from './slider'
 
 /** "[pending]" in the current language, for values not measured yet. */
 function usePending() {
@@ -38,22 +39,22 @@ function usePending() {
   return t(PENDING, '[未取得]')
 }
 
-/** Card frame: title, status pill (always shown), notes and TODOs. */
-export function StrategyCardView({ card }: { card: StrategyCard }) {
+/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the New/Updated badge, detail line, notes, sources and TODOs. */
+export function StrategyCardView({ card, lean = false, theme }: { card: StrategyCard; lean?: boolean; theme?: string }) {
   const { t } = useLang()
   return (
     <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
       <header className="s-card-head">
         <h3>
-          {card.title}
-          {card.badge && <span className="card-badge">{card.badge}</span>}
+          {(theme && card.theme_titles?.[theme]) || card.title}
+          {!lean && card.badge && <span className="card-badge">{card.badge}</span>}
         </h3>
         <StatusPill status={card.status} />
       </header>
       <div className="s-card-body">
-        <CardBody card={card} />
+        <CardBody card={card} lean={lean} theme={theme} />
       </div>
-      {(card.note || card.pending_on || card.source || card.todo) && (
+      {!lean && (card.note || card.pending_on || card.source || card.todo) && (
         <footer className="s-card-foot">
           {card.note && <p>{card.note}</p>}
           {card.pending_on && (
@@ -77,10 +78,10 @@ export function StrategyCardView({ card }: { card: StrategyCard }) {
   )
 }
 
-function CardBody({ card }: { card: StrategyCard }): ReactNode {
+function CardBody({ card, lean, theme }: { card: StrategyCard; lean: boolean; theme?: string }): ReactNode {
   switch (card.type) {
     case 'stat':
-      return <Stat card={card} />
+      return <Stat card={card} lean={lean} />
     case 'progress':
       return <Progress card={card} />
     case 'formula_table':
@@ -114,7 +115,7 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
     case 'gdp_trend':
       return <GdpTrend card={card} />
     case 'tourism_trend':
-      return <TourismTrend card={card} />
+      return <TourismTrend card={card} theme={theme} />
     case 'ripple':
       return <Ripple card={card} />
     case 'what_if':
@@ -122,7 +123,7 @@ function CardBody({ card }: { card: StrategyCard }): ReactNode {
   }
 }
 
-function Stat({ card }: { card: StatCard }) {
+function Stat({ card, lean }: { card: StatCard; lean: boolean }) {
   const pending = usePending()
   return (
     <div className="stat">
@@ -130,7 +131,7 @@ function Stat({ card }: { card: StatCard }) {
         {card.value_text ?? pending}
         {card.value_text !== null && card.unit}
       </div>
-      {card.detail && <div className="stat-detail">{card.detail}</div>}
+      {!lean && card.detail && <div className="stat-detail">{card.detail}</div>}
     </div>
   )
 }
@@ -771,37 +772,67 @@ function Builder({ card }: { card: BuilderCard }) {
     return { lever: l, guests, spend: guests * l.spend_per, colour: S[k % S.length] }
   })
   const totalSpend = added.reduce((a, b) => a + b.spend, 0)
+  const [tip, setTip] = useState<{ gap: string; key: string } | null>(null)
   return (
     <div className="builder">
       <div className="builder-levers">
-        {card.levers.map((l, k) => (
-          <label key={l.id} className="lever">
-            <span className="lever-head">
-              <span className="lever-name">
-                <i className="lever-sw" style={{ background: S[k % S.length] }}></i>
-                {l.label}
-              </span>
-              <span className="num lever-val">{l.unit === '%' ? `${vals[l.id]}%` : `${(vals[l.id] ?? 0).toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`}</span>
-            </span>
-            <input
-              type="range"
-              min={l.min}
-              max={l.max}
-              step={l.step}
-              value={vals[l.id]}
-              style={{ ['--pct' as string]: `${(((vals[l.id] ?? 0) - l.min) / (l.max - l.min)) * 100}%`, ['--c' as string]: S[k % S.length] }}
-              onChange={(e) => setVals((s) => ({ ...s, [l.id]: Number(e.target.value) }))}
-            />
-            <span className="lever-help">{l.help}</span>
-          </label>
-        ))}
+        {card.levers.map((l, k) => {
+          const fmt = (v: number) => (l.unit === '%' ? `${v}%` : `${v.toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`)
+          const tick = (v: number) => (l.unit === '%' ? `${v}%` : v >= 1e3 ? `${v / 1e3}k` : String(v))
+          return (
+            <div key={l.id} className="lever-card" style={{ ['--c' as string]: S[k % S.length] }}>
+              <div className="lever-card-id">{l.id}</div>
+              <div className="lever-card-name">{l.label.replace(new RegExp(`^${l.id}\\s+`), '')}</div>
+              <ScenarioSlider
+                min={l.min}
+                max={l.max}
+                step={l.step}
+                value={vals[l.id] ?? 0}
+                onChange={(v) => setVals((s) => ({ ...s, [l.id]: v }))}
+                colour={S[k % S.length]}
+                format={fmt}
+                tickFormat={tick}
+                label={l.label}
+              />
+            </div>
+          )
+        })}
       </div>
       <div className="builder-out">
         {card.gaps.map((g) => {
           const parts = added.filter((a) => a.lever.counts.includes(g.id))
           const closed = parts.reduce((s, a) => s + a.guests, 0)
           const share = Math.min(1, closed / g.gap)
+          // Each package's piece of the bar, then the part still to close; all hoverable.
+          const segs: { key: string; left: number; w: number; colour: string; title: string; lines: string[] }[] = []
           let acc = 0
+          for (const p of parts) {
+            const w = Math.max(0, Math.min(1 - acc, p.guests / g.gap))
+            if (w > 0)
+              segs.push({
+                key: p.lever.id,
+                left: acc,
+                w,
+                colour: p.colour,
+                title: p.lever.label,
+                lines: [
+                  `${fmtCompact(p.guests)} ${t('guest-nights', '泊')}`,
+                  `${Math.round((p.guests / g.gap) * 100)}% ${t('of the gap', '（ギャップ比）')}`,
+                  `${fmtYen(p.spend)} ${t('revenue a year', '/年の消費')}`,
+                ],
+              })
+            acc += w
+          }
+          if (acc < 1)
+            segs.push({
+              key: 'rest',
+              left: acc,
+              w: 1 - acc,
+              colour: 'transparent',
+              title: t('Still to close', '残りのギャップ'),
+              lines: [`${fmtCompact(Math.max(0, g.gap - closed))} ${t('guest-nights', '泊')} (${Math.round((1 - acc) * 100)}%)`],
+            })
+          const hovered = tip?.gap === g.id ? segs.find((x) => x.key === tip.key) : undefined
           return (
             <div key={g.id} className="gap-row">
               <div className="progress-top">
@@ -810,15 +841,28 @@ function Builder({ card }: { card: BuilderCard }) {
                   {fmtCompact(closed)} {t('of', '/')} {fmtCompact(g.gap)} <strong>({Math.round(share * 100)}%)</strong>
                 </span>
               </div>
-              <div className="stack-track" role="img" aria-label={`${g.label}: ${Math.round(share * 100)}%`}>
-                {parts.map((p) => {
-                  const w = Math.max(0, Math.min(1 - acc, p.guests / g.gap))
-                  const left = acc
-                  acc += w
-                  return w > 0 ? (
-                    <span key={p.lever.id} className="stack-seg" style={{ left: `${left * 100}%`, width: `${w * 100}%`, background: p.colour }} title={`${p.lever.id}: ${fmtCompact(p.guests)}`}></span>
-                  ) : null
-                })}
+              <div className="stack-wrap" onMouseLeave={() => setTip(null)}>
+                <div className="stack-track" role="img" aria-label={`${g.label}: ${Math.round(share * 100)}%`}>
+                  {segs.map((x) => (
+                    <span
+                      key={x.key}
+                      className={`stack-seg ${x.key === 'rest' ? 'rest' : ''} ${hovered?.key === x.key ? 'on' : ''}`}
+                      style={{ left: `${x.left * 100}%`, width: `${x.w * 100}%`, background: x.colour }}
+                      onMouseEnter={() => setTip({ gap: g.id, key: x.key })}
+                    ></span>
+                  ))}
+                </div>
+                {hovered && (
+                  // Centred on the piece, but kept inside the bar at either end.
+                  <div className="stack-tip" style={{ left: `${(hovered.left + hovered.w / 2) * 100}%`, transform: `translate(${-(hovered.left + hovered.w / 2) * 100}%, -100%)` }}>
+                    <div className="stack-tip-title">{hovered.title}</div>
+                    {hovered.lines.map((l) => (
+                      <div key={l} className="num">
+                        {l}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="stack-key">
                 {parts.map((p) => (
