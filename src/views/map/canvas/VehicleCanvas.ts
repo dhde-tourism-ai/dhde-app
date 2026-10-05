@@ -4,6 +4,9 @@ import { vehicleClock } from '../../../lib/vehicleClock'
 import { trainsAt } from '../../../lib/railModel'
 import type { RailRun } from '../../../lib/railModel'
 
+const PULSE_MS = 1600
+const REDUCED_MOTION = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
 /** A bus trip: stop positions and the departure minute at each, in calling order. */
 export interface BusTrip {
   pts: [number, number][]
@@ -57,8 +60,20 @@ export class VehicleCanvas extends CanvasOverlay {
     const m = vehicleClock.minute()
     const w = this.size.x
     const h = this.size.y
+    // A ring pulsing out of every vehicle, so they stand out from the stops and track
+    // even when live (real speed barely moves them at prefecture zoom).
+    const pulse = REDUCED_MOTION ? -1 : (performance.now() % PULSE_MS) / PULSE_MS
     const dot = (p: L.Point, r: number, fill: string, ring: string, ringW: number) => {
-      if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) return
+      if (p.x < -20 || p.y < -20 || p.x > w + 20 || p.y > h + 20) return
+      if (pulse >= 0) {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, r + ringW + pulse * 10, 0, Math.PI * 2)
+        ctx.strokeStyle = fill
+        ctx.globalAlpha = 0.7 * (1 - pulse)
+        ctx.lineWidth = 2
+        ctx.stroke()
+        ctx.globalAlpha = 1
+      }
       ctx.beginPath()
       ctx.arc(p.x, p.y, r + ringW, 0, Math.PI * 2)
       ctx.fillStyle = ring
