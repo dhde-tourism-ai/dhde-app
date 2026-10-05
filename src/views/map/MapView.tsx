@@ -234,7 +234,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
     firstTheme.current = theme
     setBasemap(theme === 'light' ? 'light' : 'hybrid')
   }, [theme])
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers() ?? DEFAULT_LAYERS))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers(briefing) ?? DEFAULT_LAYERS))
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
@@ -541,7 +541,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <div className="map-right">{rightPanel}</div>
 
         <div className="map-bottom">
-          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} vehicles={transportOn} />}
+          {live && <Timeline live={live} t={t} setT={(i) => setT(i)} playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed} vehicles={transportOn && !!transportMap} />}
           {narrow && (
             <div className="sheet-tabs" role="group" aria-label={tr('Panels', 'パネル')}>
               <button className="btn" aria-pressed={sheetState === 'left'} onClick={() => { onSelect(undefined); setSheet(sheet === 'layers' ? null : 'layers') }}>

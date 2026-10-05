@@ -90,7 +90,8 @@ export function TransportLayer({
             </Tip>
           </Polyline>
         ))}
-        {rail?.lines.map((l) => (
+        {/* Briefing leaves out the running dashes: they suggest measured movement and add clutter. */}
+        {!briefing && rail?.lines.map((l) => (
           <Polyline key={`${l.id}-flow`} positions={l.paths} className="route-flow route-flow--rail" interactive={false}
             pathOptions={{ ...FLOW_STYLE, weight: Math.max(1.5, RAIL_STYLE[l.kind].weight - 1.5), opacity: 0.85, dashArray: '2 14' }} />
         ))}
@@ -106,7 +107,7 @@ export function TransportLayer({
               </Tip>
             </Polyline>
           ))}
-          {data.lines.map((l) => (
+          {!briefing && data.lines.map((l) => (
             <Polyline key={`${l.id}-flow`} positions={l.path} className="route-flow route-flow--bus" interactive={false}
               pathOptions={{ ...FLOW_STYLE, weight: 1.6, opacity: 0.8, dashArray: '1 11' }} />
           ))}
