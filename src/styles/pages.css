@@ -2250,7 +2250,8 @@
 .ripple-flow {
   display: grid;
   /* five equal boxes with the operators between; the five shared rows are title, what, headline, figures, detail */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  /* fixed-width operator columns: → is wider than + and =, which made the first gap wider */
+  grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr);
   grid-template-rows: repeat(5, auto);
   align-items: stretch;
 }
@@ -2263,7 +2264,7 @@
   grid-row: 1 / -1;
   display: grid;
   place-items: center;
-  padding: 0 7px;
+  padding: 0;
   font-size: 20px;
   font-weight: 300;
   color: var(--muted);
@@ -2282,8 +2283,17 @@
   border: 1px solid var(--line-strong);
 }
 
+/* Every box has the same 3px top edge, so titles and rows start at the same height */
+.ripple-box {
+  border-top: 3px solid var(--line-strong);
+}
+
 .ripple-box.tier {
-  border-top: 3px solid var(--tier);
+  border-top-color: var(--tier);
+}
+
+.ripple-box.total {
+  border-top-color: rgba(139, 157, 255, 0.75);
 }
 
 .ripple-box.total {

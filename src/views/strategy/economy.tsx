@@ -350,14 +350,14 @@ export function Ripple({ card }: { card: RippleCard }) {
           <div className="ripple-kicker">
             {t('Tourism revenue', '観光消費額')} {card.year}
           </div>
-          <div className="ripple-what">{t('What visitors spent in Fukui.', '来訪者が県内で消費した額。')}</div>
+          <div className="ripple-what">{t('What visitors spent in Fukui on stays, food, shopping, transport and attractions.', '来訪者が県内で宿泊・飲食・買物・交通・観光に消費した額。')}</div>
           <div>
             <div className="ripple-big">{bn(card.spend_bn)}</div>
             <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
           </div>
           <div className="ripple-figs">
-            <Fig value={bn(card.retained_bn)} label={t(`reaches Fukui businesses (${Math.round((card.retained_bn / card.spend_bn) * 100)}%)`, `県内の生産へ（${Math.round((card.retained_bn / card.spend_bn) * 100)}%）`)} />
-            <Fig value={bn(card.leak_bn)} label={t('made outside Fukui', '県外・海外製品へ')} />
+            <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${Math.round((card.retained_bn / card.spend_bn) * 100)}%)`, `県内（${Math.round((card.retained_bn / card.spend_bn) * 100)}%）`)} />
+            <Fig value={bn(card.leak_bn)} label={t('made elsewhere', '県外')} />
           </div>
           <div></div>
         </div>
@@ -404,16 +404,16 @@ export function Ripple({ card }: { card: RippleCard }) {
           <div className="ripple-kicker">
             {t('Total effect', '総合効果')} {card.year}
           </div>
-          <div className="ripple-what">{t('All three rounds added together.', '3段階の効果の合計。')}</div>
+          <div className="ripple-what">{t('The direct effect and both indirect rounds added together, across the whole economy.', '直接効果と2段階の間接効果を合わせた、県経済全体への効果。')}</div>
           <div>
             <div className="ripple-big">{bn(tot.va_bn)}</div>
             <div className="ripple-lab">
-              {t('GDP added', '付加価値')} = {pct(tot.share_pct)} {t('of Fukui GDP', '（県内総生産比）')}
+              {t('GDP added', '付加価値')} ({pct(tot.share_pct)} {t('of Fukui GDP', '県内総生産比')})
             </div>
           </div>
           <div className="ripple-figs">
-            <Fig value={jobs(tot.jobs)} label={t(`jobs = ${pct(tot.jobs_share_pct)} of workers`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
-            <Fig value={bn(tot.output_bn)} label={t(`output = ${tot.multiplier_spend.toFixed(2)}× revenue`, `生産額（消費の${tot.multiplier_spend.toFixed(2)}倍）`)} />
+            <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
+            <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`)} />
           </div>
           <div className="ripple-total-detail">
             <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
