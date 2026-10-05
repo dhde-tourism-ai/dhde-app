@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { PillLegend, StatusPill } from '../../components/StatusPill'
-import { Icon } from '../../components/icons'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -100,20 +99,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
             </div>
           ))}
         </div>
-        <p className="eq-caption">{equation.caption}</p>
       </section>
-
-      {data.todos.map((td, i) => (
-        <div key={i} className="banner banner-warn research-note">
-          <Icon name="info" />
-          <span>
-            <strong>
-              {t('Research note for the', '研究メモ：')} {td.for}:
-            </strong>{' '}
-            {td.text}
-          </span>
-        </div>
-      ))}
 
       <nav className="q-nav" aria-label={t('Questions', '設問')}>
         {data.questions.map((q) => (
@@ -147,8 +133,12 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
   )
 }
 
+/** Questions shown lean: no long answer paragraph, card notes or sources, just the figures and charts. */
+const LEAN_QUESTIONS = new Set(['q1', 'q5'])
+
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
+  const lean = LEAN_QUESTIONS.has(q.id)
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
@@ -167,15 +157,17 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           </div>
         </div>
       </header>
-      <div className="answer">
-        <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
-        <p>{q.answer}</p>
-      </div>
+      {!lean && (
+        <div className="answer">
+          <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
+          <p>{q.answer}</p>
+        </div>
+      )}
       <div className="card-grid">
         {q.cards
           .filter((c) => !c.hidden)
           .map((c) => (
-            <StrategyCardView key={c.id} card={c} />
+            <StrategyCardView key={c.id} card={c} lean={lean} />
           ))}
       </div>
       {showSpecs && (

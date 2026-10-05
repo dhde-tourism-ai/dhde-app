@@ -38,8 +38,8 @@ function usePending() {
   return t(PENDING, '[未取得]')
 }
 
-/** Card frame: title, status pill (always shown), notes and TODOs. */
-export function StrategyCardView({ card }: { card: StrategyCard }) {
+/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the notes, sources and TODOs. */
+export function StrategyCardView({ card, lean = false }: { card: StrategyCard; lean?: boolean }) {
   const { t } = useLang()
   return (
     <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
@@ -53,7 +53,7 @@ export function StrategyCardView({ card }: { card: StrategyCard }) {
       <div className="s-card-body">
         <CardBody card={card} />
       </div>
-      {(card.note || card.pending_on || card.source || card.todo) && (
+      {!lean && (card.note || card.pending_on || card.source || card.todo) && (
         <footer className="s-card-foot">
           {card.note && <p>{card.note}</p>}
           {card.pending_on && (

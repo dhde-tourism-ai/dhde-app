@@ -535,20 +535,6 @@
   font-weight: 300;
 }
 
-.eq-caption {
-  margin: var(--sp-4) 0 0;
-  color: var(--text-2);
-  font-size: 13px;
-}
-
-.research-note {
-  margin-bottom: var(--sp-4);
-}
-
-.research-note svg {
-  color: var(--warn);
-}
-
 .q-nav {
   position: sticky;
   top: var(--appbar-h);
