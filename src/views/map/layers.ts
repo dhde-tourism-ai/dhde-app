@@ -69,11 +69,11 @@ export const OVERVIEW_NOTE = [
   '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
 ] as const
 
-/** The briefing view, readable in about 20 seconds: visitors, hotels and what to do. Bus routes are a switch away. */
-export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges']
+/** The briefing view, readable in about 20 seconds: visitors and people coming and going, hotels, and what to do. Bus routes are a switch away. */
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'flow', 'hotels', 'nudges']
 
-// v5: everyone starts again from the defaults once (older choices hid the key layers or kept bus routes on).
-const LAYERS_KEY = 'dhde.layers.v5'
+// v6: everyone starts again from the defaults once (people flow joined them).
+const LAYERS_KEY = 'dhde.layers.v6'
 
 /**
  * The viewer's last layer choice, or null to use the defaults. Briefing keeps it for this visit
