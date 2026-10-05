@@ -26,7 +26,7 @@ function ClockLabel() {
   const live = mode === 'live'
   return (
     <span className={`sched-clock${live ? ' live' : ''}`}>
-      {live ? t('Live', 'ライブ') : mode === 'run' ? t('Fast-forward', '早送り') : t('Preview', 'プレビュー')} {clock(vehicleClock.minute())}
+      {live ? t('Live', 'ライブ') : mode === 'run' ? t('Simulated', 'シミュレーション') : t('Preview', 'プレビュー')} {clock(vehicleClock.minute())}
     </span>
   )
 }

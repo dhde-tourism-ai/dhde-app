@@ -122,7 +122,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
         </div>
         {vehicles && running ? (
           <span className="tl-mode run" title={tr(`Buses and trains fast-forwarded from the time shown, ${running} min a second (scheduled positions)`, `表示時刻から早送り、1秒で${running}分（時刻表上の位置）`)}>
-            {tr('Fast-forward', '早送り')}
+            {tr('Simulated', 'シミュレーション')}
           </span>
         ) : vehicles && isLive ? (
           <span className="tl-mode live" title={tr('Buses and trains on the real clock (scheduled positions, not GPS)', '実時刻のバス・列車（時刻表上の位置、GPSではない）')}>
