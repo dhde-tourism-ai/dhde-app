@@ -2994,9 +2994,7 @@
               ]
             ],
             "insight": "Visitors from outside Fukui who stay the night are 9% of visitors but bring 40% of all tourism spend (¥80.5bn of ¥198.7bn). Each extra overnight guest from outside is worth far more than a day trip.",
-            "insight_ja": "県外からの宿泊客は来訪者の9%だが、観光消費額の40%（1,987億円のうち805億円）を占める。県外宿泊客が1人増える価値は日帰り客よりはるかに大きい。",
-            "note": "Spend by region of origin isn't published, so this view starts at the groups. Fukui's ¥198.7bn doesn't separate foreign spend; JTA's inbound survey puts it at about ¥3.7bn (86k visitors × about ¥43k), a different source that isn't added here and isn't verified yet.",
-            "note_ja": "発地別の消費額は公表されていないため、この表示は区分から始まる。県の1,987億円は外国人の消費を分けていない。観光庁の訪日調査では約37億円（8.6万人×約4.3万円）だが、別の出典のためここには加えず、未確認。"
+            "insight_ja": "県外からの宿泊客は来訪者の9%だが、観光消費額の40%（1,987億円のうち805億円）を占める。県外宿泊客が1人増える価値は日帰り客よりはるかに大きい。"
           }
         },
         {

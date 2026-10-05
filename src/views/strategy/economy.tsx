@@ -367,12 +367,19 @@ function FlipBox({ className, style, front, back, label }: { className: string; 
   )
 }
 
-/** A bold circular arrow: clockwise on the front (flip over), anticlockwise on the back (turn back). */
+/**
+ * Two bold curved arrows chasing each other round a circle: the flip mark. Clockwise on the
+ * front (flip over), mirrored on the back (turn back).
+ */
 function TurnArrow({ back = false }: { back?: boolean }) {
   return (
-    <svg className="ripple-flip" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={back ? { transform: 'scaleX(-1)' } : undefined}>
-      <path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <path d="M20 3.5v5.5h-5.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    <svg className="ripple-flip" width="17" height="17" viewBox="-1 -1 26 26" aria-hidden="true" style={back ? { transform: 'scaleX(-1)' } : undefined}>
+      <g fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10" />
+        <path d="M23 4v6h-6" />
+        <path d="M20.5 15a9 9 0 0 1-14.85 3.36L1 14" />
+        <path d="M1 20v-6h6" />
+      </g>
     </svg>
   )
 }

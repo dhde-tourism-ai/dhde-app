@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
-import { PillLegend, StatusPill } from '../../components/StatusPill'
+import { StatusPill } from '../../components/StatusPill'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -75,9 +75,6 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
         </label>
       </div>
 
-      <div className="card strat-legend">
-        <PillLegend labels={data.pills} />
-      </div>
 
       <section className="card equation" aria-label={t('Revenue equation', '観光消費の式')}>
         <div className="eq-head">

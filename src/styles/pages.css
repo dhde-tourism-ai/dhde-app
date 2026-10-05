@@ -452,10 +452,6 @@
   cursor: pointer;
 }
 
-.strat-legend {
-  padding: var(--sp-3) var(--sp-5);
-  margin-bottom: var(--sp-4);
-}
 
 .pill-legend-desc {
   color: var(--muted);
@@ -484,6 +480,18 @@
 .eq-part {
   display: flex;
   align-items: center;
+  /* the five terms share the card's width, end to end; the total is a little wider */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.eq-part:last-child {
+  flex-grow: 1.25;
+}
+
+.eq-part .eq-term {
+  flex: 1;
+  min-width: 0;
 }
 
 .eq-term {
@@ -677,6 +685,80 @@
 
 .q-group:not(.on) {
   visibility: hidden;
+}
+
+/* A stretched card fills its height instead of leaving a gap at the foot: charts grow, the
+   7-day table's rows and a bar list spread out, and the card's note stays at the bottom. */
+.q-group .s-card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.q-group .s-card-body > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.q-group .forecast-layout {
+  flex: 1;
+}
+
+/* switches inside the card keep their own width */
+.q-group .s-card-body > div > .seg {
+  align-self: flex-start;
+}
+
+.q-group .forecast-chart,
+.q-group .next7 {
+  display: flex;
+  flex-direction: column;
+}
+
+.q-group .fc-plot {
+  flex: 1;
+}
+
+.q-group .next7-scroll {
+  flex: 1;
+  height: auto;
+  min-height: 270px;
+}
+
+.q-group .next7-scroll table {
+  height: 100%;
+}
+
+.q-group .hbars {
+  justify-content: space-evenly;
+}
+
+/* A full-width bar card in a tab set (Q3): a fixed label column next to its bar, thicker
+   bars and larger figures, so a few bars fill the card instead of floating in it. */
+.q-group .span-12 .hbar-row {
+  grid-template-columns: 200px minmax(0, 1fr) 96px;
+  gap: 18px;
+  font-size: 14px;
+}
+
+.q-group .span-12 .hbar-track {
+  height: 30px;
+}
+
+.q-group .span-12 .hbar-fill {
+  border-radius: 0 6px 6px 0;
+}
+
+.q-group .span-12 .hbar-value {
+  font-size: 17px;
+}
+
+.fc-plot {
+  min-height: 260px;
+}
+
+.fc-plot.st-plot {
+  min-height: 240px;
 }
 
 .q-themes {
@@ -2108,6 +2190,27 @@
 }
 
 /* Visitor-flow Sankey (Q4). */
+/* Visitors and Spend in one cell: the card keeps the taller view's size */
+.flow-stack {
+  display: grid;
+}
+
+.flow-view {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.flow-plot {
+  flex: 1;
+  min-height: 420px;
+}
+
+.flow-view:not(.on) {
+  visibility: hidden;
+}
+
 .flow-lbl {
   fill: var(--text);
   font-size: 12px;
