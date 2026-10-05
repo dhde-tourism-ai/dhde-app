@@ -46,7 +46,7 @@ export function StrategyCardView({ card, lean = false, theme }: { card: Strategy
     <article id={card.id} className={`s-card s-${card.status} span-${card.span}`} style={{ ['--span' as string]: card.span }}>
       <header className="s-card-head">
         <h3>
-          {card.title}
+          {(theme && card.theme_titles?.[theme]) || card.title}
           {!lean && card.badge && <span className="card-badge">{card.badge}</span>}
         </h3>
         <StatusPill status={card.status} />

@@ -240,9 +240,15 @@
           "type": "tourism_trend",
           "span": 12,
           "theme": [
+            "spending",
             "gdp",
             "jobs"
           ],
+          "theme_titles": {
+            "spending": "Tourism revenue, 2014–2029",
+            "gdp": "Tourism's contribution to GDP, 2014–2029",
+            "jobs": "Jobs supported by tourism, 2014–2029"
+          },
           "status": "modelled",
           "badge": "New",
           "title": "Tourism's contribution to GDP and jobs, 2014–2029",
@@ -657,7 +663,7 @@
           "type": "ripple",
           "span": 12,
           "theme": [
-            "spending"
+            "overview"
           ],
           "status": "modelled",
           "badge": "New",
@@ -967,6 +973,10 @@
         }
       ],
       "themes": [
+        {
+          "id": "overview",
+          "label": "Overview"
+        },
         {
           "id": "spending",
           "label": "Spending"

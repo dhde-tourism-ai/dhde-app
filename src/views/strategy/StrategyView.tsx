@@ -129,10 +129,13 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
 
 /** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card badges, details, notes or sources). */
 const LEAN_QUESTIONS = new Set(['q1', 'q5'])
+/** Questions that keep their sub-question chips and cards but drop the why line and the answer paragraph. */
+const NO_INTRO = new Set(['q2'])
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
   const lean = LEAN_QUESTIONS.has(q.id)
+  const noIntro = lean || NO_INTRO.has(q.id)
   const themes = q.themes ?? []
   const [picked, setTheme] = useState<string | undefined>(undefined)
   const theme = themes.find((th) => th.id === picked)?.id ?? themes[0]?.id ?? ''
@@ -144,9 +147,9 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
+          {!noIntro && <p className="q-why">{q.why}</p>}
           {!lean && (
             <>
-              <p className="q-why">{q.why}</p>
               <div className="q-subs">
                 {q.subs.map((s) => (
                   <span key={s} className="chip">
@@ -158,7 +161,7 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           )}
         </div>
       </header>
-      {!lean && (
+      {!noIntro && (
         <div className="answer">
           <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
           <p>{q.answer}</p>

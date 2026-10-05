@@ -147,35 +147,38 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
   )
 }
 
-type Measure = 'share' | 'va' | 'jobs'
+type Measure = 'spend' | 'share' | 'va' | 'jobs'
 
 function byRound(p: TourismTrendPoint, m: Measure): [number, number, number, number] {
+  // Revenue isn't split by round: one bar.
+  if (m === 'spend') return [p.spend_bn, 0, 0, p.spend_bn]
   if (m === 'share') return [p.share_direct, p.share_indirect1, p.share_indirect2, p.share_total]
   if (m === 'va') return [p.va_direct, p.va_indirect1, p.va_indirect2, p.va_total]
   return [p.jobs_direct, p.jobs_indirect1, p.jobs_indirect2, p.jobs_total]
 }
 
-/** Tourism's share of GDP, GDP added or jobs each year, stacked by round, with the low–high range on projected years. */
+/** Tourism revenue, or tourism's share of GDP, GDP added or jobs stacked by round, each year, with the low–high range on projected years. */
 export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: string }) {
   const { t } = useLang()
   const names = useTierNames()
-  // Under Q1's themes the GDP theme shows share and GDP added, the Jobs theme jobs only.
-  const measures: Measure[] = theme === 'jobs' ? ['jobs'] : theme === 'gdp' ? ['share', 'va'] : ['share', 'va', 'jobs']
+  // Under Q1's themes each shows its own measure only: Spending revenue, GDP share and GDP added, Jobs jobs.
+  const measures: Measure[] = theme === 'spending' ? ['spend'] : theme === 'jobs' ? ['jobs'] : theme === 'gdp' ? ['share', 'va'] : ['share', 'va', 'jobs']
   const [picked, setM] = useState<Measure>('share')
   const m = measures.includes(picked) ? picked : measures[0]
-  const fmt = (v: number) => (m === 'share' ? pct(v, 2) : m === 'va' ? bn(v) : jobs(v))
-  const tick = (v: number) => (m === 'share' ? `${v}%` : m === 'va' ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
+  const money = m === 'va' || m === 'spend'
+  const fmt = (v: number) => (m === 'share' ? pct(v, 2) : money ? bn(v) : jobs(v))
+  const tick = (v: number) => (m === 'share' ? `${v}%` : money ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
   const rows = card.points.map((p) => {
     const [d, i1, i2, tot] = byRound(p, m)
-    const range = p.range ? p.range[m] : null
+    const range = p.range ? p.range[m === 'spend' ? 'spend_bn' : m] : null
     return { x: String(p.year), p, d, i1, i2, tot, lo: range ? range[0] : null, hi: range ? range[1] : null, forecast: p.kind === 'forecast' }
   })
   const firstProj = rows.find((r) => r.forecast)?.x
   const lastModelled = [...rows].reverse().find((r) => !r.forecast)
   const last = rows[rows.length - 1]
-  const marks = card.benchmarks.map((b) => ({ ...b, v: b[m] })).filter((b) => b.v !== undefined)
+  const marks = m === 'spend' ? [] : card.benchmarks.map((b) => ({ ...b, v: b[m] })).filter((b) => b.v !== undefined)
   const peak = Math.max(...rows.map((r) => Math.max(r.tot, r.hi ?? 0)), ...marks.map((b) => b.v ?? 0))
-  const step = m === 'share' ? 1 : m === 'va' ? 50 : 1e4
+  const step = m === 'share' ? 1 : m === 'va' || m === 'spend' ? 50 : 1e4
   const top = Math.ceil((peak * 1.08) / step) * step
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step)
   const faded = (f: boolean) => (f ? 0.5 : 1)
@@ -195,12 +198,19 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
         </div>
       )}
       <div className="chart-key">
-        {TIERS.map((id) => (
-          <span key={id}>
-            <i className="k-band" style={{ background: TIER[id] }}></i>
-            {names[id]}
+        {m === 'spend' ? (
+          <span>
+            <i className="k-band" style={{ background: TIER.direct }}></i>
+            {t('Tourism revenue (visitor spend)', '観光消費額')}
           </span>
-        ))}
+        ) : (
+          TIERS.map((id) => (
+            <span key={id}>
+              <i className="k-band" style={{ background: TIER[id] }}></i>
+              {names[id]}
+            </span>
+          ))
+        )}
         {ranged.length > 0 && (
           <span>
             <i className="k-range"></i>
@@ -236,15 +246,25 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
             domain={[0, top]}
             ticks={ticks}
             tickFormatter={tick}
-            label={yTitle(m === 'share' ? t('Share of Fukui GDP (%)', '県内総生産比（%）') : m === 'va' ? t('GDP added (¥ billion)', '付加価値（10億円）') : t('Jobs supported', '就業者数'))}
+            label={yTitle(
+              m === 'spend'
+                ? t('Tourism revenue (¥ billion)', '観光消費額（10億円）')
+                : m === 'share'
+                  ? t('Share of Fukui GDP (%)', '県内総生産比（%）')
+                  : m === 'va'
+                    ? t('GDP added (¥ billion)', '付加価値（10億円）')
+                    : t('Jobs supported', '就業者数'),
+            )}
           />
           <Tooltip
             cursor={{ fill: 'rgba(139,157,255,.08)' }}
             content={({ active, payload }) => {
               const r = active ? (payload?.[0]?.payload as (typeof rows)[number] | undefined) : undefined
               if (!r) return null
-              const tipRows: TipRow[] = TIERS.map((id, i) => ({ key: TIER[id], label: names[id], value: fmt([r.d, r.i1, r.i2][i]) }))
-              tipRows.push({ label: t('total', '合計'), value: fmt(r.tot), strong: true })
+              const tipRows: TipRow[] =
+                m === 'spend'
+                  ? [{ key: TIER.direct, label: t('tourism revenue', '観光消費額'), value: fmt(r.tot), strong: true }]
+                  : [...TIERS.map((id, i) => ({ key: TIER[id], label: names[id], value: fmt([r.d, r.i1, r.i2][i]) })), { label: t('total', '合計'), value: fmt(r.tot), strong: true }]
               if (r.lo !== null && r.hi !== null) tipRows.push({ key: S[1], label: t('low to high revenue', '低位〜高位'), value: `${fmt(r.lo)} – ${fmt(r.hi)}` })
               const b = marks.find((x) => String(x.year) === r.x)
               if (b?.v !== undefined) tipRows.push({ key: RING, label: b.label, value: fmt(b.v) })
@@ -253,7 +273,7 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
                 <EcoTip
                   title={`${r.x}${r.forecast ? t(' · base projection', '・基準予測') : ''}`}
                   rows={tipRows}
-                  foot={`${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
+                  foot={m === 'spend' ? undefined : `${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
                 />
               )
             }}
@@ -302,7 +322,21 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
   )
 }
 
-/** Spend → direct + indirect ① + indirect ② = total, with the sectors that gain most in each round. */
+/** A smaller figure in a ripple box: value over its label. */
+function Fig({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="ripple-mid num">{value}</div>
+      <div className="ripple-lab">{label}</div>
+    </div>
+  )
+}
+
+/**
+ * Revenue → direct + indirect ① + indirect ② = total, with the sectors that gain most in each round.
+ * Five equal boxes on shared rows (pages.css subgrid): title, what it is, headline figure, two
+ * smaller figures, detail, so the same kind of number sits at the same height in every box.
+ */
 export function Ripple({ card }: { card: RippleCard }) {
   const { t } = useLang()
   const names = useTierNames()
@@ -316,13 +350,16 @@ export function Ripple({ card }: { card: RippleCard }) {
           <div className="ripple-kicker">
             {t('Tourism revenue', '観光消費額')} {card.year}
           </div>
-          <div className="ripple-big">{bn(card.spend_bn)}</div>
-          <div className="ripple-sub">
-            {bn(card.retained_bn)} {t('reaches Fukui businesses', 'が県内の生産に')} ({Math.round((card.retained_bn / card.spend_bn) * 100)}%)
+          <div className="ripple-what">{t('What visitors spent in Fukui.', '来訪者が県内で消費した額。')}</div>
+          <div>
+            <div className="ripple-big">{bn(card.spend_bn)}</div>
+            <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
           </div>
-          <div className="ripple-sub muted">
-            {bn(card.leak_bn)} {t('buys goods and services made elsewhere', 'は県外・海外製品へ')}
+          <div className="ripple-figs">
+            <Fig value={bn(card.retained_bn)} label={t(`reaches Fukui businesses (${Math.round((card.retained_bn / card.spend_bn) * 100)}%)`, `県内の生産へ（${Math.round((card.retained_bn / card.spend_bn) * 100)}%）`)} />
+            <Fig value={bn(card.leak_bn)} label={t('made outside Fukui', '県外・海外製品へ')} />
           </div>
+          <div></div>
         </div>
         <span className="ripple-op" aria-hidden="true">
           →
@@ -335,19 +372,13 @@ export function Ripple({ card }: { card: RippleCard }) {
                 {names[tier.id]}
               </div>
               <div className="ripple-what">{tier.what}</div>
+              <div>
+                <div className="ripple-big">{bn(tier.va_bn)}</div>
+                <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
+              </div>
               <div className="ripple-figs">
-                <div>
-                  <div className="ripple-big">{bn(tier.va_bn)}</div>
-                  <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
-                </div>
-                <div>
-                  <div className="ripple-mid num">{jobs(tier.jobs)}</div>
-                  <div className="ripple-lab">{t('jobs', '就業者')}</div>
-                </div>
-                <div>
-                  <div className="ripple-mid num">{bn(tier.output_bn)}</div>
-                  <div className="ripple-lab">{t('output', '生産額')}</div>
-                </div>
+                <Fig value={jobs(tier.jobs)} label={t('jobs', '就業者')} />
+                <Fig value={bn(tier.output_bn)} label={t('output', '生産額')} />
               </div>
               <ul className="ripple-top" aria-label={t('Sectors that gain most', '効果の大きい部門')}>
                 {tier.top.map((s) => (
@@ -373,30 +404,28 @@ export function Ripple({ card }: { card: RippleCard }) {
           <div className="ripple-kicker">
             {t('Total effect', '総合効果')} {card.year}
           </div>
-          <div className="ripple-big">{bn(tot.va_bn)}</div>
-          <div className="ripple-lab">
-            {t('GDP added', '付加価値')} = {pct(tot.share_pct)} {t(`of Fukui GDP (FY${card.year} est.)`, `（FY${card.year}県内総生産比・推計）`)}
+          <div className="ripple-what">{t('All three rounds added together.', '3段階の効果の合計。')}</div>
+          <div>
+            <div className="ripple-big">{bn(tot.va_bn)}</div>
+            <div className="ripple-lab">
+              {t('GDP added', '付加価値')} = {pct(tot.share_pct)} {t('of Fukui GDP', '（県内総生産比）')}
+            </div>
           </div>
-          <div className="ripple-mid num">{jobs(tot.jobs)}</div>
-          <div className="ripple-lab">
-            {t('jobs', '就業者')} = {pct(tot.jobs_share_pct)} {t('of workers (FY2023 count)', '（FY2023県内就業者比）')}
+          <div className="ripple-figs">
+            <Fig value={jobs(tot.jobs)} label={t(`jobs = ${pct(tot.jobs_share_pct)} of workers`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
+            <Fig value={bn(tot.output_bn)} label={t(`output = ${tot.multiplier_spend.toFixed(2)}× revenue`, `生産額（消費の${tot.multiplier_spend.toFixed(2)}倍）`)} />
           </div>
-          <div className="ripple-mid num">{bn(tot.output_bn)}</div>
-          <div className="ripple-lab">
-            {t('output', '生産額')} = {tot.multiplier_spend.toFixed(2)}× {t('spend', '消費額')} · {tot.multiplier_direct.toFixed(2)}× {t('direct', '直接効果')}
-          </div>
-          <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
-            {card.tiers.map((tier) => (
-              <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }} title={`${names[tier.id]}: ${partOf(tier.va_bn)}%`}></span>
-            ))}
-          </div>
-          <div className="ripple-split-key muted">
-            {card.tiers.map((tier) => `${partOf(tier.va_bn)}%`).join(' · ')} {t('of the GDP added', '（付加価値の内訳）')}
+          <div className="ripple-total-detail">
+            <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
+              {card.tiers.map((tier) => (
+                <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }} title={`${names[tier.id]}: ${partOf(tier.va_bn)}%`}></span>
+              ))}
+            </div>
+            <div className="ripple-split-key muted">
+              {card.tiers.map((tier) => `${partOf(tier.va_bn)}%`).join(' · ')} {t('of the GDP added', '（付加価値の内訳）')}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="ripple-legend muted">
-        {t('Under each round: the sectors that gain most, with the GDP they add and the jobs it supports.', '各段階の下：効果の大きい部門（付加価値と就業者数）。')}
       </div>
     </div>
   )

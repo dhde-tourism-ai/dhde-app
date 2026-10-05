@@ -23,6 +23,8 @@ interface CardBase {
   badge?: string
   /** Theme ids (the question's `themes`) this card shows under; without it the card shows above the theme switch. */
   theme?: string[]
+  /** The card's title under a given theme, when it differs from `title`. */
+  theme_titles?: Record<string, string>
 }
 
 export interface StatCard extends CardBase {

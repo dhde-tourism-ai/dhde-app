@@ -2214,7 +2214,9 @@
 
 .ripple-flow {
   display: grid;
-  grid-template-columns: minmax(150px, 0.8fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(0, 1.3fr) auto minmax(170px, 1fr);
+  /* five equal boxes with the operators between; the five shared rows are title, what, headline, figures, detail */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: repeat(5, auto);
   align-items: stretch;
 }
 
@@ -2223,6 +2225,7 @@
 }
 
 .ripple-op {
+  grid-row: 1 / -1;
   display: grid;
   place-items: center;
   padding: 0 7px;
@@ -2232,9 +2235,11 @@
 }
 
 .ripple-box {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
+  align-content: start;
+  gap: 8px;
   min-width: 0;
   padding: 12px 14px;
   border-radius: var(--r-md);
@@ -2268,7 +2273,6 @@
 }
 
 .ripple-what {
-  min-height: 2.9em;
   font-size: 12px;
   line-height: 1.45;
   color: var(--muted);
@@ -2300,10 +2304,9 @@
 
 .ripple-figs {
   display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
   gap: 8px;
-  margin: 2px 0 6px;
 }
 
 .ripple-figs .ripple-mid {
@@ -2314,7 +2317,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 8px 0 0;
   border-top: 1px solid var(--line);
   list-style: none;
@@ -2322,7 +2325,8 @@
 
 .ripple-top li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  /* fixed value and jobs columns, so they line up in every box */
+  grid-template-columns: minmax(0, 1fr) 4.4em 5.6em;
   grid-template-areas:
     'name name name'
     'bar val jobs';
@@ -2360,17 +2364,21 @@
 
 .ripple-top .rt-jobs {
   grid-area: jobs;
-  min-width: 64px;
   text-align: right;
   white-space: nowrap;
   color: var(--muted);
+}
+
+.ripple-total-detail {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
 }
 
 .ripple-split {
   display: flex;
   gap: 2px;
   height: 8px;
-  margin-top: 10px;
+  margin-bottom: 6px;
 }
 
 .ripple-split span {
@@ -2379,11 +2387,6 @@
 
 .ripple-split-key {
   font-size: 11px;
-}
-
-.ripple-legend {
-  margin-top: 8px;
-  font-size: 11.5px;
 }
 
 .whatif {
@@ -2580,7 +2583,13 @@
 @media (max-width: 1100px) {
   .ripple-flow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
     gap: 10px;
+  }
+
+  .ripple-box {
+    grid-row: auto;
+    grid-template-rows: none;
   }
 
   .ripple-op {
