@@ -965,21 +965,17 @@
       "nav": "Visitor Flow and Forecast",
       "title": "Visitor Flow and Forecast",
       "question": "How can we predict visitor flow?",
-      "why": "Staff sites despite labour shortages, time buses and promotion, avoid peaks, fill quiet months (required DMO measure).",
-      "subs": [
-        "How many visitors tomorrow and next week?",
-        "What drives daily visits?",
-        "Demand trend across the year"
-      ],
+      "why": "",
+      "subs": [],
       "answer": "Visits follow calendar and online interest; winter weather is where they are lost. Daily site forecast feasible now from EdgeAI cameras; route-by-route movement needs KDDI.",
       "cards": [
         {
           "id": "q2-f1",
           "type": "forecast",
           "span": 8,
+          "group": "Daily forecast",
           "status": "illustrative",
           "title": "Daily visitors and 7-day forecast",
-          "note": "Last 8 weeks counted (line) and 7-day forecast (dashed) with shaded range. Markers under the axis = severe weather. Simulated for layout only; not counted data. Do not quote.",
           "sites": [
             {
               "id": "tojinbo",
@@ -2082,6 +2078,7 @@
           "id": "q2-drivers",
           "type": "bars",
           "span": 4,
+          "group": "Daily forecast",
           "status": "modelled",
           "title": "What moves daily visits",
           "note": "Standardised β, 397 days, 4 sites. R² 0.81 in-sample, 0.68 holdout.",
@@ -2123,9 +2120,9 @@
           "id": "q2-monthly",
           "type": "monthly_forecast",
           "span": 12,
+          "group": "Monthly forecast",
           "status": "modelled",
           "title": "Monthly visitors and guest-nights: 12-month forecast",
-          "note": "F2 monthly forecast from dhde-preprocessing-model, refreshed daily. Each series uses whichever model had the lowest backtest error (same month last year, its own recent growth, or Ishikawa and Toyama's growth). The range is the 10th-90th percentile of that model's backtest errors. This year's expected total adds the actual months to the forecast for the rest.",
           "series": [
             "fukui_pref",
             "tojinbo",
@@ -2140,12 +2137,24 @@
           ]
         },
         {
+          "id": "q3-nights",
+          "type": "guest_nights_months",
+          "span": 8,
+          "group": "Guest-nights",
+          "status": "real",
+          "title": "Guest-nights by month: domestic and foreign",
+          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model), refreshed daily.",
+          "total": "fukui_guest_nights",
+          "domestic": "fukui_guest_nights_japanese",
+          "foreign": "fukui_guest_nights_foreign"
+        },
+        {
           "id": "q2-pace",
           "type": "target_pace",
-          "span": 12,
+          "span": 4,
+          "group": "Guest-nights",
           "status": "real",
           "title": "Guest-nights this year: running total vs target",
-          "note": "The vision sets 2029 targets from a 2023 baseline (calendar years). This year's target is the point on a steady-growth path between them; each month's share of the year comes from last year's months. Actuals are JTA monthly figures, refreshed daily; the latest months are preliminary.",
           "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model). Targets: ネクストふくい観光ビジョン (Mar 2025), KPI table p.9.",
           "items": [
             {
@@ -2210,7 +2219,8 @@
             "status": "pending"
           },
           "series": "fukui_pref",
-          "year": "2025"
+          "year": "2025",
+          "hidden": true
         }
       ],
       "spec": {
@@ -2298,7 +2308,7 @@
           "span": 12,
           "status": "illustrative",
           "title": "Who stays overnight",
-          "note": "Share staying overnight (%), travel group × origin. Cells with n < 30 hidden (model F3). Simulated for layout only; not counted data. Do not quote.",
+          "note": "Simulated, do not quote.",
           "unit": "%",
           "min_n": 30,
           "rows": [
@@ -2469,18 +2479,6 @@
               }
             ]
           ]
-        },
-        {
-          "id": "q3-nights",
-          "type": "guest_nights_months",
-          "span": 12,
-          "status": "real",
-          "title": "Guest-nights by month: domestic and foreign",
-          "note": "Guest-nights (延べ), not people. Domestic = Japanese guests. Last year faded, this year solid; the % above each month is the foreign share. The latest months are preliminary.",
-          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model), refreshed daily.",
-          "total": "fukui_guest_nights",
-          "domestic": "fukui_guest_nights_japanese",
-          "foreign": "fukui_guest_nights_foreign"
         }
       ],
       "spec": {
@@ -2744,8 +2742,6 @@
             ]
           },
           "insight": "Fukui is found by Kansai and Chukyo, not by Tokyo or abroad. Searchers in Osaka and Aichi look for Fukui as much as for Ishikawa + Kanazawa (1.01× and 1.05×); in Tokyo it is 0.55×, and abroad Fukui barely registers. For Kansai and Chukyo the gap is the stay (see the visitor flow below); for Tokyo and abroad it is being found at all.",
-          "as_of": "Fixed snapshot: Google Trends pulled 29 Sep 2026. It will update weekly after the interim presentation.",
-          "note": "A search index (0–100 within each query), not a number of people, so it sits beside the visitor flow rather than feeding it. Monthly averages of weekly values; topics, not keywords (福井県 + 福井市 vs 石川県 + 金沢市).",
           "source": "Google Trends (trends.google.com), pulled 29 Sep 2026; research by Gabriella."
         },
         {
@@ -2781,7 +2777,8 @@
             }
           ],
           "note": "Fukui is bookable, but not where travellers decide. Its 60 products match its low search interest, so more listings alone won't fix it. The gaps are the gateway shelf (day trips from Kyoto, Osaka and Kanazawa) and the stay. Snapshot: one check per platform, 25–27 Sep 2026; Fukui is the whole prefecture, the others are cities or a village.",
-          "source": "Team audit of GetYourGuide, Klook, KKday and Viator, 25–27 Sep 2026; research by Gabriella."
+          "source": "Team audit of GetYourGuide, Klook, KKday and Viator, 25–27 Sep 2026; research by Gabriella.",
+          "hidden": true
         },
         {
           "id": "q4-flow",
@@ -2917,7 +2914,6 @@
               }
             ]
           },
-          "note": "Visitors counted once each (Hokuriku = Ishikawa and Toyama) (実人数), in thousands; the total is Fukui's 21.44M. Answers Q3 (who stays) and Q4 (where the stay leaks). Foreign visitors come from another source and are shown separately; their day-trip/overnight split is estimated.",
           "source": "Fukui Pref. 観光客入込数（推計）令和7年: day trip / overnight by 県内 / 県外 (p.3) and 県外客 by region of origin (p.8), and 観光消費額 by 県内 / 県外 × day trip / overnight (p.10). Foreign: JTA インバウンド消費動向調査 2025 (86k visitors); stay split estimated. Kansai = 県外客 minus the other regions.",
           "alt": {
             "label": "Spend",
@@ -3026,7 +3022,8 @@
               "status": "pending",
               "pending_on": "EdgeAI hourly counts"
             }
-          ]
+          ],
+          "hidden": true
         },
         {
           "id": "q4-capacity",
@@ -3069,7 +3066,8 @@
               ],
               "status": "pending"
             }
-          ]
+          ],
+          "hidden": true
         }
       ],
       "spec": {

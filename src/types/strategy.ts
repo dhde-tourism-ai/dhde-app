@@ -19,6 +19,9 @@ interface CardBase {
   pending_on?: string
   /** Kept in the file but not shown, e.g. the Q4 funnel until the final report. */
   hidden?: boolean
+  /** Theme within its question. A question whose cards have groups shows one group at a
+   * time, picked from a dropdown in its header; cards of a group show together. */
+  group?: string
   /** Short marker next to the title, e.g. "New" or "Updated". */
   badge?: string
 }
@@ -348,7 +351,8 @@ export interface SearchTrendsCard extends CardBase {
   }
   insight?: string
   insight_ja?: string
-  as_of: string
+  /** "Fixed snapshot: …" line under the chart; none when left out. */
+  as_of?: string
   as_of_ja?: string
 }
 

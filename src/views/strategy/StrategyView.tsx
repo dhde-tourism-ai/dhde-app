@@ -149,6 +149,11 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
+  const cards = q.cards.filter((c) => !c.hidden)
+  // Themes in the order their first card appears; one shows at a time.
+  const groups = [...new Set(cards.map((c) => c.group).filter((g): g is string => !!g))]
+  const [group, setGroup] = useState<string | undefined>(undefined)
+  const shown = groups.length > 1 ? (groups.includes(group ?? '') ? group : groups[0]) : undefined
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
@@ -157,23 +162,37 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
-          <p className="q-why">{q.why}</p>
-          <div className="q-subs">
-            {q.subs.map((s) => (
-              <span key={s} className="chip">
-                {s}
-              </span>
-            ))}
-          </div>
+          {q.why && <p className="q-why">{q.why}</p>}
+          {q.subs.length > 0 && (
+            <div className="q-subs">
+              {q.subs.map((s) => (
+                <span key={s} className="chip">
+                  {s}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </header>
       <div className="answer">
         <span className="answer-label">{t('Answer today', '現時点の回答')}</span>
         <p>{q.answer}</p>
       </div>
+      {shown !== undefined && (
+        <label className="q-view">
+          <span className="q-view-label">{t('View', '表示')}</span>
+          <select value={shown} onChange={(e) => setGroup(e.target.value)}>
+            {groups.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <div className="card-grid">
-        {q.cards
-          .filter((c) => !c.hidden)
+        {cards
+          .filter((c) => shown === undefined || !c.group || c.group === shown)
           .map((c) => (
             <StrategyCardView key={c.id} card={c} />
           ))}
