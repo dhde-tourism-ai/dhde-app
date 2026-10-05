@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Marker, Polyline } from 'react-leaflet'
+import { Marker } from 'react-leaflet'
 import L from 'leaflet'
 import type { MarketVoiceData, SocialNode } from '../../../types/market'
 import { fmtDate } from '../../../lib/format'
@@ -65,27 +65,8 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
   )
   return (
     <>
-      {/* An area that stands for several sites (Echizen coast) links its badge to each of them. */}
-      {data.hotels.flatMap((h) =>
-        (h.serves ?? []).length > 1
-          ? (h.serves ?? []).flatMap((id) => {
-              const n = byId.get(id)
-              return n
-                ? [
-                    <Polyline
-                      key={`${h.id}-${id}`}
-                      positions={[
-                        [h.lat, h.lon],
-                        [n.lat, n.lon],
-                      ]}
-                      pathOptions={{ color: '#c9d4ff', weight: 1.5, dashArray: '3,6', opacity: 0.7 }}
-                      interactive={false}
-                    />,
-                  ]
-                : []
-            })
-          : [],
-      )}
+      {/* An area that stands for several sites (Echizen coast) says so on its card ("3 sites"), with
+          no lines to them: straight lines across the map read as routes. */}
       {data.hotels.map((h) => (
         <Marker key={h.id} position={[h.lat, h.lon]} icon={icons[h.id]} keyboard={false}>
           <Tip>
