@@ -2424,9 +2424,9 @@
 }
 
 .ripple-flip {
+  flex: none;
   margin-left: auto;
-  font-size: 13px;
-  color: var(--muted);
+  color: var(--text-2);
 }
 
 .ripple-box:hover .ripple-flip {

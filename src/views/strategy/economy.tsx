@@ -367,19 +367,21 @@ function FlipBox({ className, style, front, back, label }: { className: string; 
   )
 }
 
+/** A bold circular arrow: clockwise on the front (flip over), anticlockwise on the back (turn back). */
+function TurnArrow({ back = false }: { back?: boolean }) {
+  return (
+    <svg className="ripple-flip" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style={back ? { transform: 'scaleX(-1)' } : undefined}>
+      <path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <path d="M20 3.5v5.5h-5.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 /** On the back, in its title row: click to turn the box back. */
-const BackMark = () => (
-  <span className="ripple-flip" aria-hidden="true" title="↺">
-    ↺
-  </span>
-)
+const BackMark = () => <TurnArrow back />
 
 /** The flip hint in a box's title row. */
-const FlipMark = () => (
-  <span className="ripple-flip" aria-hidden="true">
-    ↻
-  </span>
-)
+const FlipMark = () => <TurnArrow />
 
 /**
  * Revenue → direct + indirect ① + indirect ② = total. Five equal flip boxes: the front has what
