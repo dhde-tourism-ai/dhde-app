@@ -602,6 +602,8 @@
   gap: var(--sp-4);
   /* the title sits level with the middle of its Q badge */
   align-items: center;
+  /* the same space under every header, whether cards or tabs come next */
+  margin-bottom: var(--sp-5);
 }
 
 .q-badge {
@@ -679,6 +681,11 @@
 
 .q-themes {
   margin: var(--sp-5) 0 var(--sp-4);
+}
+
+/* straight under a question's header, the header's own margin is the gap */
+.q-head + .q-themes {
+  margin-top: 0;
 }
 
 .q-themes button {
