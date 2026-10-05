@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
-import { StatusPill } from '../../components/StatusPill'
 import { useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -28,7 +27,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
     const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly, lang), real, lang) }
     return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
   }, [raw, monthly, real, lang])
-  const { meta, equation, questions } = data
+  const { meta, questions } = data
 
   // #/strategy/<question or card id> (the FAQ links) scrolls to it and flashes it.
   useEffect(() => {
@@ -74,29 +73,6 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
           {t('Show build specs', 'ビルド仕様を表示')}
         </label>
       </div>
-
-
-      <section className="card equation" aria-label={t('Revenue equation', '観光消費の式')}>
-        <div className="eq-head">
-          <h2 className="card-title">{t('How the total is built', '観光消費額の構成')}</h2>
-          <StatusPill status={equation.status} />
-        </div>
-        <div className="eq-terms">
-          {equation.terms.map((term, i) => (
-            <div key={i} className="eq-part">
-              <div className={`eq-term ${term.value_text === null ? 'pending' : ''} ${term.op === null ? 'total' : ''}`}>
-                <span className="eq-value">{term.value_text ?? '[x]'}</span>
-                <span className="eq-label">{term.label}</span>
-              </div>
-              {term.op && (
-                <span className="eq-op" aria-hidden="true">
-                  {term.op}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
 
       <nav className="q-nav" aria-label={t('Questions', '設問')}>
         {data.questions.map((q) => (

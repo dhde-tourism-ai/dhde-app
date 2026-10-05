@@ -457,91 +457,19 @@
   color: var(--muted);
 }
 
-.equation {
-  margin-bottom: var(--sp-4);
-  background: linear-gradient(135deg, rgba(139, 157, 255, 0.08), var(--surface) 45%);
-}
 
-.eq-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: var(--sp-4);
-}
 
-.eq-terms {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 8px 0;
-}
 
-.eq-part {
-  display: flex;
-  align-items: center;
-  /* the five terms share the card's width, end to end; the total is a little wider */
-  flex: 1 1 0;
-  min-width: 0;
-}
 
-.eq-part:last-child {
-  flex-grow: 1.25;
-}
 
-.eq-part .eq-term {
-  flex: 1;
-  min-width: 0;
-}
 
-.eq-term {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 14px;
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  border: 1px solid var(--line-strong);
-  min-width: 96px;
-}
 
-.eq-term.pending {
-  border-style: dashed;
-  background: transparent;
-}
 
-.eq-term.total {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
 
-.eq-value {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
 
-.eq-term.pending .eq-value {
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 16px;
-}
 
-.eq-label {
-  font-size: 11.5px;
-  color: var(--text-2);
-}
 
-.eq-term.total .eq-label {
-  color: rgba(10, 17, 32, 0.75);
-}
 
-.eq-op {
-  padding: 0 10px;
-  font-size: 20px;
-  color: var(--muted);
-  font-weight: 300;
-}
 
 .q-nav {
   position: sticky;
@@ -1784,19 +1712,6 @@
     padding: var(--sp-5);
   }
 
-  .eq-term {
-    min-width: 0;
-    padding: 8px 10px;
-  }
-
-  .eq-value {
-    font-size: 16px;
-  }
-
-  .eq-op {
-    padding: 0 6px;
-  }
-
   .hbar-row {
     grid-template-columns: minmax(80px, 34%) 1fr auto;
   }
@@ -2436,10 +2351,10 @@
 
 .ripple-flow {
   display: grid;
-  /* five equal boxes with the operators between; the four shared rows are title, what, headline, figures */
+  /* five equal boxes with the operators between; the three shared rows are title, headline, figures */
   /* fixed-width operator columns: → is wider than + and =, which made the first gap wider */
   grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr);
-  grid-template-rows: repeat(4, auto);
+  grid-template-rows: repeat(3, auto);
   align-items: stretch;
 }
 
@@ -2495,6 +2410,16 @@
   grid-template-rows: subgrid;
   align-content: start;
   gap: 8px;
+}
+
+/* tall enough for the back (five sectors); the front's three rows spread to fill it */
+.ripple-flow {
+  grid-template-rows: auto 1fr auto;
+  min-height: 212px;
+}
+
+.ripple-face.front > :nth-child(2) {
+  align-self: center;
 }
 
 .ripple-face.back {
@@ -2629,11 +2554,6 @@
   border-radius: 2px;
 }
 
-.ripple-what {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--muted);
-}
 
 .ripple-big {
   font-size: 22px;
@@ -2896,11 +2816,12 @@
   .ripple-box {
     grid-row: auto;
     grid-template-rows: none;
+    min-height: 212px;
   }
 
   .ripple-face.front {
     grid-row: auto;
-    grid-template-rows: auto 4.4em auto auto;
+    grid-template-rows: auto 1fr auto;
   }
 
   .ripple-op {

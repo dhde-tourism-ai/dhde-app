@@ -414,7 +414,6 @@ export function Ripple({ card }: { card: RippleCard }) {
                 {t('Tourism revenue', '観光消費額')} {card.year}
                 <FlipMark />
               </div>
-              <div className="ripple-what">{t('What visitors spent in Fukui on stays, food, shopping, transport and attractions.', '来訪者が県内で宿泊・飲食・買物・交通・観光に消費した額。')}</div>
               <div>
                 <div className="ripple-big">{bn(card.spend_bn)}</div>
                 <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
@@ -469,7 +468,6 @@ export function Ripple({ card }: { card: RippleCard }) {
                     {names[tier.id]}
                     <FlipMark />
                   </div>
-                  <div className="ripple-what">{tier.what}</div>
                   <div>
                     <div className="ripple-big">{bn(tier.va_bn)}</div>
                     <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
@@ -519,7 +517,6 @@ export function Ripple({ card }: { card: RippleCard }) {
                 {t('Total effect', '総合効果')} {card.year}
                 <FlipMark />
               </div>
-              <div className="ripple-what">{t('The direct effect and both indirect rounds added together, across the whole economy.', '直接効果と2段階の間接効果を合わせた、県経済全体への効果。')}</div>
               <div>
                 <div className="ripple-big">{bn(tot.va_bn)}</div>
                 <div className="ripple-lab">
