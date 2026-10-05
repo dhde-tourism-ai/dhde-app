@@ -31,10 +31,42 @@ interface LinkP {
   payload: { source: { name: string }; target: { name: string }; estimated?: boolean }
 }
 
-/** Visitors (or spend) from origin to group to stay, with estimated links dashed and a small group zoomed. */
+/**
+ * Visitors (or spend) from origin to group to stay, with estimated links dashed and a small group
+ * zoomed. Both measures are laid out in the same cell, the other hidden, so the card keeps one
+ * size whichever is picked.
+ */
 export function FlowSankey({ card }: { card: SankeyCard }) {
   const { t } = useLang()
   const [alt, setAlt] = useState(false)
+  return (
+    <div>
+      {card.alt && (
+        <div className="seg" role="group" aria-label={t('Measure', '指標')}>
+          <button aria-pressed={!alt} onClick={() => setAlt(false)}>
+            {t(card.alt.base_label, card.alt.base_label_ja ?? card.alt.base_label)}
+          </button>
+          <button aria-pressed={alt} onClick={() => setAlt(true)}>
+            {t(card.alt.label, card.alt.label_ja ?? card.alt.label)}
+          </button>
+        </div>
+      )}
+      <div className="flow-stack">
+        <div className={`flow-view${alt && card.alt ? '' : ' on'}`} aria-hidden={alt && !!card.alt} inert={alt && !!card.alt}>
+          <FlowView card={card} alt={false} />
+        </div>
+        {card.alt && (
+          <div className={`flow-view${alt ? ' on' : ''}`} aria-hidden={!alt} inert={!alt}>
+            <FlowView card={card} alt />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function FlowView({ card, alt }: { card: SankeyCard; alt: boolean }) {
+  const { t } = useLang()
   const view = alt && card.alt ? card.alt : null
   const links = view ? view.links : card.links
   const fmt = view?.unit === 'oku_yen' ? fmtOku : fmtK
@@ -99,20 +131,13 @@ export function FlowSankey({ card }: { card: SankeyCard }) {
   const insight = view ? (view.insight ? t(view.insight, view.insight_ja ?? view.insight) : null) : card.insight ? t(card.insight, card.insight_ja ?? card.insight) : null
 
   return (
-    <div>
-      {card.alt && (
-        <div className="seg" role="group" aria-label={t('Measure', '指標')}>
-          <button aria-pressed={!alt} onClick={() => setAlt(false)}>
-            {t(card.alt.base_label, card.alt.base_label_ja ?? card.alt.base_label)}
-          </button>
-          <button aria-pressed={alt} onClick={() => setAlt(true)}>
-            {t(card.alt.label, card.alt.label_ja ?? card.alt.label)}
-          </button>
-        </div>
-      )}
-      <ResponsiveContainer width="100%" height={view ? 300 : 420}>
-        <Sankey key={view ? 'alt' : 'base'} data={data} node={Node} link={Link} nodeWidth={12} nodePadding={18} sort={false} margin={{ top: 10, right: 200, bottom: 10, left: 230 }} iterations={32} />
-      </ResponsiveContainer>
+    <>
+      {/* grows to the view's full height (min 420 px), so the shorter view has no gap */}
+      <div className="flow-plot">
+        <ResponsiveContainer width="100%" height="100%">
+          <Sankey key={view ? 'alt' : 'base'} data={data} node={Node} link={Link} nodeWidth={12} nodePadding={view ? 28 : 18} sort={false} margin={{ top: 10, right: 200, bottom: 10, left: 230 }} iterations={32} />
+        </ResponsiveContainer>
+      </div>
       {!view && links.some((l) => l[3]) && (
         <p className="flow-key muted small">
           <span className="flow-dash" aria-hidden="true"></span> {t('Dashed = estimated split. All other bands are published figures.', '破線＝推計の内訳。その他は公表値。')}
@@ -138,6 +163,6 @@ export function FlowSankey({ card }: { card: SankeyCard }) {
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }

@@ -452,14 +452,24 @@
   cursor: pointer;
 }
 
-.strat-legend {
-  padding: var(--sp-3) var(--sp-5);
-  margin-bottom: var(--sp-4);
-}
 
 .pill-legend-desc {
   color: var(--muted);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .equation {
   margin-bottom: var(--sp-4);
@@ -484,6 +494,18 @@
 .eq-part {
   display: flex;
   align-items: center;
+  /* the five terms share the card's width, end to end; the total is a little wider */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.eq-part:last-child {
+  flex-grow: 1.25;
+}
+
+.eq-part .eq-term {
+  flex: 1;
+  min-width: 0;
 }
 
 .eq-term {
@@ -600,7 +622,10 @@
 .q-head {
   display: flex;
   gap: var(--sp-4);
-  align-items: flex-start;
+  /* the title sits level with the middle of its Q badge */
+  align-items: center;
+  /* the same space under every header, whether cards or tabs come next */
+  margin-bottom: var(--sp-5);
 }
 
 .q-badge {
@@ -662,14 +687,108 @@
   line-height: 1.55;
 }
 
+/* A question's tab groups (Q2-Q4), stacked in one cell: the panel takes the tallest group's
+   height and every group's cards stretch to it. */
+.q-group-stack {
+  display: grid;
+}
+
+.q-group {
+  grid-area: 1 / 1;
+}
+
+.q-group:not(.on) {
+  visibility: hidden;
+}
+
+/* A stretched card fills its height instead of leaving a gap at the foot: charts grow, the
+   7-day table's rows and a bar list spread out, and the card's note stays at the bottom. */
+.q-group .s-card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.q-group .s-card-body > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.q-group .forecast-layout {
+  flex: 1;
+}
+
+/* switches inside the card keep their own width */
+.q-group .s-card-body > div > .seg {
+  align-self: flex-start;
+}
+
+.q-group .forecast-chart,
+.q-group .next7 {
+  display: flex;
+  flex-direction: column;
+}
+
+.q-group .fc-plot {
+  flex: 1;
+}
+
+.q-group .next7-scroll {
+  flex: 1;
+  height: auto;
+  min-height: 270px;
+}
+
+.q-group .next7-scroll table {
+  height: 100%;
+}
+
+.q-group .hbars {
+  justify-content: space-evenly;
+}
+
+/* A full-width bar card in a tab set (Q3): a fixed label column next to its bar, thicker
+   bars and larger figures, so a few bars fill the card instead of floating in it. */
+.q-group .span-12 .hbar-row {
+  grid-template-columns: 200px minmax(0, 1fr) 96px;
+  gap: 18px;
+  font-size: 14px;
+}
+
+.q-group .span-12 .hbar-track {
+  height: 30px;
+}
+
+.q-group .span-12 .hbar-fill {
+  border-radius: 0 6px 6px 0;
+}
+
+.q-group .span-12 .hbar-value {
+  font-size: 17px;
+}
+
+.fc-plot {
+  min-height: 260px;
+}
+
+.fc-plot.st-plot {
+  min-height: 240px;
+}
+
 .q-themes {
   margin: var(--sp-5) 0 var(--sp-4);
+}
+
+/* straight under a question's header, the header's own margin is the gap */
+.q-head + .q-themes {
+  margin-top: 0;
 }
 
 .q-themes button {
   padding: 7px 16px;
   font-size: 13px;
 }
+
 
 .card-grid {
   display: grid;
@@ -982,9 +1101,53 @@
 }
 
 /* forecast */
+/* Next 7 days beside the forecast chart: the same size on every site tab; scrolls when it needs more */
+.next7-scroll {
+  height: 270px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Fixed columns and smaller text so the table always fits its column: no sideways scroll,
+   and the same layout on every site whatever its action labels say. */
+.next7-scroll table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.next7-scroll .data-table th,
+.next7-scroll .data-table td {
+  padding: 6px 4px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Day 26%, Expected 33%, Action the rest (its longest label, "No visitor count", needs the most) */
+.next7-scroll th:nth-child(1) {
+  width: 26%;
+}
+
+.next7-scroll th:nth-child(2) {
+  width: 33%;
+}
+
+.next7-scroll .action-tag {
+  padding: 0 6px;
+  font-size: 10.5px;
+}
+
+.next7-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
 .forecast-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: var(--sp-4);
   margin-top: var(--sp-3);
 }
@@ -2023,7 +2186,45 @@
   color: var(--text-2);
 }
 
+/* Running total vs target, beside guest-nights by month: the chart's top lines up with the
+   bar chart's, and the figures under it sit at the foot, level with the bar chart's tiles. */
+.s-card-body:has(> .gn-pace-one) {
+  display: flex;
+  flex-direction: column;
+}
+
+.gn-pace-one {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.gn-pace-one > .gn-pace-note:first-of-type {
+  margin-top: auto;
+}
+
 /* Visitor-flow Sankey (Q4). */
+/* Visitors and Spend in one cell: the card keeps the taller view's size */
+.flow-stack {
+  display: grid;
+}
+
+.flow-view {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.flow-plot {
+  flex: 1;
+  min-height: 420px;
+}
+
+.flow-view:not(.on) {
+  visibility: hidden;
+}
+
 .flow-lbl {
   fill: var(--text);
   font-size: 12px;
@@ -2249,10 +2450,10 @@
 
 .ripple-flow {
   display: grid;
-  /* five equal boxes with the operators between; the five shared rows are title, what, headline, figures, detail */
+  /* five equal boxes with the operators between; the three shared rows are title, headline, figures */
   /* fixed-width operator columns: → is wider than + and =, which made the first gap wider */
   grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr) 32px minmax(0, 1fr);
-  grid-template-rows: repeat(5, auto);
+  grid-template-rows: repeat(3, auto);
   align-items: stretch;
 }
 
@@ -2270,35 +2471,170 @@
   color: var(--muted);
 }
 
+/* A flip box: front (figures, rows shared across the five boxes) and back (detail), turned by
+   rotating the box. The faces carry the look; the box itself is just the turning frame. */
 .ripple-box {
   grid-row: 1 / -1;
   display: grid;
   grid-template-rows: subgrid;
-  align-content: start;
-  gap: 8px;
+  position: relative;
+  min-width: 0;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transform: perspective(1400px) rotateY(0deg);
+  transform-style: preserve-3d;
+  transition: transform 0.55s ease;
+  outline: none;
+}
+
+.ripple-box.flipped {
+  transform: perspective(1400px) rotateY(180deg);
+}
+
+.ripple-face {
   min-width: 0;
   padding: 12px 14px;
   border-radius: var(--r-md);
   background: var(--surface-2);
   border: 1px solid var(--line-strong);
-}
-
-/* Every box has the same 3px top edge, so titles and rows start at the same height */
-.ripple-box {
+  /* every box has the same 3px top edge, so titles and rows start at the same height */
   border-top: 3px solid var(--line-strong);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
-.ripple-box.tier {
+.ripple-face.front {
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: subgrid;
+  align-content: start;
+  gap: 8px;
+}
+
+/* tall enough for the back (five sectors); the front's three rows spread to fill it */
+.ripple-flow {
+  grid-template-rows: auto 1fr auto;
+  min-height: 212px;
+}
+
+.ripple-face.front > :nth-child(2) {
+  align-self: center;
+}
+
+.ripple-face.back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  transform: rotateY(180deg);
+}
+
+.ripple-box.tier .ripple-face {
   border-top-color: var(--tier);
 }
 
-.ripple-box.total {
+.ripple-box.total .ripple-face {
+  background: #1e2a4a;
+  border-color: rgba(139, 157, 255, 0.45);
   border-top-color: rgba(139, 157, 255, 0.75);
 }
 
-.ripple-box.total {
-  background: var(--accent-soft);
-  border-color: rgba(139, 157, 255, 0.45);
+.ripple-box:hover .ripple-face {
+  border-color: rgba(160, 185, 230, 0.35);
+}
+
+.ripple-box:focus-visible .ripple-face {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ripple-flip {
+  flex: none;
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+.ripple-box:hover .ripple-flip {
+  color: var(--accent-strong);
+}
+
+.ripple-back-h {
+  display: flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.ripple-back-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* one line: name ... value, then a thin bar and the jobs or share beside it */
+.ripple-back-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name val'
+    'bar sub';
+  align-items: center;
+  gap: 1px 8px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.ripple-back-list .rb-name {
+  grid-area: name;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+
+.ripple-back-list .rb-val {
+  grid-area: val;
+  text-align: right;
+}
+
+.ripple-back-list .rb-bar {
+  grid-area: bar;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--bg-2);
+  overflow: hidden;
+}
+
+.ripple-back-list .rb-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.ripple-back-list .rb-sub {
+  grid-area: sub;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.ripple-back-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple-box {
+    transition: none;
+  }
 }
 
 .ripple-kicker {
@@ -2317,11 +2653,6 @@
   border-radius: 2px;
 }
 
-.ripple-what {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--muted);
-}
 
 .ripple-big {
   font-size: 22px;
@@ -2358,66 +2689,13 @@
   margin-top: 0;
 }
 
-.ripple-top {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin: 0;
-  padding: 8px 0 0;
-  border-top: 1px solid var(--line);
-  list-style: none;
-}
 
-.ripple-top li {
-  display: grid;
-  /* fixed value and jobs columns, so they line up in every box */
-  grid-template-columns: minmax(0, 1fr) 4.4em 5.6em;
-  grid-template-areas:
-    'name name name'
-    'bar val jobs';
-  align-items: center;
-  gap: 3px 6px;
-  font-size: 11.5px;
-}
 
-.ripple-top .rt-name {
-  grid-area: name;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-2);
-}
 
-.ripple-top .rt-bar {
-  grid-area: bar;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--bg-2);
-  overflow: hidden;
-}
 
-.ripple-top .rt-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-}
 
-.ripple-top .rt-val {
-  grid-area: val;
-  text-align: right;
-}
 
-.ripple-top .rt-jobs {
-  grid-area: jobs;
-  text-align: right;
-  white-space: nowrap;
-  color: var(--muted);
-}
 
-.ripple-total-detail {
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-}
 
 .ripple-split {
   display: flex;
@@ -2636,7 +2914,13 @@
 
   .ripple-box {
     grid-row: auto;
-    grid-template-rows: auto 4.4em auto auto 1fr;
+    grid-template-rows: none;
+    min-height: 212px;
+  }
+
+  .ripple-face.front {
+    grid-row: auto;
+    grid-template-rows: auto 1fr auto;
   }
 
   .ripple-op {

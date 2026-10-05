@@ -50,24 +50,27 @@ export function SearchTrends({ card }: { card: SearchTrendsCard }) {
           </span>
         ))}
       </div>
-      <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={rows} margin={{ top: 18, right: 12, left: 0, bottom: 0 }}>
-          <CartesianGrid stroke="#1f2a3f" vertical={false} />
-          <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={5} />
-          <YAxis tick={AXIS} width={32} tickLine={false} axisLine={false} domain={[0, 40]} ticks={[0, 10, 20, 30, 40]} allowDataOverflow />
-          <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} formatter={(v: unknown, name: unknown) => [Number(v).toFixed(1), String(name)]} />
-          {/* Events close together: the first label sits left of its line, the rest to the right. */}
-          {card.trend.events?.map((e, i) => (
-            <ReferenceLine key={e.month} x={labelOf(e.month)} stroke="#34425e" strokeDasharray="3 3" label={{ value: t(e.label, e.label_ja ?? e.label), position: i === 0 ? 'insideTopRight' : 'insideTopLeft', fill: '#aeb9cd', fontSize: 10 }} />
-          ))}
-          {lines.map((l) => (
-            <Line key={l.key} dataKey={l.key} name={l.name} stroke={l.colour} strokeWidth={l.width} dot={false} isAnimationActive={false} />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+      {/* grows with the card (min 240 px) when a tab set stretches it */}
+      <div className="fc-plot st-plot">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows} margin={{ top: 18, right: 12, left: 0, bottom: 0 }}>
+            <CartesianGrid stroke="#1f2a3f" vertical={false} />
+            <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={5} />
+            <YAxis tick={AXIS} width={32} tickLine={false} axisLine={false} domain={[0, 40]} ticks={[0, 10, 20, 30, 40]} allowDataOverflow />
+            <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} formatter={(v: unknown, name: unknown) => [Number(v).toFixed(1), String(name)]} />
+            {/* Events close together: the first label sits left of its line, the rest to the right. */}
+            {card.trend.events?.map((e, i) => (
+              <ReferenceLine key={e.month} x={labelOf(e.month)} stroke="#34425e" strokeDasharray="3 3" label={{ value: t(e.label, e.label_ja ?? e.label), position: i === 0 ? 'insideTopRight' : 'insideTopLeft', fill: '#aeb9cd', fontSize: 10 }} />
+            ))}
+            {lines.map((l) => (
+              <Line key={l.key} dataKey={l.key} name={l.name} stroke={l.colour} strokeWidth={l.width} dot={false} isAnimationActive={false} />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       {card.insight && <p className="flow-insight">{t(card.insight, card.insight_ja ?? card.insight)}</p>}
-      <p className="muted small st-asof">{t(card.as_of, card.as_of_ja ?? card.as_of)}</p>
+      {card.as_of && <p className="muted small st-asof">{t(card.as_of, card.as_of_ja ?? card.as_of)}</p>}
     </div>
   )
 }

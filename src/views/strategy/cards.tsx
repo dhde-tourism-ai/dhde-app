@@ -306,49 +306,55 @@ function Forecast({ card }: { card: ForecastCard }) {
               </span>
             )}
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
-              <CartesianGrid stroke="#1f2a3f" vertical={false} />
-              {firstFc && last && <ReferenceArea x1={firstFc} x2={last} fill="#8b9dff" fillOpacity={0.06} ifOverflow="visible" />}
-              <XAxis dataKey="date" tick={AXIS} tickFormatter={(d: string) => d.slice(5).replace('-', '/')} minTickGap={28} tickLine={false} axisLine={{ stroke: '#34425e' }} />
-              <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={44} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
-                formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(name)]}
-              />
-              <Area dataKey="range" name={t('Forecast range', '予測幅')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
-              <Line dataKey="actual" name={t('Counted', '実測')} stroke={S[0]} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
-              <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
-              {site.points
-                .filter((p) => p.severe_weather)
-                .map((p) => (
-                  <ReferenceDot key={p.date} x={p.date} y={0} r={5} fill="#d03b3b" stroke="#121c2f" strokeWidth={2} ifOverflow="visible" />
-                ))}
-            </ComposedChart>
-          </ResponsiveContainer>
+          {/* grows with the card (min 260 px) when a tab set stretches it */}
+          <div className="fc-plot">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
+                <CartesianGrid stroke="#1f2a3f" vertical={false} />
+                {firstFc && last && <ReferenceArea x1={firstFc} x2={last} fill="#8b9dff" fillOpacity={0.06} ifOverflow="visible" />}
+                <XAxis dataKey="date" tick={AXIS} tickFormatter={(d: string) => d.slice(5).replace('-', '/')} minTickGap={28} tickLine={false} axisLine={{ stroke: '#34425e' }} />
+                <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={44} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
+                  formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(name)]}
+                />
+                <Area dataKey="range" name={t('Forecast range', '予測幅')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
+                <Line dataKey="actual" name={t('Counted', '実測')} stroke={S[0]} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} />
+                <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
+                {site.points
+                  .filter((p) => p.severe_weather)
+                  .map((p) => (
+                    <ReferenceDot key={p.date} x={p.date} y={0} r={5} fill="#d03b3b" stroke="#121c2f" strokeWidth={2} ifOverflow="visible" />
+                  ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
         <div className="next7">
           <h4 className="mini-h">{t('Next 7 days', '今後7日間')}</h4>
-          <table className="data-table compact">
-            <thead>
-              <tr>
-                <th>{t('Day', '日')}</th>
-                <th className="num">{t('Expected', '見込み')}</th>
-                <th>{t('Action', '対応')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {site.next7.map((r) => (
-                <tr key={r.day}>
-                  <td>{r.day}</td>
-                  <td className="num">{r.range}</td>
-                  <td>
-                    <span className={`action-tag a-${ACTION_TONE[r.action] ?? 'ok'}`}>{r.action}</span>
-                  </td>
+          {/* Fixed height for every site: a longer action or more rows scroll instead of resizing the card. */}
+          <div className="next7-scroll">
+            <table className="data-table compact">
+              <thead>
+                <tr>
+                  <th>{t('Day', '日')}</th>
+                  <th className="num">{t('Expected', '見込み')}</th>
+                  <th>{t('Action', '対応')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {site.next7.map((r) => (
+                  <tr key={r.day}>
+                    <td>{r.day}</td>
+                    <td className="num">{r.range}</td>
+                    <td>
+                      <span className={`action-tag a-${ACTION_TONE[r.action] ?? 'ok'}`}>{r.action}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -429,20 +435,23 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
               {t('Likely range', '予測範囲')}
             </span>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
-              <CartesianGrid stroke="#1f2a3f" vertical={false} />
-              <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
-              <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
-                formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
-              />
-              <Area dataKey="range" name={t('Likely range', '予測範囲')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
-              <Line dataKey="actual" name={t('Actual', '実績')} stroke={S[0]} strokeWidth={2} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
-              <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
+          {/* grows with the card (min 260 px) when a tab set stretches it */}
+          <div className="fc-plot">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
+                <CartesianGrid stroke="#1f2a3f" vertical={false} />
+                <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
+                <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
+                  formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
+                />
+                <Area dataKey="range" name={t('Likely range', '予測範囲')} stroke="none" fill={S[1]} fillOpacity={0.16} connectNulls={false} isAnimationActive={false} />
+                <Line dataKey="actual" name={t('Actual', '実績')} stroke={S[0]} strokeWidth={2} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />
+                <Line dataKey="forecast" name={t('Forecast', '予測')} stroke={S[1]} strokeWidth={2} strokeDasharray="4 3" dot={false} connectNulls={false} isAnimationActive={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
         <div className="next7">
           <h4 className="mini-h">{t(`Expected in ${year}`, `${year}年の見込み`)}</h4>
@@ -483,15 +492,6 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
             <dt>{t('Data to', 'データ')}</dt>
             <dd className="num">{s.data_through}</dd>
           </dl>
-          {s.range_rough && <p className="muted small">{t('The range is rough: fewer than 12 months to test the model on.', '範囲は目安です：検証できる月が12か月未満。')}</p>}
-          {s.kind === 'visitors' && (
-            <p className="muted small">
-              {t(
-                "Visitor counts are comparable from Jan 2025 only (the publisher revised its method). They are JTTA's digital tourism statistics, which count differently from the prefecture's official visitor total in Q1 (21.44M in 2025), so the two don't match.",
-                '来訪者数は2025年1月以降のみ比較可能（公表元の手法改定）。日本観光振興協会のデジタル観光統計で、Q1の県公式の観光客入込数（2025年2,144万人）とは数え方が異なるため一致しません。',
-              )}
-            </p>
-          )}
           <p className="muted small">
             {t('Source', '出典')}: {s.kind === 'visitors' ? t('JTTA digital tourism statistics', '日本観光振興協会 デジタル観光統計') : t('JTA accommodation survey', '観光庁 宿泊旅行統計調査')}
           </p>

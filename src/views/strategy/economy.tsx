@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Bar, CartesianGrid, Cell, ComposedChart, ReferenceArea, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { GdpTrendCard, RippleCard, RippleTierId, TourismTrendCard, TourismTrendPoint, WhatIfCard } from '../../types/strategy'
 import { useLang } from '../../lib/i18n'
@@ -333,9 +334,66 @@ function Fig({ value, label }: { value: string; label: string }) {
 }
 
 /**
- * Revenue → direct + indirect ① + indirect ② = total, with the sectors that gain most in each round.
- * Five equal boxes on shared rows (pages.css subgrid): title, what it is, headline figure, two
- * smaller figures, detail, so the same kind of number sits at the same height in every box.
+ * A ripple box that flips on click (or Enter / Space): the front holds the headline figures, on
+ * rows shared by all five boxes (pages.css subgrid) so they line up; the back holds the detail.
+ */
+function FlipBox({ className, style, front, back, label }: { className: string; style?: CSSProperties; front: ReactNode; back: ReactNode; label: string }) {
+  const { t } = useLang()
+  const [flipped, setFlipped] = useState(false)
+  const flip = () => setFlipped((f) => !f)
+  return (
+    <div
+      className={`ripple-box ${className}${flipped ? ' flipped' : ''}`}
+      style={style}
+      role="button"
+      tabIndex={0}
+      aria-pressed={flipped}
+      aria-label={flipped ? t(`${label}: back, details. Click to turn back.`, `${label}：裏面（詳細）。クリックで表に戻る。`) : t(`${label}. Click for details.`, `${label}。クリックで詳細。`)}
+      onClick={flip}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          flip()
+        }
+      }}
+    >
+      <div className="ripple-face front" aria-hidden={flipped}>
+        {front}
+      </div>
+      <div className="ripple-face back" aria-hidden={!flipped}>
+        {back}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Two bold curved arrows chasing each other round a circle: the flip mark. Clockwise on the
+ * front (flip over), mirrored on the back (turn back).
+ */
+function TurnArrow({ back = false }: { back?: boolean }) {
+  return (
+    <svg className="ripple-flip" width="17" height="17" viewBox="-1 -1 26 26" aria-hidden="true" style={back ? { transform: 'scaleX(-1)' } : undefined}>
+      <g fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10" />
+        <path d="M23 4v6h-6" />
+        <path d="M20.5 15a9 9 0 0 1-14.85 3.36L1 14" />
+        <path d="M1 20v-6h6" />
+      </g>
+    </svg>
+  )
+}
+
+/** On the back, in its title row: click to turn the box back. */
+const BackMark = () => <TurnArrow back />
+
+/** The flip hint in a box's title row. */
+const FlipMark = () => <TurnArrow />
+
+/**
+ * Revenue → direct + indirect ① + indirect ② = total. Five equal flip boxes: the front has what
+ * the box is and its figures; the back has the rest (where the revenue goes, the sectors that
+ * gain most in each round, the split of the total by round).
  */
 export function Ripple({ card }: { card: RippleCard }) {
   const { t } = useLang()
@@ -343,89 +401,162 @@ export function Ripple({ card }: { card: RippleCard }) {
   const tot = card.total
   const maxSector = Math.max(...card.tiers.flatMap((tier) => tier.top.map((s) => s.va_bn)))
   const partOf = (v: number) => Math.round((v / tot.va_bn) * 100)
+  const retainedPct = Math.round((card.retained_bn / card.spend_bn) * 100)
   return (
     <div className="ripple">
       <div className="ripple-flow">
-        <div className="ripple-box spend">
-          <div className="ripple-kicker">
-            {t('Tourism revenue', '観光消費額')} {card.year}
-          </div>
-          <div className="ripple-what">{t('What visitors spent in Fukui on stays, food, shopping, transport and attractions.', '来訪者が県内で宿泊・飲食・買物・交通・観光に消費した額。')}</div>
-          <div>
-            <div className="ripple-big">{bn(card.spend_bn)}</div>
-            <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
-          </div>
-          <div className="ripple-figs">
-            <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${Math.round((card.retained_bn / card.spend_bn) * 100)}%)`, `県内（${Math.round((card.retained_bn / card.spend_bn) * 100)}%）`)} />
-            <Fig value={bn(card.leak_bn)} label={t('made elsewhere', '県外')} />
-          </div>
-          <div></div>
-        </div>
+        <FlipBox
+          className="spend"
+          label={t(`Tourism revenue ${card.year}`, `観光消費額 ${card.year}年`)}
+          front={
+            <>
+              <div className="ripple-kicker">
+                {t('Tourism revenue', '観光消費額')} {card.year}
+                <FlipMark />
+              </div>
+              <div>
+                <div className="ripple-big">{bn(card.spend_bn)}</div>
+                <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
+              </div>
+              <div className="ripple-figs">
+                <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${retainedPct}%)`, `県内（${retainedPct}%）`)} />
+                <Fig value={bn(card.leak_bn)} label={t('made elsewhere', '県外')} />
+              </div>
+            </>
+          }
+          back={
+            <>
+              <div className="ripple-back-h">
+                {t('Where the revenue goes', '観光消費の行き先')}
+                <BackMark />
+              </div>
+              <ul className="ripple-back-list">
+                <li>
+                  <span className="rb-name">{t('Fukui businesses', '県内の生産')}</span>
+                  <span className="rb-val num">{bn(card.retained_bn)}</span>
+                  <span className="rb-bar">
+                    <span style={{ width: `${retainedPct}%`, background: TIER.direct }}></span>
+                  </span>
+                  <span className="rb-sub num">{retainedPct}%</span>
+                </li>
+                <li>
+                  <span className="rb-name">{t('Goods and services made elsewhere', '県外・海外製品')}</span>
+                  <span className="rb-val num">{bn(card.leak_bn)}</span>
+                  <span className="rb-bar">
+                    <span style={{ width: `${100 - retainedPct}%`, background: GDP_REST }}></span>
+                  </span>
+                  <span className="rb-sub num">{100 - retainedPct}%</span>
+                </li>
+              </ul>
+              <p className="ripple-back-note">{t('Only the part that reaches Fukui businesses starts the ripple.', '県内の生産に回る分だけが波及効果を生む。')}</p>
+            </>
+          }
+        />
         <span className="ripple-op" aria-hidden="true">
           →
         </span>
         {card.tiers.map((tier, i) => (
           <div key={tier.id} className="ripple-seq">
-            <div className="ripple-box tier" style={{ ['--tier' as string]: TIER[tier.id] }}>
-              <div className="ripple-kicker">
-                <i className="ripple-sw" style={{ background: TIER[tier.id] }}></i>
-                {names[tier.id]}
-              </div>
-              <div className="ripple-what">{tier.what}</div>
-              <div>
-                <div className="ripple-big">{bn(tier.va_bn)}</div>
-                <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
-              </div>
-              <div className="ripple-figs">
-                <Fig value={jobs(tier.jobs)} label={t('jobs', '就業者')} />
-                <Fig value={bn(tier.output_bn)} label={t('output', '生産額')} />
-              </div>
-              <ul className="ripple-top" aria-label={t('Sectors that gain most', '効果の大きい部門')}>
-                {tier.top.map((s) => (
-                  <li key={s.sector} title={`${s.sector}: ${bn(s.va_bn)} ${t('GDP', '付加価値')}, ${jobs(s.jobs)} ${t('jobs', '人')}`}>
-                    <span className="rt-name">{s.sector}</span>
-                    <span className="rt-bar">
-                      <span style={{ width: `${Math.max(2, (s.va_bn / maxSector) * 100)}%`, background: TIER[tier.id] }}></span>
-                    </span>
-                    <span className="rt-val num">{bn(s.va_bn)}</span>
-                    <span className="rt-jobs num">
-                      {jobs(s.jobs)} {t('jobs', '人')}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <FlipBox
+              className="tier"
+              style={{ ['--tier' as string]: TIER[tier.id] }}
+              label={names[tier.id]}
+              front={
+                <>
+                  <div className="ripple-kicker">
+                    <i className="ripple-sw" style={{ background: TIER[tier.id] }}></i>
+                    {names[tier.id]}
+                    <FlipMark />
+                  </div>
+                  <div>
+                    <div className="ripple-big">{bn(tier.va_bn)}</div>
+                    <div className="ripple-lab">{t('GDP added', '付加価値')}</div>
+                  </div>
+                  <div className="ripple-figs">
+                    <Fig value={jobs(tier.jobs)} label={t('jobs', '就業者')} />
+                    <Fig value={bn(tier.output_bn)} label={t('output', '生産額')} />
+                  </div>
+                </>
+              }
+              back={
+                <>
+                  <div className="ripple-back-h">
+                    {t('Sectors that gain most', '効果の大きい部門')}
+                    <BackMark />
+                  </div>
+                  <ul className="ripple-back-list">
+                    {tier.top.map((s) => (
+                      <li key={s.sector}>
+                        <span className="rb-name" title={s.sector}>
+                          {s.sector}
+                        </span>
+                        <span className="rb-val num">{bn(s.va_bn)}</span>
+                        <span className="rb-bar">
+                          <span style={{ width: `${Math.max(2, (s.va_bn / maxSector) * 100)}%`, background: TIER[tier.id] }}></span>
+                        </span>
+                        <span className="rb-sub num">
+                          {jobs(s.jobs)} {t('jobs', '人')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              }
+            />
             <span className="ripple-op" aria-hidden="true">
               {i < card.tiers.length - 1 ? '+' : '='}
             </span>
           </div>
         ))}
-        <div className="ripple-box total">
-          <div className="ripple-kicker">
-            {t('Total effect', '総合効果')} {card.year}
-          </div>
-          <div className="ripple-what">{t('The direct effect and both indirect rounds added together, across the whole economy.', '直接効果と2段階の間接効果を合わせた、県経済全体への効果。')}</div>
-          <div>
-            <div className="ripple-big">{bn(tot.va_bn)}</div>
-            <div className="ripple-lab">
-              {t('GDP added', '付加価値')} ({pct(tot.share_pct)} {t('of Fukui GDP', '県内総生産比')})
-            </div>
-          </div>
-          <div className="ripple-figs">
-            <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
-            <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`)} />
-          </div>
-          <div className="ripple-total-detail">
-            <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
-              {card.tiers.map((tier) => (
-                <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }} title={`${names[tier.id]}: ${partOf(tier.va_bn)}%`}></span>
-              ))}
-            </div>
-            <div className="ripple-split-key muted">
-              {card.tiers.map((tier) => `${partOf(tier.va_bn)}%`).join(' · ')} {t('of the GDP added', '（付加価値の内訳）')}
-            </div>
-          </div>
-        </div>
+        <FlipBox
+          className="total"
+          label={t(`Total effect ${card.year}`, `総合効果 ${card.year}年`)}
+          front={
+            <>
+              <div className="ripple-kicker">
+                {t('Total effect', '総合効果')} {card.year}
+                <FlipMark />
+              </div>
+              <div>
+                <div className="ripple-big">{bn(tot.va_bn)}</div>
+                <div className="ripple-lab">
+                  {t('GDP added', '付加価値')} ({pct(tot.share_pct)} {t('of Fukui GDP', '県内総生産比')})
+                </div>
+              </div>
+              <div className="ripple-figs">
+                <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
+                <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`)} />
+              </div>
+            </>
+          }
+          back={
+            <>
+              <div className="ripple-back-h">
+                {t('GDP added, by round', '付加価値の内訳（段階別）')}
+                <BackMark />
+              </div>
+              <div className="ripple-split" role="img" aria-label={card.tiers.map((tier) => `${names[tier.id]} ${partOf(tier.va_bn)}%`).join(', ')}>
+                {card.tiers.map((tier) => (
+                  <span key={tier.id} style={{ width: `${(tier.va_bn / tot.va_bn) * 100}%`, background: TIER[tier.id] }}></span>
+                ))}
+              </div>
+              <ul className="ripple-back-list">
+                {card.tiers.map((tier) => (
+                  <li key={tier.id}>
+                    <span className="rb-name">
+                      <i className="ripple-sw" style={{ background: TIER[tier.id] }}></i> {names[tier.id]}
+                    </span>
+                    <span className="rb-val num">{bn(tier.va_bn)}</span>
+                    <span className="rb-sub num">{partOf(tier.va_bn)}%</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="ripple-back-note">
+                {t(`Output ${bn(tot.output_bn)} = ${tot.multiplier_spend.toFixed(2)}× revenue · ${tot.multiplier_direct.toFixed(2)}× direct`, `生産額${bn(tot.output_bn)}＝消費の${tot.multiplier_spend.toFixed(2)}倍・直接効果の${tot.multiplier_direct.toFixed(2)}倍`)}
+              </p>
+            </>
+          }
+        />
       </div>
     </div>
   )

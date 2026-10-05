@@ -83,6 +83,7 @@ export function TransportLayer({
   const allStations = zoom >= 11
   const walk = data.walk_areas
   const rail = showRail ? data.rail : null
+  const stationsOf = (lineId: string) => (rail?.stations ?? []).filter((st) => st.lines.includes(lineId))
   const railName = Object.fromEntries((rail?.lines ?? []).map((l) => [l.id, tr(l.name, l.name_ja)]))
   return (
     <>
@@ -106,11 +107,11 @@ export function TransportLayer({
             pathOptions={{ color: '#0a1120', weight: RAIL_STYLE[l.kind].weight + 1.5, opacity: 0.7 }} />
         ))}
         {rail?.lines.map((l) => (
-          <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }} eventHandlers={openOnClick(railLineUrl(l.name_ja))}>
+          <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }} eventHandlers={openOnClick(railLineUrl(stationsOf(l.id)))}>
             <Tip sticky above lingers>
               <strong>{tr(l.name, l.name_ja)}</strong>
               <div className="tip-sub">{l.kind === 'shinkansen' ? 'Shinkansen' : tr(...MODE_LABEL.rail)}</div>
-              {gmaps(railLineUrl(l.name_ja))}
+              {gmaps(railLineUrl(stationsOf(l.id)))}
             </Tip>
           </Polyline>
         ))}

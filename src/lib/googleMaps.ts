@@ -21,8 +21,28 @@ export const busStopUrl = (nameJa: string, lat: number, lon: number): string => 
 /** A railway station, by its Japanese name (e.g. 敦賀 → "敦賀駅"), around its position. */
 export const stationUrl = (nameJa: string, lat: number, lon: number): string => nearUrl(nameJa.endsWith('駅') ? nameJa : `${nameJa}駅`, lat, lon)
 
-/** A railway line by name (Google draws the line), e.g. "えちぜん鉄道 三国芦原線". */
-export const railLineUrl = (nameJa: string): string => `${BASE}/search/?api=1&query=${encodeURIComponent(nameJa)}`
+const stationName = (nameJa: string): string => (nameJa.endsWith('駅') ? nameJa : `${nameJa}駅`)
+
+/**
+ * A railway line: public-transport directions between its two end stations, so Google draws the
+ * route along that line. (Google Maps can't search a line by name: "ハピラインふくい線", "北陸新幹線"
+ * and the others all come back as not found.)
+ */
+export function railLineUrl(stations: { name_ja: string; lat: number; lon: number }[]): string | null {
+  if (stations.length < 2) return null
+  let ends: [(typeof stations)[number], (typeof stations)[number]] = [stations[0], stations[1]]
+  let best = -1
+  for (let i = 0; i < stations.length; i++)
+    for (let j = i + 1; j < stations.length; j++) {
+      const d = km([stations[i].lat, stations[i].lon], [stations[j].lat, stations[j].lon])
+      if (d > best) {
+        best = d
+        ends = [stations[i], stations[j]]
+      }
+    }
+  const [a, b] = ends
+  return `${BASE}/dir/?api=1&origin=${encodeURIComponent(stationName(a.name_ja))}&destination=${encodeURIComponent(stationName(b.name_ja))}&travelmode=transit`
+}
 
 /**
  * A bus route: public-transport directions along it, from the start of its line to its
