@@ -1023,6 +1023,10 @@
   text-decoration: none;
 }
 
+.tip-gmaps:hover {
+  text-decoration: underline;
+}
+
 /* The Japanese name under an English stop, station or route name */
 .tip-ja {
   margin-top: -1px;
