@@ -2341,6 +2341,105 @@
   gap: 12px;
 }
 
+.whatif-slider {
+  position: relative;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Growth readout over the thumb: shown on hover, drag or keyboard focus */
+.whatif-readout {
+  position: absolute;
+  bottom: 100%;
+  transform: translate(-50%, 4px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 2;
+}
+
+.whatif-readout::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+}
+
+.whatif-readout.on {
+  opacity: 1;
+  transform: translate(-50%, -6px);
+}
+
+/* Ruler under the track, on the span the thumb's centre travels */
+.whatif-ruler {
+  position: relative;
+  display: block;
+  height: 26px;
+  margin: 0 9px;
+}
+
+.whatif-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 5px;
+  background: var(--line-strong);
+}
+
+.whatif-tick.major {
+  height: 8px;
+  background: var(--muted);
+}
+
+.whatif-tick.zero {
+  height: 10px;
+  background: var(--text-2);
+}
+
+.whatif-tick-label {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.whatif-tick.zero .whatif-tick-label {
+  color: var(--text-2);
+}
+
+/* Where the slider is now, on the ruler */
+.whatif-here {
+  position: absolute;
+  top: -2px;
+  width: 0;
+  height: 0;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-bottom: 7px solid #6da7ec;
+  border-top: 0;
+  transition: left 0.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .whatif-readout,
+  .whatif-here {
+    transition: none;
+  }
+}
+
 .whatif-marks {
   display: flex;
   flex-wrap: wrap;

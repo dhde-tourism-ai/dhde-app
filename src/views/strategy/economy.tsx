@@ -388,16 +388,30 @@ export function Ripple({ card }: { card: RippleCard }) {
 }
 
 /** Slide the change in tourism spend; GDP, jobs and share follow at the base year's effect per ¥1bn. */
+/** What-if slider: thumb diameter (pages.css), and the ruler's tick and label spacing in percent. */
+const THUMB = 18
+const RULER_STEP = 5
+const RULER_LABEL = 10
+
 export function WhatIf({ card }: { card: WhatIfCard }) {
   const { t } = useLang()
   const [p, setP] = useState(card.default_pct)
+  // The readout over the thumb shows while the pointer is on the thumb, or while dragging or keyboard-focused.
+  const [near, setNear] = useState(false)
+  const [active, setActive] = useState(false)
   const dSpend = (card.base_spend_bn * p) / 100
   const dVa = dSpend * card.per_bn.va_bn
   const dJobs = dSpend * card.per_bn.jobs
   const share = ((card.base_va_bn + dVa) / card.gdp_bn) * 100
   const baseShare = (card.base_va_bn / card.gdp_bn) * 100
   const sign = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '±')
-  const fill = ((p - card.min_pct) / (card.max_pct - card.min_pct)) * 100
+  const at = (v: number) => ((v - card.min_pct) / (card.max_pct - card.min_pct)) * 100
+  const fill = at(p)
+  // The thumb's centre runs from THUMB/2 to (width − THUMB/2), so the readout and the ruler sit on that span.
+  const onThumb = `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${fill / 100})`
+  const ticks: number[] = []
+  for (let v = Math.ceil(card.min_pct / RULER_STEP) * RULER_STEP; v <= card.max_pct; v += RULER_STEP) ticks.push(v)
+  const signed = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v)}%`
   const tiles = [
     { label: t('Tourism spend', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
     { label: t('GDP added', '付加価値'), value: `${sign(dVa)}${bn(Math.abs(dVa))}`, detail: `${sign(dVa)}${Math.abs(share - baseShare).toFixed(2)} ${t('pt of GDP', 'pt（GDP比）')}` },
@@ -414,16 +428,41 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
             {p}%
           </span>
         </span>
-        <input
-          type="range"
-          min={card.min_pct}
-          max={card.max_pct}
-          step={card.step_pct}
-          value={p}
-          style={{ ['--pct' as string]: `${fill}%`, ['--c' as string]: TIER.indirect1 }}
-          onChange={(e) => setP(Number(e.target.value))}
-          aria-valuetext={`${p}%`}
-        />
+        <span
+          className="whatif-slider"
+          onPointerMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect()
+            const x = THUMB / 2 + ((r.width - THUMB) * fill) / 100
+            setNear(Math.abs(e.clientX - r.left - x) <= THUMB)
+          }}
+          onPointerLeave={() => setNear(false)}
+        >
+          <span className={`whatif-readout num ${near || active ? 'on' : ''}`} style={{ left: onThumb }} aria-hidden="true">
+            {signed(p)} {t('growth', '成長')}
+          </span>
+          <input
+            type="range"
+            min={card.min_pct}
+            max={card.max_pct}
+            step={card.step_pct}
+            value={p}
+            style={{ ['--pct' as string]: `${fill}%`, ['--c' as string]: TIER.indirect1 }}
+            onChange={(e) => setP(Number(e.target.value))}
+            onPointerDown={() => setActive(true)}
+            onPointerUp={() => setActive(false)}
+            onFocus={(e) => e.currentTarget.matches(':focus-visible') && setActive(true)}
+            onBlur={() => setActive(false)}
+            aria-valuetext={`${signed(p)} ${t('growth', '成長')}`}
+          />
+          <span className="whatif-ruler" aria-hidden="true">
+            {ticks.map((v) => (
+              <span key={v} className={`whatif-tick ${v % RULER_LABEL === 0 ? 'major' : ''} ${v === 0 ? 'zero' : ''}`} style={{ left: `${at(v)}%` }}>
+                {v % RULER_LABEL === 0 && <span className="whatif-tick-label num">{v === 0 ? '0%' : signed(v)}</span>}
+              </span>
+            ))}
+            <span className="whatif-here" style={{ left: `${fill}%` }} />
+          </span>
+        </span>
       </label>
       {card.marks && card.marks.length > 0 && (
         <div className="whatif-marks">
