@@ -67,7 +67,7 @@ export function SearchTrends({ card }: { card: SearchTrendsCard }) {
       </ResponsiveContainer>
 
       {card.insight && <p className="flow-insight">{t(card.insight, card.insight_ja ?? card.insight)}</p>}
-      <p className="muted small st-asof">{t(card.as_of, card.as_of_ja ?? card.as_of)}</p>
+      {card.as_of && <p className="muted small st-asof">{t(card.as_of, card.as_of_ja ?? card.as_of)}</p>}
     </div>
   )
 }

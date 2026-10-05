@@ -671,6 +671,53 @@
   font-size: 13px;
 }
 
+/* StrategyView: a question's theme dropdown (cards with a group). */
+.q-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.q-view-label {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.q-view select {
+  appearance: none;
+  min-width: 200px;
+  padding: 8px 36px 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23aeb9cd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      no-repeat right 14px center,
+    rgba(18, 28, 47, 0.9);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.q-view select:hover {
+  border-color: var(--accent);
+}
+
+.q-view select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.q-view select option {
+  background: #121c2f;
+  color: var(--text);
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));

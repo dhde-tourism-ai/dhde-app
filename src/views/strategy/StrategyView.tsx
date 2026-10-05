@@ -139,6 +139,12 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
   const themes = q.themes ?? []
   const [picked, setTheme] = useState<string | undefined>(undefined)
   const theme = themes.find((th) => th.id === picked)?.id ?? themes[0]?.id ?? ''
+  const cards = q.cards.filter((c) => !c.hidden)
+  // Cards with a group (#64, Q2): one group at a time, picked from a View dropdown, in the order
+  // their first card appears. Questions with themes (Q1, Q5) use the tabs below instead.
+  const groups = themes.length ? [] : [...new Set(cards.map((c) => c.group).filter((g): g is string => !!g))]
+  const [group, setGroup] = useState<string | undefined>(undefined)
+  const shownGroup = groups.length > 1 ? (groups.includes(group ?? '') ? group : groups[0]) : undefined
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
@@ -147,17 +153,15 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}
           </h2>
-          {!noIntro && <p className="q-why">{q.why}</p>}
-          {!lean && (
-            <>
-              <div className="q-subs">
-                {q.subs.map((s) => (
-                  <span key={s} className="chip">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </>
+          {!noIntro && q.why && <p className="q-why">{q.why}</p>}
+          {!lean && q.subs.length > 0 && (
+            <div className="q-subs">
+              {q.subs.map((s) => (
+                <span key={s} className="chip">
+                  {s}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </header>
@@ -167,10 +171,22 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <p>{q.answer}</p>
         </div>
       )}
+      {shownGroup !== undefined && (
+        <label className="q-view">
+          <span className="q-view-label">{t('View', '表示')}</span>
+          <select value={shownGroup} onChange={(e) => setGroup(e.target.value)}>
+            {groups.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {(() => {
-        const shown = q.cards.filter((c) => !c.hidden)
-        const fixed = shown.filter((c) => !themes.length || !c.theme)
-        const inTheme = themes.length ? shown.filter((c) => c.theme?.includes(theme)) : []
+        const inGroup = cards.filter((c) => shownGroup === undefined || !c.group || c.group === shownGroup)
+        const fixed = inGroup.filter((c) => !themes.length || !c.theme)
+        const inTheme = themes.length ? inGroup.filter((c) => c.theme?.includes(theme)) : []
         return (
           <>
             {fixed.length > 0 && (
