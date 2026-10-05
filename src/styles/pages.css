@@ -471,6 +471,92 @@
 
 
 
+.equation {
+  margin-bottom: var(--sp-4);
+  background: linear-gradient(135deg, rgba(139, 157, 255, 0.08), var(--surface) 45%);
+}
+
+.eq-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--sp-4);
+}
+
+.eq-terms {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px 0;
+}
+
+.eq-part {
+  display: flex;
+  align-items: center;
+  /* the five terms share the card's width, end to end; the total is a little wider */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.eq-part:last-child {
+  flex-grow: 1.25;
+}
+
+.eq-part .eq-term {
+  flex: 1;
+  min-width: 0;
+}
+
+.eq-term {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  min-width: 96px;
+}
+
+.eq-term.pending {
+  border-style: dashed;
+  background: transparent;
+}
+
+.eq-term.total {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.eq-value {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.eq-term.pending .eq-value {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+
+.eq-label {
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.eq-term.total .eq-label {
+  color: rgba(10, 17, 32, 0.75);
+}
+
+.eq-op {
+  padding: 0 10px;
+  font-size: 20px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
 .q-nav {
   position: sticky;
   top: var(--appbar-h);
@@ -1710,6 +1796,19 @@
   .node-pending {
     flex-direction: column;
     padding: var(--sp-5);
+  }
+
+  .eq-term {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .eq-value {
+    font-size: 16px;
+  }
+
+  .eq-op {
+    padding: 0 6px;
   }
 
   .hbar-row {
