@@ -127,7 +127,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
   )
 }
 
-/** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card details, notes or sources). */
+/** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card badges, details, notes or sources). */
 const LEAN_QUESTIONS = new Set(['q1', 'q5'])
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {

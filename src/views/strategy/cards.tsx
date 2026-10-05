@@ -38,7 +38,7 @@ function usePending() {
   return t(PENDING, '[未取得]')
 }
 
-/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the detail line, notes, sources and TODOs. */
+/** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the New/Updated badge, detail line, notes, sources and TODOs. */
 export function StrategyCardView({ card, lean = false }: { card: StrategyCard; lean?: boolean }) {
   const { t } = useLang()
   return (
@@ -46,7 +46,7 @@ export function StrategyCardView({ card, lean = false }: { card: StrategyCard; l
       <header className="s-card-head">
         <h3>
           {card.title}
-          {card.badge && <span className="card-badge">{card.badge}</span>}
+          {!lean && card.badge && <span className="card-badge">{card.badge}</span>}
         </h3>
         <StatusPill status={card.status} />
       </header>
