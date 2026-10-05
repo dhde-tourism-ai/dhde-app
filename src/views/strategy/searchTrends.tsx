@@ -52,7 +52,7 @@ export function SearchTrends({ card }: { card: SearchTrendsCard }) {
       </div>
       {/* grows with the card (min 240 px) when a tab set stretches it */}
       <div className="fc-plot st-plot">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minHeight={240}>
           <LineChart data={rows} margin={{ top: 18, right: 12, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="#1f2a3f" vertical={false} />
             <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={5} />
