@@ -44,11 +44,11 @@ export function useBriefing(): boolean {
 
 /**
  * Layers briefing mode offers, each showing its real part only: the three defaults (visitors, hotels,
- * actions), then real layers to switch on (bus routes and train lines without the illustrative moving
+ * actions), then real layers to switch on (people flow drawn from the visitor figures; bus routes and train lines without the illustrative moving
  * vehicles; weather; survey, sentiment and search where a site has real values). Simulated
  * density, demo road traffic, fictional reviews and social feed, and partial economics are left out.
  */
-export const BRIEFING_LAYERS = ['people', 'hotels', 'nudges', 'transport', 'rail', 'weather', 'survey', 'sentiment', 'rsi'] as const
+export const BRIEFING_LAYERS = ['people', 'flow', 'hotels', 'nudges', 'transport', 'rail', 'weather', 'survey', 'sentiment', 'rsi'] as const
 
 export type DayLevel = 'busy' | 'normal' | 'quiet'
 
@@ -87,7 +87,7 @@ export const dayRadius = (v: number | null) => (v === null ? 9 : 7 + Math.sqrt(M
  * measured layer (survey responses, Google search figures, sentiment scores, hotel bookings,
  * weather) is Real there; visitor numbers and the nudges built on them stay Estimated (mixed).
  */
-const VISITOR_LAYERS = new Set(['people', 'density', 'nudges'])
+const VISITOR_LAYERS = new Set(['people', 'flow', 'density', 'nudges'])
 export function briefingSource<T extends { status: string }>(id: string, info: T): T {
   return info.status === 'mixed' && !VISITOR_LAYERS.has(id) ? { ...info, status: 'real' } : info
 }

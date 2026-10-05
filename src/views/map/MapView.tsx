@@ -28,6 +28,7 @@ import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLay
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { DailyPeopleLayer } from './layers/DailyPeopleLayer'
+import { PeopleFlowLayer } from './layers/PeopleFlowLayer'
 import { BriefingBoard } from './panels/BriefingBoard'
 import { SiteMarkers } from './layers/SiteMarkers'
 import { TrafficLayer } from './layers/TrafficLayer'
@@ -456,6 +457,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
           />
         )}
         {layerOn('economics') && economics && <EconomicsLayer economics={economics} nodes={allNodes} selectedId={selectedId} />}
+        {layerOn('flow') && <PeopleFlowLayer nodes={nodes} figures={figures} />}
         {briefing && layerOn('people') && (
           <DailyPeopleLayer nodes={nodes} figures={figures} selectedId={selectedId} onSelect={onSelect} />
         )}

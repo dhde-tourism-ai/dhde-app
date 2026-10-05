@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PER_DOT } from '../layers/PeopleFlowLayer'
 import type { ReactNode } from 'react'
 import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
@@ -175,6 +176,14 @@ export function LayersPanel(p: Props) {
         </div>
         <p className="lg-note">{t('Area = people on site. Colour = share of comfortable capacity.', '面積＝現地の人数。色＝快適容量に対する割合。')}</p>
       </>
+    ),
+    flow: (
+      <p className="lg-note">
+        {t(
+          `Dots fade in and out around each site: people arriving and leaving. Each dot is about ${PER_DOT} of the day's visitors (estimated, or forecast for later days). Positions are illustrative, not tracked.`,
+          `各地点の周りで点が現れては消え、人の到着と出発を表します。1点は当日の来訪者約${PER_DOT}人（推計、以降の日は予測）。位置は表示上のもので、追跡ではありません。`,
+        )}
+      </p>
     ),
     density: <Grad from="rgba(236,131,90,0.1)" to="rgba(236,131,90,0.75)" left={t('Few', '少')} right={t('Many visitors', '多')} />,
     traffic: (
