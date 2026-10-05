@@ -482,15 +482,6 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
             <dt>{t('Data to', 'データ')}</dt>
             <dd className="num">{s.data_through}</dd>
           </dl>
-          {s.range_rough && <p className="muted small">{t('The range is rough: fewer than 12 months to test the model on.', '範囲は目安です：検証できる月が12か月未満。')}</p>}
-          {s.kind === 'visitors' && (
-            <p className="muted small">
-              {t(
-                "Visitor counts are comparable from Jan 2025 only (the publisher revised its method). They are JTTA's digital tourism statistics, which count differently from the prefecture's official visitor total in Q1 (21.44M in 2025), so the two don't match.",
-                '来訪者数は2025年1月以降のみ比較可能（公表元の手法改定）。日本観光振興協会のデジタル観光統計で、Q1の県公式の観光客入込数（2025年2,144万人）とは数え方が異なるため一致しません。',
-              )}
-            </p>
-          )}
           <p className="muted small">
             {t('Source', '出典')}: {s.kind === 'visitors' ? t('JTTA digital tourism statistics', '日本観光振興協会 デジタル観光統計') : t('JTA accommodation survey', '観光庁 宿泊旅行統計調査')}
           </p>
