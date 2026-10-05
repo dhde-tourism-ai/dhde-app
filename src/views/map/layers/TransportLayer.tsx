@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { CircleMarker, Pane, Polygon, Polyline, useMapEvents } from 'react-leaflet'
 import type { TransportMapFile, TransportTripsFile } from '../../../types/transport'
 import type { RailRun } from '../../../lib/railModel'
@@ -14,6 +14,10 @@ const RAIL_STYLE = {
   rail: { color: RAIL_LINE_COLOUR, weight: 2 },
   tram: { color: RAIL_LINE_COLOUR, weight: 1.6, dashArray: '4 3' },
 }
+
+/** The dots are tiny; an invisible ring this size around each takes the hover, so they stay easy to point at. */
+const HIT_R = 7
+const HIT_STYLE = { stroke: false, fillColor: '#000', fillOpacity: 0 }
 
 const WALK_STYLE: Record<string, { color: string; fillOpacity: number; dashArray?: string }> = {
   '15': { color: '#6fdc93', fillOpacity: 0.16 },
@@ -111,28 +115,34 @@ export function TransportLayer({
       {bus && showStops && (
         <Pane name="dhde-transport-stops" style={{ zIndex: 455 }}>
           {data.stops.map((s) => (
-            <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stopR}
-              pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }}>
-              <Tip above>
-                {named(placeEn(s.name), s.name)}
-                <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
-                <BusStopSchedule trips={trips} stopId={s.id} />
-              </Tip>
-            </CircleMarker>
+            <Fragment key={s.id}>
+              <CircleMarker center={[s.lat, s.lon]} radius={stopR} interactive={false}
+                pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }} />
+              <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+                <Tip above>
+                  {named(placeEn(s.name), s.name)}
+                  <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
+                  <BusStopSchedule trips={trips} stopId={s.id} />
+                </Tip>
+              </CircleMarker>
+            </Fragment>
           ))}
         </Pane>
       )}
       {/* stations above bus stops: fewer, and the main transfer points */}
       <Pane name="dhde-transport-stations" style={{ zIndex: 460 }}>
         {rail?.stations.map((s) => (
-          <CircleMarker key={s.id} center={[s.lat, s.lon]} radius={stationR}
-            pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }}>
-            <Tip above>
-              {named(placeEn(s.name_ja), s.name_ja)}
-              <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
-              <StationSchedule runs={runs} stationId={s.id} />
-            </Tip>
-          </CircleMarker>
+          <Fragment key={s.id}>
+            <CircleMarker center={[s.lat, s.lon]} radius={stationR} interactive={false}
+              pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }} />
+            <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+              <Tip above>
+                {named(placeEn(s.name_ja), s.name_ja)}
+                <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
+                <StationSchedule runs={runs} stationId={s.id} />
+              </Tip>
+            </CircleMarker>
+          </Fragment>
         ))}
       </Pane>
     </>
