@@ -60,7 +60,7 @@ export function DailyPeopleLayer({
               fillOpacity: f.value === null ? 0.08 : f.kind === 'real' ? 0.55 : 0.28,
             }}
           >
-            <Tooltip className="map-tip wide" direction="top" offset={[0, -r]}>
+            <Tooltip pane="tooltipPane" className="map-tip wide" direction="top" offset={[0, -r]}>
               <div className="tt-head">
                 <span>{t(n.name.replace(' East Entrance', ''), n.name_ja)}</span>
                 {f.kind === 'real' && <StatusPill status="modelled" />}

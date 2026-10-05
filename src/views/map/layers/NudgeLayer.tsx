@@ -70,7 +70,7 @@ export function NudgeLayer({ nudges, routes, day, live, activeId, onPick }: { nu
             <Fragment key={`r-${n.id}`}>
               <Polyline positions={path} pathOptions={{ color: '#0a1120', weight: 8, opacity: 0.55, lineCap: 'round' }} interactive={false} />
               <Polyline positions={path} pathOptions={{ color: ROUTE_COLOUR, weight: 4, opacity: 0.95, dashArray: '10 8', lineCap: 'round' }}>
-                <Tooltip sticky className="map-tip">
+                <Tooltip pane="tooltipPane" sticky className="map-tip">
                   <strong>{t(n.route_label_en ?? '', n.route_label_ja)}</strong>
                   <div className="tip-row">{t(n.action_en, n.action_ja)}</div>
                 </Tooltip>
@@ -93,7 +93,7 @@ export function NudgeLayer({ nudges, routes, day, live, activeId, onPick }: { nu
         })
         return (
           <Marker key={`a-${g[0].focus.join(',')}`} position={g[0].focus} icon={icon} eventHandlers={{ click: () => onPick(worst) }} zIndexOffset={400}>
-            <Tooltip className="map-tip wide" direction="top" offset={[-12, -30]}>
+            <Tooltip pane="tooltipPane" className="map-tip wide" direction="top" offset={[-12, -30]}>
               <div className="tip-row">{t(`Coming up ${when}: click to jump there`, `${when}の予定：クリックで表示`)}</div>
               {g.map((n) => (
                 <div key={n.id} className="tt-nudge">
@@ -119,7 +119,7 @@ export function NudgeLayer({ nudges, routes, day, live, activeId, onPick }: { nu
         })
         return (
           <Marker key={top.focus.join(',')} position={top.focus} icon={icon} eventHandlers={{ click: () => onPick(worst) }} zIndexOffset={500}>
-            <Tooltip className="map-tip wide" direction="top" offset={[-12, -34]}>
+            <Tooltip pane="tooltipPane" className="map-tip wide" direction="top" offset={[-12, -34]}>
               {g.map((n) => (
                 <div key={n.id} className="tt-nudge">
                   <div className="tt-nudge-h">

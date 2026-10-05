@@ -713,6 +713,15 @@ table th {
   .fresh-chip .fresh-text-long {
     display: none;
   }
+
+  /* A portrait tablet: icon tabs (as on a phone), so the language switch stays on screen. */
+  .tab .tab-label {
+    display: none;
+  }
+
+  .tab {
+    padding: 6px 9px;
+  }
 }
 
 @media (max-width: 720px) {

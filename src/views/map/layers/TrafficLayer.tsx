@@ -86,7 +86,7 @@ export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; rout
                   : { color: CRIT, weight: 4, opacity: 0.5, dashArray: '3 9', lineCap: 'round' }
               }
             >
-              <Tooltip sticky className="map-tip">
+              <Tooltip pane="tooltipPane" sticky className="map-tip">
                 <strong>{tr(r.label, r.label_ja)}</strong>
                 <div className="tip-row">
                   {isAlt
@@ -106,7 +106,7 @@ export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; rout
           const pos = slicePath(r.path, a, b)
           return (
             <Polyline key={`${rid}:${i}`} positions={pos} pathOptions={{ color: tier.colour, weight: 4.5, opacity: 0.9, lineCap: 'butt' }}>
-              <Tooltip sticky className="map-tip wide">
+              <Tooltip pane="tooltipPane" sticky className="map-tip wide">
                 <strong>{tr(r.label, r.label_ja)}</strong>
                 <div className="tip-row">
                   <span className="sw" style={{ background: tier.colour }}></span>

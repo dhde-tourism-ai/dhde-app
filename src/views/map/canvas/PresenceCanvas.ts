@@ -72,6 +72,14 @@ export class PresenceCanvas extends CanvasOverlay {
 
   protected draw(ctx: CanvasRenderingContext2D) {
     const now = performance.now() / 1000
+    // Figures never draw inside an open hover card (some browsers let an animated canvas show
+    // through it): the cards' boxes in canvas coordinates, with a little margin.
+    const origin = this._map.getContainer().getBoundingClientRect()
+    const cards = [...document.querySelectorAll<HTMLElement>('.leaflet-tooltip, .leaflet-popup')]
+      .map((e) => e.getBoundingClientRect())
+      .filter((r) => r.width > 0)
+      .map((r) => ({ l: r.left - origin.left - 8, t: r.top - origin.top - 8, r: r.right - origin.left + 8, b: r.bottom - origin.top + 8 }))
+    const hidden = (x: number, y: number) => cards.some((k) => x > k.l && x < k.r && y > k.t && y < k.b)
     ctx.lineWidth = 2
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)'
     ctx.lineJoin = 'round'
@@ -91,7 +99,10 @@ export class PresenceCanvas extends CanvasOverlay {
         const dist = s.inner + 6 + WALK * (arriving ? 1 - life : life)
         // Fade in at the start of the walk and out at its end, so figures appear and disappear.
         ctx.globalAlpha = Math.min(1, Math.sin(Math.PI * life) * 3)
-        person(ctx, c.x + Math.cos(angle) * dist, c.y + Math.sin(angle) * dist)
+        const x = c.x + Math.cos(angle) * dist
+        const y = c.y + Math.sin(angle) * dist
+        if (hidden(x, y)) continue
+        person(ctx, x, y)
       }
     })
     ctx.globalAlpha = 1

@@ -9,6 +9,10 @@ const KEEP_OVERLAP = 0.1
 const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution']
 /** Marks that stay where they are; cards move off them. */
 const FIXED = '.nudge-flag, .route-flag'
+/** Site circles: a card never sits on another site's circle, where it would read as that site's. */
+const CIRCLES = '.leaflet-dhde-nodes-pane path.leaflet-interactive, .leaflet-dhde-sites-pane path.leaflet-interactive'
+/** A circle counts by its middle only, so a card may still touch its own site's edge. */
+const CIRCLE_CORE = 0.6
 
 interface Box {
   left: number
@@ -38,7 +42,7 @@ const setSide = (el: HTMLElement, s: Side) => {
 /**
  * A light touch on the cards (SiteCards.tsx, and the town cards of hotels and search
  * intent), which already keep the map to one card per place. After a draw, zoom or
- * layer change, a card that overlaps another, a nudge flag or a panel, or runs off
+ * layer change, a card that overlaps another, a nudge flag, another site's circle or a panel, or runs off
  * the map, tries the nearest free spot: up or down at most one card height, on its
  * own side of the site, then on the other (Katsuyama next to the right-hand board).
  * With no room there either it shrinks to its name (and anything needing attention),
@@ -85,6 +89,11 @@ export function Declutter() {
       const outside = (r: Box) => Math.max(0, area.left - r.left) + Math.max(0, r.right - area.right) + Math.max(0, area.top - r.top) + Math.max(0, r.bottom - area.bottom)
       const hitsUi = (r: Box) => ui.some((u) => overlap(r, u) > 0)
       const placed: Box[] = [...root.querySelectorAll<HTMLElement>(FIXED)].map((e) => e.getBoundingClientRect()).filter(visible)
+      for (const c of [...root.querySelectorAll<SVGElement>(CIRCLES)].map((e) => e.getBoundingClientRect()).filter(visible)) {
+        const dx = (c.width * (1 - CIRCLE_CORE)) / 2
+        const dy = (c.height * (1 - CIRCLE_CORE)) / 2
+        placed.push({ left: c.left + dx, right: c.right - dx, top: c.top + dy, bottom: c.bottom - dy })
+      }
       const cost = (c: Box) => placed.reduce((a, p) => a + overlap(c, p), 0) + (hitsUi(c) ? 1e6 : 0) + outside(c) * 1e3
       // Keeping a spot allows a little overlap (a card's text can grow); a new spot must be free.
       const keeps = (c: Box) => cost(c) <= (c.right - c.left) * (c.bottom - c.top) * KEEP_OVERLAP

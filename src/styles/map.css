@@ -67,9 +67,10 @@
   background: var(--surface-3) !important;
 }
 
-/* tooltips */
+/* tooltips: fully opaque (Leaflet draws them at 90%, which let flags and figures show through) */
 .leaflet-tooltip.map-tip {
-  background: rgba(var(--panel-rgb), 0.96);
+  opacity: 1 !important;
+  background: rgb(var(--panel-rgb));
   color: var(--text);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
@@ -576,11 +577,15 @@
     gap: 0;
   }
 
-  /* .status-strip in front: the base .ss-msg rule comes later in this file and would win. */
+  /* .status-strip in front: the base .ss-msg rule comes later in this file and would win.
+     Two lines at most, ending in an ellipsis rather than cut mid-line; hover shows it all. */
   .status-strip .ss-msg {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     white-space: normal;
     line-height: 1.25;
-    max-height: 2.5em;
   }
 
   .status-strip {
@@ -1335,6 +1340,28 @@ button.al-item:hover {
   flex: 1;
   min-width: 0;
   padding: 0 4px;
+  /* Day labels follow the track's own width (a tablet's track is as narrow as a phone's). */
+  container-type: inline-size;
+}
+
+/* A narrow track: short day labels, no 06/18 ticks, and no labels on the squeezed past days. */
+@container (max-width: 560px) {
+  .lab-long {
+    display: none;
+  }
+
+  .lab-short {
+    display: inline;
+  }
+
+  .tl-hour-tick.h6,
+  .tl-hour-tick.h18 {
+    display: none;
+  }
+
+  .tl-day-seg.past .tl-day-lab {
+    display: none;
+  }
 }
 
 .tl-track {

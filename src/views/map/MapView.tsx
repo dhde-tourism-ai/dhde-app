@@ -56,12 +56,63 @@ const VIEW_BOUNDS: [[number, number], [number, number]] = [
   [36.3, 136.56],
 ]
 
+/** Room kept for the site cards, which sit beside their sites (mostly to the right). */
+const LABEL_ROOM = { left: 40, right: 170 }
+/** The panels may take at most this share of the map's width or height when fitting Fukui in. */
+const MAX_PANEL_SHARE = 0.55
+
+/**
+ * Fits Fukui's sites into the part of the map the panels leave free, measured from the panels
+ * themselves (they change size with the screen). Each side panel is kept clear either as a
+ * column (its width) or as a band across the top (its height), whichever leaves the sites more
+ * room: on a laptop the board is a column, on a portrait tablet the map fits below it. If the
+ * panels would still leave almost nothing, the padding shrinks so the sites keep a usable share
+ * of the map, even if a panel then covers its edge.
+ */
+function fitPadding(map: L.Map): { tl: [number, number]; br: [number, number] } {
+  const c = map.getContainer().getBoundingClientRect()
+  const boxes = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0)
+  const span = (rs: DOMRect[]) => (rs.length ? { left: Math.min(...rs.map((r) => r.left)), right: Math.max(...rs.map((r) => r.right)), bottom: Math.max(...rs.map((r) => r.bottom)) } : null)
+  const leftP = span(boxes('.map-left > *'))
+  const rightP = span(boxes('.map-right > *'))
+  const top0 = Math.max(c.top, ...boxes('.status-strip').map((r) => r.bottom)) - c.top + 16
+  const bottom = c.bottom - Math.min(c.bottom, ...boxes('.map-bottom').map((r) => r.top)) + 16
+  let best = { l: 0, r: 0, t: 0, b: 0, area: -Infinity }
+  for (const leftAsColumn of [true, false]) {
+    for (const rightAsColumn of [true, false]) {
+      let l = LABEL_ROOM.left
+      let r = LABEL_ROOM.right
+      let t = top0
+      if (leftP) {
+        if (leftAsColumn) l += leftP.right - c.left
+        else t = Math.max(t, leftP.bottom - c.top + 16)
+      }
+      if (rightP) {
+        if (rightAsColumn) r += c.right - rightP.left
+        else t = Math.max(t, rightP.bottom - c.top + 16)
+      }
+      const sx = Math.min(1, (c.width * MAX_PANEL_SHARE) / Math.max(1, l + r))
+      const sy = Math.min(1, (c.height * MAX_PANEL_SHARE) / Math.max(1, t + bottom))
+      const cand = { l: l * sx, r: r * sx, t: t * sy, b: bottom * sy }
+      // Room left for the sites, counting only what the panels really leave uncovered.
+      const area = Math.max(0, c.width - l - r) * Math.max(0, c.height - t - bottom) + (c.width - cand.l - cand.r) * (c.height - cand.t - cand.b) * 1e-3
+      if (area > best.area) best = { ...cand, area }
+    }
+  }
+  return { tl: [Math.round(best.l), Math.round(best.t)], br: [Math.round(best.r), Math.round(best.b)] }
+}
+
 function FitView({ narrow }: { narrow: boolean }) {
   const map = useMap()
   useEffect(() => {
     const id = window.setTimeout(() => {
       map.invalidateSize()
-      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] } : { paddingTopLeft: [330, 64], paddingBottomRight: [620, 96] })
+      if (narrow) {
+        map.fitBounds(VIEW_BOUNDS, { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] })
+        return
+      }
+      const p = fitPadding(map)
+      map.fitBounds(VIEW_BOUNDS, { paddingTopLeft: p.tl, paddingBottomRight: p.br })
     }, 50)
     return () => window.clearTimeout(id)
   }, [map, narrow])
@@ -502,7 +553,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             )}
             <span className="ss-time">{timeLabel(live, t, lang)}</span>
             {briefing ? (
-              <span className="ss-msg">{headline}</span>
+              <span className="ss-msg" title={headline}>{headline}</span>
             ) : top ? (
               <span className="ss-msg">
                 <span className="ss-sev" style={{ background: SEV_COLOUR[top.sev] }} aria-hidden="true"></span>

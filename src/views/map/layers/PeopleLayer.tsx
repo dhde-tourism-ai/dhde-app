@@ -53,7 +53,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
             radius={8}
             pathOptions={{ color: '#c9d4ff', weight: 2, dashArray: '3 3', fillColor: '#0a1120', fillOpacity: 0.6 }}
           >
-            <Tooltip className="map-tip" direction="top" offset={[0, -8]}>
+            <Tooltip pane="tooltipPane" className="map-tip" direction="top" offset={[0, -8]}>
               <strong>{t('Kanazawa (Ishikawa)', '金沢（石川県）')}</strong>
               <div className="tip-sub">
                 {t('Inflow by Hokuriku Shinkansen and car to Awara Onsen and Fukui Station. Same-day correlation with Tojinbo arrivals r = 0.549.', '北陸新幹線と車であわら温泉・福井駅へ流入。東尋坊の来訪者数と同日相関 r = 0.549。')}
@@ -77,7 +77,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
               pathOptions={{ color: selected ? ACCENT : '#9aa6bd', weight: 1.5, dashArray: '2 3', fillColor: '#0a1120', fillOpacity: 0.7 }}
               eventHandlers={click}
             >
-              <Tooltip className="map-tip" direction="top" offset={[0, -6]}>
+              <Tooltip pane="tooltipPane" className="map-tip" direction="top" offset={[0, -6]}>
                 <strong>{t(n.name, n.name_ja)}</strong>
                 <div className="tip-sub">{t('Not measured yet', '未計測')}</div>
               </Tooltip>
@@ -94,7 +94,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
               eventHandlers={click}
               pathOptions={{ color: selected ? ACCENT : '#c9d4ff', weight: 2, dashArray: '2 3', fillColor: '#0a1120', fillOpacity: 0.65 }}
             >
-              <Tooltip className="map-tip wide" direction="top" offset={[0, -10]}>
+              <Tooltip pane="tooltipPane" className="map-tip wide" direction="top" offset={[0, -10]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
                   <span className="tt-real">{t('Camera count', 'カメラ計測')}</span>
@@ -147,7 +147,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 fillOpacity: f.observed ? (est ? 0.55 : 0.88) : 0.22,
               }}
             >
-              <Tooltip className="map-tip wide" direction="top" offset={[0, -rNow]}>
+              <Tooltip pane="tooltipPane" className="map-tip wide" direction="top" offset={[0, -rNow]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
                   {realV !== null ? <span className="tt-est">{t('Estimated day total', '推計日合計')}</span> : m ? <span className="tt-demo">{t('Forecast', '予測')}</span> : <span className="tt-demo">{t('Demo', 'デモ')}</span>}
