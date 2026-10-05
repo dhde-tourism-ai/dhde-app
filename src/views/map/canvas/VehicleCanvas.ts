@@ -67,10 +67,10 @@ export class VehicleCanvas extends CanvasOverlay {
       if (p.x < -20 || p.y < -20 || p.x > w + 20 || p.y > h + 20) return
       if (pulse >= 0) {
         ctx.beginPath()
-        ctx.arc(p.x, p.y, r + ringW + pulse * 10, 0, Math.PI * 2)
+        ctx.arc(p.x, p.y, r + ringW + pulse * 6, 0, Math.PI * 2)
         ctx.strokeStyle = fill
-        ctx.globalAlpha = 0.7 * (1 - pulse)
-        ctx.lineWidth = 2
+        ctx.globalAlpha = 0.45 * (1 - pulse)
+        ctx.lineWidth = 1.5
         ctx.stroke()
         ctx.globalAlpha = 1
       }
