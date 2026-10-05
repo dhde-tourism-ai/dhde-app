@@ -129,8 +129,8 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
 
 /** Questions shown lean: just the title, figures and charts (no why line, sub-question chips, answer paragraph, card badges, details, notes or sources). */
 const LEAN_QUESTIONS = new Set(['q1', 'q5'])
-/** Questions that keep their sub-question chips and cards but drop the why line and the answer paragraph. */
-const NO_INTRO = new Set(['q2'])
+/** Questions shown with just their title and cards: no why line, sub-question chips or answer paragraph. */
+const NO_INTRO = new Set(['q2', 'q3', 'q4'])
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
   const { t } = useLang()
@@ -140,8 +140,8 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
   const [picked, setTheme] = useState<string | undefined>(undefined)
   const theme = themes.find((th) => th.id === picked)?.id ?? themes[0]?.id ?? ''
   const cards = q.cards.filter((c) => !c.hidden)
-  // Cards with a group (#64, Q2): one group at a time, picked from a View dropdown, in the order
-  // their first card appears. Questions with themes (Q1, Q5) use the tabs below instead.
+  // Cards with a group (Q2-Q4): one group at a time, picked from tabs like Q1's, in the order
+  // their first card appears. Questions with themes (Q1, Q5) use their own theme tabs.
   const groups = themes.length ? [] : [...new Set(cards.map((c) => c.group).filter((g): g is string => !!g))]
   const [group, setGroup] = useState<string | undefined>(undefined)
   const shownGroup = groups.length > 1 ? (groups.includes(group ?? '') ? group : groups[0]) : undefined
@@ -154,7 +154,7 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
             {q.title}
           </h2>
           {!noIntro && q.why && <p className="q-why">{q.why}</p>}
-          {!lean && q.subs.length > 0 && (
+          {!noIntro && q.subs.length > 0 && (
             <div className="q-subs">
               {q.subs.map((s) => (
                 <span key={s} className="chip">
@@ -172,16 +172,13 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
         </div>
       )}
       {shownGroup !== undefined && (
-        <label className="q-view">
-          <span className="q-view-label">{t('View', '表示')}</span>
-          <select value={shownGroup} onChange={(e) => setGroup(e.target.value)}>
-            {groups.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="q-themes seg" role="tablist" aria-label={t('Themes', 'テーマ')}>
+          {groups.map((g) => (
+            <button key={g} role="tab" aria-selected={shownGroup === g} aria-pressed={shownGroup === g} onClick={() => setGroup(g)}>
+              {g}
+            </button>
+          ))}
+        </div>
       )}
       {(() => {
         const inGroup = cards.filter((c) => shownGroup === undefined || !c.group || c.group === shownGroup)

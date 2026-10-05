@@ -2190,7 +2190,6 @@
           "group": "Guest-nights",
           "status": "real",
           "title": "Guest-nights by month: domestic and foreign",
-          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model), refreshed daily.",
           "total": "fukui_guest_nights",
           "domestic": "fukui_guest_nights_japanese",
           "foreign": "fukui_guest_nights_foreign"
@@ -2202,7 +2201,6 @@
           "group": "Guest-nights",
           "status": "real",
           "title": "Guest-nights this year: running total vs target",
-          "source": "JTA 宿泊旅行統計調査 (monthly, via dhde-preprocessing-model). Targets: ネクストふくい観光ビジョン (Mar 2025), KPI table p.9.",
           "items": [
             {
               "series": "fukui_guest_nights",
@@ -2295,7 +2293,8 @@
         {
           "id": "q3-spend",
           "type": "bars",
-          "span": 6,
+          "span": 12,
+          "group": "Spend per visitor",
           "status": "real",
           "title": "Spend per visitor by type",
           "prefix": "¥",
@@ -2318,7 +2317,8 @@
         {
           "id": "q3-markets",
           "type": "bars",
-          "span": 6,
+          "span": 12,
+          "group": "Foreign markets",
           "status": "pending",
           "title": "Foreign overnight guests by market",
           "pending_on": "JTA nationality breakdown",
@@ -2353,6 +2353,7 @@
           "id": "q3-heat",
           "type": "heatmap",
           "span": 12,
+          "group": "Who stays overnight",
           "status": "illustrative",
           "title": "Who stays overnight",
           "note": "Simulated, do not quote.",
@@ -2554,6 +2555,7 @@
           "id": "q4-discover",
           "type": "search_trends",
           "span": 12,
+          "group": "Discover",
           "status": "real",
           "title": "Discover: who searches for Fukui before they travel",
           "markets_label": "Fukui's travel searches vs Ishikawa + Kanazawa, by where the searcher lives (Sep 2025 – Aug 2026; 1.00× = equal)",
@@ -2831,6 +2833,7 @@
           "id": "q4-flow",
           "type": "sankey",
           "span": 12,
+          "group": "Visitor flow",
           "status": "real",
           "title": "Where visitors come from, whether they stay the night, and what they spend (2025)",
           "unit": "k visitors",

@@ -337,5 +337,9 @@
   "Daily forecast": "日次予測",
   "Monthly forecast": "月次予測",
   "Guest-nights": "延べ宿泊者数",
-  "Simulated, do not quote.": "模擬データ。引用しないでください。"
+  "Simulated, do not quote.": "模擬データ。引用しないでください。",
+  "Spend per visitor": "訪問者1人当たり消費",
+  "Foreign markets": "海外市場",
+  "Discover": "認知",
+  "Visitor flow": "来訪者の流れ"
 }

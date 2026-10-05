@@ -141,7 +141,7 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
   const hi = Math.ceil((Math.max(100, ...values) + 5) / 10) * 10
 
   return (
-    <div>
+    <div className="gn-pace-one">
       <div className="chart-key">
         {series.map((x) => (
           <span key={x.key}>
@@ -154,7 +154,7 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
           {t('Target (100%)', '目標（100%）')}
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={220}>
         <LineChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
           <CartesianGrid stroke="#1f2a3f" vertical={false} />
           <XAxis dataKey="m" tick={{ ...AXIS, fontSize: 9.5 }} tickLine={false} axisLine={{ stroke: '#34425e' }} interval="preserveStartEnd" />
