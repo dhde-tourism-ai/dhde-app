@@ -30,7 +30,6 @@ import { PeopleLayer } from './layers/PeopleLayer'
 import { DailyPeopleLayer } from './layers/DailyPeopleLayer'
 import { BriefingBoard } from './panels/BriefingBoard'
 import { SiteMarkers } from './layers/SiteMarkers'
-import { FlowLayer } from './layers/FlowLayer'
 import { TrafficLayer } from './layers/TrafficLayer'
 import { WeatherLayer } from './layers/WeatherLayer'
 import { SentimentLayer } from './layers/SentimentLayer'
@@ -324,7 +323,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
     if (narrow) setSheet(null)
   }
   const selected = allNodes.find((n) => n.id === selectedId)
-  const kanazawa = registry?.nodes.find((n) => n.id === 'kanazawa')
   const hubNode = registry?.nodes.find((n) => n.id === (transport?.hub ?? 'fukui_station'))
   const hubName: [string, string] = hubNode ? [hubNode.name, hubNode.name_ja] : ['Fukui Station', '福井駅']
   const isDemo = Boolean(live?.demo)
@@ -437,7 +435,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
           <>
             {layerOn('density') && <DensityLayer nodes={nodes} frame={frame} />}
             {layerOn('traffic') && <TrafficLayer live={live} routes={routes} t={t} paused={paused} />}
-            {layerOn('flow') && <FlowLayer live={live} routes={routes} t={t} paused={paused} />}
             {layerOn('sentiment') && <SentimentLayer nodes={briefing ? nodes.filter((n) => frame[n.id]?.sentiment.real) : nodes} frame={frame} />}
           </>
         )}
@@ -462,15 +459,14 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {briefing && layerOn('people') && (
           <DailyPeopleLayer nodes={nodes} figures={figures} selectedId={selectedId} onSelect={onSelect} />
         )}
-        {!briefing && (layerOn('people') || layerOn('flow')) && (
+        {!briefing && layerOn('people') && (
           <PeopleLayer
-            nodes={layerOn('people') ? nodes : []}
+            nodes={nodes}
             frame={frame}
             selectedId={selectedId}
             onSelect={onSelect}
             meta={live?.node_meta}
             day={day}
-            kanazawa={layerOn('flow') && kanazawa ? { lat: kanazawa.lat, lon: kanazawa.lon } : undefined}
           />
         )}
         {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}

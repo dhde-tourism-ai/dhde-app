@@ -36,7 +36,6 @@ interface Props {
 const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
   people: ["Day totals are real estimates (each site's daily signal times one calibration factor from its official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: the 7-day model forecast, then the same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections and busyness (% of an average 2025 day) only.", '日合計は実推計（各地点の日次シグナルに公式年間値からの換算係数を掛けたもの）。時間別の形は模擬で日合計に一致。将来日は7日間モデル予測、その後は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数と混雑度（2025年の平均日比）のみ。'],
   density: ['Follows the People layer: real day totals, simulated hourly shape.', '人数レイヤーと同じ：日合計は実データ、時間別は模擬。'],
-  flow: ['Route volumes follow each destination’s real day total; the split by road and hour is simulated.', '各目的地の実日合計に比例。道路・時間の配分は模擬。'],
   traffic: ['Roads with a counter (Katsuyama, Eiheiji, Rainbow Line) follow the real daily volume; others and all future days stay demo.', '計測器のある道路（勝山・永平寺・レインボーライン）は実交通量。その他と将来日はデモ。'],
   weather: ['Hourly weather is real: JMA observations for past days, and ahead the JMA model forecast via Open-Meteo (CC BY 4.0), refreshed every 30 min. Older days: real daily values (JMA) with a synthesised hourly curve. Warnings and advisories are JMA’s, live (demo only if JMA can’t be reached).', '時間別の天気は実データ：過去の日は気象庁の観測値、先は気象庁モデルの予報（Open-Meteo、CC BY 4.0、30分ごとに更新）。それ以前の日は日別の実データ（気象庁）から時間別を合成。警報・注意報は気象庁の最新情報（取得できない場合のみデモ）。'],
   hotels: ['Occupancy, ADR and rooms from FTAS reservation feeds, forward bookings up to 90 days (real). Rakuten availability (share of hotels within 3 km with rooms 1/7/30 days ahead) is real where there is a daily snapshot, demo elsewhere.', '稼働率・客室単価・室数はFTAS予約データ、90日先までの予約（実データ）。楽天の空室（3km以内で1・7・30日先に空室がある施設の割合）は日次スナップショットがある地域は実データ、それ以外はデモ。'],
@@ -178,23 +177,6 @@ export function LayersPanel(p: Props) {
       </>
     ),
     density: <Grad from="rgba(236,131,90,0.1)" to="rgba(236,131,90,0.75)" left={t('Few', '少')} right={t('Many visitors', '多')} />,
-    flow: (
-      <>
-        <div className="lg-row">
-          <span className="lg-line" style={{ borderColor: 'var(--arrive)' }}></span>
-          {t('Arriving (toward a site, or into Fukui)', '到着（目的地へ／福井県内へ）')}
-        </div>
-        <div className="lg-row">
-          <span className="lg-line" style={{ borderColor: 'var(--depart)' }}></span>
-          {t('Departing (heading back)', '出発（帰路）')}
-        </div>
-        <div className="lg-row">
-          <span className="lg-line" style={{ borderColor: '#c9d4ff', borderTopStyle: 'dotted' }}></span>
-          {t('Hokuriku Shinkansen (approx. line)', '北陸新幹線（概略）')}
-        </div>
-        <p className="lg-note">{t('Denser, faster dots = more people per hour. Roads from OSRM / OpenStreetMap. The dots follow each site’s daily total; measured origin-to-destination journeys are Pending: KDDI data.', '点が密で速いほど人数が多い。道路はOSRM／OpenStreetMap。点は各地点の日合計に沿った表示で、出発地から目的地までの実測の移動はKDDIデータ待ち。')}</p>
-      </>
-    ),
     traffic: (
       <>
         <div className="lg-tiers">

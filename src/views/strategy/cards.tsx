@@ -635,7 +635,7 @@ function Heatmap({ card }: { card: HeatmapCard }) {
 const FUNNEL_MAP: Record<string, { ja: string; layers: LayerId[]; node?: string; en: string; ja_where: string }> = {
   discover: { ja: '認知', layers: ['rsi'], en: 'Search intent: how often people search routes to each town. Low interest means few people hear of Fukui.', ja_where: '検索関心：各市町へのルート検索の多さ。関心が低いと福井を知る人が少ない。' },
   decide: { ja: '検討', layers: ['reviews', 'hotels'], en: 'Reviews and hotels: what visitors see when they choose. The bookable-products audit is still pending.', ja_where: 'レビューとホテル：来訪者が選ぶ時に見る情報。予約可能な商品の調査は未実施。' },
-  reach: { ja: '移動・周遊', layers: ['traffic', 'flow'], node: 'tojinbo', en: 'Traffic and people flow around Tojinbo, which has no direct bus from Fukui Station.', ja_where: '東尋坊周辺の交通と人流。福井駅からの直通バスがない。' },
+  reach: { ja: '移動・周遊', layers: ['traffic', 'transport'], node: 'tojinbo', en: 'Traffic and bus routes around Tojinbo, which has no direct bus from Fukui Station.', ja_where: '東尋坊周辺の交通とバス路線。福井駅からの直通バスがない。' },
   stay: { ja: '宿泊', layers: ['hotels', 'economics'], en: 'Hotels and economics: how full hotels are and the overnight spend lost to neighbouring areas.', ja_where: 'ホテルと経済：ホテルの稼働率と、近隣地域に流出した宿泊消費。' },
   return: { ja: '再訪', layers: ['survey'], en: 'Survey: satisfaction and how likely visitors are to come back or recommend Fukui.', ja_where: 'アンケート：満足度と、再訪・推奨の意向。' },
 }

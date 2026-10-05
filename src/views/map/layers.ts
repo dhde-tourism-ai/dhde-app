@@ -3,7 +3,6 @@ import type { IconName } from '../../lib/icons'
 export type LayerId =
   | 'people'
   | 'density'
-  | 'flow'
   | 'traffic'
   | 'transport'
   | 'rail'
@@ -17,7 +16,7 @@ export type LayerId =
   | 'economics'
   | 'nudges'
 export type BasemapId = 'light' | 'hybrid' | 'dark' | 'streets'
-export type GroupId = 'actions' | 'movement' | 'conditions' | 'voice' | 'market' | 'economics' | 'future'
+export type GroupId = 'actions' | 'movement' | 'conditions' | 'voice' | 'market' | 'economics'
 
 export interface LayerDef {
   id: LayerId
@@ -40,14 +39,12 @@ export const GROUPS: { id: GroupId; en: string; ja: string }[] = [
   { id: 'voice', en: 'Voice of visitor', ja: '来訪者の声' },
   { id: 'market', en: 'Market', ja: '市場' },
   { id: 'economics', en: 'Economics', ja: '経済' },
-  { id: 'future', en: 'Coming soon', ja: '今後追加' },
 ]
 
 export const LAYERS: LayerDef[] = [
   { id: 'nudges', group: 'actions', en: 'Action nudges', ja: '推奨アクション', icon: 'flag', demo: true, hint_en: 'Demand, weather-route and booking alerts on the map', hint_ja: '需要・天候ルート・予約のアラート', tip_en: 'Suggested actions for staff: where to act, why, and what to do. The flag colour shows the priority.', tip_ja: '職員向けの推奨アクション：どこで、なぜ、何をするか。旗の色は優先度。' },
   { id: 'people', group: 'movement', en: 'People', ja: '人数', icon: 'people', demo: true, hint_en: 'Visitors per site, estimated and forecast', hint_ja: '各地点の来訪者数（推計と予測）', tip_en: 'How many people visit each site, estimated from real counts and forecast. A bigger circle means more people; the colour shows how crowded it is.', tip_ja: '各地点の来訪者数（実データからの推計と予測）。円が大きいほど人が多く、色は混雑度。' },
   { id: 'density', group: 'movement', en: 'Regional density', ja: '地域の密度', icon: 'density', demo: true, hint_en: 'Where visitors concentrate', hint_ja: '来訪者が集中する地域', tip_en: 'Shading shows where visitors gather across the region.', tip_ja: '地域内で来訪者が集まる場所を色の濃さで表示。' },
-  { id: 'flow', group: 'future', en: 'People flow (simulated)', ja: '人流（模擬）', icon: 'flow', demo: true, hint_en: 'Needs KDDI phone location data; the dots are simulated until then', hint_ja: 'KDDIの位置情報データが必要。それまでは点は模擬', tip_en: 'A preview of how visitor movement will look. The dots are simulated from each site\'s daily total, not measured journeys. Real flows need KDDI phone location data.', tip_ja: '来訪者の移動の表示イメージ。点は各地点の日合計からの模擬で、実際の移動ではない。実際の人流にはKDDIの位置情報データが必要。' },
   { id: 'traffic', group: 'movement', en: 'Traffic flow', ja: '交通状況', icon: 'traffic', demo: true, hint_en: 'Road congestion and reroutes', hint_ja: '道路の混雑と迂回推奨', tip_en: 'Road colour shows congestion. Green lines are suggested detours.', tip_ja: '道路の色は混雑度。緑の線は推奨迂回路。' },
   { id: 'transport', group: 'movement', en: 'Bus routes', ja: 'バス路線', icon: 'bus', demo: false, hint_en: 'Bus routes, every stop, walking areas', hint_ja: 'バス路線、全停留所、徒歩圏', tip_en: 'How visitors can reach each site by bus: the routes serving the six sites from the operators’ timetables, every stop on them, and how far you can walk in 15 or 30 minutes from each site. Select a site for journey times and the last bus back.', tip_ja: '各地点へバスで行く方法：事業者の時刻表による6地点を結ぶ路線、その全停留所、各地点から徒歩15分・30分圏。地点を選ぶと所要時間と最終バスを表示。' },
   { id: 'rail', group: 'movement', en: 'Train routes', ja: '鉄道路線', icon: 'train', demo: false, hint_en: 'Railway lines and stations', hint_ja: '鉄道路線と駅', tip_en: 'Railway lines and stations in and around Fukui: Hokuriku Shinkansen, Hapi-line Fukui, Echizen Railway, Fukui Railway and the JR lines. From MLIT railway data (CC BY 4.0): routes only, since rail timetables are not open data.', tip_ja: '福井県内と周辺の鉄道路線と駅：北陸新幹線、ハピラインふくい、えちぜん鉄道、福井鉄道、JR線。国土数値情報（鉄道データ、CC BY 4.0）。鉄道の時刻表はオープンデータでないため路線のみ。' },
@@ -70,11 +67,11 @@ export const OVERVIEW_NOTE = [
   '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
 ] as const
 
-/** The briefing view, readable in about 20 seconds: visitors, hotels, what to do, and bus access. */
-export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges', 'transport']
+/** The briefing view, readable in about 20 seconds: visitors, hotels and what to do. Bus routes are a switch away. */
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'hotels', 'nudges']
 
-// v4: everyone starts again from the defaults once (older choices hid the key layers).
-const LAYERS_KEY = 'dhde.layers.v4'
+// v5: everyone starts again from the defaults once (older choices hid the key layers or kept bus routes on).
+const LAYERS_KEY = 'dhde.layers.v5'
 
 /**
  * The viewer's last layer choice, or null to use the defaults. Briefing keeps it for this visit
