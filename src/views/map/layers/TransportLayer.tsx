@@ -66,6 +66,8 @@ export function TransportLayer({
   const showStops = zoom >= 12
   const stopR = zoom >= 14 ? 2.4 : zoom >= 13 ? 1.9 : 1.5
   const stationR = zoom >= 14 ? 3 : zoom >= 12 ? 2.3 : zoom >= 10.5 ? 1.8 : 1.5
+  // Zoomed out, only the main stations (Shinkansen and interchanges); every station from zoom 11.
+  const allStations = zoom >= 11
   const walk = data.walk_areas
   const rail = showRail ? data.rail : null
   const railName = Object.fromEntries((rail?.lines ?? []).map((l) => [l.id, tr(l.name, l.name_ja)]))
@@ -131,7 +133,7 @@ export function TransportLayer({
       )}
       {/* stations above bus stops: fewer, and the main transfer points */}
       <Pane name="dhde-transport-stations" style={{ zIndex: 460 }}>
-        {rail?.stations.map((s) => (
+        {rail?.stations.filter((s) => allStations || s.lines.length > 1 || s.lines.includes('hokuriku_shinkansen')).map((s) => (
           <Fragment key={s.id}>
             <CircleMarker center={[s.lat, s.lon]} radius={stationR} interactive={false}
               pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }} />

@@ -47,8 +47,6 @@ interface Props {
   setSpeed: (s: number) => void
   /** Moving buses or trains are on: show their clock (live at Now, else a preview of the hour). */
   vehicles?: boolean
-  /** "Play buses & trains" is running, at this many minutes a second. */
-  running?: number | null
 }
 
 /** The vehicle clock, ticking: HH:MM:SS live, HH:MM in a preview. */
@@ -63,7 +61,7 @@ function VehicleTime({ live }: { live: boolean }) {
   return <span className="tl-hour num">{clock(m)}{live ? `:${String(secs).padStart(2, '0')}` : ''}</span>
 }
 
-export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, vehicles = false, running = null }: Props) {
+export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, vehicles = false }: Props) {
   const { t: tr, lang } = useLang()
   const track = useRef<HTMLDivElement>(null)
   const H = live.hours
@@ -72,7 +70,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const sc = scaleFor(live)
   const todayDay = live.today_day ?? 0
   const observed = t <= now
-  const isLive = !playing && !running && t === nowIdx
+  const isLive = !playing && t === nowIdx
 
   // Total people on site across all nodes, per hour: the day's rhythm behind the scrubber.
   const spark = useMemo(() => {
@@ -120,8 +118,8 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
           {vehicles ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
         </div>
-        {vehicles && running ? (
-          <span className="tl-mode run" title={tr(`Buses and trains fast-forwarded from the time shown, ${running} min a second (scheduled positions)`, `表示時刻から早送り、1秒で${running}分（時刻表上の位置）`)}>
+        {vehicles && !isLive ? (
+          <span className="tl-mode run" title={tr('Off Now, buses and trains are simulated from the time shown (scheduled positions)', '現在以外の時刻：表示時刻からのシミュレーション（時刻表上の位置）')}>
             {tr('Simulated', 'シミュレーション')}
           </span>
         ) : vehicles && isLive ? (

@@ -1223,51 +1223,6 @@ button.al-item:hover {
   pointer-events: none;
 }
 
-/* "Play buses & trains", above the timeline */
-.vehicle-play {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: max-content;
-  margin: 0 auto 8px;
-  padding: 5px 6px 5px 5px;
-  border-radius: var(--r-pill);
-  background: rgba(16, 25, 43, 0.94);
-  border: 1px solid var(--line-strong);
-  box-shadow: var(--shadow-float);
-  pointer-events: auto;
-}
-
-.vehicle-play .seg {
-  border-radius: var(--r-pill);
-}
-
-.vehicle-play .seg button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: var(--r-pill);
-  font-size: 12.5px;
-  padding: 5px 12px;
-}
-
-.vehicle-play .vp-mode button[aria-pressed='true'] {
-  background: var(--accent);
-  color: #0a1120;
-  box-shadow: none;
-}
-
-.vp-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--good-text);
-}
-
-.vp-mode button[aria-pressed='true'] .vp-dot {
-  background: #0a5c1f;
-}
-
 .tl-mode.run {
   white-space: nowrap;
   color: var(--accent-strong);

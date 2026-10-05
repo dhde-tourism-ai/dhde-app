@@ -77,7 +77,22 @@ export class VehicleCanvas extends CanvasOverlay {
       ctx.fill()
     }
 
-    for (const r of this.rail) for (const ll of trainsAt(r, m, this.legCache)) dot(this.toCanvas(ll), trainR, this.style.train)
+    // Trains are diamonds, so they don't read as the (round) station dots they pass.
+    const diamond = (p: L.Point, r: number, fill: string) => {
+      if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) return
+      const k = r * 1.45
+      for (const [d, c] of [[k + 1.1, '#ffffff'], [k, fill]] as const) {
+        ctx.beginPath()
+        ctx.moveTo(p.x, p.y - d)
+        ctx.lineTo(p.x + d, p.y)
+        ctx.lineTo(p.x, p.y + d)
+        ctx.lineTo(p.x - d, p.y)
+        ctx.closePath()
+        ctx.fillStyle = c
+        ctx.fill()
+      }
+    }
+    for (const r of this.rail) for (const ll of trainsAt(r, m, this.legCache)) diamond(this.toCanvas(ll), trainR, this.style.train)
 
     for (const b of this.buses) {
       const n = b.min.length
