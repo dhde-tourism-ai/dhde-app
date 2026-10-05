@@ -362,8 +362,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             <Card
               className="td-5"
               title={t('Last bus back to Fukui Station', '福井駅への最終バス')}
-              sub={t(`By site · ${dayLabel}`, `地点別・${dayLabel}`)}
-              source={t('Keifuku Bus and city buses · Fukui Prefecture open data (CC BY 4.0)', '京福バス株式会社ほか・福井県オープンデータ（CC BY 4.0）')}
             >
               <div className="td-chart" style={{ height: 240 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -381,7 +379,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       tickLine={false}
                       axisLine={{ stroke: GRID }}
                     />
-                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
+                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={170} />
                     <ReferenceLine
                       x={EARLY_LAST_RETURN_MIN}
                       stroke={EARLY}
@@ -433,11 +431,6 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
             <Card
               className="td-7"
               title={t('Bus service by site', '地点別のバス運行')}
-              sub={t(`From ${hub} · ${dayLabel}`, `${hub}から・${dayLabel}`)}
-              source={t(
-                'Bus only (no open rail timetable) · adult fare, one way · Fukui Prefecture open data (CC BY 4.0)',
-                'バスのみ（鉄道の時刻表は非公開）・大人片道・福井県オープンデータ（CC BY 4.0）',
-              )}
             >
               <div className="td-table-wrap">
                 <table className="td-table">
