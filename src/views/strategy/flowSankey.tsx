@@ -134,7 +134,7 @@ function FlowView({ card, alt }: { card: SankeyCard; alt: boolean }) {
     <>
       {/* grows to the view's full height (min 420 px), so the shorter view has no gap */}
       <div className="flow-plot">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minHeight={420}>
           <Sankey key={view ? 'alt' : 'base'} data={data} node={Node} link={Link} nodeWidth={12} nodePadding={view ? 28 : 18} sort={false} margin={{ top: 10, right: 200, bottom: 10, left: 230 }} iterations={32} />
         </ResponsiveContainer>
       </div>

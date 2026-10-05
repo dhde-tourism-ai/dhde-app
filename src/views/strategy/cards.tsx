@@ -308,7 +308,7 @@ function Forecast({ card }: { card: ForecastCard }) {
           </div>
           {/* grows with the card (min 260 px) when a tab set stretches it */}
           <div className="fc-plot">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={260}>
               <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
                 {firstFc && last && <ReferenceArea x1={firstFc} x2={last} fill="#8b9dff" fillOpacity={0.06} ifOverflow="visible" />}
@@ -437,7 +437,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
           </div>
           {/* grows with the card (min 260 px) when a tab set stretches it */}
           <div className="fc-plot">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={260}>
               <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
                 <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
