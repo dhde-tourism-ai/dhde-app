@@ -9,6 +9,13 @@ import { VehicleCanvas } from '../canvas/VehicleCanvas'
 import type { BusTrip } from '../canvas/VehicleCanvas'
 import { useLeafletLayer } from '../canvas/useLeafletLayer'
 
+export interface VehicleRun {
+  iso: string
+  min: number
+  /** Simulated minutes per second. */
+  rate: number
+}
+
 /** Timeline step while playing (MapView's interval at 1x), in seconds. */
 const STEP_S = 0.9
 
@@ -31,6 +38,7 @@ export function VehiclesLayer({
   live,
   playing,
   speed,
+  run,
 }: {
   trips: TransportTripsFile | null
   /** Drawn bus lines: buses run along their route's line, and routes without one get no buses. */
@@ -42,14 +50,17 @@ export function VehiclesLayer({
   live: boolean
   playing: boolean
   speed: number
+  /** The "Play buses & trains" control: run from this date and minute at `rate` minutes a second. */
+  run: VehicleRun | null
 }) {
   const canvas = useLeafletLayer(() => new VehicleCanvas({ bus: MODE_COLOUR.bus, train: RAIL_LINE_COLOUR }))
   const iso = dateOfHour(start, t)
 
   useEffect(() => {
-    // Live: real clock. Preview: a minute a second, or the whole hour per timeline step while playing.
-    vehicleClock.set(live ? 'live' : 'preview', iso, (t % 24) * 60, playing ? (60 * speed) / STEP_S : 1)
-  }, [live, iso, t, playing, speed])
+    // Run: the play control. Live: real clock. Preview: a minute a second, or the whole hour per timeline step while playing.
+    if (run) vehicleClock.set('run', run.iso, run.min, run.rate)
+    else vehicleClock.set(live ? 'live' : 'preview', iso, (t % 24) * 60, playing ? (60 * speed) / STEP_S : 1)
+  }, [run, live, iso, t, playing, speed])
 
   // The live clock can cross midnight: check the timetable day once a minute.
   const [, tick] = useState(0)
@@ -58,7 +69,7 @@ export function VehiclesLayer({
     const id = window.setInterval(() => tick((n) => n + 1), 60000)
     return () => window.clearInterval(id)
   }, [live])
-  const day = dayTypeOf(live ? vehicleClock.date() : iso)
+  const day = dayTypeOf(run ? run.iso : live ? vehicleClock.date() : iso)
 
   // Each stop pattern is placed on its line once (a few dozen patterns behind hundreds of trips).
   const buses = useMemo<BusTrip[]>(() => {

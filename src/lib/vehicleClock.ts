@@ -5,11 +5,14 @@
  *   (JST), at real speed, on today's timetable. Positions are scheduled, not GPS.
  * - preview: any other hour, or playing. The clock runs through that hour a minute
  *   a second (or the whole hour per timeline step while playing) and loops.
+ * - run: the map's "Play buses & trains" control. From the time it was pressed, the
+ *   clock runs on through the day at a few minutes a second (not looping the hour),
+ *   so vehicles visibly travel their routes.
  */
 import { isHoliday } from './holidays'
 import type { DayType } from '../types/transport'
 
-export type ClockMode = 'live' | 'preview'
+export type ClockMode = 'live' | 'preview' | 'run'
 
 const JST_MS = 9 * 3600000
 
@@ -26,7 +29,7 @@ function jst(ms: number): { iso: string; min: number } {
 }
 
 export const vehicleClock = {
-  /** Live clock, or a preview of the hour starting at `hourStartMin` on `dateIso`, at `minPerSec` simulated minutes a second. */
+  /** Live clock, a preview of the hour starting at `hourStartMin` on `dateIso`, or a run from that minute, at `minPerSec` simulated minutes a second. */
   set(next: ClockMode, dateIso: string, hourStartMin: number, minPerSec: number) {
     if (next !== mode || hourStartMin !== hourMin || dateIso !== iso) anchor = performance.now()
     mode = next
@@ -39,6 +42,7 @@ export const vehicleClock = {
   minute(): number {
     if (mode === 'live') return jst(Date.now()).min
     const elapsed = ((performance.now() - anchor) / 1000) * rate
+    if (mode === 'run') return (hourMin + elapsed) % 1440
     return hourMin + (elapsed % 60)
   },
   /** The clock's JST date. */

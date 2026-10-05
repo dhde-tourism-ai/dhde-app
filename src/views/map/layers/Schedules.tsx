@@ -22,10 +22,11 @@ function useTicking() {
 
 function ClockLabel() {
   const { t } = useLang()
-  const live = vehicleClock.mode() === 'live'
+  const mode = vehicleClock.mode()
+  const live = mode === 'live'
   return (
     <span className={`sched-clock${live ? ' live' : ''}`}>
-      {live ? t('Live', 'ライブ') : t('Preview', 'プレビュー')} {clock(vehicleClock.minute())}
+      {live ? t('Live', 'ライブ') : mode === 'run' ? t('Fast-forward', '早送り') : t('Preview', 'プレビュー')} {clock(vehicleClock.minute())}
     </span>
   )
 }

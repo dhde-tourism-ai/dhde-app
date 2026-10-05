@@ -47,13 +47,15 @@ interface Props {
   setSpeed: (s: number) => void
   /** Moving buses or trains are on: show their clock (live at Now, else a preview of the hour). */
   vehicles?: boolean
+  /** "Play buses & trains" is running, at this many minutes a second. */
+  running?: number | null
 }
 
 /** The vehicle clock, ticking: HH:MM:SS live, HH:MM in a preview. */
 function VehicleTime({ live }: { live: boolean }) {
   const [, tick] = useState(0)
   useEffect(() => {
-    const id = window.setInterval(() => tick((n) => n + 1), live ? 1000 : 250)
+    const id = window.setInterval(() => tick((n) => n + 1), live ? 1000 : 200)
     return () => window.clearInterval(id)
   }, [live])
   const m = vehicleClock.minute()
@@ -61,7 +63,7 @@ function VehicleTime({ live }: { live: boolean }) {
   return <span className="tl-hour num">{clock(m)}{live ? `:${String(secs).padStart(2, '0')}` : ''}</span>
 }
 
-export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, vehicles = false }: Props) {
+export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, vehicles = false, running = null }: Props) {
   const { t: tr, lang } = useLang()
   const track = useRef<HTMLDivElement>(null)
   const H = live.hours
@@ -70,7 +72,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const sc = scaleFor(live)
   const todayDay = live.today_day ?? 0
   const observed = t <= now
-  const isLive = !playing && t === nowIdx
+  const isLive = !playing && !running && t === nowIdx
 
   // Total people on site across all nodes, per hour: the day's rhythm behind the scrubber.
   const spark = useMemo(() => {
@@ -118,7 +120,11 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
           {vehicles ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
         </div>
-        {vehicles && isLive ? (
+        {vehicles && running ? (
+          <span className="tl-mode run" title={tr(`Buses and trains fast-forwarded from the time shown, ${running} min a second (scheduled positions)`, `表示時刻から早送り、1秒で${running}分（時刻表上の位置）`)}>
+            {tr('Fast-forward', '早送り')}
+          </span>
+        ) : vehicles && isLive ? (
           <span className="tl-mode live" title={tr('Buses and trains on the real clock (scheduled positions, not GPS)', '実時刻のバス・列車（時刻表上の位置、GPSではない）')}>
             {tr('Live', 'ライブ')}
           </span>
