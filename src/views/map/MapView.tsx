@@ -402,7 +402,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
     if (wx) return tr(wx.en, wx.ja)
     const ranked = nodes
       .map((n) => ({ n, f: figures[n.id] }))
-      .filter((x) => x.f && x.f.value !== null && x.f.normal)
+      .filter((x) => x.f && x.f.value !== null && x.f.normal && !x.f.busyness)
       .sort((a, b) => b.f.value! / b.f.normal! - a.f.value! / a.f.normal!)
     if (!ranked.length) return tr('No visitor figures for this day yet.', 'この日の来訪者データはまだありません。')
     const { n, f } = ranked[0]

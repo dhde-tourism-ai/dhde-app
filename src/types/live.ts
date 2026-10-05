@@ -198,4 +198,8 @@ export interface RealNodeMeta {
   forecast_source_daily: ('model' | 'naive' | null)[]
   /** Per merged day: the forecast model's visitor total where it published one (exact, unrounded by hour). */
   forecast_daily?: (number | null)[]
+  /** Per merged day: the forecast model's camera detections where it published one (Fukui Station). */
+  signal_forecast_daily?: (number | null)[]
+  /** Mean daily signal over the real history: the usual day a busyness figure is compared with. */
+  signal_normal?: number | null
 }

@@ -13,7 +13,7 @@ import { Tip } from './Tip'
 import { lastSignal, rowsFor, type CardLayers } from './cardRows'
 import { WeatherDetail } from './WeatherLayer'
 import { ReviewsDetail, SocialDetail, SurveyDetail } from './VoiceMarketLayers'
-import { LEVEL, dayRadius } from '../../../lib/briefing'
+import { LEVEL, busyPct, dayRadius } from '../../../lib/briefing'
 import type { DayFigure } from '../../../lib/briefing'
 
 /**
@@ -76,6 +76,8 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
         // Briefing: never "Real" for a visitor number. Past days are estimates, later days forecasts.
         const count = !fig
           ? ''
+          : fig.busyness
+            ? `<span class="nt-count${fig.kind === 'forecast' ? ' fc' : ''}">${fig.kind === 'forecast' ? '~' : ''}${busyPct(fig)}<span class="nt-kind">${escapeHtml(fig.kind === 'forecast' ? t('of usual, forecast', '通常比・予測') : t('of usual, camera', '通常比・カメラ'))}</span></span>`
           : fig.kind === 'real'
             ? `<span class="nt-count">${Math.round(fig.value!).toLocaleString('en-US')}</span><span class="nt-est">${escapeHtml(t('est.', '推計'))}</span>`
             : fig.kind === 'forecast'

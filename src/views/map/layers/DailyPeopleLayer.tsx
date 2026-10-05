@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { CircleMarker, Pane, Tooltip } from 'react-leaflet'
 import type { MapNode } from '../../../lib/nodes'
 import { useLang } from '../../../lib/i18n'
-import { LEVEL, dayRadius, methodNote } from '../../../lib/briefing'
+import { LEVEL, busyPct, dayRadius, methodNote } from '../../../lib/briefing'
 import type { DayFigure } from '../../../lib/briefing'
 import type { RealNodeMeta } from '../../../types/live'
 import { StatusPill } from '../../../components/StatusPill'
@@ -41,9 +41,11 @@ export function DailyPeopleLayer({
         const m = meta?.[n.id]
         const selected = n.id === selectedId
         const col = f.level ? LEVEL[f.level].colour : NEUTRAL
-        const r = dayRadius(f.value)
+        const r = f.busyness ? 14 : dayRadius(f.value)
         const pct = f.value !== null && f.normal ? Math.round((f.value / f.normal - 1) * 100) : null
-        const note = methodNote(m, lang)
+        const note = f.busyness
+          ? t('Busyness from the station camera, not a visitor count: there is no official visitor figure for the station.', '駅カメラによる混雑度で来訪者数ではない：駅の公式来訪者数がないため。')
+          : methodNote(m, lang)
         return (
           <CircleMarker
             key={n.id}
@@ -67,8 +69,16 @@ export function DailyPeopleLayer({
               {f.value !== null ? (
                 <>
                   <div className="tt-hero">
-                    <b className="num">{fmt(f.value)}</b>
-                    <span>{f.kind === 'real' ? t('visitors that day (estimated)', 'この日の来訪者数（推計）') : t('visitors forecast for the day', 'この日の来訪者予測')}</span>
+                    <b className="num">{f.busyness ? busyPct(f) : fmt(f.value)}</b>
+                    <span>
+                      {f.busyness
+                        ? f.kind === 'real'
+                          ? t('of a usual day (station camera)', '通常日比（駅カメラ）')
+                          : t('of a usual day, forecast (station camera)', '通常日比の予測（駅カメラ）')
+                        : f.kind === 'real'
+                          ? t('visitors that day (estimated)', 'この日の来訪者数（推計）')
+                          : t('visitors forecast for the day', 'この日の来訪者予測')}
+                    </span>
                   </div>
                   {f.level && pct !== null && f.normal && (
                     <div className="tt-grid">
@@ -78,8 +88,12 @@ export function DailyPeopleLayer({
                         {t(LEVEL[f.level].en, LEVEL[f.level].ja)} ({pct > 0 ? '+' : ''}
                         {pct}%)
                       </span>
-                      <span className="tt-k">{t('Usual day', '通常の日')}</span>
-                      <span className="tt-v num">{fmt(f.normal)}</span>
+                      {!f.busyness && (
+                        <>
+                          <span className="tt-k">{t('Usual day', '通常の日')}</span>
+                          <span className="tt-v num">{fmt(f.normal)}</span>
+                        </>
+                      )}
                     </div>
                   )}
                   {note && <div className="tip-sub">{note}</div>}

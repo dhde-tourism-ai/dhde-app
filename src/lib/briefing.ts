@@ -59,6 +59,11 @@ export interface DayFigure {
   /** Mean of the site's real days, the "usual" a day is compared with. */
   normal: number | null
   level: DayLevel | null
+  /**
+   * Busyness, not visitors: Fukui Station has no official visitor figure to calibrate its camera
+   * against, so value and normal are camera detections and only their ratio is shown.
+   */
+  busyness?: boolean
 }
 
 /**
@@ -89,6 +94,10 @@ export function briefingSource<T extends { status: string }>(id: string, info: T
 
 /** Within 20% of a usual day counts as usual. */
 const BAND = 0.2
+const levelOf = (r: number): DayLevel => (r >= 1 + BAND ? 'busy' : r <= 1 - BAND ? 'quiet' : 'normal')
+
+/** A busyness figure as a share of the usual day: "118%". */
+export const busyPct = (f: DayFigure) => `${Math.round((f.value! / f.normal!) * 100)}%`
 
 export const LEVEL: Record<DayLevel, { en: string; ja: string; colour: string }> = {
   busy: { en: 'Busier than usual', ja: '通常より混雑', colour: '#e0663a' },
@@ -110,7 +119,16 @@ export function dayFigures(live: LiveData, d: number): Record<string, DayFigure>
     const m = live.node_meta?.[id]
     if (!m) continue
     if (m.no_estimate) {
-      out[id] = { kind: 'no_estimate', value: null, normal: null, level: null }
+      // The camera's own day, or the model's camera forecast, against the camera's usual day.
+      const sig = afterShared ? null : (m.signal_daily[d] ?? null)
+      const fc = m.signal_forecast_daily?.[d] ?? null
+      const value = sig ?? fc
+      const normal = m.signal_normal ?? null
+      if (value === null || !normal) {
+        out[id] = { kind: 'no_estimate', value: null, normal: null, level: null }
+        continue
+      }
+      out[id] = { kind: sig !== null ? 'real' : 'forecast', value, normal, level: levelOf(value / normal), busyness: true }
       continue
     }
     const real = afterShared ? null : (m.visitors_daily[d] ?? null)
@@ -125,11 +143,7 @@ export function dayFigures(live: LiveData, d: number): Record<string, DayFigure>
       value = m.forecast_daily?.[d] ?? n.arrivals.predicted.slice(d * 24, d * 24 + 24).reduce((a, b) => a + b, 0)
     }
     const normal = m.normal_daily
-    let level: DayLevel | null = null
-    if (value !== null && normal) {
-      const r = value / normal
-      level = r >= 1 + BAND ? 'busy' : r <= 1 - BAND ? 'quiet' : 'normal'
-    }
+    const level = value !== null && normal ? levelOf(value / normal) : null
     out[id] = { kind, value, normal, level }
   }
   return out

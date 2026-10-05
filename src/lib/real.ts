@@ -615,6 +615,8 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         forecast_method: forecastMethod(rn),
         forecast_source_daily: fcSource,
         forecast_daily: fcDaily,
+        signal_forecast_daily: dates.map((dt) => modelDay(dt)?.signal ?? null),
+        signal_normal: mean((rn.daily ?? []).map((r) => r.signal).filter((v): v is number => v !== null)),
       }
     }
   }

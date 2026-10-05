@@ -3,7 +3,7 @@ import type { AlertGroups } from '../../../lib/alerts'
 import type { MapNode } from '../../../lib/nodes'
 import type { LiveData } from '../../../types/live'
 import { dayLabel } from '../../../lib/live'
-import { LEVEL } from '../../../lib/briefing'
+import { LEVEL, busyPct } from '../../../lib/briefing'
 import type { DayFigure } from '../../../lib/briefing'
 import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
@@ -35,7 +35,7 @@ export function BriefingBoard({
 }) {
   const { t, lang } = useLang()
   const rows = nodes.filter((n) => figures[n.id])
-  const counted = rows.filter((n) => figures[n.id].value !== null)
+  const counted = rows.filter((n) => figures[n.id].value !== null && !figures[n.id].busyness)
   const total = counted.reduce((a, n) => a + (figures[n.id].value ?? 0), 0)
   const anyForecast = counted.some((n) => figures[n.id].kind === 'forecast')
   const demoWx = new Set(live.weather_alerts.filter((a) => a.demo).map((a) => a.id))
@@ -78,7 +78,9 @@ export function BriefingBoard({
                     <span className="board-tier">
                       {f.level ? t(LEVEL[f.level].en, LEVEL[f.level].ja) : f.kind === 'no_estimate' ? t('no count yet', '人数未推計') : t('no forecast yet', '予測なし')}
                     </span>
-                    <span className="board-val num">{f.value !== null ? Math.round(f.value).toLocaleString('en-US') : '–'}</span>
+                    <span className="board-val num" title={f.busyness ? t('Busyness from the station camera, not a visitor count', '駅カメラによる混雑度（来訪者数ではない）') : undefined}>
+                      {f.value === null ? '–' : f.busyness ? `${f.kind === 'forecast' ? '~' : ''}${busyPct(f)}` : Math.round(f.value).toLocaleString('en-US')}
+                    </span>
                   </button>
                 </li>
               )
@@ -86,8 +88,8 @@ export function BriefingBoard({
           </ul>
           <p className="board-note">
             {t(
-              'Past days: estimates from real counts. Later days: the forecast model. "Usual" is each site\'s average real day.',
-              '過去の日：実データからの推計。以降の日：予測モデル。「通常」は各地点の実データの平均日。',
+              'Past days: estimates from real counts. Later days: the forecast model. "Usual" is each site\'s average real day. Fukui Station: busyness from its camera as a % of a usual day, not visitors, and not in the total.',
+              '過去の日：実データからの推計。以降の日：予測モデル。「通常」は各地点の実データの平均日。福井駅：カメラによる混雑度（通常日比％）で来訪者数ではなく、合計に含まない。',
             )}
           </p>
         </div>
