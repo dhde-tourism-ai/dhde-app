@@ -10,7 +10,7 @@ import type { BusTrip } from '../canvas/VehicleCanvas'
 import { useLeafletLayer } from '../canvas/useLeafletLayer'
 
 /** Simulated minutes a second when the timeline is scrubbed off Now. */
-const SIM_RATE = 5
+const SIM_RATE = 2
 
 /** Timeline step while playing (MapView's interval at 1x), in seconds. */
 const STEP_S = 0.9

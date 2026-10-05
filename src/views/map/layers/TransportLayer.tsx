@@ -7,6 +7,8 @@ import { MODE_COLOUR, MODE_LABEL, RAIL_LINE_COLOUR } from '../../../lib/transpor
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
 import { placeEn, routeEn } from '../../../lib/transportNames'
+import { busRouteUrl, placeUrl, railLineUrl } from '../../../lib/googleMaps'
+import { useIsNarrow } from '../../../hooks/useIsNarrow'
 
 /** All red: the Shinkansen wider, the Fukui Railway tram dashed. Kept thin so the map stays readable. */
 const RAIL_STYLE = {
@@ -54,6 +56,19 @@ export function TransportLayer({
   runs: RailRun[]
 }) {
   const { t: tr, lang } = useLang()
+  // Desktop: clicking a route, stop or station opens it in Google Maps (the hover card says so).
+  // Phones: a tap opens the card, which has the link.
+  const narrow = useIsNarrow()
+  const openOnClick = (url: string | null) => (narrow || !url ? undefined : { click: () => void window.open(url, '_blank', 'noopener,noreferrer') })
+  const gmaps = (url: string | null) =>
+    url &&
+    (narrow ? (
+      <a className="tip-gmaps" href={url} target="_blank" rel="noopener noreferrer">
+        {tr('Open in Google Maps ↗', 'Google マップで開く ↗')}
+      </a>
+    ) : (
+      <div className="tip-gmaps">{tr('Click to open in Google Maps ↗', 'クリックで Google マップを開く ↗')}</div>
+    ))
   // In English: the English name, with the Japanese under it (what's on the signs).
   const named = (en: string, ja: string) => (
     <>
@@ -93,10 +108,11 @@ export function TransportLayer({
             pathOptions={{ color: '#0a1120', weight: RAIL_STYLE[l.kind].weight + 1.5, opacity: 0.7 }} />
         ))}
         {rail?.lines.map((l) => (
-          <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }}>
+          <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }} eventHandlers={openOnClick(railLineUrl(l.name_ja))}>
             <Tip sticky above>
               <strong>{tr(l.name, l.name_ja)}</strong>
               <div className="tip-sub">{l.kind === 'shinkansen' ? 'Shinkansen' : tr(...MODE_LABEL.rail)}</div>
+              {gmaps(railLineUrl(l.name_ja))}
             </Tip>
           </Polyline>
         ))}
@@ -104,11 +120,12 @@ export function TransportLayer({
       {bus && (
         <Pane name="dhde-transport-lines" style={{ zIndex: 430 }}>
           {data.lines.map((l) => (
-            <Polyline key={l.id} positions={l.path}
+            <Polyline key={l.id} positions={l.path} eventHandlers={openOnClick(busRouteUrl(l.path))}
               pathOptions={{ color: l.mode === 'rail' ? (l.colour ?? MODE_COLOUR.rail) : MODE_COLOUR.bus, weight: l.mode === 'rail' ? 2.5 : 1.5, opacity: 0.85 }}>
               <Tip sticky above>
                 {named(routeEn(l.name), l.name)}
                 <div className="tip-sub">{tr(...MODE_LABEL[l.mode])}</div>
+                {gmaps(busRouteUrl(l.path))}
               </Tip>
             </Polyline>
           ))}
@@ -120,11 +137,12 @@ export function TransportLayer({
             <Fragment key={s.id}>
               <CircleMarker center={[s.lat, s.lon]} radius={stopR} interactive={false}
                 pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }} />
-              <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+              <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE} eventHandlers={openOnClick(placeUrl(s.lat, s.lon))}>
                 <Tip above>
                   {named(placeEn(s.name), s.name)}
                   <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
                   <BusStopSchedule trips={trips} stopId={s.id} />
+                  {gmaps(placeUrl(s.lat, s.lon))}
                 </Tip>
               </CircleMarker>
             </Fragment>
@@ -137,11 +155,12 @@ export function TransportLayer({
           <Fragment key={s.id}>
             <CircleMarker center={[s.lat, s.lon]} radius={stationR} interactive={false}
               pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }} />
-            <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE}>
+            <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE} eventHandlers={openOnClick(placeUrl(s.lat, s.lon))}>
               <Tip above>
                 {named(placeEn(s.name_ja), s.name_ja)}
                 <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
                 <StationSchedule runs={runs} stationId={s.id} />
+                {gmaps(placeUrl(s.lat, s.lon))}
               </Tip>
             </CircleMarker>
           </Fragment>
