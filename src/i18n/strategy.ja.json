@@ -322,5 +322,8 @@
   "ESRI 県民経済計算 FY2011–FY2023 (released 7 Aug 2026), soukatu1.xlsx, https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/main_2023.html; tourism contribution: Fukui R2 input-output tool.": "内閣府経済社会総合研究所 県民経済計算 FY2011〜FY2023（2026年8月7日公表）、soukatu1.xlsx、https://www.esri.cao.go.jp/jp/sna/data/data_list/kenmin/files/contents/main_2023.html。観光の寄与：福井県 令和2年 経済波及効果分析ツール。",
   "福井県観光客入込数（推計）令和7年, table 8 (spend 2014–2025), https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf; Fukui R2 IO tool; 観光を取り巻く状況 p.18 (2019 estimate), https://www.pref.fukui.lg.jp/doc/kankou/visionsakutei_d/fil/1_04.pdf": "福井県観光客入込数（推計）令和7年、表8（観光消費額 2014〜2025年）、https://www.pref.fukui.lg.jp/doc/kankou/fukuiken-kankoukyakusu_d/fil/024.pdf。福井県 令和2年 経済波及効果分析ツール。観光を取り巻く状況 p.18（2019年の推計）、https://www.pref.fukui.lg.jp/doc/kankou/visionsakutei_d/fil/1_04.pdf",
   "Fukui Prefecture 経済波及効果分析ツール (令和2年福井県産業連関表, 37 sectors, [I−(I−M)A]⁻¹ inverse), https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx. Replica checked against the tool's published ¥10bn construction example (02.pdf): same result to within 0.01%.": "福井県 経済波及効果分析ツール（令和2年福井県産業連関表、37部門、[I−(I−M)A]⁻¹型の逆行列）、https://www.pref.fukui.lg.jp/doc/toukei-jouhou/hakyukouka_d/fil/01.xlsx。ツールが公表している建設投資100億円の計算例（02.pdf）で再現性を確認：誤差0.01%以内で一致。",
-  "Same model; per ¥1bn effects from the 2025 spend mix.": "同じモデル。10億円当たりの効果は2025年の消費構成による。"
+  "Same model; per ¥1bn effects from the 2025 spend mix.": "同じモデル。10億円当たりの効果は2025年の消費構成による。",
+  "Daily forecast": "日次予測",
+  "Monthly forecast": "月次予測",
+  "Guest-nights": "延べ宿泊者数"
 }

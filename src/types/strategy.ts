@@ -19,6 +19,9 @@ interface CardBase {
   pending_on?: string
   /** Kept in the file but not shown, e.g. the Q4 funnel until the final report. */
   hidden?: boolean
+  /** Theme within its question. A question whose cards have groups shows one group at a
+   * time, picked from a dropdown in its header; cards of a group show together. */
+  group?: string
   /** Short marker next to the title, e.g. "New" or "Updated". */
   badge?: string
 }
