@@ -1,5 +1,5 @@
 import { Area, Bar, BarChart, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import type { LiveData } from '../../../types/live'
+import type { LiveData, RealSentiment } from '../../../types/live'
 import type { RoutesFile } from '../../../types/routes'
 import type { DashboardData } from '../../../types/dashboard'
 import type { EconomicsFigures, Metric, RegionalEconomics } from '../../../types/economics'
@@ -309,7 +309,13 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 })}
             </ul>
 
-            <h3 className="drawer-h">{tr('Sentiment today', '本日の感情')}</h3>
+            {frame.sentiment.real ? (
+              <RealSentimentBlock real={frame.sentiment.real} />
+            ) : (
+              <>
+            <h3 className="drawer-h">
+              {tr('Sentiment today', '本日の感情')} <DemoBadge compact />
+            </h3>
             <div className="sent-block">
               <div className="div-bar" role="img" aria-label={`${tr('Score', 'スコア')} ${frame.sentiment.score.toFixed(2)}`}>
                 <span className="div-mid"></span>
@@ -337,6 +343,8 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 ))}
               </div>
             </div>
+              </>
+            )}
           </>
         )}
 
@@ -370,14 +378,8 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               )}
               {market.social[node.id] && (
                 <div className="vg-cell">
-                  {market.social[node.id].real ? (
-                    <>
-                      <span className="eyebrow">{tr(`Instagram, ${market.social[node.id].real!.days} days`, `Instagram（${market.social[node.id].real!.days}日間）`)}</span>
-                      <span className="vg-val num">{market.social[node.id].real!.posts}</span>
-                      <span className="muted small">
-                        {market.social[node.id].real!.photos} {tr('photos', '写真')} · {tr('to', '〜')} {fmtDate(market.social[node.id].real!.as_of, lang)}
-                      </span>
-                    </>
+                  {market.social[node.id].real || market.social[node.id].mentions ? (
+                    <RealSocialCell s={market.social[node.id]} />
                   ) : (
                     <>
                       <span className="eyebrow">{tr('Social, 24h', 'SNS（24時間）')}</span>
@@ -433,5 +435,87 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
         )}
       </div>
     </section>
+  )
+}
+
+/** The site's real sentiment over its last weekly window: Instagram captions plus mentions, scored. */
+function RealSentimentBlock({ real }: { real: RealSentiment }) {
+  const { t: tr, lang } = useLang()
+  const sc = real.score
+  const pct = (k: number) => (real.scored ? Math.round((k / real.scored) * 100) : 0)
+  return (
+    <>
+      <h3 className="drawer-h">
+        {tr(`Sentiment, ${real.days} days to ${fmtDate(real.as_of, 'en')}`, `感情（${fmtDate(real.as_of, 'ja')}までの${real.days}日間）`)}{' '}
+        <span className="tt-real">{tr('Real', '実データ')}</span> <span className="tt-demo">{tr('first model, unchecked', '初期モデル・未検証')}</span>
+      </h3>
+      <div className="sent-block">
+        {sc === null ? (
+          <p className="muted small">{tr(`Only ${real.scored} posts and comments scored: too few to judge.`, `判定は${real.scored}件のみ：少なすぎて判定できません。`)}</p>
+        ) : (
+          <>
+            <div className="div-bar" role="img" aria-label={`${tr('Score', 'スコア')} ${sc.toFixed(2)}`}>
+              <span className="div-mid"></span>
+              <span
+                className="div-fill"
+                style={{
+                  background: sentimentColour(sc),
+                  left: sc < 0 ? `${50 + sc * 50}%` : '50%',
+                  width: `${Math.abs(sc) * 50}%`,
+                }}
+              ></span>
+            </div>
+            <div className="kv">
+              <span>{tr(sentimentLabel(sc).en, sentimentLabel(sc).ja)}</span>
+              <span className="kv-v num">
+                {sc > 0 ? '+' : ''}
+                {sc.toFixed(2)} · {real.scored} {tr('scored', '件判定')}
+              </span>
+            </div>
+            <div className="chips">
+              <span className="chip">
+                {pct(real.positive)}% {tr('positive', '好意的')}
+              </span>
+              <span className="chip">
+                {pct(real.neutral)}% {tr('neutral', '中立')}
+              </span>
+              <span className="chip">
+                {pct(real.negative)}% {tr('negative', '否定的')}
+              </span>
+            </div>
+          </>
+        )}
+        <p className="muted small">
+          {lang === 'ja'
+            ? `Instagram ${real.from.instagram}件・YouTube/Bluesky/Reddit ${real.from.social}件。本文は保存せず、件数とスコアのみ。`
+            : `Instagram ${real.from.instagram} · YouTube / Bluesky / Reddit ${real.from.social}. Counts and scores only, no post text is kept.`}
+        </p>
+      </div>
+    </>
+  )
+}
+
+/** The site's real social posts in the last weekly window: Instagram plus mentions. */
+function RealSocialCell({ s }: { s: NonNullable<MarketVoiceData['social'][string]> }) {
+  const { t: tr, lang } = useLang()
+  const days = Math.max(s.real?.days ?? 0, s.mentions?.days ?? 0)
+  const asOf = [s.real?.as_of, s.mentions?.as_of].filter((x): x is string => !!x).sort().pop() ?? ''
+  const total = (s.real?.posts ?? 0) + (s.mentions?.total ?? 0)
+  const parts = [
+    s.mentions?.platforms.youtube != null ? `YouTube ${s.mentions.platforms.youtube}` : null,
+    s.mentions?.platforms.bluesky != null ? `Bluesky ${s.mentions.platforms.bluesky}` : null,
+    s.mentions?.platforms.reddit != null ? `Reddit ${s.mentions.platforms.reddit}` : null,
+    s.real ? `Instagram ${s.real.posts}` : null,
+  ].filter(Boolean)
+  return (
+    <>
+      <span className="eyebrow">
+        {tr(`Social, ${days} days`, `SNS（${days}日間）`)} <span className="tt-real">{tr('Real', '実データ')}</span>
+      </span>
+      <span className="vg-val num">{total.toLocaleString('en-US')}</span>
+      <span className="muted small">
+        {parts.join(' · ')} · {tr('to', '〜')} {fmtDate(asOf, lang)}
+      </span>
+    </>
   )
 }
