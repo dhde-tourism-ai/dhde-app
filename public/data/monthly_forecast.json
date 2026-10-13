@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T06:12:33Z",
+  "generated_at": "2026-10-13T06:55:46Z",
   "source": {
     "repo": "dhde-tourism-ai/dhde-preprocessing-model",
     "commit": "de18acb"
@@ -12,10 +12,10 @@
       "label": "Sakai city (Tojinbo)",
       "label_ja": "坂井市（東尋坊）",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 12.1,
-      "baseline_mape_pct": 12.1,
+      "backtest_mape_pct": 12.8,
+      "baseline_mape_pct": 12.8,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -97,15 +97,13 @@
         {
           "month": "2026-08",
           "value": 325661.0
+        },
+        {
+          "month": "2026-09",
+          "value": 203936.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 166630.0,
-          "low": 144379.0,
-          "high": 255430.0
-        },
         {
           "month": "2026-10",
           "predicted": 168125.0,
@@ -171,6 +169,12 @@
           "predicted": 325661.0,
           "low": 282174.0,
           "high": 499211.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 203936.0,
+          "low": 176704.0,
+          "high": 312617.0
         }
       ]
     },
@@ -180,10 +184,10 @@
       "label": "Fukui city (Fukui Station)",
       "label_ja": "福井市（福井駅）",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 9.8,
-      "baseline_mape_pct": 9.8,
+      "backtest_mape_pct": 10.6,
+      "baseline_mape_pct": 10.6,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -265,15 +269,13 @@
         {
           "month": "2026-08",
           "value": 344178.0
+        },
+        {
+          "month": "2026-09",
+          "value": 319362.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 265028.0,
-          "low": 250522.0,
-          "high": 335661.0
-        },
         {
           "month": "2026-10",
           "predicted": 261220.0,
@@ -339,6 +341,12 @@
           "predicted": 344178.0,
           "low": 325340.0,
           "high": 435905.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 319362.0,
+          "low": 301882.0,
+          "high": 404475.0
         }
       ]
     },
@@ -348,10 +356,10 @@
       "label": "Katsuyama city",
       "label_ja": "勝山市",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 11.6,
-      "baseline_mape_pct": 11.6,
+      "backtest_mape_pct": 10.6,
+      "baseline_mape_pct": 10.6,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -433,15 +441,13 @@
         {
           "month": "2026-08",
           "value": 230262.0
+        },
+        {
+          "month": "2026-09",
+          "value": 157182.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 153380.0,
-          "low": 120804.0,
-          "high": 204874.0
-        },
         {
           "month": "2026-10",
           "predicted": 154130.0,
@@ -507,6 +513,12 @@
           "predicted": 230262.0,
           "low": 181358.0,
           "high": 307568.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 157182.0,
+          "low": 123799.0,
+          "high": 209953.0
         }
       ]
     },
@@ -516,10 +528,10 @@
       "label": "Mihama + Wakasa (Rainbow Line)",
       "label_ja": "美浜町＋若狭町（レインボーライン）",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 16.8,
-      "baseline_mape_pct": 16.8,
+      "backtest_mape_pct": 17.0,
+      "baseline_mape_pct": 17.0,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -601,15 +613,13 @@
         {
           "month": "2026-08",
           "value": 248403.0
+        },
+        {
+          "month": "2026-09",
+          "value": 188204.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 153592.0,
-          "low": 115065.0,
-          "high": 238441.0
-        },
         {
           "month": "2026-10",
           "predicted": 151170.0,
@@ -675,6 +685,12 @@
           "predicted": 248403.0,
           "low": 186094.0,
           "high": 385628.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 188204.0,
+          "low": 140995.0,
+          "high": 292173.0
         }
       ]
     },
@@ -684,10 +700,10 @@
       "label": "Eiheiji town",
       "label_ja": "永平寺町",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 16.8,
-      "baseline_mape_pct": 16.8,
+      "backtest_mape_pct": 17.6,
+      "baseline_mape_pct": 17.6,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -769,15 +785,13 @@
         {
           "month": "2026-08",
           "value": 81873.0
+        },
+        {
+          "month": "2026-09",
+          "value": 85764.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 64910.0,
-          "low": 49151.0,
-          "high": 94287.0
-        },
         {
           "month": "2026-10",
           "predicted": 76055.0,
@@ -843,6 +857,12 @@
           "predicted": 81873.0,
           "low": 61996.0,
           "high": 118927.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 85764.0,
+          "low": 64942.0,
+          "high": 124579.0
         }
       ]
     },
@@ -852,10 +872,10 @@
       "label": "Awara city",
       "label_ja": "あわら市",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 13.5,
-      "baseline_mape_pct": 13.5,
+      "backtest_mape_pct": 14.2,
+      "baseline_mape_pct": 14.2,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -937,15 +957,13 @@
         {
           "month": "2026-08",
           "value": 82827.0
+        },
+        {
+          "month": "2026-09",
+          "value": 68731.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 55558.0,
-          "low": 44907.0,
-          "high": 77333.0
-        },
         {
           "month": "2026-10",
           "predicted": 56118.0,
@@ -1011,6 +1029,12 @@
           "predicted": 82827.0,
           "low": 66949.0,
           "high": 115290.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 68731.0,
+          "low": 55555.0,
+          "high": 95669.0
         }
       ]
     },
@@ -1020,10 +1044,10 @@
       "label": "Fukui prefecture",
       "label_ja": "福井県",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 9.3,
-      "baseline_mape_pct": 9.3,
+      "backtest_mape_pct": 9.8,
+      "baseline_mape_pct": 9.8,
       "range_rough": true,
-      "data_through": "2026-08",
+      "data_through": "2026-09",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -1105,15 +1129,13 @@
         {
           "month": "2026-08",
           "value": 1808033.0
+        },
+        {
+          "month": "2026-09",
+          "value": 1402433.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-09",
-          "predicted": 1210545.0,
-          "low": 1007815.0,
-          "high": 1517022.0
-        },
         {
           "month": "2026-10",
           "predicted": 1257633.0,
@@ -1179,6 +1201,12 @@
           "predicted": 1808033.0,
           "low": 1505242.0,
           "high": 2265778.0
+        },
+        {
+          "month": "2027-09",
+          "predicted": 1402433.0,
+          "low": 1167568.0,
+          "high": 1757491.0
         }
       ]
     },
