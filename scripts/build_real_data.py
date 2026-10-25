@@ -165,6 +165,10 @@ DAILY_FIELDS = {
     "instagram_neutral": "instagram_neutral",
     "instagram_negative": "instagram_negative",
     "instagram_sentiment_mean": "instagram_sentiment_mean",
+    # Weekly snapshots of the posts ever tagged at the site, and the new posts between two (instagram source).
+    "instagram_media_total": "instagram_media_total",
+    "instagram_new_posts": "instagram_new_posts",
+    "instagram_new_posts_days": "instagram_new_posts_days",
     # Bluesky / YouTube / Reddit mentions with language and sentiment (social_listening source, live-data branch).
     "social_mentions": "social_mentions",
     "social_posts": "social_posts",
