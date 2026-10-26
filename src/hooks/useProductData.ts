@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useDashboardData } from './useDashboardData'
 import { mergeAll, parseReal } from '../lib/real'
 import { useJsonResource } from './useJsonResource'
 import { useHourlyWeather } from './useHourlyWeather'
@@ -16,7 +15,6 @@ import type { MarketVoiceData } from '../types/market'
  * the app shell and is handed down, so switching tabs never refetches.
  */
 export function useProductData() {
-  const dashboard = useDashboardData()
   const registry = useJsonResource<NodeRegistry>('nodes.json')
   const economics = useJsonResource<RegionalEconomics>('regional_economics.json')
   const strategy = useJsonResource<StrategicQuestions>('strategic_questions.json')
@@ -54,7 +52,7 @@ export function useProductData() {
       return mergeAll(live.data, market.data, null)
     }
   }, [live.data, market.data, real.data, hourly, now, warnings])
-  return { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }
+  return { registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }
 }
 
 export type ProductData = ReturnType<typeof useProductData>

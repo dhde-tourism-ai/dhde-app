@@ -4,7 +4,6 @@ import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
 import '../../styles/map-layers.css'
-import type { DashboardData } from '../../types/dashboard'
 import type { NodeRegistry } from '../../types/nodes'
 import type { RegionalEconomics } from '../../types/economics'
 import type { LiveData } from '../../types/live'
@@ -192,7 +191,6 @@ function Basemap({ id }: { id: BasemapId }) {
 
 interface MapViewProps {
   registry: NodeRegistry | null
-  dashboard: DashboardData | null
   economics: RegionalEconomics | null
   economicsError: Error | null
   live: LiveData | null
@@ -204,7 +202,7 @@ interface MapViewProps {
   onOpenNode: (id: string) => void
 }
 
-export default function MapView({ registry, dashboard, economics, economicsError, live, liveError, routes, market, selectedId, onSelect, onOpenNode }: MapViewProps) {
+export default function MapView({ registry, economics, economicsError, live, liveError, routes, market, selectedId, onSelect, onOpenNode }: MapViewProps) {
   const { t: tr, lang } = useLang()
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
@@ -268,7 +266,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
     storeLayers(n)
   }
 
-  const allNodes = useMemo(() => buildMapNodes(registry, dashboard), [registry, dashboard])
+  const allNodes = useMemo(() => buildMapNodes(registry), [registry])
   const nodes = useMemo(() => allNodes.filter((n) => n.prefecture === 'fukui'), [allNodes])
   const frame = useMemo(() => (live ? frameAt(live, t) : null), [live, t])
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
@@ -336,7 +334,6 @@ export default function MapView({ registry, dashboard, economics, economicsError
       routes={routes}
       transport={transport}
       hubName={hubName}
-      dashboard={dashboard}
       economics={economics}
       market={market}
       t={t}

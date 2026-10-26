@@ -55,6 +55,13 @@ notes. Days the model ran without its week-ahead bookings are flagged
 low/high range is the 5th-95th percentile of past errors but held about 80%
 of unseen backtest days (range_coverage), so it is an ~80% range, not 90%.
 
+Year-on-year
+------------
+"compare_30d" (Nodes view) holds the 30 days to the node's last count and the
+same 30 days 52 weeks earlier, so weekdays line up: signal and visitors totals
+and the days with a count. The history above is only 90 days, so last year's
+window is summed here from the full master table.
+
 Fails loudly (non-zero exit, no file written) if the output would be empty or
 malformed, so a bad build can never replace a good file.
 """
@@ -72,6 +79,9 @@ import pandas as pd
 
 JST = timezone(timedelta(hours=9))
 HISTORY_DAYS = 90
+# Past-30-days vs the same 30 days 52 weeks earlier (same weekdays), for the Nodes view.
+COMPARE_DAYS = 30
+COMPARE_LAG_DAYS = 364
 FORWARD_DAYS = 90
 
 # 観光客入込数 2025 edition (Fukui Prefecture, released 12 Jun 2026), gross visits.
@@ -276,6 +286,25 @@ def pick_signal(node: str, m: pd.DataFrame) -> tuple[str | None, str | None]:
     return None, None
 
 
+def compare_block(m: pd.DataFrame, signal_col: str, factor: float | None, as_of: str | None) -> dict | None:
+    """The COMPARE_DAYS days to the node's last count and the same days COMPARE_LAG_DAYS
+    earlier: signal and visitors totals and how many days had a count. A window with
+    missing days keeps its partial total; the app shows the change only when both are full."""
+    if not as_of:
+        return None
+    end = pd.Timestamp(as_of)
+
+    def window(to: pd.Timestamp) -> dict:
+        w = m[(m["date"] > to - pd.Timedelta(days=COMPARE_DAYS)) & (m["date"] <= to)][signal_col].dropna()
+        total = float(w.sum()) if len(w) else None
+        return {"from": (to - pd.Timedelta(days=COMPARE_DAYS - 1)).date().isoformat(), "to": to.date().isoformat(),
+                "days": int(len(w)), "signal": clean(total),
+                "visitors_est": round(total * factor) if total is not None and factor else None}
+
+    return {"days": COMPARE_DAYS, "this_year": window(end),
+            "last_year": window(end - pd.Timedelta(days=COMPARE_LAG_DAYS))}
+
+
 def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: dict | None = None,
                notes: list[str] | None = None) -> dict:
     m = m.copy()
@@ -347,16 +376,18 @@ def node_block(node: str, m: pd.DataFrame, today: pd.Timestamp, pipeline_calib: 
     ]
 
     calib["confidence"] = CONFIDENCE.get(measure, "none") if calib["factor"] else "none"
+    as_of_visitors = last_date(m, [signal_col], today) if signal_col else None
     return {
         "measure": measure,
         "signal_column": signal_col,
         "calibration": {k: (round(v, 6) if isinstance(v, float) else v) for k, v in calib.items()},
-        "as_of": {"visitors": last_date(m, [signal_col], today) if signal_col else None,
+        "as_of": {"visitors": as_of_visitors,
                   **{g: last_date(m, cols, today) for g, cols in AS_OF_GROUPS.items()}},
         "daily": daily,
         "hotel_forward": hotel_forward,
         "rakuten": rakuten_block(m, today),
         "survey": survey_block(m, today),
+        "compare_30d": compare_block(m, signal_col, calib["factor"], as_of_visitors) if signal_col else None,
     }
 
 
