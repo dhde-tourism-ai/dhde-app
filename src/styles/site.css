@@ -1,0 +1,368 @@
+/* #/site/<node>: one partner site. Map with a day panel and a day strip, the week's table below. */
+
+.site-map {
+  position: relative;
+  height: calc(100dvh - var(--appbar-h) - 120px);
+  min-height: 520px;
+  overflow: hidden;
+  background: #070c17;
+}
+
+.site-drawer {
+  position: absolute;
+  z-index: 500;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  width: 330px;
+  max-height: calc(100% - 170px);
+  overflow-y: auto;
+  background: var(--glass);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-float);
+  padding: var(--sp-4);
+}
+
+.site-big {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-size: 40px;
+  line-height: 1.1;
+  margin-top: var(--sp-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.site-big small {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-2);
+  margin-left: 4px;
+}
+
+.site-sub {
+  color: var(--text-2);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.site-level-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  font-size: 12px;
+}
+
+.site-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.site-level i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+}
+
+.site-level.quiet i {
+  background: var(--seq-3);
+}
+
+.site-level.busy i {
+  background: var(--warn);
+}
+
+.site-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px var(--sp-3);
+  margin: var(--sp-3) 0 0;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+
+.site-facts dt {
+  color: var(--muted);
+}
+
+.site-facts dd {
+  margin: 0;
+}
+
+.siteview .muted {
+  color: var(--muted);
+}
+
+/* map.css places the Map view's controls clear of its panels; here they sit above the day strip. */
+.site-map .leaflet-bottom {
+  bottom: 148px;
+}
+
+.site-map .leaflet-right .leaflet-control {
+  margin-right: 0;
+}
+
+/* map marks */
+.site-halo {
+  stroke: var(--good);
+  fill: var(--good);
+  fill-opacity: 0.16;
+}
+
+.site-halo.quiet {
+  stroke: var(--seq-3);
+  fill: var(--seq-3);
+}
+
+.site-halo.busy {
+  stroke: var(--warn);
+  fill: var(--warn);
+}
+
+.leaflet-tooltip.site-park-tip {
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: none;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 18px;
+  text-align: center;
+  font: 600 10px var(--font-body);
+}
+
+.leaflet-tooltip.site-tip {
+  white-space: nowrap;
+  max-width: none;
+}
+
+.leaflet-tooltip.site-park-tip::before,
+.leaflet-tooltip.site-tip::before {
+  display: none;
+}
+
+/* day strip */
+.site-strip {
+  position: absolute;
+  z-index: 500;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: var(--sp-3);
+  background: var(--glass);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
+}
+
+.site-strip-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.site-bars {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  height: 92px;
+  margin-top: var(--sp-1);
+  padding-bottom: 16px;
+}
+
+.site-normal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-bottom: 16px;
+  border-top: 1px dashed var(--text-2);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.site-bar {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 3px 3px 0 0;
+}
+
+.site-bar:hover,
+.site-bar[aria-pressed='true'] {
+  background: var(--accent-soft);
+}
+
+.site-bar[aria-pressed='true'] {
+  outline: 1px solid var(--accent);
+}
+
+.site-bar.first {
+  margin-left: 6px;
+  box-shadow: -5px 0 0 -4px var(--text-2);
+}
+
+.site-bar .fill {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  border-radius: 2px 2px 0 0;
+  background: var(--s1);
+}
+
+.site-bar.forecast .fill {
+  background: var(--s4);
+}
+
+.site-bar .whisker {
+  position: absolute;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.site-bar .lbl {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -16px;
+  font: 10px var(--font-mono);
+  color: var(--muted);
+  text-align: center;
+}
+
+.site-bar.off .lbl {
+  color: var(--text);
+}
+
+/* week table */
+.site-week {
+  padding-top: var(--sp-5);
+}
+
+.site-h2 {
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 18px;
+  margin: 0 0 var(--sp-3);
+}
+
+.site-table-wrap {
+  overflow-x: auto;
+}
+
+.site-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.site-table th {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.site-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.site-table tbody tr {
+  cursor: pointer;
+}
+
+.site-table tbody tr:hover,
+.site-table tbody tr.sel {
+  background: var(--accent-soft);
+}
+
+.site-table tr.off td:first-child {
+  color: var(--warn-text);
+}
+
+.site-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-range {
+  position: relative;
+  width: 28%;
+  min-width: 140px;
+}
+
+.site-range .rng {
+  position: absolute;
+  top: calc(50% - 3px);
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(201, 133, 0, 0.35);
+}
+
+.site-range .pt {
+  position: absolute;
+  top: calc(50% - 6px);
+  width: 3px;
+  height: 12px;
+  margin-left: -1px;
+  background: var(--s4);
+}
+
+.site-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: var(--sp-3) 0 0;
+  max-width: 100ch;
+}
+
+@media (max-width: 720px) {
+  .site-map {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .site-map .map-canvas {
+    position: relative;
+    height: 340px;
+  }
+
+  .site-map .leaflet-bottom,
+  .site-map .leaflet-bottom.leaflet-right {
+    top: auto;
+    bottom: 0;
+  }
+
+  /* every third day label, counted back from the last forecast day */
+  .site-bar.minor .lbl {
+    visibility: hidden;
+  }
+
+  .site-drawer,
+  .site-strip {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin: var(--sp-3);
+  }
+}

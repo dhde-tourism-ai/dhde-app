@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type ViewId = 'summary' | 'map' | 'nodes' | 'transport' | 'strategy'
+export type ViewId = 'summary' | 'map' | 'nodes' | 'transport' | 'strategy' | 'site'
 
 export interface Route {
   view: ViewId
-  /** Optional node id for #/nodes/<id> and #/map/<id>. */
+  /** Optional node id for #/nodes/<id>, #/map/<id> and #/site/<id>. */
   node?: string
 }
 
-const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'transport', 'strategy']
+const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'transport', 'strategy', 'site']
 
 function parse(hash: string): Route {
   const [, view, node] = hash.replace(/^#/, '').split('/')
@@ -17,7 +17,7 @@ function parse(hash: string): Route {
   return { view: v, node: node ? decodeURIComponent(node) : undefined }
 }
 
-/** Tiny hash router (#/summary, #/map, #/nodes/<id>, #/strategy): works on static hosting with no server rewrites. */
+/** Tiny hash router (#/summary, #/map, #/nodes/<id>, #/strategy, #/site/<id>): works on static hosting with no server rewrites. */
 export function useHashRoute(): [Route, (r: Route) => void] {
   const [route, setRoute] = useState<Route>(() => parse(window.location.hash))
 
