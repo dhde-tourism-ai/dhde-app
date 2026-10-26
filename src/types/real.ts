@@ -148,6 +148,23 @@ export interface RealNode {
   survey: RealSurvey | null
   /** Missing when no model forecast was published for the node. */
   forecast?: RealForecast
+  /** The 30 days to the last count and the same days 52 weeks earlier. Null in files built before it existed. */
+  compare_30d: RealCompare | null
+}
+
+export interface RealCompareWindow {
+  from: string
+  to: string
+  /** Days in the window with a count (of RealCompare.days). */
+  days: number
+  signal: number | null
+  visitors_est: number | null
+}
+
+export interface RealCompare {
+  days: number
+  this_year: RealCompareWindow
+  last_year: RealCompareWindow
 }
 
 export interface RealSurvey {

@@ -1,188 +1,271 @@
-import type { DashboardData, NodeKey } from '../../types/dashboard'
+import { useMemo } from 'react'
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import type { RealData } from '../../types/real'
+import type { LiveData } from '../../types/live'
+import type { MarketVoiceData } from '../../types/market'
+import type { RegistryNode } from '../../types/nodes'
+import type { HotelThresholds, Nudge } from '../../lib/nudges'
+import { computeNudges, PRIORITY, priorityOf } from '../../lib/nudges'
+import { CONDITION_LABEL } from '../../lib/live'
+import { dayWeather } from '../../lib/dayWeather'
+import { fmtDate } from '../../lib/format'
 import { useLang } from '../../lib/i18n'
-import { Icon } from '../../components/icons'
-
-function fmtNum(n: number | null | undefined): string {
-  if (n === null || n === undefined) return '—'
-  return Math.round(n).toLocaleString('en-US')
-}
-
-function fmtShortDate(dateStr: unknown): string {
-  if (!dateStr || typeof dateStr !== 'string') return String(dateStr ?? '')
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return dateStr
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-}
-
-const BADGE: Record<string, { en: string; ja: string; tone: 'good' | 'warn' | 'serious' | 'crit' }> = {
-  HOT: { en: 'Superb', ja: '絶好調', tone: 'good' },
-  OK: { en: 'Strong', ja: '好調', tone: 'good' },
-  WARN: { en: 'Warning', ja: '注意', tone: 'warn' },
-  CRIT: { en: 'Critical', ja: '要警戒', tone: 'crit' },
-}
-
-function accuracyBadge(pct: number): 'OK' | 'WARN' | 'CRIT' {
-  if (pct <= 20) return 'OK'
-  if (pct <= 45) return 'WARN'
-  return 'CRIT'
-}
-
-function Badge({ code, text }: { code: string; text?: string }) {
-  const { t } = useLang()
-  const b = BADGE[code] ?? { en: code, ja: code, tone: 'warn' as const }
-  return (
-    <span className={`tone-badge tone-${b.tone}`}>
-      <span className="sw" aria-hidden="true"></span>
-      {text ?? t(b.en, b.ja)}
-    </span>
-  )
-}
+import { addDays, nodeFigures } from '../../lib/nodeFigures'
+import type { NodeFigures } from '../../lib/nodeFigures'
 
 const S1 = '#3987e5'
 const S2 = '#d95926'
 const AXIS = { fill: '#7f8ba3', fontSize: 10.5, fontFamily: 'IBM Plex Mono' }
 const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12, color: '#e9eef8' }
+const CHART_DAYS = 60
+const DOW_JA = '日月火水木金土'
+
+const fmtNum = (n: number | null | undefined) => (n === null || n === undefined ? '—' : Math.round(n).toLocaleString('en-US'))
+const pct = (v: number | null | undefined) => (v === null || v === undefined ? '?' : `${Math.round(v * 100)}%`)
+
+/** "10/26（月）" or "Mon 26 Oct". */
+function dayName(iso: string, lang: 'en' | 'ja'): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  if (lang === 'ja') return `${d.getUTCMonth() + 1}/${d.getUTCDate()}（${DOW_JA[d.getUTCDay()]}）`
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+}
+
+const shortDate = (iso: unknown) => (typeof iso === 'string' ? new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' }) : String(iso ?? ''))
+
+function Change({ f }: { f: NodeFigures }) {
+  const { t } = useLang()
+  if (!f.comparable || f.past30 === null || !f.lastYear) return <span className="muted">—</span>
+  const d = f.past30 / f.lastYear - 1
+  return (
+    <span className={`tile-delta ${d >= 0 ? 'up' : 'down'}`}>
+      {d >= 0 ? '▲ +' : '▼ '}
+      {Math.round(d * 100)}% {t('YoY', '前年比')}
+    </span>
+  )
+}
+
+function NudgeList({ nudges, reg }: { nudges: Nudge[]; reg: RegistryNode[] }) {
+  const { t } = useLang()
+  if (!nudges.length) return <p className="muted">{t('No actions for the next 7 days: demand, weather and bookings are within normal range.', '今後7日間の推奨事項はありません。需要・天候・予約は平常範囲です。')}</p>
+  return (
+    <ul className="nudges">
+      {nudges.map((n) => {
+        const pr = PRIORITY[priorityOf(n.sev)]
+        const node = reg.find((r) => r.id === n.node)
+        return (
+          <li key={n.id} className="nudge" style={{ borderLeftColor: pr.colour }}>
+            <div className="nudge-type" title={t(pr.hint_en, pr.hint_ja)}>
+              {t(pr.en, pr.ja)}
+              {node ? ` · ${t(node.name, node.name_ja)}` : ''}
+            </div>
+            <div>
+              <strong>{t(n.title_en, n.title_ja)}</strong>
+            </div>
+            <div className="muted">{t(n.action_en, n.action_ja)}</div>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+interface Props {
+  real: RealData
+  live: LiveData | null
+  market: MarketVoiceData | null
+  registry: RegistryNode[]
+  thresholds: HotelThresholds | null
+  ids: string[]
+  /** JST date. */
+  today: string
+  selectedNode: string | 'all'
+  onSelect: (id: string) => void
+}
 
 /**
- * Dina's node dashboard (FTAS executive dashboard). The data logic is unchanged:
- * per-node summary, 14-day weather strip, actual vs model forecast, estimated
- * outlook, day-by-day pacing and nudges. Only the presentation moved to the
- * DHDE design system.
+ * Per-node dashboard from real_data.json (refreshed daily): the last 30 days
+ * against the same days a year earlier, the week's weather, the last 60 days of
+ * counts with the 7-day model forecast, and the real-data action nudges.
+ * "All nodes" lists every node's figures side by side.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export default function NodeDashboard({ data, selectedNode }: { data: DashboardData; selectedNode: NodeKey | 'all' }) {
-  const { t } = useLang()
-  const nodes = data.nodes || {}
-  const activeNodeKey = selectedNode !== 'all' ? (selectedNode as NodeKey) : undefined
-  const activeNodeData = activeNodeKey ? nodes[activeNodeKey] : undefined
+export default function NodeDashboard({ real, live, market, registry, thresholds, ids, today, selectedNode, onSelect }: Props) {
+  const { t, lang } = useLang()
+  const name = (id: string) => {
+    const r = registry.find((n) => n.id === id)
+    return r ? t(r.name, r.name_ja) : id
+  }
 
-  // Fallback to Tojinbo or first node in the overview, as in the original dashboard.
-  const defaultNode = nodes['tojinbo' as NodeKey] || Object.values(nodes)[0]
-  const summary = activeNodeData?.summary || (data as any).summary || defaultNode?.summary || {}
-  const p30 = summary.past_30_day || {}
-  const week = summary.this_week_pacing || {}
-  const modelAccuracy = summary.model_accuracy
-  const weatherStrip = activeNodeData?.weather_strip || (data as any).weather_strip || defaultNode?.weather_strip || []
-  const demandForecast = activeNodeData?.demand_forecast || (data as any).demand_forecast || defaultNode?.demand_forecast || []
-  const estimatedOutlook = activeNodeData?.estimated_outlook || (data as any).estimated_outlook || defaultNode?.estimated_outlook || []
-  const pacingRows = activeNodeData?.weekly_pacing || (data as any).weekly_pacing || defaultNode?.weekly_pacing || []
-  const nudges = activeNodeData?.nudges || (data as any).nudges || defaultNode?.nudges || []
+  // Real-data nudges for the next 7 days, highest priority first (as the Summary).
+  const nudges = useMemo(() => {
+    if (!live) return []
+    const from = live.today_day ?? 0
+    const rank = { high: 0, medium: 1, low: 2 }
+    return computeNudges(live, market, registry, from, thresholds)
+      .filter((n) => n.real && n.day >= from && n.day < from + 7)
+      .sort((a, b) => rank[priorityOf(a.sev)] - rank[priorityOf(b.sev)] || b.magnitude - a.magnitude)
+  }, [live, market, registry, thresholds])
 
-  const yoy = p30.yoy_pct
-  const yoyUp = yoy !== null && yoy !== undefined && yoy >= 0
-  const yoyText = yoy === null || yoy === undefined ? '—' : (yoyUp ? '+' : '') + yoy + '%'
+  if (selectedNode === 'all') {
+    return (
+      <div className="nd">
+        <section className="nd-section card">
+          <div className="nd-head row">
+            <h2 className="card-title">{t('All nodes', '全ノード')}</h2>
+            <span className="card-sub">{t('Last 30 days to each node’s latest count, against the same days 52 weeks earlier', '各ノードの最新実績までの30日間と、52週前の同じ期間')}</span>
+          </div>
+          <div className="table-scroll">
+            <table className="data-table nd-all">
+              <thead>
+                <tr>
+                  <th>{t('Node', 'ノード')}</th>
+                  <th className="num">{t('Past 30 days', '過去30日')}</th>
+                  <th className="num">{t('Same days last year', '前年同期')}</th>
+                  <th>{t('Change', '増減')}</th>
+                  <th className="num">{t('Forecast, coming days', '今後の予測')}</th>
+                  <th>{t('Counts to', '実績')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ids
+                  .filter((id) => real.nodes[id])
+                  .map((id) => {
+                    const f = nodeFigures(real.nodes[id], today)
+                    return (
+                      <tr key={id} onClick={() => onSelect(id)}>
+                        <td>
+                          {name(id)}
+                          {!f.visitors && <span className="muted"> · {t('camera detections', 'カメラ検知数')}</span>}
+                        </td>
+                        <td className="num">{fmtNum(f.past30)}</td>
+                        <td className="num">{f.lastYear ? fmtNum(f.lastYear) : '—'}</td>
+                        <td>
+                          <Change f={f} />
+                        </td>
+                        <td className="num">{f.next ? `${fmtNum(f.next.total)} (${f.next.days}${t('d', '日')})` : '—'}</td>
+                        <td className="mono">{f.asOf ? fmtDate(f.asOf, lang) : '—'}</td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section className="nd-section card">
+          <div className="nd-head row">
+            <h3 className="card-title">{t('Action nudges, next 7 days', '推奨アクション（今後7日間）')}</h3>
+          </div>
+          <NudgeList nudges={nudges.slice(0, 6)} reg={registry} />
+        </section>
+      </div>
+    )
+  }
+
+  const rn = real.nodes[selectedNode]
+  const f = nodeFigures(rn, today)
+  const unit = f.visitors ? t('visitors', '人') : t('detections', '検知')
+  const fc = f.visitors ? rn.forecast : undefined
+  const lastCount = f.asOf ?? today
+  const chart = [
+    ...rn.daily
+      .filter((d) => d.date <= lastCount && d.date > addDays(lastCount, -CHART_DAYS))
+      .map((d) => ({ date: d.date, actual: f.visitors ? d.visitors_est : d.signal })),
+    ...(fc?.days ?? []).filter((d) => d.date > lastCount).map((d) => ({ date: d.date, forecast: d.visitors_est, range: [d.visitors_lo ?? d.visitors_est, d.visitors_hi ?? d.visitors_est] })),
+  ]
+  const week = Array.from({ length: 7 }, (_, k) => addDays(today, k))
+  const ahead = (fc?.days ?? []).filter((d) => d.date >= today)
 
   return (
     <div className="nd">
-      {/* Executive summary */}
       <section className="nd-section">
         <div className="nd-head">
           <h2 className="nd-title">
-            {activeNodeData ? `${activeNodeData.label}` : t('All nodes overview', '全ノード概要')}
+            {name(selectedNode)}
             <span className="nd-title-sub">{t('Executive summary', '概要')}</span>
           </h2>
-          {activeNodeData && <p className="nd-desc">{activeNodeData.description}</p>}
+          {rn.calibration.method_text && <p className="nd-desc">{t(rn.calibration.method_text, rn.calibration.method_text_ja)}</p>}
         </div>
-
-        {selectedNode === 'all' && data.aggregate && (
-          <div className="tile-grid two">
-            <div className="tile tile-lead">
-              <div className="tile-label">{t('Annual opportunity gap (¥)', '年間の機会損失（円）')}</div>
-              <div className="tile-value">¥{fmtNum(data.aggregate.opportunity_gap_yen)}</div>
-              <div className="tile-foot">{t('Weather-induced demand deficit', '天候による需要不足')}</div>
-            </div>
-            <div className="tile">
-              <div className="tile-label">{t('Opportunity gap (visitors)', '機会損失（来訪者数）')}</div>
-              <div className="tile-value">{fmtNum(data.aggregate.opportunity_gap_visitors)}</div>
-              <div className="tile-foot">{t('Annual deficit across active nodes', '稼働ノード合計の年間不足')}</div>
-            </div>
-          </div>
-        )}
-
         <div className="tile-grid">
           <div className="tile">
             <div className="tile-label">{t('Past 30 days', '過去30日')}</div>
-            <div className="tile-value">{fmtNum(p30.current_total)}</div>
-            <div className={`tile-delta ${yoyUp ? 'up' : 'down'}`}>
-              {yoyUp ? '▲' : '▼'} {yoyText} {t('YoY', '前年比')}
-            </div>
+            <div className="tile-value">{fmtNum(f.past30)}</div>
+            <Change f={f} />
           </div>
           <div className="tile">
-            <div className="tile-label">{t('Same period last year', '前年同期')}</div>
-            <div className="tile-value">{fmtNum(p30.previous_year_total)}</div>
-            <div className="tile-foot">{t('Baseline', '基準')}</div>
+            <div className="tile-label">{t('Same days last year', '前年同期')}</div>
+            <div className="tile-value">{f.lastYear ? fmtNum(f.lastYear) : '—'}</div>
+            <div className="tile-foot">
+              {f.comparable
+                ? t('52 weeks earlier, same weekdays', '52週前の同じ曜日')
+                : rn.compare_30d
+                  ? t(`Counted on ${f.lastYearDays} of 30 days, so no comparison`, `30日中${f.lastYearDays}日のみ計測のため比較なし`)
+                  : t('Available from the next data refresh', '次回のデータ更新から表示')}
+            </div>
           </div>
           <div className="tile">
             <div className="tile-label">{t('Net difference', '差分')}</div>
-            <div className="tile-value">
-              {p30.diff !== undefined && p30.diff >= 0 ? '+' : ''}
-              {fmtNum(p30.diff)}
-            </div>
-            <div className="tile-foot">{t('Visitors vs last year', '前年比の来訪者数')}</div>
+            <div className="tile-value">{f.comparable && f.past30 !== null && f.lastYear !== null ? `${f.past30 >= f.lastYear ? '+' : ''}${fmtNum(f.past30 - f.lastYear)}` : '—'}</div>
+            <div className="tile-foot">{t(`${unit[0].toUpperCase()}${unit.slice(1)} vs last year`, `前年との差（${unit}）`)}</div>
           </div>
           <div className="tile">
-            <div className="tile-label">{t('This week pacing', '今週の達成率')}</div>
-            <div className="tile-value">{week.rate !== undefined ? (week.rate * 100).toFixed(0) + '%' : '—'}</div>
-            <div className="tile-foot">{week.badge && <Badge code={week.badge} />}</div>
+            <div className="tile-label">{f.next ? t(`Forecast, next ${f.next.days} days`, `今後${f.next.days}日間の予測`) : t('Forecast', '予測')}</div>
+            <div className="tile-value">{f.next ? fmtNum(f.next.total) : '—'}</div>
+            <div className="tile-foot">{f.next ? t(`To ${dayName(f.next.to, lang)}`, `${dayName(f.next.to, lang)}まで`) : t('No visitor forecast for this node', 'このノードの来場者予測はありません')}</div>
           </div>
         </div>
       </section>
 
-      {/* Weather strip */}
       <section className="nd-section">
         <div className="nd-head row">
-          <h3 className="card-title">{t('14-day weather and pacing strip', '14日間の天気と達成率')}</h3>
-          <span className="card-sub">{t('Rain risk ≥ 40% outlined', '降水確率40%以上を強調')}</span>
+          <h3 className="card-title">{t('Weather, next 7 days', '今後7日間の天気')}</h3>
+          <span className="card-sub">{t('JMA observations and model forecast · rain days outlined', '気象庁の観測とモデル予報・雨の日を強調')}</span>
         </div>
         <div className="wx-strip" role="list">
-          {weatherStrip.length === 0 ? (
-            <p className="muted">{t('Weather forecast unavailable.', '天気予報を取得できません。')}</p>
-          ) : (
-            weatherStrip.map((d: any, i: number) => (
-              <div key={i} role="listitem" className={`wx-day ${d.rain_risk ? 'risk' : ''}`}>
-                <div className="wx-date">{fmtShortDate(d.date)}</div>
-                <div className="wx-desc" lang="ja">
-                  {d.weather || '—'}
-                </div>
+          {week.map((date) => {
+            const w = dayWeather(rn, live, selectedNode, date)
+            const rain = Boolean(w && w.mm !== null && w.mm >= 1)
+            return (
+              <div key={date} role="listitem" className={`wx-day ${rain ? 'risk' : ''}`}>
+                <div className="wx-date">{dayName(date, lang)}</div>
+                <div className="wx-desc">{w ? CONDITION_LABEL[w.cond][lang] : '—'}</div>
                 <div className="wx-pop num">
-                  {d.rain_risk && <Icon name="umbrella" size={12} />}
-                  {d.precipitation_pct !== null && d.precipitation_pct !== undefined ? `${d.precipitation_pct}%` : '—'}
+                  {w && w.tMin !== null ? (w.tMax !== null && w.tMax !== w.tMin ? `${Math.round(w.tMin)}–${Math.round(w.tMax)}℃` : `${Math.round(w.tMin)}℃`) : ''}
+                  {rain ? ` · ${Math.round(w!.mm!)}mm` : ''}
                 </div>
               </div>
-            ))
-          )}
+            )
+          })}
         </div>
       </section>
 
-      {/* Actual vs forecast */}
       <section className="nd-section card">
         <div className="nd-head row">
           <div>
-            <h3 className="card-title">{t('Actual vs model forecast', '実績とモデル予測')}</h3>
+            <h3 className="card-title">{fc ? t(`Daily ${unit}: last ${CHART_DAYS} days and the forecast`, `日別の来場者：過去${CHART_DAYS}日と予測`) : t(`Daily ${unit}: last ${CHART_DAYS} days`, `日別の${f.visitors ? '来場者' : '検知数'}：過去${CHART_DAYS}日`)}</h3>
             <p className="card-sub">
-              {t('Last 60 days · Random Forest', '直近60日・ランダムフォレスト')} {selectedNode === ('fukui_station' as NodeKey) ? t('(with hotel reservation lags)', '（ホテル予約ラグ込み）') : ''}
+              {fc
+                ? t(
+                    `Model (${fc.model}): error ${pct(fc.backtest_wape)} vs ${pct(fc.baseline_wape)} for "same weekday last week"; ${pct(fc.range_coverage)} of past test days fell inside the range.`,
+                    `モデル（${fc.model}）：誤差 ${pct(fc.backtest_wape)}（「先週の同じ曜日」なら ${pct(fc.baseline_wape)}）。過去の検証日の ${pct(fc.range_coverage)} が予測範囲内。`,
+                  )
+                : t('No visitor forecast for this node.', 'このノードの来場者予測はありません。')}
             </p>
           </div>
-          {modelAccuracy && modelAccuracy.mae_pct_of_mean !== null && (
-            <span title={t('Mean absolute error from walk-forward backtesting (expanding-window refits), as a % of the average daily count: out-of-sample accuracy, not an in-sample fit.', 'ウォークフォワード検証の平均絶対誤差（日平均に対する%）。')}>
-              <Badge code={accuracyBadge(modelAccuracy.mae_pct_of_mean)} text={`${t('Model accuracy', 'モデル精度')} ±${modelAccuracy.mae_pct_of_mean.toFixed(0)}% MAE`} />
-            </span>
-          )}
         </div>
         <div className="chart-key">
           <span>
             <i className="k-band" style={{ background: 'rgba(57,135,229,.35)' }}></i>
-            {t('Actual visitors', '実績来訪者数')}
+            {t('Counted', '実績')}
           </span>
-          <span>
-            <i className="k-line dash" style={{ borderColor: S2 }}></i>
-            {t('Model forecast', 'モデル予測')}
-          </span>
+          {fc && (
+            <span>
+              <i className="k-line dash" style={{ borderColor: S2 }}></i>
+              {t('Forecast and range', '予測と範囲')}
+            </span>
+          )}
         </div>
         <div style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={demandForecast} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+            <ComposedChart data={chart} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="ndActual" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={S1} stopOpacity={0.28} />
@@ -190,111 +273,64 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="#1f2a3f" vertical={false} />
-              <XAxis dataKey="date" tick={AXIS} tickFormatter={fmtShortDate} tickLine={false} axisLine={{ stroke: '#34425e' }} minTickGap={24} />
+              <XAxis dataKey="date" tick={AXIS} tickFormatter={shortDate} tickLine={false} axisLine={{ stroke: '#34425e' }} minTickGap={24} />
               <YAxis tick={AXIS} tickFormatter={(val: number) => Number(val).toLocaleString('en-US')} tickLine={false} axisLine={false} width={56} />
-              <Tooltip contentStyle={TIP} formatter={(val: unknown, name: unknown) => [Number(val).toLocaleString('en-US'), String(name)]} labelFormatter={fmtShortDate} />
-              <Area type="monotone" dataKey="actual" name={t('Actual visitors', '実績来訪者数')} stroke={S1} strokeWidth={2} fill="url(#ndActual)" isAnimationActive={false} />
-              <Line type="monotone" dataKey="forecast" name={t('Model forecast', 'モデル予測')} stroke={S2} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
+              <Tooltip
+                contentStyle={TIP}
+                formatter={(val: unknown, nm: unknown) => [Array.isArray(val) ? val.map((v) => Number(v).toLocaleString('en-US')).join(' – ') : Number(val).toLocaleString('en-US'), String(nm)]}
+                labelFormatter={shortDate}
+              />
+              <Area type="monotone" dataKey="actual" name={t('Counted', '実績')} stroke={S1} strokeWidth={2} fill="url(#ndActual)" isAnimationActive={false} />
+              {fc && <Area type="monotone" dataKey="range" name={t('Range', '予測範囲')} stroke="none" fill={S2} fillOpacity={0.15} isAnimationActive={false} />}
+              {fc && <Line type="monotone" dataKey="forecast" name={t('Forecast', '予測')} stroke={S2} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
       </section>
 
-      {/* Estimated outlook */}
-      {estimatedOutlook.length > 0 && (
-        <section className="nd-section">
-          <div className="nd-head row">
-            <h3 className="card-title">{t('Near-term outlook (estimated)', '直近の見通し（推定）')}</h3>
-            <span className="card-sub">{t('Based on the live weather forecast', '最新の天気予報に基づく')}</span>
-          </div>
-          <div className="banner banner-warn">
-            <Icon name="alert" />
-            <span>
-              {t(
-                'Local weather history is catching up, so these days are an approximate estimate from the live forecast and recent averages, not a full model prediction. Treat as directional only.',
-                '気象履歴の更新待ちのため、最新予報と直近平均からの概算です。方向性の参考としてご覧ください。',
-              )}
-            </span>
-          </div>
-          <div className="outlook-row">
-            {estimatedOutlook.map((d: any, i: number) => (
-              <div key={i} className="outlook-day">
-                <div className="wx-date">{fmtShortDate(d.date)}</div>
-                <div className="wx-desc" lang="ja">
-                  {d.weather || '—'}
-                </div>
-                <div className="outlook-value">{fmtNum(d.estimated_demand)}</div>
-                <span className="asof-flag est">{t('Estimated', '推定')}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       <div className="nd-two">
-        {/* Pacing table */}
         <section className="nd-section card">
           <div className="nd-head row">
-            <h3 className="card-title">{t('Day-by-day pacing', '日別の達成率')}</h3>
-            <span className="card-sub">{t('Rate = actual ÷ forecast', '達成率＝実績÷予測')}</span>
+            <h3 className="card-title">{t('Coming days', '今後の予測')}</h3>
+            <span className="card-sub">{t('Model forecast and its range', 'モデル予測と範囲')}</span>
           </div>
           <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
                   <th>{t('Date', '日付')}</th>
-                  <th className="num">{t('Actual', '実績')}</th>
                   <th className="num">{t('Forecast', '予測')}</th>
-                  <th className="num">{t('Rate', '達成率')}</th>
-                  <th>{t('Status', '状態')}</th>
+                  <th className="num">{t('Range', '予測範囲')}</th>
                 </tr>
               </thead>
               <tbody>
-                {pacingRows.length === 0 ? (
+                {ahead.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="muted">
-                      {t('No pacing data available.', '達成率データがありません。')}
+                    <td colSpan={3} className="muted">
+                      {t('No visitor forecast for this node.', 'このノードの来場者予測はありません。')}
                     </td>
                   </tr>
                 ) : (
-                  pacingRows
-                    .slice()
-                    .reverse()
-                    .map((r: any, i: number) => (
-                      <tr key={i}>
-                        <td className="mono">{r.date}</td>
-                        <td className="num">{fmtNum(r.actual)}</td>
-                        <td className="num">{fmtNum(r.forecast)}</td>
-                        <td className="num">{r.rate !== undefined ? `${(r.rate * 100).toFixed(0)}%` : '—'}</td>
-                        <td>{r.badge && <Badge code={r.badge} />}</td>
-                      </tr>
-                    ))
+                  ahead.map((d) => (
+                    <tr key={d.date}>
+                      <td>{dayName(d.date, lang)}</td>
+                      <td className="num">{fmtNum(d.visitors_est)}</td>
+                      <td className="num">
+                        {fmtNum(d.visitors_lo)}–{fmtNum(d.visitors_hi)}
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Nudges */}
         <section className="nd-section card">
           <div className="nd-head row">
-            <h3 className="card-title">{t('Action nudges for government and vendors', '行政・事業者向け推奨アクション')}</h3>
+            <h3 className="card-title">{t('Action nudges, next 7 days', '推奨アクション（今後7日間）')}</h3>
           </div>
-          {nudges.length === 0 ? (
-            <p className="muted">{t('No active recommendations: pacing and weather are within normal range.', '推奨事項はありません。')}</p>
-          ) : (
-            <ul className="nudges">
-              {nudges.map((n: any, i: number) => (
-                <li key={i} className={`nudge ${n.type}`}>
-                  <div className="nudge-type">
-                    <Icon name={n.type === 'weather' ? 'weather' : 'people'} size={13} />
-                    {n.type === 'weather' ? t('Weather risk', '天候リスク') : t('Demand signal', '需要シグナル')} · <span className="mono">{n.date}</span>
-                  </div>
-                  <div>{n.message}</div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <NudgeList nudges={nudges.filter((n) => n.node === selectedNode)} reg={registry} />
           <button className="btn nd-export" onClick={() => window.print()}>
             {t('Export PDF summary', 'PDFで出力')}
           </button>

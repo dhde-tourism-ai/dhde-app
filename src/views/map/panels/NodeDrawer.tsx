@@ -1,7 +1,6 @@
 import { Area, Bar, BarChart, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { LiveData } from '../../../types/live'
 import type { RoutesFile } from '../../../types/routes'
-import type { DashboardData } from '../../../types/dashboard'
 import type { EconomicsFigures, Metric, RegionalEconomics } from '../../../types/economics'
 import type { MapNode } from '../../../lib/nodes'
 import { MEASURE_LABEL, isEstimatedMeasure } from '../../../lib/nodes'
@@ -42,7 +41,6 @@ interface Props {
   routes: RoutesFile | null
   transport?: TransportFile | null
   hubName?: [string, string]
-  dashboard: DashboardData | null
   economics: RegionalEconomics | null
   market?: MarketVoiceData | null
   t: number
@@ -79,11 +77,12 @@ function Econ({ f }: { f: EconomicsFigures }) {
   )
 }
 
-export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['Fukui Station', '福井駅'], dashboard, economics, market, t, onClose, onOpenNode }: Props) {
+export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['Fukui Station', '福井駅'], economics, market, t, onClose, onOpenNode }: Props) {
   const { t: tr, lang } = useLang()
   const measure = node.measure
   const est = isEstimatedMeasure(measure) || measure === 'vehicles'
-  const hasDashboard = Boolean(dashboard?.nodes[node.id])
+  // The Nodes view has a page for every node in real_data.json.
+  const hasDashboard = Boolean(live?.node_meta?.[node.id])
   const econ = econNodeFor(node, economics)
   const survey = market?.survey[node.id]
   const day = Math.floor(t / 24)

@@ -1,11 +1,18 @@
+import { useState } from 'react'
 import type { ProductData } from '../../hooks/useProductData'
+import type { HotelThresholds } from '../../lib/nudges'
 import { AsOf } from '../../components/AsOf'
 import { Loading, LoadError } from '../../components/StateMsg'
 import { Icon } from '../../components/icons'
+import { useJsonResource } from '../../hooks/useJsonResource'
 import { isEstimatedMeasure, MEASURE_LABEL, nodeSwitcherIds } from '../../lib/nodes'
 import { useLang } from '../../lib/i18n'
+import { addDays, jstToday } from '../../lib/nodeFigures'
 import NodeDashboard from './NodeDashboard'
 import '../../styles/pages.css'
+
+/** A node's latest count older than this is flagged Stale. */
+const STALE_DAYS = 7
 
 interface Props {
   data: ProductData
@@ -15,17 +22,21 @@ interface Props {
 
 export default function NodesView({ data: product, selected, onSelect }: Props) {
   const { t } = useLang()
-  const { dashboard, registry } = product
-  const data = dashboard.data
-  if (dashboard.isLoading) return <Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />
-  if (dashboard.error || !data) return <LoadError file="dashboard_data.json" error={dashboard.error} />
+  const { registry, merged, realLoading } = product
+  const thresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json')
+  const [today] = useState(jstToday)
+  const real = merged?.real
+  if (realLoading || product.live.isLoading) return <Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />
+  if (!real) return <LoadError file="real_data.json" error={null} />
 
-  const liveNodes = data.nodes ?? {}
   const inRegistry = (id: string) => !!registry.data?.nodes.some((n) => n.id === id)
-  const selectedNode = selected && (liveNodes[selected] || inRegistry(selected)) ? selected : 'all'
+  const selectedNode = selected && (real.nodes[selected] || inRegistry(selected)) ? selected : 'all'
   const regNode = registry.data?.nodes.find((n) => n.id === selectedNode)
-  const activeLive = selectedNode !== 'all' ? liveNodes[selectedNode] : undefined
-  const measure = regNode?.measure ?? activeLive?.measure
+  const rn = selectedNode !== 'all' ? real.nodes[selectedNode] : undefined
+  const measure = regNode?.measure
+  const asOf = (rn ? rn.as_of.visitors : real.shared_date) ?? null
+  const staleBefore = addDays(today, -STALE_DAYS)
+  const ids = nodeSwitcherIds(registry.data, real)
 
   return (
     <div className="page">
@@ -41,15 +52,8 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
           </p>
         </div>
         <div className="freshness">
-          <AsOf
-            as_of={activeLive?.as_of}
-            generated_at={data.generated_at}
-            shared_date={activeLive?.shared_date ?? data.shared_date}
-            is_estimated={activeLive?.is_estimated}
-            stale={activeLive?.stale}
-            label={t('Data as of', 'データ時点')}
-          />
-          {measure && <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>}
+          <AsOf as_of={asOf ?? undefined} generated_at={real.generated_at} stale={Boolean(asOf && asOf < staleBefore)} label={t('Counts to', '実績')} />
+          {measure && <span className={`measure-tag ${isEstimatedMeasure(measure) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>}
         </div>
       </div>
 
@@ -57,26 +61,25 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
         <button className={`ns-btn ${selectedNode === 'all' ? 'on' : ''}`} aria-pressed={selectedNode === 'all'} onClick={() => onSelect(undefined)}>
           {t('All nodes', '全ノード')}
         </button>
-        {nodeSwitcherIds(registry.data, data).map((key) => {
-          const n = liveNodes[key]
+        {ids.map((key) => {
+          const has = Boolean(real.nodes[key])
           const reg = registry.data?.nodes.find((r) => r.id === key)
-          const label = t(n?.label ?? reg?.name ?? key, reg?.name_ja)
           return (
             <button
               key={key}
-              className={`ns-btn ${selectedNode === key ? 'on' : ''} ${n ? '' : 'pending'}`}
+              className={`ns-btn ${selectedNode === key ? 'on' : ''} ${has ? '' : 'pending'}`}
               aria-pressed={selectedNode === key}
               onClick={() => onSelect(key)}
-              title={n ? undefined : t('Data not published yet', 'データ未公開')}
+              title={has ? undefined : t('Data not published yet', 'データ未公開')}
             >
-              {!n && <span className="ns-pending-dot" aria-hidden="true"></span>}
-              {label}
+              {!has && <span className="ns-pending-dot" aria-hidden="true"></span>}
+              {t(reg?.name ?? key, reg?.name_ja)}
             </button>
           )
         })}
       </nav>
 
-      {selectedNode !== 'all' && !activeLive ? (
+      {selectedNode !== 'all' && !rn ? (
         <section className="card node-pending">
           <div className="np-icon" aria-hidden="true">
             <Icon name="now" size={26} />
@@ -96,7 +99,17 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
           </div>
         </section>
       ) : (
-        <NodeDashboard data={data} selectedNode={selectedNode} />
+        <NodeDashboard
+          real={real}
+          live={merged?.live ?? null}
+          market={merged?.market ?? null}
+          registry={registry.data?.nodes ?? []}
+          thresholds={thresholds.data}
+          ids={ids}
+          today={today}
+          selectedNode={selectedNode}
+          onSelect={(id) => onSelect(id)}
+        />
       )}
     </div>
   )

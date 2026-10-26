@@ -39,13 +39,13 @@ function BrandMark() {
 
 export default function App() {
   const data = useProductData()
-  const { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading } = data
+  const { registry, economics, strategy, live, routes, market, merged, realLoading } = data
   const [route, navigate] = useHashRoute()
   const { lang, setLang, t } = useLang()
   const fallback = useDataFallback()
 
   const shared = merged?.real?.shared_date ?? null
-  const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
+  const generated = shared ?? live.data?.generated_at
   const isDemo = !shared && live.data?.demo
 
   return (
@@ -106,7 +106,6 @@ export default function App() {
           <Suspense fallback={<Loading what={t('Loading map…', '地図を読み込み中…')} />}>
             <MapView
               registry={registry.data}
-              dashboard={dashboard.data}
               economics={economics.data}
               economicsError={economics.error}
               live={merged?.live ?? live.data}

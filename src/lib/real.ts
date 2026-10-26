@@ -32,7 +32,7 @@
  */
 import type { LiveData, LiveSeries, RealNodeMeta, RealSentiment, SourceInfo, WeatherCondition, DataSources } from '../types/live'
 import type { HotelArea, MarketVoiceData } from '../types/market'
-import type { RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
+import type { RealCompare, RealCompareWindow, RealData, RealDaily, RealForecast, RealForecastDay, RealForward, RealNode } from '../types/real'
 import { isHoliday } from './holidays'
 import { conditionOf, popOf, rowForSlot, usable, type HourlyWeather } from './weatherHourly'
 import { toAlerts, type WarningsRead } from './jmaWarnings'
@@ -198,6 +198,20 @@ function parseForecast(f: unknown): RealForecast | undefined {
   }
 }
 
+function parseCompareWindow(w: unknown): RealCompareWindow | null {
+  if (!isObj(w) || typeof w.from !== 'string' || typeof w.to !== 'string' || !DATE_RE.test(w.from) || !DATE_RE.test(w.to)) return null
+  return { from: w.from, to: w.to, days: num(w.days) ?? 0, signal: num(w.signal), visitors_est: num(w.visitors_est) }
+}
+
+/** The 30-day year-on-year block, or null when it's missing or either window is malformed. */
+function parseCompare(v: unknown): RealCompare | null {
+  if (!isObj(v)) return null
+  const thisYear = parseCompareWindow(v.this_year)
+  const lastYear = parseCompareWindow(v.last_year)
+  const days = num(v.days)
+  return thisYear && lastYear && days ? { days, this_year: thisYear, last_year: lastYear } : null
+}
+
 /** Validate and normalise real_data.json. Returns null when nothing usable is left. */
 export function parseReal(raw: unknown): RealData | null {
   if (!isObj(raw) || !isObj(raw.nodes)) return null
@@ -249,6 +263,7 @@ export function parseReal(raw: unknown): RealData | null {
       rakuten: parseRakuten(n.rakuten),
       survey: parseSurvey(n.survey),
       forecast: parseForecast(n.forecast),
+      compare_30d: parseCompare(n.compare_30d),
     }
   }
   if (Object.keys(nodes).length === 0) return null

@@ -3,7 +3,7 @@
 **DHDE · Fukui Tourism Intelligence**: one app with three views that share one data layer. Dark theme, EN/JA.
 
 - **Map**: full-screen layered map of the six priority nodes. Layer groups: Actions (Action nudges) · Movement (People, Regional density, People flow, Traffic flow) · Conditions (Weather) · Voice of visitor (Survey, Social media, Reviews, Sentiment) · Market (Hotels, Search intent) · Economics. A timeline covers today (hourly) and the next 7 days; an Action nudges panel runs the three nudge loops, each nudge labelled High, Medium or Low priority.
-- **Nodes**: per-node dashboards with the daily forecast (Dina Belay's dashboard logic, carried over from dhde-fukui-tourism-dashboard). Priority nodes without published data stay selectable with a "data on its way" panel.
+- **Nodes**: per-node dashboards from `real_data.json` (layout from Dina Belay's dhde-fukui-tourism-dashboard): the last 30 days against the same days 52 weeks earlier, the next 7 days' weather, the last 60 days with the 7-day model forecast and its range, the coming days' forecast, and the real-data action nudges. "All nodes" compares every node side by side. A node's latest count more than 7 days old is flagged Stale. Priority nodes without published data stay selectable with a "data on its way" panel.
 - **Strategy**: the strategy team's five strategic questions (what tourism is worth, visitor flow, visitor value, leaks, returns) as dashboard components.
 
 Every strategy and economics number shows its status: Real, Estimated, Illustrative or Data pending. Pending values display as "[pending]", never as a made-up number. Every layer running on simulated data shows a **Demo data** badge.
@@ -25,12 +25,11 @@ The app only reads JSON from `data/`: the live CloudFront copy when configured (
 
 | File | Produced by | Contents |
 |---|---|---|
-| `dashboard_data.json` | pipeline (publish step) | per-node daily actuals and forecasts (Nodes view) |
 | `nodes.json` | node registry (from dhde-preprocessing-model configs) | node ids, names, coordinates, prefecture, measure type |
 | `regional_economics.json` | dhde-ai-demo `economics/build_regional_economics.py` | visitors, revenue, opportunity lost per node and region |
 | `strategic_questions.json` | strategy team | numbers and statuses for the Strategy view |
 | `routes.json` | `scripts/fetch_routes.mjs` (run once) | road geometry between node pairs, plus the shinkansen line |
-| `real_data.json` | `scripts/build_real_data.py` from dhde-preprocessing-model (**real**, refreshed daily) | last 90 days per node: visitors estimate, weather, traffic, hotels, survey counts, Google Maps metrics; hotel forward bookings |
+| `real_data.json` | `scripts/build_real_data.py` from dhde-preprocessing-model (**real**, refreshed daily) | last 90 days per node: visitors estimate, weather, traffic, hotels, survey counts, Google Maps metrics; hotel forward bookings; the 7-day forecast; the last 30 days vs the same days a year earlier (`compare_30d`, Nodes view) |
 | `live_demo.json` | `scripts/gen_live_demo.mjs` (**dummy**) | hourly people, flows, traffic, weather, sentiment for today + 7 days |
 | `transport.json`, `transport_map.json`, `transport_modes.json`, `transport_trends.json` | dhde-preprocessing-model `scripts/build_transport.py` (see its [docs/transport.md](https://github.com/dhde-tourism-ai/dhde-preprocessing-model/blob/main/docs/transport.md)), **refreshed daily** in `daily-data.yml` | public transport access per node from GTFS-JP bus timetables, route lines, stops, walking areas; tourists by mode and spend (tourism survey); Google Trends interest (Illustrative) |
 | `market_voice_demo.json` | `scripts/gen_market_voice_demo.mjs` (**dummy**, fictional posts and reviews) | hotels, search intent, survey, social media, reviews |
