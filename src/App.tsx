@@ -15,6 +15,7 @@ const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
 const NodesView = lazy(() => import('./views/nodes/NodesView'))
 const SummaryView = lazy(() => import('./views/summary/SummaryView'))
 const TransportView = lazy(() => import('./views/transport/TransportView'))
+const SiteView = lazy(() => import('./views/site/SiteView'))
 
 const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
   { id: 'summary', en: 'Summary', ja: '概要', icon: 'home' },
@@ -44,33 +45,54 @@ export default function App() {
   const { lang, setLang, t } = useLang()
   const fallback = useDataFallback()
 
-  const shared = merged?.real?.shared_date ?? null
+  // #/site/<node>: one partner site, without the tabs; the chip shows that site's own data date.
+  const site = route.view === 'site' ? (route.node ?? '') : null
+  const siteNode = site !== null ? registry.data?.nodes.find((n) => n.id === site) : undefined
+  const shared = (site !== null ? merged?.real?.nodes[site]?.as_of.visitors : merged?.real?.shared_date) ?? null
   const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
   const isDemo = !shared && live.data?.demo
 
   return (
     <div className={`app view-${route.view}`}>
       <header className="appbar">
-        <a className="brand" href="#/summary" aria-label="DHDE · Fukui Tourism Intelligence">
-          <BrandMark />
-          <span className="brand-name">
-            DHDE<span className="dot">·</span>
-            <span className="brand-sub">{t('Fukui Tourism Intelligence', '福井観光インテリジェンス')}</span>
-          </span>
-        </a>
+        {site !== null ? (
+          <a className="brand" href={`#/site/${site}`}>
+            <BrandMark />
+            <span className="brand-name">
+              {siteNode ? t(siteNode.name, siteNode.name_ja) : 'DHDE'}
+              <span className="brand-site">{t('Visitor forecast', '来場予測')}</span>
+            </span>
+          </a>
+        ) : (
+          <a className="brand" href="#/summary" aria-label="DHDE · Fukui Tourism Intelligence">
+            <BrandMark />
+            <span className="brand-name">
+              DHDE<span className="dot">·</span>
+              <span className="brand-sub">{t('Fukui Tourism Intelligence', '福井観光インテリジェンス')}</span>
+            </span>
+          </a>
+        )}
 
-        <nav className="tabs" aria-label={t('Views', 'ビュー')}>
-          {TABS.map((tab) => (
-            <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
-              <Icon name={tab.icon} />
-              <span className="tab-label">{t(tab.en, tab.ja)}</span>
-            </a>
-          ))}
-        </nav>
+        {site === null && (
+          <nav className="tabs" aria-label={t('Views', 'ビュー')}>
+            {TABS.map((tab) => (
+              <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
+                <Icon name={tab.icon} />
+                <span className="tab-label">{t(tab.en, tab.ja)}</span>
+              </a>
+            ))}
+          </nav>
+        )}
 
         <div className="appbar-right">
           {generated && (
-            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={isDemo ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです') : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')}>
+            <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={
+                isDemo
+                  ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです')
+                  : site !== null
+                    ? t('Visitor counts up to this date', 'この日までの来場者実績')
+                    : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')
+              }>
               <span className="fresh-dot" aria-hidden="true"></span>
               <span className="fresh-text-long">{shared ? t('Real data to', '実データ') : t('Data', 'データ')}</span> {fmtDate(generated, lang)}
             </span>
@@ -129,6 +151,13 @@ export default function App() {
         {route.view === 'transport' && (
           <Suspense fallback={<Loading what={t('Loading transport…', '交通データを読み込み中…')} />}>
             <TransportView registry={registry.data} onOpenMap={(id) => (window.location.href = `?layers=transport#/map/${id}`)} />
+          </Suspense>
+        )}
+
+        {site !== null && (live.isLoading || realLoading) && <Loading what={t('Loading…', '読み込み中…')} />}
+        {site !== null && !live.isLoading && !realLoading && (
+          <Suspense fallback={<Loading what={t('Loading…', '読み込み中…')} />}>
+            <SiteView data={data} id={site} />
           </Suspense>
         )}
 

@@ -19,12 +19,14 @@ export function useLang(): LangCtx {
   return useContext(LangContext)
 }
 
+/** The stored choice; with none, Japanese for a partner site page (#/site/...) and English elsewhere. */
 export function readStoredLang(): Lang {
+  const fallback: Lang = window.location.hash.startsWith('#/site/') ? 'ja' : 'en'
   try {
     const v = window.localStorage.getItem('dhde.lang')
-    return v === 'ja' ? 'ja' : 'en'
+    return v === 'ja' || v === 'en' ? v : fallback
   } catch {
-    return 'en'
+    return fallback
   }
 }
 

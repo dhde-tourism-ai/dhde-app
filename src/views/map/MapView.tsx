@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
+import { MapContainer, useMap, ZoomControl } from 'react-leaflet'
 import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
@@ -45,6 +45,7 @@ import type { RailRun } from '../../lib/railModel'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
 import { SiteCards } from './layers/SiteCards'
 import { Declutter } from './Declutter'
+import { Basemap } from './Basemap'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const VIEW_BOUNDS: [[number, number], [number, number]] = [
@@ -151,44 +152,6 @@ function KeepCardsInView() {
 
 /** Stable empty list, so the vehicle canvas keeps its cache while the Train routes layer is off. */
 const NO_RUNS: RailRun[] = []
-
-const ESRI_ATTR = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community · Labels &copy; Esri'
-
-function Basemap({ id }: { id: BasemapId }) {
-  if (id === 'dark') {
-    // CARTO dark matter now returns "API key required" tiles without a key, so the dark
-    // basemap is Esri's key-free Dark Gray Canvas (base + labels).
-    return (
-      <>
-        <TileLayer
-          key="dark"
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-          attribution="Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors"
-          maxZoom={16}
-        />
-        <TileLayer key="dark-ref" url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}" maxZoom={16} />
-      </>
-    )
-  }
-  if (id === 'streets') {
-    return (
-      <TileLayer
-        key="streets"
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        maxZoom={19}
-        className="tiles-streets"
-      />
-    )
-  }
-  return (
-    <>
-      <TileLayer key="img" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution={ESRI_ATTR} maxZoom={18} className="tiles-imagery" />
-      <TileLayer key="roads" url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}" maxZoom={18} opacity={0.55} />
-      <TileLayer key="ref" url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
-    </>
-  )
-}
 
 interface MapViewProps {
   registry: NodeRegistry | null
