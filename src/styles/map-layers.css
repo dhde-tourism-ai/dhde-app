@@ -17,8 +17,8 @@
   padding: 12px 14px;
   /* A site's detail with several layers on can be taller than the map between the top
      strip and the timeline: it stops there and fades out (clicking the site opens the
-     drawer with all of it); short cards don't fade. 258px = app bar, strip and timeline with their gaps. */
-  max-height: calc(100vh - 258px);
+     drawer with all of it); short cards don't fade. 248px = app bar, strip and timeline with their gaps. */
+  max-height: calc(100vh - 248px);
   overflow: hidden;
 }
 
