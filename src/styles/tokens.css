@@ -76,7 +76,7 @@
   --axis: #34425e;
 
   /* type */
-  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans', 'IBM Plex Sans JP', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', 'IBM Plex Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-ja: 'IBM Plex Sans JP', 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
