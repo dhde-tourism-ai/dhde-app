@@ -40,7 +40,7 @@
 }
 
 .leaflet-bottom {
-  bottom: 96px;
+  bottom: 114px;
 }
 
 .leaflet-right .leaflet-control {
@@ -626,7 +626,7 @@
 .map-right {
   position: absolute;
   top: 12px;
-  bottom: 100px;
+  bottom: 118px;
   display: flex;
   flex-direction: column;
   pointer-events: none;
@@ -1233,19 +1233,19 @@ button.al-item:hover {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 14px 10px 10px;
+  padding: 14px 18px 14px 14px;
   background: var(--glass);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-float);
   backdrop-filter: blur(10px);
-  height: 76px;
+  height: 94px;
 }
 
 .play-btn {
   flex: none;
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: 0;
   background: var(--accent);
@@ -1262,7 +1262,7 @@ button.al-item:hover {
 
 .tl-readout {
   flex: none;
-  width: 132px;
+  width: 158px;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -1276,18 +1276,18 @@ button.al-item:hover {
 }
 
 .tl-day {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
 .tl-hour {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
 }
 
 .tl-mode {
   align-self: flex-start;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1313,7 +1313,7 @@ button.al-item:hover {
 
 .tl-track {
   position: relative;
-  height: 50px;
+  height: 62px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.025);
   cursor: pointer;
@@ -1325,9 +1325,9 @@ button.al-item:hover {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 14px;
+  bottom: 18px;
   width: 100%;
-  height: 26px;
+  height: 36px;
 }
 
 .tl-spark path {
@@ -1340,7 +1340,7 @@ button.al-item:hover {
 .tl-future {
   position: absolute;
   top: 0;
-  bottom: 14px;
+  bottom: 18px;
   right: 0;
   background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 4px, transparent 4px 8px);
   border-left: 1px dashed var(--line-strong);
@@ -1371,7 +1371,7 @@ button.al-item:hover {
   position: absolute;
   bottom: 0;
   left: 5px;
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -1386,7 +1386,7 @@ button.al-item:hover {
   position: absolute;
   bottom: 0;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   font-family: var(--font-mono);
   pointer-events: none;
@@ -1395,7 +1395,7 @@ button.al-item:hover {
 .tl-now {
   position: absolute;
   top: -4px;
-  bottom: 12px;
+  bottom: 16px;
   width: 0;
   border-left: 1.5px solid var(--good);
   pointer-events: none;
@@ -1405,7 +1405,7 @@ button.al-item:hover {
   position: absolute;
   top: -2px;
   left: 3px;
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--good-text);
   text-transform: uppercase;
@@ -1415,7 +1415,7 @@ button.al-item:hover {
 .tl-thumb {
   position: absolute;
   top: 2px;
-  bottom: 14px;
+  bottom: 18px;
   width: 3px;
   transform: translateX(-1.5px);
   background: var(--accent-strong);
@@ -1471,6 +1471,17 @@ button.al-item:hover {
   background: var(--warn);
   color: #1a1204;
   font-weight: 700;
+}
+
+.timeline .play-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tl-controls .seg button,
+.tl-nowbtn {
+  min-height: 40px;
+  font-size: 14px;
 }
 
 /* medium widths: status strip drops below the panels' tops */
@@ -1566,8 +1577,8 @@ button.al-item:hover {
   }
 
   .play-btn {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
   }
 
   .tl-readout {
@@ -1576,6 +1587,18 @@ button.al-item:hover {
     flex-direction: row;
     align-items: center;
     gap: 8px;
+  }
+
+  .tl-day {
+    font-size: 12px;
+  }
+
+  .tl-hour {
+    font-size: 20px;
+  }
+
+  .tl-mode {
+    font-size: 10.5px;
   }
 
   .tl-controls {
@@ -1597,7 +1620,16 @@ button.al-item:hover {
   }
 
   .tl-track {
-    height: 44px;
+    height: 56px;
+  }
+
+  .tl-spark {
+    height: 32px;
+  }
+
+  .tl-day-lab,
+  .tl-hour-tick {
+    font-size: 10.5px;
   }
 
   .lab-long {
