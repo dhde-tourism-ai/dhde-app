@@ -17,8 +17,8 @@
   padding: 12px 14px;
   /* A site's detail with several layers on can be taller than the map between the top
      strip and the timeline: it stops there and fades out (clicking the site opens the
-     drawer with all of it); short cards don't fade. 230px = app bar, strip and timeline with their gaps. */
-  max-height: calc(100vh - 230px);
+     drawer with all of it); short cards don't fade. 258px = app bar, strip and timeline with their gaps. */
+  max-height: calc(100vh - 258px);
   overflow: hidden;
 }
 
@@ -834,7 +834,7 @@
 .tl-clock {
   position: absolute;
   top: 0;
-  bottom: 12px;
+  bottom: 16px;
   width: 0;
   border-left: 1.5px dashed var(--accent);
   pointer-events: none;
