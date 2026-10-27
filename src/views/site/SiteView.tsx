@@ -24,6 +24,7 @@ const LEVEL: Record<DemandLevel, { en: string; ja: string }> = {
 }
 /** Halo around the counting point, by the picked day's demand (metres). */
 const HALO_M: Record<DemandLevel, number> = { quiet: 220, normal: 320, busy: 460 }
+const OSM_CREDIT = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL)'
 const DOW_JA = '日月火水木金土'
 
 function jstToday(): string {
@@ -38,10 +39,6 @@ function dayName(iso: string, lang: 'en' | 'ja'): string {
   const d = new Date(`${iso}T00:00:00Z`)
   if (lang === 'ja') return `${d.getUTCMonth() + 1}/${d.getUTCDate()}（${DOW_JA[d.getUTCDay()]}）`
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
-}
-
-function centroid(poly: [number, number][]): [number, number] {
-  return [poly.reduce((a, p) => a + p[0], 0) / poly.length, poly.reduce((a, p) => a + p[1], 0) / poly.length]
 }
 
 /** Fits the site again when the layout switches between desktop (panels over the map) and phone. */
@@ -112,7 +109,7 @@ interface Props {
  * #/site/<node>: one partner site on one page, real data only. A map of the site
  * (road, counting point), the picked day's numbers, a strip of recent counts and
  * the forecast, the week's forecast table, and the node's other real data
- * (SiteData). Today's site: Rainbow Line.
+ * (SiteData).
  */
 export default function SiteView({ data, id }: Props) {
   const { t, lang } = useLang()
@@ -130,7 +127,7 @@ export default function SiteView({ data, id }: Props) {
 
   const bounds = useMemo<LatLngBoundsExpression | null>(() => {
     if (!site) return null
-    const pts = site.road.flat()
+    const pts = [...site.lines.flat(), ...site.polygons.flatMap((p) => p.polygon), ...('area' in site.counting ? site.counting.area : [site.counting.point])]
     return [
       [Math.min(...pts.map((p) => p[0])), Math.min(...pts.map((p) => p[1]))],
       [Math.max(...pts.map((p) => p[0])), Math.max(...pts.map((p) => p[1]))],
@@ -146,7 +143,22 @@ export default function SiteView({ data, id }: Props) {
   }
 
   const colour = reg?.colour ?? '#eda100'
-  const counting = centroid(site.parks.flatMap((p) => p.polygon))
+  const counting = site.counting
+  const surveyProxy = rn.measure === 'proxy_survey'
+  const signalLabel = rn.measure === 'vehicles'
+    ? t('Cars', '駐車台数')
+    : rn.measure === 'camera'
+      ? t('Camera detections', 'カメラ検知数')
+      : surveyProxy
+        ? t('Survey-response proxy', 'アンケート回答の代理指標')
+        : t('Measured signal', '計測値')
+  const signalLine = (value: number, forecast: boolean) => {
+    const n = n0(value)
+    if (rn.measure === 'vehicles') return forecast ? t(`about ${n} cars`, `駐車場 約${n}台`) : t(`${n} cars`, `駐車場 ${n}台`)
+    if (rn.measure === 'camera') return forecast ? t(`about ${n} camera detections`, `カメラ検知 約${n}件`) : t(`${n} camera detections`, `カメラ検知 ${n}件`)
+    if (surveyProxy) return t(`Survey-response proxy: ${n} ${value === 1 ? 'response' : 'responses'}`, `アンケート回答の代理指標 ${n}件`)
+    return t(`${signalLabel}: ${n}`, `${signalLabel} ${n}`)
+  }
   const cal = rn.calibration
   const level = demandLevel(sel.visitors, normal?.visitors ?? null)
   const max = Math.max(...days.map((d) => Math.max(d.visitors, d.hi ?? 0)))
@@ -173,36 +185,45 @@ export default function SiteView({ data, id }: Props) {
           <Basemap id="hybrid" />
           <ZoomControl position="topleft" />
           <SiteTransit />
-          {site.road.map((line, i) => (
+          {site.lines.map((line, i) => (
             <Polyline key={`c${i}`} positions={line} pathOptions={{ color: '#000', opacity: 0.55, weight: 9, interactive: false }} />
           ))}
-          {site.road.map((line, i) => (
+          {site.lines.map((line, i) => (
             <Polyline key={`r${i}`} positions={line} pathOptions={{ color: colour, weight: 4.5, interactive: false }} />
           ))}
-          <Circle center={counting} radius={HALO_M[level]} pathOptions={{ className: `site-halo ${level}`, weight: 1.5 }}>
-            <Tooltip permanent direction="right" offset={[18, 0]} className="map-tip site-tip">
-              {t('Summit car parks (counting point)', '山頂公園 駐車場（計測地点）')}
-            </Tooltip>
-          </Circle>
-          {site.parks.map((p, i) => (
+          {'point' in counting ? (
+            <Circle attribution={OSM_CREDIT} center={counting.point} radius={HALO_M[level]} pathOptions={{ className: `site-halo ${level}`, weight: 1.5 }}>
+              <Tooltip permanent direction="right" offset={[18, 0]} className="map-tip site-tip">
+                {t(counting.en, counting.ja)}
+              </Tooltip>
+            </Circle>
+          ) : (
+            <Polygon attribution={OSM_CREDIT} positions={counting.area} pathOptions={{ className: `site-halo ${level}`, weight: 1.5 }}>
+              <Tooltip permanent direction="center" className="map-tip site-tip">
+                {t(counting.en, counting.ja)}
+              </Tooltip>
+            </Polygon>
+          )}
+          {site.polygons.map((p) => (
             <Polygon key={p.id} positions={p.polygon} pathOptions={{ color: '#fff', weight: 1.5, fillColor: colour, fillOpacity: 0.45 }}>
-              <Tooltip permanent direction="center" className="site-park-tip">{`P${i + 1}`}</Tooltip>
+              <Tooltip permanent direction="center" className={p.badge ? 'site-park-tip' : 'map-tip site-tip'}>{p.badge ?? t(p.en, p.ja)}</Tooltip>
             </Polygon>
           ))}
         </MapContainer>
 
         <aside className="site-drawer">
           <div className="eyebrow">
-            {sel.kind === 'forecast' ? t(`Forecast · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の予測`) : t(`Count · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の実績`)}
+            {sel.kind === 'forecast' ? t(`Forecast · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の予測`) : surveyProxy ? t(`Estimate · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の推計`) : t(`Count · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の実績`)}
           </div>
           <div className="site-big">
             {n0(sel.visitors)}
-            <small>{t(' visitors', '人')}</small>
+            <small>{surveyProxy ? t(' estimated visitors', '人（推計）') : t(' visitors', '人')}</small>
           </div>
           <div className="site-sub">
             {sel.lo !== null && sel.hi !== null && <>{t(`Range ${n0(sel.lo)} to ${n0(sel.hi)}`, `予測範囲 ${n0(sel.lo)}〜${n0(sel.hi)}人`)} · </>}
-            {sel.signal !== null && (sel.kind === 'forecast' ? t(`about ${n0(sel.signal)} cars`, `駐車場 約${n0(sel.signal)}台`) : t(`${n0(sel.signal)} cars`, `駐車場 ${n0(sel.signal)}台`))}
+            {sel.signal !== null && signalLine(sel.signal, sel.kind === 'forecast')}
           </div>
+          {surveyProxy && <p className="site-estimate">{t('Visitor estimate from survey responses. Calibration confidence is low.', '来場者数はアンケート回答からの推計です。校正の信頼度は低いです。')}</p>}
           <div className="site-level-row">
             <Level level={level} />
             {normalLabel && <span className="muted">{normalLabel}</span>}
@@ -230,8 +251,8 @@ export default function SiteView({ data, id }: Props) {
 
         <div className="site-strip">
           <div className="site-strip-head">
-            <span>{t('Visitors, recent counts', '来場者 実績')}</span>
-            <span>{t('Forecast', '予測')}</span>
+            <span>{surveyProxy ? t('Visitors, recent estimates', '来場者 推計値') : t('Visitors, recent counts', '来場者 実績')}</span>
+            {firstForecast >= 0 && <span>{t('Forecast', '予測')}</span>}
           </div>
           <div className="site-bars" role="group" aria-label={t('Pick a day', '日を選ぶ')}>
             {normal && <div className="site-normal" style={{ bottom: `${(normal.visitors / max) * 100}%` }} aria-hidden="true"></div>}
@@ -260,7 +281,7 @@ export default function SiteView({ data, id }: Props) {
               <thead>
                 <tr>
                   <th>{t('Day', '日付')}</th>
-                  <th className="num">{t('Cars', '駐車台数')}</th>
+                  <th className="num">{signalLabel}</th>
                   <th className="num">{t('Visitors', '来場者')}</th>
                   <th title={rn.forecast ? modelLine(rn.forecast, t) : undefined}>{t('Range', '予測範囲')}</th>
                   <th>{t('Demand', '混雑')}</th>
@@ -299,9 +320,15 @@ export default function SiteView({ data, id }: Props) {
           <p className="muted">{t('No forecast for the coming days yet.', 'これからの予測はまだありません。')}</p>
         )}
         <p className="site-note">
+          {rn.measure === 'vehicles' ? t(
+            `Visitors = cars × ${cal.factor?.toFixed(2) ?? '?'}, scaled to the official ${n0(cal.official_annual_2025 ?? 0)} visitors in 2025.`,
+            `来場者 = 駐車台数 × ${cal.factor?.toFixed(2) ?? '?'}人（2025年の公式値 ${n0(cal.official_annual_2025 ?? 0)}人で校正）。`,
+          ) : t(cal.method_text ?? '', cal.method_text_ja)}{' '}
+          {surveyProxy && <>{t('Visitor counts are estimates from survey responses with low calibration confidence.', '来場者数はアンケート回答からの推計で、校正の信頼度は低いです。')}{' '}</>}
+          {rn.measure === 'camera' && <>{t('The map marks the site area, not verified camera positions or coverage.', '地図は施設周辺のエリアを示しています。カメラの位置や検知範囲は未確認です。')}{' '}</>}
           {t(
-            `Visitors = cars × ${cal.factor?.toFixed(2) ?? '?'}, scaled to the official ${n0(cal.official_annual_2025 ?? 0)} visitors in 2025. Demand: 35% or more above or below the normal day. Hotels: rooms booked in the ${hotelArea} reservation feed. Weather: JMA observations and the JMA model forecast. Counts to ${fmtDate(rn.as_of.visitors, lang)}.`,
-            `来場者 = 駐車台数 × ${cal.factor?.toFixed(2) ?? '?'}人（2025年の公式値 ${n0(cal.official_annual_2025 ?? 0)}人で校正）。混雑は平常日より35%以上多いか少ないか。宿泊は${hotelArea}の予約データ。天気は気象庁の観測とモデル予報。実績は${fmtDate(rn.as_of.visitors, lang)}まで。`,
+            `Demand: 35% or more above or below the normal day. Hotels: rooms booked in the ${hotelArea} reservation feed. Weather: JMA observations and the JMA model forecast. Counts to ${fmtDate(rn.as_of.visitors, lang)}.`,
+            `混雑は平常日より35%以上多いか少ないか。宿泊は${hotelArea}の予約データ。天気は気象庁の観測とモデル予報。実績は${fmtDate(rn.as_of.visitors, lang)}まで。`,
           )}
         </p>
       </section>

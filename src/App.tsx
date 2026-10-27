@@ -157,7 +157,7 @@ export default function App() {
         {site !== null && (live.isLoading || realLoading) && <Loading what={t('Loading…', '読み込み中…')} />}
         {site !== null && !live.isLoading && !realLoading && (
           <Suspense fallback={<Loading what={t('Loading…', '読み込み中…')} />}>
-            <SiteView data={data} id={site} />
+            <SiteView key={site} data={data} id={site} />
           </Suspense>
         )}
 
