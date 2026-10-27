@@ -125,7 +125,7 @@ function parseRakuten(v: unknown): RealNode['rakuten'] {
 }
 
 /** FTAS survey home regions (domestic only: it has no overseas respondents) and purposes of visit. */
-const ORIGIN_LABELS: Record<string, { en: string; ja: string }> = {
+export const ORIGIN_LABELS: Record<string, { en: string; ja: string }> = {
   fukui: { en: 'Fukui', ja: '福井県内' },
   hokuriku: { en: 'Ishikawa, Toyama', ja: '石川・富山' },
   kansai: { en: 'Kansai', ja: '関西' },
@@ -133,7 +133,7 @@ const ORIGIN_LABELS: Record<string, { en: string; ja: string }> = {
   kanto: { en: 'Kanto', ja: '関東' },
   other: { en: 'Rest of Japan', ja: 'その他の地域' },
 }
-const PURPOSE_LABELS: Record<string, { en: string; ja: string }> = {
+export const PURPOSE_LABELS: Record<string, { en: string; ja: string }> = {
   relax_at_inn: { en: 'Relaxing at the inn', ja: '宿でのんびり' },
   onsen: { en: 'Onsen', ja: '温泉' },
   local_food: { en: 'Local food', ja: '地元の食' },

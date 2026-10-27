@@ -14,6 +14,8 @@ import { SITES } from '../../lib/sites'
 import { demandLevel, normalDay, siteDays } from '../../lib/site'
 import type { DemandLevel, SiteDay } from '../../lib/site'
 import { Basemap } from '../map/Basemap'
+import { SiteData } from './SiteData'
+import { SiteTransit } from './SiteTransit'
 
 const LEVEL: Record<DemandLevel, { en: string; ja: string }> = {
   quiet: { en: 'Quiet', ja: '少なめ' },
@@ -109,7 +111,8 @@ interface Props {
 /**
  * #/site/<node>: one partner site on one page, real data only. A map of the site
  * (road, counting point), the picked day's numbers, a strip of recent counts and
- * the forecast, and the week's forecast table. Today's site: Rainbow Line.
+ * the forecast, the week's forecast table, and the node's other real data
+ * (SiteData). Today's site: Rainbow Line.
  */
 export default function SiteView({ data, id }: Props) {
   const { t, lang } = useLang()
@@ -169,6 +172,7 @@ export default function SiteView({ data, id }: Props) {
           <FitSite bounds={bounds} options={narrow ? FIT_NARROW : FIT_WIDE} />
           <Basemap id="hybrid" />
           <ZoomControl position="topleft" />
+          <SiteTransit />
           {site.road.map((line, i) => (
             <Polyline key={`c${i}`} positions={line} pathOptions={{ color: '#000', opacity: 0.55, weight: 9, interactive: false }} />
           ))}
@@ -301,6 +305,8 @@ export default function SiteView({ data, id }: Props) {
           )}
         </p>
       </section>
+
+      <SiteData data={data} id={id} rn={rn} />
     </div>
   )
 }
