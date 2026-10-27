@@ -163,7 +163,7 @@ export default function SiteView({ data, id }: Props) {
           bounds={bounds}
           boundsOptions={narrow ? FIT_NARROW : FIT_WIDE}
           zoomControl={false}
-          scrollWheelZoom={false}
+          scrollWheelZoom
           attributionControl
         >
           <FitSite bounds={bounds} options={narrow ? FIT_NARROW : FIT_WIDE} />
