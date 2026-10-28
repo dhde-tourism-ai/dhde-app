@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { LangContext, readStoredLang, storeLang } from '../lib/i18n'
+import { LangContext, pick, readStoredLang, storeLang } from '../lib/i18n'
 import type { Lang } from '../lib/i18n'
-import AR from '../i18n/ar.json'
-
-const ar = AR as Record<string, string>
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(readStoredLang)
@@ -20,8 +17,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       setLang,
-      t: (en: string, ja?: string | null, arText?: string | null) =>
-        lang === 'ja' && ja ? ja : lang === 'ar' ? (arText ?? ar[en] ?? en) : en,
+      t: (en: string, ja?: string | null, ar?: string | null) => pick(lang, en, ja, ar),
     }),
     [lang, setLang],
   )

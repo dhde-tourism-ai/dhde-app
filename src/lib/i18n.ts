@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import AR from '../i18n/ar.json'
 
 export type Lang = 'en' | 'ja' | 'ar'
 
@@ -7,6 +8,15 @@ export interface LangCtx {
   setLang: (l: Lang) => void
   /** Pick the string for the active language (falls back to English). Arabic comes from `ar`, then ar.json by the English text. */
   t: (en: string, ja?: string | null, ar?: string | null) => string
+}
+
+const AR_TEXT = AR as Record<string, string>
+
+/** The text for `lang`: Japanese when given, Arabic from `ar` or ar.json by the English text, else English. */
+export function pick(lang: Lang, en: string, ja?: string | null, ar?: string | null): string {
+  if (lang === 'ja') return ja || en
+  if (lang === 'ar') return ar ?? AR_TEXT[en] ?? en
+  return en
 }
 
 export const LangContext = createContext<LangCtx>({

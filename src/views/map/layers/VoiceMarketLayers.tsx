@@ -7,7 +7,7 @@ import type { RegistryNode } from '../../../types/nodes'
 import { escapeHtml, realSentimentLabel, sentimentColour, sentimentLabel } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
 import { thumbUri } from '../../../lib/thumbs'
-import { useLang } from '../../../lib/i18n'
+import { pick, useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
 import { occupancyColour, rsiColour, sparkPath } from '../../../lib/market'
 import { Stars } from '../../../components/Stars'
@@ -56,7 +56,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
           h.id,
           L.divIcon({
             className: 'map-divicon',
-            html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(lang === 'ja' ? h.name_ja : h.name)}</span></div><div class="sc-row"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 13)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="sc-note">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
+            html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, h.name, h.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 13)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="sc-note">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
             iconSize: [0, 0],
           }),
         ]),
@@ -171,7 +171,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             m.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(lang === 'ja' ? m.name_ja : m.name)}</span></div><div class="sc-row"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div></div>`,
+              html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, m.name, m.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div></div>`,
               iconSize: [0, 0],
             }),
           ]

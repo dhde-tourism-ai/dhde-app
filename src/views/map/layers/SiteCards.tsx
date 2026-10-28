@@ -7,7 +7,7 @@ import type { MapNode } from '../../../lib/nodes'
 import { isEstimatedMeasure } from '../../../lib/nodes'
 import type { MarketVoiceData } from '../../../types/market'
 import type { RealNodeMeta } from '../../../types/live'
-import { useLang } from '../../../lib/i18n'
+import { pick, useLang } from '../../../lib/i18n'
 import { useIsNarrow } from '../../../hooks/useIsNarrow'
 import { Tip } from './Tip'
 import { lastSignal, rowsFor, type CardLayers } from './cardRows'
@@ -61,7 +61,7 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
       const f = frame?.[n.id]
       const dir = n.label_dir ?? 'right'
       const r = layers.people && f ? peopleRadius(Math.max(f.onSite, f.predicted)) + 5 : 11
-      const name = escapeHtml(lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', ''))
+      const name = escapeHtml(pick(lang, n.name.replace(' East Entrance', ''), n.name_ja))
       const crowded = !!f && !f.noEstimate && (f.tier.key === 'serious' || f.tier.key === 'crit')
       let head = `<span class="nt-name">${name}</span>`
       if (layers.people) {

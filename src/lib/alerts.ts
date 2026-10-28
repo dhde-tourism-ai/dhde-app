@@ -3,6 +3,7 @@ import type { RoutesFile } from '../types/routes'
 import type { RegistryNode } from '../types/nodes'
 import { activeAdvisories, crowdTier, timeLabel, trafficTier } from './live'
 import type { NodeFrame } from './live'
+import { pick } from './i18n'
 
 export type Sev = 'crit' | 'serious' | 'warn' | 'info'
 export const SEV_RANK: Record<Sev, number> = { crit: 3, serious: 2, warn: 1, info: 0 }
@@ -26,7 +27,7 @@ export interface AlertGroups {
 function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar'): string {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
-  return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
+  return pick(lang, n.name.replace(' East Entrance', ''), n.name_ja)
 }
 
 const bySev = (a: AlertItem, b: AlertItem) => SEV_RANK[b.sev] - SEV_RANK[a.sev]

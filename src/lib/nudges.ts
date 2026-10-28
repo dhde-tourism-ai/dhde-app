@@ -10,6 +10,7 @@ import type { MarketVoiceData } from '../types/market'
 import type { RegistryNode } from '../types/nodes'
 import type { Sev } from './alerts'
 import { dailyArrivals, dayLabel, hourLabel } from './live'
+import { pick } from './i18n'
 
 /**
  * public/data/hotel_thresholds.json (scripts/build_hotel_thresholds.py): loop #3's
@@ -101,7 +102,7 @@ const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; ro
 function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar') {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
-  return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
+  return pick(lang, n.name.replace(' East Entrance', ''), n.name_ja)
 }
 
 /** "Normal" daily visitors: mean real visitors_est over the history when available, else 2025 annual ÷ 365, else the window's mean forecast. */

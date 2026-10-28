@@ -31,6 +31,11 @@ html[lang='ar'] body {
   font-family: var(--font-ar);
 }
 
+/* Charts keep their left-to-right axes in Arabic; flipping them overlaps the axis labels with the bars. */
+html[dir='rtl'] .recharts-wrapper {
+  direction: ltr;
+}
+
 a {
   color: var(--accent-strong);
 }

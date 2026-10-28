@@ -5,6 +5,7 @@ import type { NodeRegistry } from '../../types/nodes'
 import type { DayType, MarketStatus, ModeId, TransportFile, TransportMarketFile, TransportModesFile, TransportTrendsFile } from '../../types/transport'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
 import { Loading, LoadError } from '../../components/StateMsg'
 import { DAY_LABEL, EARLY_LAST_RETURN_MIN, clockLabel, clockMinutes, fmtMinutes } from '../../lib/transport'
 import '../../styles/pages.css'
@@ -64,7 +65,18 @@ const TABS: [Tab, string, string][] = [
 ]
 
 const pct = (x: number | null | undefined) => (x == null ? '—' : `${Math.round(x * 100)}%`)
-const compact = (v: number) => (v >= 1_000_000 ? `${(v / 1_000_000).toFixed(2)}M` : v >= 1000 ? `${Math.round(v / 1000)}K` : `${Math.round(v)}`)
+const compact = (v: number, lang: Lang) =>
+  lang === 'ar'
+    ? v >= 1_000_000
+      ? `${(v / 1_000_000).toFixed(2)} مليون`
+      : v >= 1000
+        ? `${Math.round(v / 1000)} ألف`
+        : `${Math.round(v)}`
+    : v >= 1_000_000
+      ? `${(v / 1_000_000).toFixed(2)}M`
+      : v >= 1000
+        ? `${Math.round(v / 1000)}K`
+        : `${Math.round(v)}`
 const hhmm = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 
 /** A dashboard card: the title states the finding, the subtitle says what is measured, the footer names the source. */
@@ -194,10 +206,15 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
       ? v >= 1e8
         ? `${(v / 1e8).toFixed(1)}億円`
         : `${Math.round(v / 1e4).toLocaleString()}万円`
-      : v >= 1e9
+      : lang === 'ar'
+        ? v >= 1e9
+          ? `${(v / 1e9).toFixed(2)} مليار ين`
+          : `${Math.round(v / 1e6)} مليون ين`
+        : v >= 1e9
         ? `¥${(v / 1e9).toFixed(2)}bn`
         : `¥${Math.round(v / 1e6)}M`
-  const people = (v: number) => (lang === 'ja' ? `${Math.round(v / 1e4)}万人` : `${(v / 1e6).toFixed(2)}M`)
+  const people = (v: number) =>
+    lang === 'ja' ? `${Math.round(v / 1e4)}万人` : lang === 'ar' ? `${(v / 1e6).toFixed(2)} مليون` : `${(v / 1e6).toFixed(2)}M`
 
   // chart data
   const modeBars = byMode ? MODE_ORDER.map((m) => ({ id: m, name: t(...MODE_NAME[m]), value: byMode[m].visitors })) : []
@@ -231,18 +248,18 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
   )
   const siteBack = site !== 'all' ? lastBack(site) : null
   const kpis = [
-    { value: total != null ? compact(total) : '—', label: t(`Visitors · ${periodLabel}`, `来訪者・${periodLabel}`) },
+    { value: total != null ? compact(total, lang) : '—', label: t(`Visitors · ${periodLabel}`, `来訪者・${periodLabel}`, `الزوار · ${periodLabel}`) },
     { value: pct(carShare), label: t('Tourists by car', '車で来る観光客'), accent: true, tag: true },
     { value: pct(ptShare), label: t('Tourists by bus or train', 'バス・鉄道で来る観光客'), tag: true },
     site === 'all'
       ? {
           value: `${early.length} / ${linked.length}`,
-          label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`),
+          label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`, `مواقع آخر باص فيها قبل 17:30 · ${dayLabel}`),
           warn: early.length > 0,
         }
       : {
           value: siteBack != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'),
-          label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`),
+          label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`, `آخر باص للعودة · ${dayLabel}`),
           warn: siteBack != null && siteBack <= EARLY_LAST_RETURN_MIN,
         },
     { value: revenueTotal ? yen(revenueTotal) : '—', label: t('Transport revenue a year', '交通の年間収入') },
@@ -305,7 +322,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               className="td-5"
               tag={tourists}
               title={t('Tourists by mode of transport', '交通手段別の観光客')}
-              sub={t(`Visitors split by tourism survey answers · ${periodLabel}`, `来訪者を観光アンケートの割合で按分・${periodLabel}`)}
+              sub={t(`Visitors split by tourism survey answers · ${periodLabel}`, `来訪者を観光アンケートの割合で按分・${periodLabel}`, `الزوار مقسّمون حسب إجابات استبيان السياحة · ${periodLabel}`)}
               source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
             >
               <div className="td-chart" style={{ height: 230 }}>
@@ -318,7 +335,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       {modeBars.map((d) => (
                         <Cell key={d.id} fill={MODE_COLOUR[d.id]} />
                       ))}
-                      <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v))} style={{ fill: INK, fontSize: 12, fontWeight: 600 }} />
+                      <LabelList dataKey="value" position="top" formatter={(v) => compact(Number(v), lang)} style={{ fill: INK, fontSize: 12, fontWeight: 600 }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -439,7 +456,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       <th>{t('Site', '地点')}</th>
                       <th>{t('Visitors', '来訪者')}</th>
                       <th>{t('Buses a day', 'バス本数/日')}</th>
-                      <th>{t(`Quickest from ${hub}`, `${hub}から最短`)}</th>
+                      <th>{t(`Quickest from ${hub}`, `${hub}から最短`, `الأسرع من ${hub}`)}</th>
                       <th>{t('Bus fare', 'バス運賃')}</th>
                       <th>{t('Last bus back', '最終便')}</th>
                     </tr>
@@ -460,12 +477,12 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                         >
                           <th>{name(id)}</th>
                           <td className="num" data-label={t('Visitors', '来訪者')}>
-                            {v != null ? compact(v) : <span className="td-dim">—</span>}
+                            {v != null ? compact(v, lang) : <span className="td-dim">—</span>}
                           </td>
                           <td className="num" data-label={t('Buses a day', 'バス本数/日')}>
                             {d?.departures ? d.departures : <span className="td-dim">0</span>}
                           </td>
-                          <td className="num" data-label={t(`Quickest from ${hub}`, `${hub}から最短`)}>
+                          <td className="num" data-label={t(`Quickest from ${hub}`, `${hub}から最短`, `الأسرع من ${hub}`)}>
                             {d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}
                           </td>
                           <td className="num" data-label={t('Bus fare', 'バス運賃')}>
