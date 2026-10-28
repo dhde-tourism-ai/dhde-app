@@ -27,6 +27,10 @@ html[lang='ja'] body {
   font-family: var(--font-ja);
 }
 
+html[lang='ar'] body {
+  font-family: var(--font-ar);
+}
+
 a {
   color: var(--accent-strong);
 }

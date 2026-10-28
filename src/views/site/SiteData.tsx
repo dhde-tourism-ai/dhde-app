@@ -11,7 +11,7 @@ const n0 = (v: number) => Math.round(v).toLocaleString('en-US')
 const md = (iso: string | null | undefined) => (iso ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}` : '')
 
 /** ¥3,670,221,775 → "36.7億円" / "¥3.7bn". */
-function yen(v: number, lang: 'en' | 'ja'): string {
+function yen(v: number, lang: 'en' | 'ja' | 'ar'): string {
   if (lang === 'ja') return v >= 1e8 ? `${(v / 1e8).toFixed(1)}億円` : `${n0(v / 1e4)}万円`
   return v >= 1e9 ? `¥${(v / 1e9).toFixed(1)}bn` : `¥${(v / 1e6).toFixed(0)}M`
 }

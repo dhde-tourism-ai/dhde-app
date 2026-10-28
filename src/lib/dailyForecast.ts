@@ -18,12 +18,12 @@ export interface RealDailyFile {
 }
 
 // The sites the 7-day model forecasts, in map order. Fukui Station has no visitor count, only camera detections.
-const SITES: { id: string; en: string; ja: string; signalOnly?: boolean }[] = [
-  { id: 'tojinbo', en: 'Tojinbo', ja: '東尋坊' },
-  { id: 'fukui_station', en: 'Fukui Station (camera detections)', ja: '福井駅（カメラ検知数）', signalOnly: true },
-  { id: 'katsuyama', en: 'Katsuyama', ja: '勝山' },
-  { id: 'rainbow_line', en: 'Rainbow Line', ja: 'レインボーライン' },
-  { id: 'awara_onsen', en: 'Awara Onsen', ja: 'あわら温泉' },
+const SITES: { id: string; en: string; ja: string; ar: string; signalOnly?: boolean }[] = [
+  { id: 'tojinbo', en: 'Tojinbo', ja: '東尋坊', ar: 'توجينبو' },
+  { id: 'fukui_station', en: 'Fukui Station (camera detections)', ja: '福井駅（カメラ検知数）', ar: 'محطة فوكوي (رصد الكاميرات)', signalOnly: true },
+  { id: 'katsuyama', en: 'Katsuyama', ja: '勝山', ar: 'كاتسوياما' },
+  { id: 'rainbow_line', en: 'Rainbow Line', ja: 'レインボーライン', ar: 'خط رينبو' },
+  { id: 'awara_onsen', en: 'Awara Onsen', ja: 'あわら温泉', ar: 'ينابيع أوارا الحارة' },
 ]
 
 const HISTORY_DAYS = 56
@@ -38,7 +38,7 @@ const DOW_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DOW_JA = ['日', '月', '火', '水', '木', '金', '土']
 const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-function dayLabel(date: string, lang: 'en' | 'ja'): string {
+function dayLabel(date: string, lang: 'en' | 'ja' | 'ar'): string {
   const d = new Date(`${date}T00:00:00Z`)
   return lang === 'ja'
     ? `${d.getUTCMonth() + 1}月${d.getUTCDate()}日(${DOW_JA[d.getUTCDay()]})`
@@ -46,13 +46,13 @@ function dayLabel(date: string, lang: 'en' | 'ja'): string {
 }
 
 const ACTION = {
-  busy: { en: 'Extend hours', ja: '営業時間を延長' },
-  normal: { en: 'Normal', ja: '通常' },
-  none: { en: 'No visitor count', ja: '来訪者数なし' },
+  busy: { en: 'Extend hours', ja: '営業時間を延長', ar: 'تمديد ساعات العمل' },
+  normal: { en: 'Normal', ja: '通常', ar: 'عادي' },
+  none: { en: 'No visitor count', ja: '来訪者数なし', ar: 'لا يوجد عدد زوار' },
 }
 
 /** One site's last 8 weeks and next 7 days from the real data, or null if it has no forecast. */
-function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja'): ForecastSite | null {
+function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja' | 'ar'): ForecastSite | null {
   const n = file.nodes[s.id]
   const fc = n?.forecast
   if (!n || !fc || fc.days.length === 0) return null
@@ -88,7 +88,7 @@ function site(file: RealDailyFile, s: (typeof SITES)[number], lang: 'en' | 'ja')
  * (Dina's model in dhde-preprocessing-model, published in real_data.json) and
  * become modelled; without the file they keep their placeholder.
  */
-export function withRealForecast(questions: StrategicQuestion[], file: RealDailyFile | null, lang: 'en' | 'ja'): StrategicQuestion[] {
+export function withRealForecast(questions: StrategicQuestion[], file: RealDailyFile | null, lang: 'en' | 'ja' | 'ar'): StrategicQuestion[] {
   if (!file) return questions
   const sites = SITES.map((s) => site(file, s, lang)).filter((x): x is ForecastSite => x !== null)
   if (sites.length === 0) return questions

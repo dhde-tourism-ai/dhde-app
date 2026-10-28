@@ -1,12 +1,12 @@
 import { createContext, useContext } from 'react'
 
-export type Lang = 'en' | 'ja'
+export type Lang = 'en' | 'ja' | 'ar'
 
 export interface LangCtx {
   lang: Lang
   setLang: (l: Lang) => void
-  /** Pick the string for the active language (falls back to English). */
-  t: (en: string, ja?: string | null) => string
+  /** Pick the string for the active language (falls back to English). Arabic comes from `ar`, then ar.json by the English text. */
+  t: (en: string, ja?: string | null, ar?: string | null) => string
 }
 
 export const LangContext = createContext<LangCtx>({
@@ -24,7 +24,7 @@ export function readStoredLang(): Lang {
   const fallback: Lang = window.location.hash.startsWith('#/site/') ? 'ja' : 'en'
   try {
     const v = window.localStorage.getItem('dhde.lang')
-    return v === 'ja' || v === 'en' ? v : fallback
+    return v === 'ja' || v === 'en' || v === 'ar' ? v : fallback
   } catch {
     return fallback
   }

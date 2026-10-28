@@ -98,7 +98,7 @@ const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; ro
   },
 }
 
-function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja') {
+function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar') {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
   return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')

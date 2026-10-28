@@ -33,10 +33,12 @@ export function sumMetrics(ms: Metric[]): number | null {
 }
 
 /** "27 Sep 2026" from an ISO date or datetime. */
-export function fmtDate(iso: string | undefined | null, lang: 'en' | 'ja' = 'en'): string {
+export function fmtDate(iso: string | undefined | null, lang: 'en' | 'ja' | 'ar' = 'en'): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso
   if (lang === 'ja') return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' })
+  // Gregorian calendar and Western digits, like the rest of the dashboard's numbers.
+  if (lang === 'ar') return d.toLocaleDateString('ar-u-ca-gregory-nu-latn', { day: 'numeric', month: 'short', year: 'numeric' })
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }

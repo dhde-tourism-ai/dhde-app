@@ -104,6 +104,9 @@ export default function App() {
             <button aria-pressed={lang === 'ja'} onClick={() => setLang('ja')} lang="ja">
               日本語
             </button>
+            <button aria-pressed={lang === 'ar'} onClick={() => setLang('ar')} lang="ar">
+              العربية
+            </button>
           </div>
         </div>
       </header>

@@ -60,7 +60,7 @@ export function levellingRate(monthShares: number[]): number {
  * shares from monthly_forecast.json, and become real; without a full year
  * they keep their placeholder values and status.
  */
-export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null, lang: 'en' | 'ja' = 'en'): StrategicQuestion[] {
+export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null, lang: 'en' | 'ja' | 'ar' = 'en'): StrategicQuestion[] {
   if (!file) return questions
   return questions.map((q) => ({
     ...q,

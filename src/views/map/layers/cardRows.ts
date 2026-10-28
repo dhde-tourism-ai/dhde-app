@@ -31,7 +31,7 @@ export function severeWeather(f: NodeFrame): boolean {
 }
 
 /** The card row: JMA-style pictogram, temperature, chance of rain, wind, and warnings in force. */
-export function weatherRow(f: NodeFrame, lang: 'en' | 'ja'): string {
+export function weatherRow(f: NodeFrame, lang: 'en' | 'ja' | 'ar'): string {
   const w = f.weather
   const alerts = f.alerts.length
     ? `<span class="wx-alert" title="${escapeHtml(f.alerts.map((a) => (lang === 'ja' ? a.title_ja : a.title_en)).join(', '))}">${iconSvg('alert', 11)}${f.alerts.length}</span>`
@@ -46,7 +46,7 @@ export function surveyRow(s: Survey): string {
 /** The row's dot for real social counts without a sentiment score: neutral grey. */
 const SOCIAL_REAL_DOT = '#8a94a6'
 
-export function socialRow(s: Social, lang: 'en' | 'ja'): string {
+export function socialRow(s: Social, lang: 'en' | 'ja' | 'ar'): string {
   // Real posts (Instagram plus mentions) where they exist, the dot coloured by the real
   // sentiment where there's enough of it; else the fictional demo.
   if (s.real || s.mentions) {
@@ -80,7 +80,7 @@ export interface CardRow {
 }
 
 /** A site's card rows for the active layers. */
-export function rowsFor(n: MapNode, frame: Record<string, NodeFrame> | null, market: MarketVoiceData | null, layers: CardLayers, lang: 'en' | 'ja'): CardRow[] {
+export function rowsFor(n: MapNode, frame: Record<string, NodeFrame> | null, market: MarketVoiceData | null, layers: CardLayers, lang: 'en' | 'ja' | 'ar'): CardRow[] {
   const f = frame?.[n.id]
   const rows: CardRow[] = []
   if (layers.weather && f) rows.push({ key: 'weather', html: weatherRow(f, lang), attention: f.alerts.length > 0 || severeWeather(f) })

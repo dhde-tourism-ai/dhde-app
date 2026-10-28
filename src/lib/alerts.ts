@@ -23,7 +23,7 @@ export interface AlertGroups {
   insights: AlertItem[]
 }
 
-function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja'): string {
+function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar'): string {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
   return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
@@ -57,7 +57,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
   }
 
   for (const a of live.weather_alerts) {
-    const where = (lang: 'en' | 'ja') => a.nodes.map((id) => nm(reg, id, lang)).join(lang === 'ja' ? '・' : ', ')
+    const where = (lang: 'en' | 'ja' | 'ar') => a.nodes.map((id) => nm(reg, id, lang)).join(lang === 'ja' ? '・' : ', ')
     if (t >= a.start && t <= a.end) {
       weather.push({
         id: a.id,

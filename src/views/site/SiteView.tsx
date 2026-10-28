@@ -35,7 +35,7 @@ const n0 = (v: number) => Math.round(v).toLocaleString('en-US')
 const pct = (v: number | null) => (v === null ? '?' : `${Math.round(v * 100)}%`)
 
 /** "10/26（月）" or "Mon 26 Oct". */
-function dayName(iso: string, lang: 'en' | 'ja'): string {
+function dayName(iso: string, lang: 'en' | 'ja' | 'ar'): string {
   const d = new Date(`${iso}T00:00:00Z`)
   if (lang === 'ja') return `${d.getUTCMonth() + 1}/${d.getUTCDate()}（${DOW_JA[d.getUTCDay()]}）`
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })

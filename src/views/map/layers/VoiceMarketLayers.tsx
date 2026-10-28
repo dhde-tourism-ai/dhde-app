@@ -34,7 +34,7 @@ function Bars({ items, unit = '%' }: { items: { label: string; value: number }[]
 
 /* ---------------- Hotels ---------------- */
 /** "Area · 8 hotels · 3 sites": each badge is a whole FTAS feed, not one hotel or one site. */
-function areaLabel(n: number | undefined, sites: number, lang: 'en' | 'ja'): string {
+function areaLabel(n: number | undefined, sites: number, lang: 'en' | 'ja' | 'ar'): string {
   const parts = [lang === 'ja' ? 'エリア' : 'Area']
   if (n) parts.push(lang === 'ja' ? `${n}軒` : `${n} ${n === 1 ? 'hotel' : 'hotels'}`)
   if (sites > 1) parts.push(lang === 'ja' ? `${sites}地点` : `${sites} sites`)

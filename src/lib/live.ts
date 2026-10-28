@@ -128,7 +128,7 @@ export function dayIndex(i: number) {
 const DOW_JA: Record<string, string> = { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export function dayLabel(live: LiveData, d: number, lang: 'en' | 'ja', short = false): string {
+export function dayLabel(live: LiveData, d: number, lang: 'en' | 'ja' | 'ar', short = false): string {
   const day = live.days[d]
   if (!day) return ''
   const [, m, dd] = day.date.split('-').map(Number)
@@ -140,7 +140,7 @@ export function hourLabel(i: number): string {
   return `${String(i % 24).padStart(2, '0')}:00`
 }
 
-export function timeLabel(live: LiveData, i: number, lang: 'en' | 'ja'): string {
+export function timeLabel(live: LiveData, i: number, lang: 'en' | 'ja' | 'ar'): string {
   return `${dayLabel(live, dayIndex(i), lang)} ${hourLabel(i)}`
 }
 
@@ -191,17 +191,17 @@ export function realSentimentLabel(score: number): { en: string; ja: string } {
   return { en: 'Mixed', ja: '賛否' }
 }
 
-export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string }> = {
-  clear: { en: 'Sunny', ja: '晴れ' },
-  clear_night: { en: 'Clear', ja: '晴れ' },
-  partly: { en: 'Partly cloudy', ja: '晴れ時々曇り' },
-  partly_night: { en: 'Partly cloudy', ja: '晴れ時々曇り' },
-  cloudy: { en: 'Cloudy', ja: '曇り' },
-  rain: { en: 'Rain', ja: '雨' },
-  heavy_rain: { en: 'Heavy rain', ja: '大雨' },
-  thunder: { en: 'Thunderstorm', ja: '雷雨' },
-  snow: { en: 'Snow', ja: '雪' },
-  fog: { en: 'Fog', ja: '霧' },
+export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string; ar: string }> = {
+  clear: { en: 'Sunny', ja: '晴れ', ar: 'مشمس' },
+  clear_night: { en: 'Clear', ja: '晴れ', ar: 'صافٍ' },
+  partly: { en: 'Partly cloudy', ja: '晴れ時々曇り', ar: 'غائم جزئياً' },
+  partly_night: { en: 'Partly cloudy', ja: '晴れ時々曇り', ar: 'غائم جزئياً' },
+  cloudy: { en: 'Cloudy', ja: '曇り', ar: 'غائم' },
+  rain: { en: 'Rain', ja: '雨', ar: 'مطر' },
+  heavy_rain: { en: 'Heavy rain', ja: '大雨', ar: 'مطر غزير' },
+  thunder: { en: 'Thunderstorm', ja: '雷雨', ar: 'عاصفة رعدية' },
+  snow: { en: 'Snow', ja: '雪', ar: 'ثلج' },
+  fog: { en: 'Fog', ja: '霧', ar: 'ضباب' },
 }
 
 export function escapeHtml(s: string): string {
