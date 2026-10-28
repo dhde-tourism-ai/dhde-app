@@ -10,6 +10,9 @@ import type { MarketVoiceData } from '../../../types/market'
 import type { RealNodeMeta } from '../../../types/live'
 import { iconSvg, weatherSvg } from '../../../lib/icons'
 import { starsHtml } from '../../../lib/market'
+import { pick } from '../../../lib/i18n'
+import { alertText } from '../../../lib/jmaWarnings'
+import { daysAr, unit } from '../mapText'
 
 type Survey = MarketVoiceData['survey'][string]
 type Social = MarketVoiceData['social'][string]
@@ -34,14 +37,18 @@ export function severeWeather(f: NodeFrame): boolean {
 export function weatherRow(f: NodeFrame, lang: 'en' | 'ja' | 'ar'): string {
   const w = f.weather
   const alerts = f.alerts.length
-    ? `<span class="wx-alert" title="${escapeHtml(f.alerts.map((a) => (lang === 'ja' ? a.title_ja : a.title_en)).join(', '))}">${iconSvg('alert', 11)}${f.alerts.length}</span>`
+    ? `<span class="wx-alert" title="${escapeHtml(f.alerts.map((a) => alertText(a, lang).title).join(lang === 'ar' ? '، ' : ', '))}">${iconSvg('alert', 11)}${f.alerts.length}</span>`
     : ''
-  return `<span class="sc-ic">${weatherSvg(w.cond, 18)}</span><b class="num">${Math.round(w.temp)}°</b><span class="ov-sub">${iconSvg('umbrella', 10)}${w.pop}% · ${iconSvg('wind', 10)}${Math.round(w.wind)} m/s</span>${alerts}`
+  return `<span class="sc-ic">${weatherSvg(w.cond, 18)}</span><b class="num">${Math.round(w.temp)}°</b><span class="ov-sub">${iconSvg('umbrella', 10)}${w.pop}% · ${iconSvg('wind', 10)}${Math.round(w.wind)} ${unit('m/s', lang)}</span>${alerts}`
 }
 
 export function surveyRow(s: Survey): string {
   return `<span class="sc-ic">${iconSvg('survey', 13)}</span><b class="num">${s.satisfaction.toFixed(1)}</b><span class="ov-sub">/5${s.nps !== null ? ` · NPS ${s.nps > 0 ? '+' : ''}${s.nps}` : ''}</span>`
 }
+
+/** "posts 7d" on a card, in the page's language. */
+const postsIn = (lang: 'en' | 'ja' | 'ar', days: number | '24h') =>
+  days === '24h' ? pick(lang, 'posts 24h', '件/24h', 'منشورات/24 ساعة') : pick(lang, `posts ${days}d`, `件/${days}日`, `منشورات/${daysAr(days)}`)
 
 /** The row's dot for real social counts without a sentiment score: neutral grey. */
 const SOCIAL_REAL_DOT = '#8a94a6'
@@ -54,9 +61,9 @@ export function socialRow(s: Social, lang: 'en' | 'ja' | 'ar'): string {
     const total = (s.real?.posts ?? 0) + (s.mentions?.total ?? 0)
     const sc = s.sentiment_real?.score
     const dot = typeof sc === 'number' ? sentimentColour(sc) : SOCIAL_REAL_DOT
-    return `<span class="sc-dot" style="background:${dot}"></span><b class="num">${total.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? `件/${days}日` : `posts ${days}d`)}</span>`
+    return `<span class="sc-dot" style="background:${dot}"></span><b class="num">${total.toLocaleString('en-US')}</b><span class="ov-sub">${escapeHtml(postsIn(lang, days))}</span>`
   }
-  return `<span class="sc-dot" style="background:${sentimentColour(s.avg_sentiment)}"></span><b class="num">${s.posts_24h}</b><span class="ov-sub">${escapeHtml(lang === 'ja' ? '件/24h' : 'posts 24h')}</span>`
+  return `<span class="sc-dot" style="background:${sentimentColour(s.avg_sentiment)}"></span><b class="num">${s.posts_24h}</b><span class="ov-sub">${escapeHtml(postsIn(lang, '24h'))}</span>`
 }
 
 export function reviewsRow(r: Review): string {

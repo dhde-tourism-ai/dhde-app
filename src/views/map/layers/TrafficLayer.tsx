@@ -9,6 +9,7 @@ import { useLeafletLayer } from '../canvas/useLeafletLayer'
 import { reversePath, routeById, slicePath } from '../../../lib/routes'
 import { activeAdvisories, trafficTier } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
+import { unit } from '../mapText'
 import { escapeHtml } from '../../../lib/live'
 
 const GOOD = '#0ca30c'
@@ -21,7 +22,7 @@ const CRIT = '#d03b3b'
  * alternate is drawn in green, as in the original demo.
  */
 export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; routes: RoutesFile; t: number; paused: boolean }) {
-  const { t: tr } = useLang()
+  const { t: tr, lang } = useLang()
   const canvas = useLeafletLayer(() => new FlowCanvas())
   const adv = activeAdvisories(live, t)
   const corridor = new Set(adv.map((a) => a.corridor))
@@ -91,10 +92,10 @@ export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; rout
                 <div className="tip-row">
                   {isAlt
                     ? tr('Recommended while the coastal road is jammed', '沿岸道路の渋滞中の推奨ルート')
-                    : `${tr('Congested corridor', '渋滞区間')} · ${tr(trafficTier(worst).label, trafficTier(worst).label_ja)} ${Math.round(worst * 100)}%`}
+                    : `${tr('Congested corridor', '渋滞区間')} · ${tr(trafficTier(worst).label, trafficTier(worst).label_ja, trafficTier(worst).label_ar)} ${Math.round(worst * 100)}%`}
                 </div>
                 <div className="tip-sub">
-                  {r.distance_km} km · {r.duration_min} min
+                  {r.distance_km} {unit('km', lang)} · {r.duration_min} {unit('min', lang)}
                 </div>
               </Tooltip>
             </Polyline>
@@ -110,7 +111,7 @@ export function TrafficLayer({ live, routes, t, paused }: { live: LiveData; rout
                 <strong>{tr(r.label, r.label_ja)}</strong>
                 <div className="tip-row">
                   <span className="sw" style={{ background: tier.colour }}></span>
-                  {tr(tier.label, tier.label_ja)} · {tr('congestion', '混雑度')} <b className="num">{Math.round(c * 100)}%</b>
+                  {tr(tier.label, tier.label_ja, tier.label_ar)} · {tr('congestion', '混雑度')} <b className="num">{Math.round(c * 100)}%</b>
                 </div>
                 <div className="tip-sub">
                   {tr('Segment', '区間')} {i + 1}/{traffic.segments.length} · ~{(traffic.vehicles_per_hour[t] ?? 0).toLocaleString('en-US')} {tr('vehicles/h on the corridor', '台/時')}

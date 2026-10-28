@@ -215,6 +215,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         : `¥${Math.round(v / 1e6)}M`
   const people = (v: number) =>
     lang === 'ja' ? `${Math.round(v / 1e4)}万人` : lang === 'ar' ? `${(v / 1e6).toFixed(2)} مليون` : `${(v / 1e6).toFixed(2)}M`
+  /** A full yen amount: "¥1,200", or "1,200 ين" in Arabic. */
+  const yenFull = (v: number) => (lang === 'ar' ? `${v.toLocaleString('en-US')} ين` : `¥${v.toLocaleString()}`)
 
   // chart data
   const modeBars = byMode ? MODE_ORDER.map((m) => ({ id: m, name: t(...MODE_NAME[m]), value: byMode[m].visitors })) : []
@@ -486,7 +488,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                             {d?.from_hub ? fmtMinutes(d.from_hub.fastest_min, lang) : <span className="td-dim">—</span>}
                           </td>
                           <td className="num" data-label={t('Bus fare', 'バス運賃')}>
-                            {fare != null ? `¥${fare.toLocaleString()}` : <span className="td-dim">—</span>}
+                            {fare != null ? yenFull(fare) : <span className="td-dim">—</span>}
                           </td>
                           <td className="num" data-label={t('Last bus back', '最終便')}>
                             {back == null ? (
@@ -574,7 +576,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 <span className="td-stat-value num">{u.value}</span>
                 <span className="td-stat-label">{t(u.label, u.label_ja)}</span>
                 <span className="td-stat-meta">
-                  {u.period} <Badge status={u.status} />
+                  {t(u.period)} <Badge status={u.status} />
                 </span>
               </a>
             ))}
@@ -599,7 +601,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     <BarChart data={spendRows} layout="vertical" margin={{ top: 2, right: 150, left: 4, bottom: 2 }}>
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={96} />
-                      <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [`¥${Number(v).toLocaleString()}`, t('per visitor', '1人当たり')]} />
+                      <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [yenFull(Number(v)), t('per visitor', '1人当たり')]} />
                       <Bar dataKey="yen" barSize={20} radius={[0, 4, 4, 0]} isAnimationActive={false}>
                         {spendRows.map((r) => (
                           <Cell key={r.id} fill={MODE_COLOUR[r.id]} />
@@ -618,9 +620,9 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                             const r = spendRows[index]
                             return (
                               <text x={Number(x) + Number(width) + 8} y={Number(y) + Number(height) / 2 + 4} fill={INK} fontSize={12.5} fontWeight={600}>
-                                ¥{r.yen.toLocaleString()}
+                                {yenFull(r.yen)}
                                 <tspan fill="#7f8ba3" fontWeight={400}>
-                                  {r.local != null ? `  ·  ¥${r.local.toLocaleString()}` : ''}
+                                  {r.local != null ? `  ·  ${yenFull(r.local)}` : ''}
                                 </tspan>
                               </text>
                             )

@@ -9,6 +9,7 @@ import { useLang } from '../../../lib/i18n'
 import type { RealNodeMeta } from '../../../types/live'
 import { measureLabel } from '../../../lib/real'
 import { lastSignal } from './cardRows'
+import { methodAr, signalAr } from '../mapText'
 
 const ACCENT = '#8b9dff'
 
@@ -166,7 +167,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                   <span className="tt-k">{t('Crowding', '混雑')}</span>
                   <span className="tt-v">
                     <span className="sw" style={{ background: col }}></span>
-                    {t(f.tier.label, f.tier.label_ja)} · {Math.round(f.load * 100)}%
+                    {t(f.tier.label, f.tier.label_ja, f.tier.label_ar)} ·{Math.round(f.load * 100)}%
                   </span>
                   <span className="tt-k">{t('Forecast', '予測')}</span>
                   <span className="tt-v num">
@@ -178,7 +179,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 </div>
                 {m ? (
                   <div className="tip-sub">
-                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`)} (${m.official_2025?.toLocaleString('en-US') ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
+                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`, `الطريقة: ${methodAr(m.method_text)}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`, `الطريقة: ${signalAr(measureLabel(m.measure))} محوّلة إلى الرقم الرسمي السنوي لعام 2025`)} (${m.official_2025?.toLocaleString('en-US') ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
                   </div>
                 ) : (
                   est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>

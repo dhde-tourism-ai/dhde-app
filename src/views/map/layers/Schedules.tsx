@@ -5,7 +5,8 @@ import { nextTrains } from '../../../lib/railModel'
 import type { RailRun } from '../../../lib/railModel'
 import { clock, dayTypeOf, vehicleClock } from '../../../lib/vehicleClock'
 import { useLang } from '../../../lib/i18n'
-import { placeEn, routeEn } from '../../../lib/transportNames'
+import { placeName, routeName } from '../../../lib/transportNames'
+import { arrow } from '../mapText'
 
 /** Re-render every 2 s while shown (hover cards stay mounted once opened, so skip when hidden). */
 function useTicking() {
@@ -49,7 +50,7 @@ export function BusStopSchedule({ trips, stopId }: { trips: TransportTripsFile |
           <div key={i} className="sched-row">
             <span className="num">{clock(r.min)}</span>
             <span>
-              {lang === 'ja' ? r.route : routeEn(r.route)} <span className="sched-to">→ {lang === 'ja' ? r.to : placeEn(r.to)}</span>
+              {routeName(lang, r.route)} <span className="sched-to">{arrow(lang)} {placeName(lang, r.to)}</span>
             </span>
           </div>
         ))
@@ -76,7 +77,7 @@ export function StationSchedule({ runs, stationId }: { runs: RailRun[]; stationI
           <div key={i} className="sched-row">
             <span className="num">{clock(r.min)}</span>
             <span>
-              {t(...r.line)} <span className="sched-to">→ {lang === 'ja' ? r.to : placeEn(r.to)}</span>
+              {t(...r.line)} <span className="sched-to">{arrow(lang)} {placeName(lang, r.to)}</span>
             </span>
           </div>
         ))

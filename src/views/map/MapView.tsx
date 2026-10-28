@@ -385,7 +385,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             {top ? (
               <span className="ss-msg">
                 <span className="ss-sev" style={{ background: SEV_COLOUR[top.sev] }} aria-hidden="true"></span>
-                {tr(top.en, top.ja)}
+                {tr(top.en, top.ja, top.ar)}
               </span>
             ) : (
               <span className="ss-msg">

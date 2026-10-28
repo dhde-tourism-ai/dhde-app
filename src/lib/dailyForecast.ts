@@ -1,5 +1,6 @@
 import type { ForecastSite, StrategicQuestion } from '../types/strategy'
 import { DEMAND_THRESHOLD } from './nudges'
+import { dayAr } from './arFormat'
 
 /** The parts of public/data/real_data.json this uses (raw, as published). */
 export interface RealDailyFile {
@@ -22,7 +23,7 @@ const SITES: { id: string; en: string; ja: string; ar: string; signalOnly?: bool
   { id: 'tojinbo', en: 'Tojinbo', ja: '東尋坊', ar: 'توجينبو' },
   { id: 'fukui_station', en: 'Fukui Station (camera detections)', ja: '福井駅（カメラ検知数）', ar: 'محطة فوكوي (رصد الكاميرات)', signalOnly: true },
   { id: 'katsuyama', en: 'Katsuyama', ja: '勝山', ar: 'كاتسوياما' },
-  { id: 'rainbow_line', en: 'Rainbow Line', ja: 'レインボーライン', ar: 'خط رينبو' },
+  { id: 'rainbow_line', en: 'Rainbow Line', ja: 'レインボーライン', ar: 'طريق رينبو لاين' },
   { id: 'awara_onsen', en: 'Awara Onsen', ja: 'あわら温泉', ar: 'ينابيع أوارا الحارة' },
 ]
 
@@ -40,6 +41,7 @@ const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 function dayLabel(date: string, lang: 'en' | 'ja' | 'ar'): string {
   const d = new Date(`${date}T00:00:00Z`)
+  if (lang === 'ar') return dayAr(d)
   return lang === 'ja'
     ? `${d.getUTCMonth() + 1}月${d.getUTCDate()}日(${DOW_JA[d.getUTCDay()]})`
     : `${DOW_EN[d.getUTCDay()]} ${String(d.getUTCDate()).padStart(2, '0')} ${MON_EN[d.getUTCMonth()]}`

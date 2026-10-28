@@ -7,7 +7,7 @@ import { computeNudges, PRIORITY, priorityOf } from '../../lib/nudges'
 import type { HotelThresholds } from '../../lib/nudges'
 import { dayLabel } from '../../lib/live'
 import { fmtDate } from '../../lib/format'
-import { useLang } from '../../lib/i18n'
+import { arText, useLang } from '../../lib/i18n'
 import { Icon } from '../../components/icons'
 import { SourceBadge } from '../../components/SourceBadge'
 import { Loading } from '../../components/StateMsg'
@@ -15,6 +15,7 @@ import { StatusPill } from '../../components/StatusPill'
 import { localize } from '../../lib/localize'
 import JA from '../../i18n/strategy.ja.json'
 import { LAYERS } from '../map/layers'
+import { withUnit } from '../strategy/fmt'
 import '../../styles/pages.css'
 
 const RANK = { high: 0, medium: 1, low: 2 } as const
@@ -47,10 +48,6 @@ const TARGET_JA: Record<string, string> = {
   'Spend per overnight guest': '宿泊客1人当たり消費額',
   "Overnight guest-nights (the vision's 県内宿泊者数)": '県内宿泊者数（延べ宿泊者数）',
   "Foreign guest-nights (the vision's 外国人宿泊者数)": '外国人宿泊者数（延べ宿泊者数）',
-}
-
-function fmtUnit(v: number, prefix: string, unit: string): string {
-  return `${prefix}${v.toLocaleString('en-US')}${unit}`
 }
 
 /**
@@ -130,7 +127,11 @@ export default function SummaryView({ data }: { data: ProductData }) {
           <h1 className="page-title">{t('Fukui tourism at a glance', '福井観光の概況')}</h1>
           <p className="page-sub">
             {shared
-              ? t(`Real data up to ${fmtDate(shared, lang)}. Forecasts from the FTAS model.`, `${fmtDate(shared, lang)}までの実データ。予測はFTASモデル。`)
+              ? t(
+                  `Real data up to ${fmtDate(shared, lang)}. Forecasts from the FTAS model.`,
+                  `${fmtDate(shared, lang)}までの実データ。予測はFTASモデル。`,
+                  `بيانات حقيقية حتى ${fmtDate(shared, lang)}. التوقعات من نموذج FTAS.`,
+                )
               : t('Demo data: numbers are illustrative.', 'デモデータ：数値は例示です。')}
           </p>
         </div>
@@ -199,6 +200,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
               {t(
                 `In tests over past weeks the model was typically off by ${Math.round(Math.min(...wapes) * 100)}–${Math.round(Math.max(...wapes) * 100)}% a day, depending on the site.`,
                 `過去数週間のテストでは、予測の誤差は地点により1日あたり約${Math.round(Math.min(...wapes) * 100)}〜${Math.round(Math.max(...wapes) * 100)}%でした。`,
+                `في الاختبارات على الأسابيع الماضية كان خطأ النموذج عادةً بين ${Math.round(Math.min(...wapes) * 100)} و${Math.round(Math.max(...wapes) * 100)}% في اليوم، حسب الموقع.`,
               )}
             </p>
           )}
@@ -216,7 +218,11 @@ export default function SummaryView({ data }: { data: ProductData }) {
               </p>
               {behind.length > 0 && (
                 <p className="sum-warn">
-                  <Icon name="alert" size={14} /> {t(`Behind: ${behind.map((r) => r.label.toLowerCase()).join(', ')}.`, `遅れ：${behind.map((r) => TARGET_JA[r.label] ?? r.label).join('、')}。`)}
+                  <Icon name="alert" size={14} /> {t(
+                    `Behind: ${behind.map((r) => r.label.toLowerCase()).join(', ')}.`,
+                    `遅れ：${behind.map((r) => TARGET_JA[r.label] ?? r.label).join('、')}。`,
+                    `متأخر: ${behind.map((r) => arText(r.label) ?? r.label).join('، ')}.`,
+                  )}
                 </p>
               )}
               <ul className="sum-list">
@@ -225,13 +231,19 @@ export default function SummaryView({ data }: { data: ProductData }) {
                     <span className={`sum-dot ${r.met ? 'met' : r.behind ? 'behind' : 'pace'}`} aria-hidden="true"></span>
                     <span className="sum-label">{t(r.label, TARGET_JA[r.label] ?? r.label)}</span>
                     <span className="num sum-val">
-                      {fmtUnit(r.current, r.prefix, r.unit)} / {fmtUnit(r.target, r.prefix, r.unit)}
+                      {withUnit(r.current, r.prefix, r.unit, lang)} / {withUnit(r.target, r.prefix, r.unit, lang)}
                     </span>
                     <span className="sum-state">{r.met ? t('Met', '達成') : r.behind ? t('Behind', '遅れ') : t('On pace', '順調')}</span>
                   </li>
                 ))}
               </ul>
-              <p className="card-sub">{t(`${progress.rows[0]?.current_year ?? '2025'} figures against the Next Fukui Tourism Vision (Mar 2025).`, `${progress.rows[0]?.current_year ?? '2025'}年の実績をネクストふくい観光ビジョン（2025年3月）の目標と比較。`)}</p>
+              <p className="card-sub">
+                {t(
+                  `${progress.rows[0]?.current_year ?? '2025'} figures against the Next Fukui Tourism Vision (Mar 2025).`,
+                  `${progress.rows[0]?.current_year ?? '2025'}年の実績をネクストふくい観光ビジョン（2025年3月）の目標と比較。`,
+                  `أرقام ${progress.rows[0]?.current_year ?? '2025'} مقارنةً بمستهدفات رؤية فوكوي السياحية القادمة (مارس 2025).`,
+                )}
+              </p>
             </>
           ) : (
             <p className="card-sub">{t('Strategy data not loaded.', '戦略データが読み込まれていません。')}</p>
@@ -248,19 +260,19 @@ export default function SummaryView({ data }: { data: ProductData }) {
                 const pr = PRIORITY[priorityOf(n.sev)]
                 return (
                   <li key={n.id}>
-                    <span className="sum-pr" title={t(pr.hint_en, pr.hint_ja)}>
+                    <span className="sum-pr" title={t(pr.hint_en, pr.hint_ja, pr.hint_ar)}>
                       <i style={{ background: pr.colour }} aria-hidden="true"></i>
-                      {t(pr.en, pr.ja)}
+                      {t(pr.en, pr.ja, pr.ar)}
                     </span>
-                    <strong className="sum-act-title">{t(n.title_en, n.title_ja)}</strong>
-                    <span className="sum-act-do">{t(n.action_en, n.action_ja)}</span>
+                    <strong className="sum-act-title">{t(n.title_en, n.title_ja, n.title_ar)}</strong>
+                    <span className="sum-act-do">{t(n.action_en, n.action_ja, n.action_ar)}</span>
                   </li>
                 )
               })}
             </ol>
           )}
           <a className="btn btn-ghost sum-more" href="#/map">
-            {t('See all action nudges on the map', '地図ですべての推奨アクションを見る')} <Icon name="chevron" size={12} />
+            {t('See all action nudges on the map', '地図ですべての推奨アクションを見る')} <Icon name="chevron" size={12} className="rtl-flip" />
           </a>
         </section>
 
@@ -282,7 +294,12 @@ export default function SummaryView({ data }: { data: ProductData }) {
         <section className="s-card sum-faq" style={{ ['--span' as string]: 12 }}>
           <h2 className="card-title">{t('Frequently asked questions', 'よくある質問')}</h2>
           <p className="card-sub">{t("The government's five questions. Open one for today's answer, its chart and where the data comes from.", '行政の5つの質問。開くと現時点の回答、グラフ、データの出典を表示します。')}</p>
-          {(lang === 'ja' ? localize(data.strategy.data?.questions ?? [], JA as Record<string, string>) : (data.strategy.data?.questions ?? [])).map((q) => {
+          {(lang === 'ja'
+            ? localize(data.strategy.data?.questions ?? [], JA as Record<string, string>)
+            : lang === 'ar'
+              ? localize(data.strategy.data?.questions ?? [], arText)
+              : (data.strategy.data?.questions ?? [])
+          ).map((q) => {
             const cards: StrategyCard[] = q.cards.filter((c) => !c.hidden)
             const chart = cards.find((c) => c.id === FAQ[q.id]?.chart) ?? cards[0]
             // The chart's own source only: another card's source would be shown as the
@@ -292,7 +309,10 @@ export default function SummaryView({ data }: { data: ProductData }) {
             return (
               <details key={q.id} className="faq">
                 <summary>
-                  <span className="q-num">Q{q.number}</span>
+                  <span className="q-num">
+                    {t('Q', 'Q', 'س')}
+                    {q.number}
+                  </span>
                   {t(q.question ?? q.title, FAQ[q.id]?.ja ?? q.question ?? q.title)}
                 </summary>
                 <div className="faq-body">
@@ -302,7 +322,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
                       <StatusPill status={chart.status} />
                       <span className="faq-chart-title">{chart.title}</span>
                       <a className="btn btn-ghost" href={`#/strategy/${chart.id}`}>
-                        {t('Open the chart', 'グラフを開く')} <Icon name="chevron" size={12} />
+                        {t('Open the chart', 'グラフを開く')} <Icon name="chevron" size={12} className="rtl-flip" />
                       </a>
                     </div>
                   )}
@@ -318,7 +338,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
                         )}
                       </>
                     ) : chart?.pending_on ? (
-                      t(`Pending on ${chart.pending_on}.`, `${chart.pending_on}待ち。`)
+                      t(`Pending on ${chart.pending_on}.`, `${chart.pending_on}待ち。`, `بانتظار ${chart.pending_on}.`)
                     ) : chart?.status === 'illustrative' ? (
                       t('No published source yet; this chart is illustrative.', '公表された出典はまだありません。このグラフは例示です。')
                     ) : (

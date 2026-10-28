@@ -1,9 +1,9 @@
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { SearchTrendsCard } from '../../types/strategy'
 import { useLang } from '../../lib/i18n'
+import { MON_AR } from '../../lib/arFormat'
 import { AXIS, S, TIP, TIP_ITEM, TIP_LABEL } from './chartTheme'
-
-const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+import { MONTHS_EN } from './fmt'
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 
 /** Discover: Fukui's travel searches against Ishikawa + Kanazawa by where the searcher lives, and the monthly trend in Japan. */
@@ -18,7 +18,7 @@ export function SearchTrends({ card }: { card: SearchTrendsCard }) {
     const [y, mm] = m.split('-')
     return {
       m,
-      label: t(`${MONTHS_EN[Number(mm) - 1]} ${y.slice(2)}`, `${y.slice(2)}年${Number(mm)}月`),
+      label: t(`${MONTHS_EN[Number(mm) - 1]} ${y.slice(2)}`, `${y.slice(2)}年${Number(mm)}月`, `${MON_AR[Number(mm) - 1]} ${y}`),
       fukui: card.trend.fukui[i],
       ishikawa: card.trend.ishikawa[i],
       kansai: card.trend.kansai[i],

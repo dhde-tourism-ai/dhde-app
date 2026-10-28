@@ -5,6 +5,7 @@ import type { GdpTrendCard, RippleCard, RippleTierId, TourismTrendCard, TourismT
 import { useLang } from '../../lib/i18n'
 import { AXIS, S } from './chartTheme'
 import { ScenarioSlider } from './slider'
+import { arrow } from './fmt'
 
 // Q1 economy block: Fukui's GDP, tourism's share of it, the ripple by round and a what-if.
 
@@ -32,10 +33,16 @@ function useTierNames(): Record<RippleTierId, string> {
 }
 
 const fixed = (v: number, d = 1) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
-/** ¥139.0bn */
-const bn = (v: number, d = 1) => `¥${fixed(v, d)}bn`
-/** ¥4.08tn, from ¥bn */
-const tn = (v: number) => `¥${(v / 1e3).toFixed(2)}tn`
+
+/** Yen in billions and trillions (from ¥bn) for the page's language: ¥139.0bn and ¥4.08tn, in Arabic 139.0 مليار ين and 4.08 تريليون ين. */
+function useMoney() {
+  const { lang } = useLang()
+  const ar = lang === 'ar'
+  return {
+    bn: (v: number, d = 1) => (ar ? `${fixed(v, d)} مليار ين` : `¥${fixed(v, d)}bn`),
+    tn: (v: number) => (ar ? `${(v / 1e3).toFixed(2)} تريليون ين` : `¥${(v / 1e3).toFixed(2)}tn`),
+  }
+}
 /** Jobs rounded to 10 (to 100 from 1,000 up): 33,900 */
 const jobs = (v: number) => {
   const step = Math.abs(v) >= 1e3 ? 100 : 10
@@ -68,7 +75,8 @@ function EcoTip({ title, rows, foot }: { title: string; rows: TipRow[]; foot?: s
 
 /** Fukui's GDP each fiscal year, tourism's part in orange; estimated years faded. */
 export function GdpTrend({ card }: { card: GdpTrendCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const { bn, tn } = useMoney()
   const rows = card.points.map((p) => {
     const gdp = p.actual ?? p.base ?? 0
     return { ...p, x: String(p.fy), gdp, tour: p.tourism_va, rest: Math.max(gdp - p.tourism_va, 0), proj: p.actual === undefined }
@@ -101,7 +109,7 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
         {firstProj && (
           <span>
             <i className="k-sw" style={{ background: GDP_REST, opacity: 0.45 }}></i>
-            {t(`Estimate (FY${firstProj} on)`, `推計（FY${firstProj}以降）`)}
+            {t(`Estimate (FY${firstProj} on)`, `推計（FY${firstProj}以降）`, `تقدير (من السنة المالية ${firstProj})`)}
           </span>
         )}
       </div>
@@ -109,8 +117,8 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
         <ComposedChart data={rows} margin={{ top: 18, right: 8, left: 6, bottom: 0 }} barCategoryGap="18%">
           <CartesianGrid stroke={GRID} vertical={false} />
           {firstProj && <ReferenceArea x1={firstProj} x2={last.x} fill={PROJ_FILL} fillOpacity={0.06} ifOverflow="visible" />}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `FY${v.slice(2)}`} height={40} label={xTitle(t('Fiscal year', '年度'))} />
-          <YAxis tick={AXIS} width={58} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : `¥${(v / 1e3).toFixed(0)}tn`)} label={yTitle(t('GDP (¥ trillion)', '県内総生産（兆円）'))} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => (lang === 'ar' ? v : `FY${v.slice(2)}`)} height={40} label={xTitle(t('Fiscal year', '年度'))} />
+          <YAxis tick={AXIS} width={58} tickLine={false} axisLine={false} domain={[0, top]} ticks={ticks} tickFormatter={(v: number) => (v === 0 ? '0' : lang === 'ar' ? (v / 1e3).toFixed(0) : `¥${(v / 1e3).toFixed(0)}tn`)} label={yTitle(t('GDP (¥ trillion)', '県内総生産（兆円）'))} />
           <Tooltip
             cursor={{ fill: 'rgba(160,185,230,0.06)' }}
             content={({ active, payload }) => {
@@ -118,7 +126,7 @@ export function GdpTrend({ card }: { card: GdpTrendCard }) {
               if (!r) return null
               return (
                 <EcoTip
-                  title={`FY${r.fy} · ${r.proj ? t('estimate', '推計') : t('published', '公表値')}`}
+                  title={`${lang === 'ar' ? 'السنة المالية ' : 'FY'}${r.fy} · ${r.proj ? t('estimate', '推計') : t('published', '公表値')}`}
                   rows={[
                     { key: GDP_REST, label: t("Fukui's GDP", '県内総生産'), value: tn(r.gdp), strong: true },
                     { key: TOURISM, label: t("tourism's contribution", '観光の寄与'), value: bn(r.tour) },
@@ -160,7 +168,8 @@ function byRound(p: TourismTrendPoint, m: Measure): [number, number, number, num
 
 /** Tourism revenue, or tourism's share of GDP, GDP added or jobs stacked by round, each year, with the low–high range on projected years. */
 export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const { bn, tn } = useMoney()
   const names = useTierNames()
   // Under Q1's themes each shows its own measure only: Spending revenue, GDP share and GDP added, Jobs jobs.
   const measures: Measure[] = theme === 'spending' ? ['spend'] : theme === 'jobs' ? ['jobs'] : theme === 'gdp' ? ['share', 'va'] : ['share', 'va', 'jobs']
@@ -168,7 +177,9 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
   const m = measures.includes(picked) ? picked : measures[0]
   const money = m === 'va' || m === 'spend'
   const fmt = (v: number) => (m === 'share' ? pct(v, 2) : money ? bn(v) : jobs(v))
-  const tick = (v: number) => (m === 'share' ? `${v}%` : money ? `¥${v}bn` : v >= 1e3 ? `${Math.round(v / 1e3)}k` : String(v))
+  // Arabic ticks leave the yen unit to the axis title (مليار ¥) and write thousands as ألف.
+  const tick = (v: number) =>
+    m === 'share' ? `${v}%` : money ? (lang === 'ar' ? String(v) : `¥${v}bn`) : v >= 1e3 ? (lang === 'ar' ? `${Math.round(v / 1e3)} ألف` : `${Math.round(v / 1e3)}k`) : String(v)
   const rows = card.points.map((p) => {
     const [d, i1, i2, tot] = byRound(p, m)
     const range = p.range ? p.range[m === 'spend' ? 'spend_bn' : m] : null
@@ -238,7 +249,7 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
               label={{ value: t('Projection', '予測'), position: 'insideTopLeft', fill: '#7f8ba3', fontSize: 10.5 }}
             />
           )}
-          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => `'${v.slice(2)}`} height={40} label={xTitle(t('Year', '年'))} />
+          <XAxis dataKey="x" tick={AXIS} tickLine={false} axisLine={{ stroke: AXIS_LINE }} interval={1} tickFormatter={(v: string) => (lang === 'ar' ? v : `'${v.slice(2)}`)} height={40} label={xTitle(t('Year', '年'))} />
           <YAxis
             tick={AXIS}
             width={58}
@@ -274,7 +285,7 @@ export function TourismTrend({ card, theme }: { card: TourismTrendCard; theme?: 
                 <EcoTip
                   title={`${r.x}${r.forecast ? t(' · base projection', '・基準予測') : ''}`}
                   rows={tipRows}
-                  foot={m === 'spend' ? undefined : `${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · GDP ${tn(r.p.gdp_bn)}${est}`}
+                  foot={m === 'spend' ? undefined : `${t('Tourism revenue', '観光消費額')} ${bn(r.p.spend_bn)} · ${t('GDP', 'GDP')} ${tn(r.p.gdp_bn)}${est}`}
                 />
               )
             }}
@@ -348,7 +359,11 @@ function FlipBox({ className, style, front, back, label }: { className: string; 
       role="button"
       tabIndex={0}
       aria-pressed={flipped}
-      aria-label={flipped ? t(`${label}: back, details. Click to turn back.`, `${label}：裏面（詳細）。クリックで表に戻る。`) : t(`${label}. Click for details.`, `${label}。クリックで詳細。`)}
+      aria-label={
+        flipped
+          ? t(`${label}: back, details. Click to turn back.`, `${label}：裏面（詳細）。クリックで表に戻る。`, `${label}: الوجه الخلفي، التفاصيل. انقر للرجوع.`)
+          : t(`${label}. Click for details.`, `${label}。クリックで詳細。`, `${label}. انقر لعرض التفاصيل.`)
+      }
       onClick={flip}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -396,7 +411,8 @@ const FlipMark = () => <TurnArrow />
  * gain most in each round, the split of the total by round).
  */
 export function Ripple({ card }: { card: RippleCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const { bn } = useMoney()
   const names = useTierNames()
   const tot = card.total
   const maxSector = Math.max(...card.tiers.flatMap((tier) => tier.top.map((s) => s.va_bn)))
@@ -407,7 +423,7 @@ export function Ripple({ card }: { card: RippleCard }) {
       <div className="ripple-flow">
         <FlipBox
           className="spend"
-          label={t(`Tourism revenue ${card.year}`, `観光消費額 ${card.year}年`)}
+          label={t(`Tourism revenue ${card.year}`, `観光消費額 ${card.year}年`, `إيرادات السياحة ${card.year}`)}
           front={
             <>
               <div className="ripple-kicker">
@@ -419,7 +435,7 @@ export function Ripple({ card }: { card: RippleCard }) {
                 <div className="ripple-lab">{t('visitor spend', '観光消費')}</div>
               </div>
               <div className="ripple-figs">
-                <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${retainedPct}%)`, `県内（${retainedPct}%）`)} />
+                <Fig value={bn(card.retained_bn)} label={t(`in Fukui (${retainedPct}%)`, `県内（${retainedPct}%）`, `داخل فوكوي (${retainedPct}%)`)} />
                 <Fig value={bn(card.leak_bn)} label={t('made elsewhere', '県外')} />
               </div>
             </>
@@ -453,7 +469,7 @@ export function Ripple({ card }: { card: RippleCard }) {
           }
         />
         <span className="ripple-op" aria-hidden="true">
-          →
+          {arrow(lang)}
         </span>
         {card.tiers.map((tier, i) => (
           <div key={tier.id} className="ripple-seq">
@@ -510,7 +526,7 @@ export function Ripple({ card }: { card: RippleCard }) {
         ))}
         <FlipBox
           className="total"
-          label={t(`Total effect ${card.year}`, `総合効果 ${card.year}年`)}
+          label={t(`Total effect ${card.year}`, `総合効果 ${card.year}年`, `الأثر الكلي ${card.year}`)}
           front={
             <>
               <div className="ripple-kicker">
@@ -524,8 +540,8 @@ export function Ripple({ card }: { card: RippleCard }) {
                 </div>
               </div>
               <div className="ripple-figs">
-                <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`)} />
-                <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`)} />
+                <Fig value={jobs(tot.jobs)} label={t(`jobs (${pct(tot.jobs_share_pct)})`, `就業者（${pct(tot.jobs_share_pct)}）`, `وظيفة (${pct(tot.jobs_share_pct)})`)} />
+                <Fig value={bn(tot.output_bn)} label={t(`output (${tot.multiplier_spend.toFixed(2)}×)`, `生産額（${tot.multiplier_spend.toFixed(2)}倍）`, `الإنتاج (${tot.multiplier_spend.toFixed(2)} ضعف)`)} />
               </div>
             </>
           }
@@ -552,7 +568,11 @@ export function Ripple({ card }: { card: RippleCard }) {
                 ))}
               </ul>
               <p className="ripple-back-note">
-                {t(`Output ${bn(tot.output_bn)} = ${tot.multiplier_spend.toFixed(2)}× revenue · ${tot.multiplier_direct.toFixed(2)}× direct`, `生産額${bn(tot.output_bn)}＝消費の${tot.multiplier_spend.toFixed(2)}倍・直接効果の${tot.multiplier_direct.toFixed(2)}倍`)}
+                {t(
+                  `Output ${bn(tot.output_bn)} = ${tot.multiplier_spend.toFixed(2)}× revenue · ${tot.multiplier_direct.toFixed(2)}× direct`,
+                  `生産額${bn(tot.output_bn)}＝消費の${tot.multiplier_spend.toFixed(2)}倍・直接効果の${tot.multiplier_direct.toFixed(2)}倍`,
+                  `الإنتاج ${bn(tot.output_bn)} = ${tot.multiplier_spend.toFixed(2)} ضعف الإيرادات · ${tot.multiplier_direct.toFixed(2)} ضعف الأثر المباشر`,
+                )}
               </p>
             </>
           }
@@ -564,7 +584,8 @@ export function Ripple({ card }: { card: RippleCard }) {
 
 /** Slide the change in tourism revenue; GDP, jobs and share follow at the base year's effect per ¥1bn. */
 export function WhatIf({ card }: { card: WhatIfCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const { bn } = useMoney()
   const [p, setP] = useState(card.default_pct)
   const dSpend = (card.base_spend_bn * p) / 100
   const dVa = dSpend * card.per_bn.va_bn
@@ -579,9 +600,9 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
     { label: t('Tourism revenue', '観光消費額'), value: `${sign(dSpend)}${bn(Math.abs(dSpend))}`, detail: `${bn(card.base_spend_bn + dSpend)} ${t('a year', '/年')}` },
     { label: t('GDP added', '付加価値'), value: `${sign(dVa)}${bn(Math.abs(dVa))}`, detail: `${sign(dVa)}${Math.abs(share - baseShare).toFixed(2)} ${t('pt of GDP', 'pt（GDP比）')}` },
     { label: t('Jobs', '就業者'), value: `${sign(dJobs)}${jobs(Math.abs(dJobs))}`, detail: `${jobs(card.base_jobs + dJobs)} ${t('in total', '（合計）')}` },
-    { label: t("Tourism's share of GDP", 'GDPに占める割合'), value: pct(share), detail: t(`from ${pct(baseShare)} in ${card.base_year}`, `基準 ${pct(baseShare)}（${card.base_year}年）`) },
+    { label: t("Tourism's share of GDP", 'GDPに占める割合'), value: pct(share), detail: t(`from ${pct(baseShare)} in ${card.base_year}`, `基準 ${pct(baseShare)}（${card.base_year}年）`, `من ${pct(baseShare)} في ${card.base_year}`) },
   ]
-  const name = t(`Change in tourism revenue vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`)
+  const name = t(`Change in tourism revenue vs ${card.base_year}`, `観光消費額の変化（基準：${card.base_year}年）`, `التغير في إيرادات السياحة مقارنةً بعام ${card.base_year}`)
   return (
     <div className="whatif">
       <div className="lever-name">{name}</div>
@@ -592,7 +613,7 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
         value={p}
         onChange={setP}
         colour={TIER.indirect1}
-        format={(v) => `${signed(v)} ${t('growth', '成長')}`}
+        format={(v) => (lang === 'ar' ? `نمو ${signed(v)}` : `${signed(v)} ${t('growth', '成長')}`)}
         tickFormat={(v) => (v === 0 ? '0%' : signed(v))}
         label={name}
         labelStep={10}
@@ -601,8 +622,8 @@ export function WhatIf({ card }: { card: WhatIfCard }) {
             ? null
             : {
                 value: actual,
-                label: t(`${card.base_year} actual ${signed(actual)}`, `${card.base_year}年実績 ${signed(actual)}`),
-                title: t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`),
+                label: t(`${card.base_year} actual ${signed(actual)}`, `${card.base_year}年実績 ${signed(actual)}`, `الفعلي ${card.base_year}: ${signed(actual)}`),
+                title: t(`Set the slider to ${card.base_year}'s actual growth`, `${card.base_year}年の実績の伸びに合わせる`, `اضبط المؤشر على النمو الفعلي في ${card.base_year}`),
               }
         }
       />

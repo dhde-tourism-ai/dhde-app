@@ -93,7 +93,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 7px;
-  text-align: right;
+  text-align: end;
   color: var(--text);
 }
 
@@ -114,7 +114,7 @@
 
 .tt-kv b {
   color: var(--text);
-  text-align: right;
+  text-align: end;
 }
 
 .tt-sec {
@@ -162,7 +162,7 @@
 }
 
 .tt-bar-val {
-  text-align: right;
+  text-align: end;
 }
 
 .tt-stack {
@@ -488,7 +488,7 @@
   padding: 8px 8px 8px 10px;
   border-radius: 8px;
   background: var(--surface-2);
-  border-left: 3px solid;
+  border-inline-start: 3px solid;
 }
 
 .feed-item img {
@@ -622,7 +622,7 @@
   flex-direction: column;
   gap: 5px;
   width: 100%;
-  text-align: left;
+  text-align: start;
   padding: 10px 12px;
   border-radius: var(--r-md);
   background: var(--surface);
@@ -638,7 +638,7 @@
 }
 
 .nudge-card.today {
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
 }
 
 .nudge-card.on {
@@ -669,7 +669,7 @@
 }
 
 .nc-time {
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--muted);
 }
 
@@ -842,7 +842,7 @@
 
 .tt-src {
   display: inline-flex;
-  margin-left: 6px;
+  margin-inline-start: 6px;
 }
 
 .tt-real {
@@ -1053,7 +1053,7 @@
 }
 
 .sched-clock {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 10.5px;
   font-weight: 700;
   color: var(--accent-strong);

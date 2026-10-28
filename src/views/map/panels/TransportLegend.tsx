@@ -45,7 +45,7 @@ export function TransportLegend() {
         <>
           <div className="lg-row" style={{ marginTop: 6 }}>
             <strong>{t('Search interest, last 12 months', '検索関心（直近12か月）')}</strong>
-            <span className="tt-demo" style={{ padding: '0 6px', marginLeft: 6 }}>{t('Illustrative', '参考')}</span>
+            <span className="tt-demo" style={{ padding: '0 6px', marginInlineStart: 6 }}>{t('Illustrative', '参考')}</span>
           </div>
           <div className="trend-rows">
             {trends.terms.map((x) => (

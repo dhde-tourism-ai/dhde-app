@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { ResponsiveContainer, Sankey } from 'recharts'
 import type { SankeyCard } from '../../types/strategy'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
 import { S } from './chartTheme'
 
 // One colour per group; origins take their group's colour, stays their own.
 const COLOUR: Record<string, string> = { res: '#6f5bd3', out: S[0], for: S[2], day: '#8a94a6', night: S[1] }
 const GROUP_OF: Record<string, string> = { fukui: 'res', abroad: 'for' }
 
-const fmtK = (k: number) => (k >= 1000 ? `${(k / 1000).toFixed(2)}M` : `${Math.round(k)}k`)
-/** Values are in 億円 (¥100M): 805 → ¥80.5bn. */
-const fmtOku = (v: number) => `¥${(v / 10).toFixed(1)}bn`
+/** Values are in thousands: 1,234 → 1.23M (1.23 مليون in Arabic). */
+const fmtK = (k: number, lang: Lang) => (k >= 1000 ? `${(k / 1000).toFixed(2)}${lang === 'ar' ? ' مليون' : 'M'}` : `${Math.round(k)}${lang === 'ar' ? ' ألف' : 'k'}`)
+/** Values are in 億円 (¥100M): 805 → ¥80.5bn (80.5 مليار ين in Arabic). */
+const fmtOku = (v: number, lang: Lang) => (lang === 'ar' ? `${(v / 10).toFixed(1)} مليار ين` : `¥${(v / 10).toFixed(1)}bn`)
 
 interface NodeP {
   x: number
@@ -66,10 +68,11 @@ export function FlowSankey({ card }: { card: SankeyCard }) {
 }
 
 function FlowView({ card, alt }: { card: SankeyCard; alt: boolean }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const view = alt && card.alt ? card.alt : null
   const links = view ? view.links : card.links
-  const fmt = view?.unit === 'oku_yen' ? fmtOku : fmtK
+  const fmt = (v: number) => (view?.unit === 'oku_yen' ? fmtOku(v, lang) : fmtK(v, lang))
+  const rtl = lang === 'ar'
 
   // Only the nodes this view's links use, in the card's order.
   const used = new Set(links.flatMap((l) => [l[0], l[1]]))
@@ -102,9 +105,18 @@ function FlowView({ card, alt }: { card: SankeyCard; alt: boolean }) {
     return (
       <g>
         <rect x={x} y={y} width={width} height={Math.max(height, 2)} fill={colourOf(id)} rx={2} />
-        <text x={left ? x - 8 : x + width + 8} y={y + height / 2} textAnchor={left ? 'end' : 'start'} dominantBaseline="middle" className="flow-lbl">
+        {/* Arabic labels run right to left, so their anchor flips to keep the same side of the node. */}
+        <text
+          x={left ? x - 8 : x + width + 8}
+          y={y + height / 2}
+          textAnchor={left === rtl ? 'start' : 'end'}
+          direction={rtl ? 'rtl' : undefined}
+          dominantBaseline="middle"
+          className="flow-lbl"
+        >
           <tspan fontWeight={650}>{label(id)}</tspan>
-          <tspan dx={6} className="flow-num">
+          <tspan dx={rtl ? undefined : 6} className="flow-num">
+            {rtl ? '\u00a0\u00a0' : ''}
             {fmt(into(id) || outOf(id))} · {pct < 1 ? pct.toFixed(1) : Math.round(pct)}%
           </tspan>
         </text>
@@ -148,16 +160,16 @@ function FlowView({ card, alt }: { card: SankeyCard; alt: boolean }) {
       {!view && card.zoom && (
         <div className="flow-zoom">
           <h4 className="mini-h">
-            {t(card.zoom.label, card.zoom.label_ja ?? card.zoom.label)} · {fmtK(card.zoom.total)}
+            {t(card.zoom.label, card.zoom.label_ja ?? card.zoom.label)} · {fmtK(card.zoom.total, lang)}
           </h4>
           {card.zoom.parts.map((p) => (
             <div key={p.label} className="flow-zoom-row">
               <span className="flow-zoom-lab">{t(p.label, p.label_ja ?? p.label)}</span>
               <span className="flow-zoom-track">
-                <span className="flow-zoom-fill" style={{ width: `${(p.value / card.zoom!.total) * 100}%`, background: colourOf(/^over|宿泊/i.test(p.label) ? 'night' : 'day') }}></span>
+                <span className="flow-zoom-fill" style={{ width: `${(p.value / card.zoom!.total) * 100}%`, background: colourOf(/^over|宿泊|مبيت/i.test(p.label) ? 'night' : 'day') }}></span>
               </span>
               <span className="num small">
-                ~{fmtK(p.value)} · {Math.round((p.value / card.zoom!.total) * 100)}% · {t('range', '範囲')} {fmtK(p.low)}–{fmtK(p.high)}
+                ~{fmtK(p.value, lang)} · {Math.round((p.value / card.zoom!.total) * 100)}% · {t('range', '範囲')} {fmtK(p.low, lang)}–{fmtK(p.high, lang)}
               </span>
             </div>
           ))}

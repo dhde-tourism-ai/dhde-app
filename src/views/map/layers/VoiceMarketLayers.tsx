@@ -11,6 +11,7 @@ import { pick, useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
 import { occupancyColour, rsiColour, sparkPath } from '../../../lib/market'
 import { Stars } from '../../../components/Stars'
+import { arOr, dataText, daysAr, unit } from '../mapText'
 
 function Bars({ items, unit = '%' }: { items: { label: string; value: number }[]; unit?: string }) {
   const max = Math.max(1, ...items.map((i) => i.value))
@@ -35,6 +36,12 @@ function Bars({ items, unit = '%' }: { items: { label: string; value: number }[]
 /* ---------------- Hotels ---------------- */
 /** "Area · 8 hotels · 3 sites": each badge is a whole FTAS feed, not one hotel or one site. */
 function areaLabel(n: number | undefined, sites: number, lang: 'en' | 'ja' | 'ar'): string {
+  if (lang === 'ar') {
+    const ar = ['منطقة']
+    if (n) ar.push(n === 1 ? 'فندق واحد' : n === 2 ? 'فندقان' : n <= 10 ? `${n} فنادق` : `${n} فندقاً`)
+    if (sites > 1) ar.push(sites === 2 ? 'موقعان' : sites <= 10 ? `${sites} مواقع` : `${sites} موقعاً`)
+    return ar.join(' · ')
+  }
   const parts = [lang === 'ja' ? 'エリア' : 'Area']
   if (n) parts.push(lang === 'ja' ? `${n}軒` : `${n} ${n === 1 ? 'hotel' : 'hotels'}`)
   if (sites > 1) parts.push(lang === 'ja' ? `${sites}地点` : `${sites} sites`)
@@ -56,7 +63,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
           h.id,
           L.divIcon({
             className: 'map-divicon',
-            html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, h.name, h.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 13)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(lang === 'ja' ? '室空き' : 'left')}</span></div><div class="sc-note">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
+            html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, h.name, h.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${occupancyColour(h.occupancy_pct[d])}"></span>${iconSvg('bed', 13)}<b class="num">${h.occupancy_pct[d]}%</b><span class="ov-sub">${h.rooms_left[d].toLocaleString('en-US')} ${escapeHtml(pick(lang, 'left', '室空き', 'متبقية'))}</span></div><div class="sc-note">${escapeHtml(areaLabel(h.hotels_in_feed, h.serves?.length ?? 1, lang))}</div></div>`,
             iconSize: [0, 0],
           }),
         ]),
@@ -115,7 +122,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
             {h.adr_yen?.[d] ? (
               <div className="tt-grid">
                 <span className="tt-k">{t('Average daily rate', '平均客室単価')}</span>
-                <span className="tt-v num">¥{Math.round(h.adr_yen[d]!).toLocaleString('en-US')}</span>
+                <span className="tt-v num">{lang === 'ar' ? `${Math.round(h.adr_yen[d]!).toLocaleString('en-US')} ين` : `¥${Math.round(h.adr_yen[d]!).toLocaleString('en-US')}`}</span>
               </div>
             ) : null}
             {h.forward && h.forward.length > 0 ? (
@@ -123,12 +130,12 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
                 <div className="tt-sec">
                   {t('Forward bookings: on the books for nights ahead', '先行予約：各日の予約済み稼働率')} <span className="tt-real">{t('Real', '実データ')}</span>
                 </div>
-                <Bars items={h.forward.map((p) => ({ label: `${t('in', '')} ${p.days_ahead} ${t(p.days_ahead === 1 ? 'day' : 'days', '日後')}`, value: p.occ_pct }))} />
+                <Bars items={h.forward.map((p) => ({ label: lang === 'ar' ? `بعد ${daysAr(p.days_ahead)}` : `${t('in', '')} ${p.days_ahead} ${t(p.days_ahead === 1 ? 'day' : 'days', '日後')}`, value: p.occ_pct }))} />
               </>
             ) : (
               <>
                 <div className="tt-sec">{t('Booking curve for the busiest night', '最繁忙日の予約カーブ')}</div>
-                <Bars items={h.booking_curve.points.map((p) => ({ label: `${p.days_ahead} ${t('days out', '日前')}`, value: p.booked_pct }))} />
+                <Bars items={h.booking_curve.points.map((p) => ({ label: lang === 'ar' ? `قبل ${daysAr(p.days_ahead)}` : `${p.days_ahead} ${t('days out', '日前')}`, value: p.booked_pct }))} />
                 <div className="tt-kv">
                   <span>{t('Last year, 7 days out', '前年・7日前')}</span>
                   <b className="num">{h.booking_curve.points.find((p) => p.days_ahead === 7)?.last_year_pct}%</b>
@@ -137,7 +144,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
             )}
             <div className="tt-kv">
               <span>
-                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} km {t('with rooms (1/7/30 days)', 'で空室あり（1・7・30日先）')}{' '}
+                {t('Rakuten: hotels within', '楽天：半径')} {h.rakuten.radius_km} {unit('km', lang)} {t('with rooms (1/7/30 days)', 'で空室あり（1・7・30日先）')}{' '}
                 {h.rakuten.real ? (
                   <span className="tt-real" title={h.rakuten.real.as_of ? `${t('snapshot', 'スナップショット')} ${h.rakuten.real.as_of}` : undefined}>{t('Real', '実データ')}</span>
                 ) : (
@@ -149,8 +156,8 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
               </b>
             </div>
             <div className="tip-sub">
-              {h.feed}
-              {h.as_of ? ` · ${t('as of', '時点')} ${h.as_of}` : ''}
+              {lang === 'ar' ? arOr(h.feed) : h.feed}
+              {h.as_of ?` · ${t('as of', '時点')} ${h.as_of}` : ''}
             </div>
           </Tip>
         </Marker>
@@ -171,7 +178,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             m.id,
             L.divIcon({
               className: 'map-divicon',
-              html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, m.name, m.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(lang === 'ja' ? '表示' : 'views')}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div></div>`,
+              html: `<div class="site-card town"><div class="sc-head"><span class="nt-name">${escapeHtml(pick(lang, m.name, m.name_ja))}</span></div><div class="sc-row"><span class="ov-bar" style="background:${m.gmb ? '#9ec5f4' : rsiColour(m.index)}"></span><b class="num">${m.gmb ? m.gmb.map_views.toLocaleString('en-US') : m.index}</b>${m.gmb ? `<span class="ov-sub">${escapeHtml(pick(lang, 'views', '表示', 'مشاهدة'))}</span>` : ''}<svg class="ov-spark" viewBox="0 0 56 18" width="56" height="18" aria-hidden="true"><path d="${sparkPath(m.history.slice(-7), 56, 18)}"/></svg><span class="ov-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'}${Math.abs(m.change_7d_pct)}%</span></div></div>`,
               iconSize: [0, 0],
             }),
           ]
@@ -192,10 +199,17 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
               <>
                 <div className="tt-hero">
                   <b className="num">{m.gmb.map_views.toLocaleString('en-US')}</b>
-                  <span>
-                    {t('Google Maps views of the', 'Googleマップでの表示（')} {m.gmb.node.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} {t('profile', 'のプロフィール）')} · {m.change_7d_pct >= 0 ? '+' : ''}
-                    {m.change_7d_pct}% {t('week on week', '（前週比）')}
-                  </span>
+                  {lang === 'ar' ? (
+                    <span>
+                      مشاهدات ملف {arOr(m.gmb.node.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))} على خرائط Google · {m.change_7d_pct >= 0 ? '+' : ''}
+                      {m.change_7d_pct}% مقارنة بالأسبوع السابق
+                    </span>
+                  ) : (
+                    <span>
+                      {t('Google Maps views of the', 'Googleマップでの表示（')} {m.gmb.node.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} {t('profile', 'のプロフィール）')} · {m.change_7d_pct >= 0 ? '+' : ''}
+                      {m.change_7d_pct}% {t('week on week', '（前週比）')}
+                    </span>
+                  )}
                 </div>
                 <div className="tt-grid">
                   <span className="tt-k">{t('Search views', '検索での表示')}</span>
@@ -218,7 +232,7 @@ export function RsiLayer({ data }: { data: MarketVoiceData }) {
             </svg>
             <div className="tip-sub">
               {m.gmb
-                ? t(`Google Maps Business Profile, last 14 days to ${m.gmb.as_of} (reports lag about 5 days).`, `Googleビジネスプロフィール、${m.gmb.as_of}までの14日間（約5日遅れ）。`)
+                ? t(`Google Maps Business Profile, last 14 days to ${m.gmb.as_of} (reports lag about 5 days).`, `Googleビジネスプロフィール、${m.gmb.as_of}までの14日間（約5日遅れ）。`, `ملف النشاط التجاري على خرائط Google، آخر 14 يوماً حتى ${m.gmb.as_of} (تتأخر التقارير نحو 5 أيام).`)
                 : t('Last 14 days. Weekend searches peak Thursday to Friday.', '直近14日。週末の検索は木〜金曜にピーク。')}
             </div>
           </Tip>
@@ -270,24 +284,24 @@ export function SurveyDetail({ s }: { s: Survey }) {
           {s.responses_30d.toLocaleString('en-US')} {s.responses_real ? <span className="tt-real">{t('Real', '実データ')}</span> : null}
         </span>
       </div>
-      <Bars items={s.top_reasons.slice(0, 3).map((r) => ({ label: lang === 'ja' ? r.ja : r.en, value: r.share }))} />
-      <div className="tt-stack" role="img" aria-label={s.origin_share.map((o) => `${o.en} ${o.share}%`).join(', ')}>
+      <Bars items={s.top_reasons.slice(0, 3).map((r) => ({ label: dataText(lang, r.en, r.ja), value: r.share }))} />
+      <div className="tt-stack" role="img" aria-label={s.origin_share.map((o) => `${lang === 'ar' ? arOr(o.en) : o.en} ${o.share}%`).join(', ')}>
         {s.origin_share.map((o, i) => (
-          <span key={o.en} style={{ width: `${o.share}%`, background: ORIGIN_COLOURS[i] }} title={`${o.en} ${o.share}%`}></span>
+          <span key={o.en} style={{ width: `${o.share}%`, background: ORIGIN_COLOURS[i] }} title={`${lang === 'ar' ? arOr(o.en) : o.en} ${o.share}%`}></span>
         ))}
       </div>
       <div className="tt-legend">
         {s.origin_share.map((o, i) => (
           <span key={o.en}>
             <i style={{ background: ORIGIN_COLOURS[i] }}></i>
-            {lang === 'ja' ? o.ja : o.en} {o.share}%
+            {dataText(lang, o.en, o.ja)} {o.share}%
           </span>
         ))}
       </div>
       <div className="tip-sub">
-        {s.source}
+        {lang === 'ar' ? arOr(s.source) : s.source}
         {s.details_real
-          ? ` · ${t(`${s.details_real.responses} responses in the 30 days to ${s.details_real.as_of}. NPS from ${s.details_real.nps_n} answers${s.nps === null ? ' (too few to show)' : ''}. Reasons: share of responses (several allowed). Respondents live in Japan.`, `${s.details_real.as_of}までの30日間の回答${s.details_real.responses}件。NPSは${s.details_real.nps_n}件の回答から${s.nps === null ? '（件数不足のため非表示）' : ''}。理由は回答者に占める割合（複数回答）。回答者は国内在住。`)}`
+          ? ` · ${t(`${s.details_real.responses} responses in the 30 days to ${s.details_real.as_of}. NPS from ${s.details_real.nps_n} answers${s.nps === null ? ' (too few to show)' : ''}. Reasons: share of responses (several allowed). Respondents live in Japan.`, `${s.details_real.as_of}までの30日間の回答${s.details_real.responses}件。NPSは${s.details_real.nps_n}件の回答から${s.nps === null ? '（件数不足のため非表示）' : ''}。理由は回答者に占める割合（複数回答）。回答者は国内在住。`, `${s.details_real.responses} رداً خلال الثلاثين يوماً حتى ${s.details_real.as_of}. مؤشر NPS من ${s.details_real.nps_n} إجابة${s.nps === null ? ' (عددها قليل فلا يُعرض)' : ''}. الأسباب: نسبة من الردود (يُسمح بأكثر من سبب). المستجيبون مقيمون في اليابان.`)}`
           : s.responses_real
             ? ` · ${t('responses as of', '回答数の時点')} ${s.responses_real.as_of}; ${t('satisfaction, NPS, reasons and origin are demo', '満足度・NPS・理由・居住地はデモ')}`
             : ''}
@@ -335,7 +349,7 @@ function RealSocialDetail({ s }: { s: Social }) {
   return (
     <>
       <div className="tt-sec">
-        {t('Social media', 'SNS')} <span className="tt-real">{t(`Real · ${days} days to ${asOf}`, `実データ・${asOf}までの${days}日間`)}</span>
+        {t('Social media', 'SNS')} <span className="tt-real">{t(`Real · ${days} days to ${asOf}`, `実データ・${asOf}までの${days}日間`, `حقيقي · ${daysAr(days)} حتى ${asOf}`)}</span>
       </div>
       {sr &&
         (sr.score !== null && lab ? (
@@ -343,7 +357,7 @@ function RealSocialDetail({ s }: { s: Social }) {
             <div className="feed-stats">
               <span className="feed-sent">
                 <i style={{ background: sentimentColour(sr.score) }}></i>
-                {t(lab.en, lab.ja)}{' '}
+                {t(lab.en, lab.ja, lab.ar)}{' '}
                 <b className="num">
                   {sr.score > 0 ? '+' : ''}
                   {sr.score.toFixed(2)}
@@ -362,7 +376,7 @@ function RealSocialDetail({ s }: { s: Social }) {
             <div className="tip-sub">{t('Positive from +0.2, negative from -0.2, neutral between (a working band, to check against hand-labelled posts).', '+0.2以上を好意的、-0.2以下を否定的、その間を中立とします（手作業の判定と照合予定の暫定基準）。')}</div>
           </>
         ) : (
-          <div className="tip-sub">{t(`Sentiment: only ${sr.scored} scored, too few to judge.`, `感情：判定は${sr.scored}件のみで、少なすぎて判定できません。`)}</div>
+          <div className="tip-sub">{t(`Sentiment: only ${sr.scored} scored, too few to judge.`, `感情：判定は${sr.scored}件のみで、少なすぎて判定できません。`, `المشاعر: قُيّم ${sr.scored} فقط، وهو عدد قليل جداً للحكم.`)}</div>
         ))}
       {m && (
         <>
@@ -450,18 +464,18 @@ export function SocialDetail({ s }: { s: Social }) {
         </span>
         <span className="feed-sent">
           <i style={{ background: sentimentColour(s.avg_sentiment) }}></i>
-          {t(lab.en, lab.ja)}
+          {t(lab.en, lab.ja, lab.ar)}
         </span>
       </div>
       <ul className="feed-list">
         {s.feed.slice(0, 3).map((p) => (
-          <li key={p.id} className="feed-item" style={{ borderLeftColor: sentimentColour(p.sentiment) }}>
+          <li key={p.id} className="feed-item" style={{ borderInlineStartColor: sentimentColour(p.sentiment) }}>
             <img src={thumbUri(p.thumb)} alt="" width={40} height={48} />
             <div>
               <div className="feed-meta">
-                <span className="feed-handle">@{p.handle}</span> · {p.hours_ago}h · {p.kind}
+                <span className="feed-handle" dir="ltr">@{p.handle}</span> · {lang === 'ar' ? `قبل ${p.hours_ago} ساعة · ${arOr(p.kind)}` : `${p.hours_ago}h · ${p.kind}`}
               </div>
-              <div className="feed-text">{lang === 'ja' ? p.ja : p.en}</div>
+              <div className="feed-text">{dataText(lang, p.en, p.ja)}</div>
             </div>
           </li>
         ))}
@@ -481,7 +495,7 @@ export function ReviewsDetail({ r }: { r: Review }) {
       <div className="tt-hero">
         <b className="num">{r.rating.toFixed(1)}</b>
         <span>
-          <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規')}`} · {ch >= 0 ? '+' : ''}
+          <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規', 'جديدة')}`} · {ch >= 0 ? '+' : ''}
           {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
         </span>
       </div>
@@ -489,7 +503,7 @@ export function ReviewsDetail({ r }: { r: Review }) {
       {r.snippets[0] && (
         <ul className="tt-quotes">
           <li>
-            <Stars value={r.snippets[0].stars} small /> “{lang === 'ja' ? r.snippets[0].ja : r.snippets[0].en}” <span className="tt-demo">{t('Fictional', '架空')}</span>
+            <Stars value={r.snippets[0].stars} small /> {lang === 'ar' ? '«' : '“'}{dataText(lang, r.snippets[0].en, r.snippets[0].ja)}{lang === 'ar' ? '»' : '”'} <span className="tt-demo">{t('Fictional', '架空')}</span>
           </li>
         </ul>
       )}
@@ -498,10 +512,11 @@ export function ReviewsDetail({ r }: { r: Review }) {
           ? t(
               `Rating, new reviews and stars: the ${r.stars_real.n} Google Maps reviews of this place in the 30 days to ${r.stars_real.as_of}. ${r.count.toLocaleString('en-US')} reviews in total. Snippets are fictional.`,
               `評価・新規件数・星の内訳：${r.stars_real.as_of}までの30日間のこの場所のGoogleマップレビュー${r.stars_real.n}件。総件数${r.count.toLocaleString('en-US')}件。抜粋は架空。`,
+              `التقييم والمراجعات الجديدة وتوزيع النجوم: ${r.stars_real.n} مراجعة لهذا المكان على خرائط Google خلال الثلاثين يوماً حتى ${r.stars_real.as_of}. إجمالي المراجعات ${r.count.toLocaleString('en-US')}. المقتطفات خيالية.`,
             )
           : r.real
-            ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`)
-            : r.source}
+            ? t(`Rating: average of new Google reviews in the 30 days to ${r.real.as_of}, weighted by review count (Business Profile). Snippets are fictional.`, `評価：${r.real.as_of}までの30日間の新規Googleレビューの加重平均。抜粋は架空。`, `التقييم: متوسط مراجعات Google الجديدة خلال الثلاثين يوماً حتى ${r.real.as_of}، مرجّح بعدد المراجعات (ملف النشاط التجاري). المقتطفات خيالية.`)
+            : lang === 'ar' ? arOr(r.source) : r.source}
       </div>
     </>
   )

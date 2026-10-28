@@ -3,15 +3,19 @@ import type { GuestNightsMonthsCard, TargetPaceCard } from '../../types/strategy
 import type { MonthlyForecastFile } from '../../types/monthly'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { measuredYear, monthsOf, pathTarget } from '../../lib/monthly'
-import { fmtCompact } from '../../lib/format'
+import { MON_AR } from '../../lib/arFormat'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
 import { AXIS, S, TIP, TIP_ITEM, TIP_LABEL } from './chartTheme'
+import { compact, monthName, MONTHS_EN } from './fmt'
 
-const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const MONTHS_JA = MONTHS_EN.map((_, i) => `${i + 1}月`)
 const sum = (xs: (number | null)[]) => xs.reduce<number>((a, b) => a + (b ?? 0), 0)
-/** 1.62M, 161.2k: two or one decimals, for figures quoted in text. */
-const fmtFig = (v: number) => (Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : Math.abs(v) >= 1e3 ? `${(v / 1e3).toFixed(1)}k` : Math.round(v).toLocaleString('en-US'))
+/** 1.62M, 161.2k: two or one decimals, for figures quoted in text (1.62 مليون, 161.2 ألف in Arabic). */
+const fmtFig = (v: number, lang: Lang) => {
+  const [m, k] = lang === 'ar' ? [' مليون', ' ألف'] : ['M', 'k']
+  return Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}${m}` : Math.abs(v) >= 1e3 ? `${(v / 1e3).toFixed(1)}${k}` : Math.round(v).toLocaleString('en-US')
+}
+const monthNames = (lang: Lang) => MONTHS_EN.map((_, i) => monthName(i, lang))
 const signed = (v: number) => `${v >= 0 ? '+' : ''}${(Math.round(v * 10) / 10).toFixed(1)}%`
 
 function useMonthly() {
@@ -33,7 +37,7 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
   const prev = String(Number(year) - 1)
   const [t1, t0, d1, d0, f1, f0] = [monthsOf(total, year), monthsOf(total, prev), monthsOf(dom, year), monthsOf(dom, prev), monthsOf(fgn, year), monthsOf(fgn, prev)]
   const share = (f: number | null, tot: number | null) => (f !== null && tot ? Math.round((f / tot) * 1000) / 10 : null)
-  const names = lang === 'ja' ? MONTHS_JA : MONTHS_EN
+  const names = monthNames(lang)
   const rows = names.map((m, i) => {
     const s1 = share(f1[i], t1[i])
     return { m, d0: d0[i], f0: f0[i], d1: d1[i], f1: f1[i], lab1: s1, lab0: s1 === null ? share(f0[i], t0[i]) : null }
@@ -47,7 +51,7 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
   const shareBefore = n ? (sum(cut(f0)) / sum(cut(t0))) * 100 : null
   const domChange = n ? (sum(cut(d1)) / sum(cut(d0)) - 1) * 100 : null
   const fgnChange = n ? (sum(cut(f1)) / sum(cut(f0)) - 1) * 100 : null
-  const span = n ? t(`Jan–${MONTHS_EN[n - 1]} ${year}`, `${year}年1〜${n}月`) : ''
+  const span = n ? t(`Jan–${MONTHS_EN[n - 1]} ${year}`, `${year}年1〜${n}月`, `${MON_AR[0]}–${MON_AR[n - 1]} ${year}`) : ''
   const label = (v: unknown) => (v === null || v === undefined ? '' : `${Number(v).toFixed(1)}%`)
 
   return (
@@ -61,20 +65,24 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
           <i className="k-band" style={{ background: S[1] }}></i>
           {t('Foreign', '外国人')}
         </span>
-        <span className="muted">{t(`Faded bar = ${prev} · solid bar = ${year} · % = foreign share (${year} where published)`, `薄い棒＝${prev}年・濃い棒＝${year}年・％＝外国人の割合（${year}年は公表月）`)}</span>
+        <span className="muted">{t(
+            `Faded bar = ${prev} · solid bar = ${year} · % = foreign share (${year} where published)`,
+            `薄い棒＝${prev}年・濃い棒＝${year}年・％＝外国人の割合（${year}年は公表月）`,
+            `العمود الباهت = ${prev} · العمود الداكن = ${year} · % = حصة الأجانب (${year} للأشهر المنشورة)`,
+          )}</span>
       </div>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={rows} margin={{ top: 22, right: 8, left: 0, bottom: 0 }} barGap={2}>
           <CartesianGrid stroke="#1f2a3f" vertical={false} />
           <XAxis dataKey="m" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} />
-          <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
+          <YAxis tick={AXIS} tickFormatter={(v: number) => compact(v, lang)} width={lang === 'ar' ? 64 : 48} tickLine={false} axisLine={false} />
           <Tooltip contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL} cursor={{ fill: 'rgba(139,157,255,.08)' }} formatter={(v: unknown, name: unknown) => [Number(v).toLocaleString('en-US'), String(name)]} />
-          <Bar dataKey="d0" name={t(`Domestic ${prev}`, `国内 ${prev}`)} stackId="prev" fill={S[0]} fillOpacity={0.35} isAnimationActive={false} />
-          <Bar dataKey="f0" name={t(`Foreign ${prev}`, `外国人 ${prev}`)} stackId="prev" fill={S[1]} fillOpacity={0.35} isAnimationActive={false}>
+          <Bar dataKey="d0" name={t(`Domestic ${prev}`, `国内 ${prev}`, `محليون ${prev}`)} stackId="prev" fill={S[0]} fillOpacity={0.35} isAnimationActive={false} />
+          <Bar dataKey="f0" name={t(`Foreign ${prev}`, `外国人 ${prev}`, `أجانب ${prev}`)} stackId="prev" fill={S[1]} fillOpacity={0.35} isAnimationActive={false}>
             <LabelList dataKey="lab0" position="top" fill="#aeb9cd" fontSize={10} formatter={label} />
           </Bar>
-          <Bar dataKey="d1" name={t(`Domestic ${year}`, `国内 ${year}`)} stackId="now" fill={S[0]} isAnimationActive={false} />
-          <Bar dataKey="f1" name={t(`Foreign ${year}`, `外国人 ${year}`)} stackId="now" fill={S[1]} isAnimationActive={false}>
+          <Bar dataKey="d1" name={t(`Domestic ${year}`, `国内 ${year}`, `محليون ${year}`)} stackId="now" fill={S[0]} isAnimationActive={false} />
+          <Bar dataKey="f1" name={t(`Foreign ${year}`, `外国人 ${year}`, `أجانب ${year}`)} stackId="now" fill={S[1]} isAnimationActive={false}>
             <LabelList dataKey="lab1" position="top" fill="#e9eef8" fontSize={10.5} formatter={label} />
           </Bar>
         </BarChart>
@@ -83,15 +91,19 @@ export function GuestNightsMonths({ card }: { card: GuestNightsMonthsCard }) {
         <div className="gn-tiles">
           <div className="gn-tile">
             <div className="gn-val num">{shareNow.toFixed(1)}%</div>
-            <div className="muted small">{t(`foreign share of guest-nights, ${span} (${shareBefore.toFixed(1)}% a year earlier)`, `延べ宿泊者数に占める外国人の割合、${span}（前年同期${shareBefore.toFixed(1)}%）`)}</div>
+            <div className="muted small">{t(
+                `foreign share of guest-nights, ${span} (${shareBefore.toFixed(1)}% a year earlier)`,
+                `延べ宿泊者数に占める外国人の割合、${span}（前年同期${shareBefore.toFixed(1)}%）`,
+                `حصة الأجانب من ليالي الإقامة، ${span} (${shareBefore.toFixed(1)}% قبل عام)`,
+              )}</div>
           </div>
           <div className="gn-tile">
             <div className={`gn-val num ${domChange < 0 ? 'sum-down' : 'sum-up'}`}>{signed(domChange)}</div>
-            <div className="muted small">{t(`domestic guest-nights, ${span}, vs the same months of ${prev}`, `国内の延べ宿泊者数、${span}、前年同期比`)}</div>
+            <div className="muted small">{t(`domestic guest-nights, ${span}, vs the same months of ${prev}`, `国内の延べ宿泊者数、${span}、前年同期比`, `ليالي إقامة المحليين، ${span}، مقارنةً بالأشهر نفسها من ${prev}`)}</div>
           </div>
           <div className="gn-tile">
             <div className={`gn-val num ${fgnChange < 0 ? 'sum-down' : 'sum-up'}`}>{signed(fgnChange)}</div>
-            <div className="muted small">{t(`foreign guest-nights, ${span}, vs the same months of ${prev}`, `外国人の延べ宿泊者数、${span}、前年同期比`)}</div>
+            <div className="muted small">{t(`foreign guest-nights, ${span}, vs the same months of ${prev}`, `外国人の延べ宿泊者数、${span}、前年同期比`, `ليالي إقامة الأجانب، ${span}، مقارنةً بالأشهر نفسها من ${prev}`)}</div>
           </div>
         </div>
       )}
@@ -108,7 +120,7 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
   const { t, lang } = useLang()
   const file = useMonthly()
   if (file.isLoading) return <p className="muted small">{t('Loading…', '読み込み中…')}</p>
-  const names = lang === 'ja' ? MONTHS_JA : MONTHS_EN
+  const names = monthNames(lang)
 
   const series = card.items.flatMap((it, k) => {
     const s = file.data?.series.find((x) => x.id === it.series)
@@ -180,18 +192,26 @@ export function TargetPace({ card }: { card: TargetPaceCard }) {
         (x) =>
           x.last >= 0 && (
             <p key={x.key} className="gn-pace-note num">
-              <i className="k-band" style={{ background: x.colour }}></i> <strong>{fmtFig(x.cum[x.last].actual)}</strong> {t('nights', '泊')} ·{' '}
+              <i className="k-band" style={{ background: x.colour }}></i> <strong>{fmtFig(x.cum[x.last].actual, lang)}</strong> {t('nights', '泊')} ·{' '}
               <span className={x.pct[x.last]! < 90 ? 'sum-down' : ''}>
-                {t(`${Math.round(x.pct[x.last]!)}% of the ${fmtFig(x.cum[x.last].target)} target to ${MONTHS_EN[x.last]}`, `${x.last + 1}月までの目標${fmtFig(x.cum[x.last].target)}の${Math.round(x.pct[x.last]!)}%`)}
+                {t(
+                  `${Math.round(x.pct[x.last]!)}% of the ${fmtFig(x.cum[x.last].target, lang)} target to ${MONTHS_EN[x.last]}`,
+                  `${x.last + 1}月までの目標${fmtFig(x.cum[x.last].target, lang)}の${Math.round(x.pct[x.last]!)}%`,
+                  `${Math.round(x.pct[x.last]!)}% من مستهدف ${fmtFig(x.cum[x.last].target, lang)} حتى ${MON_AR[x.last]}`,
+                )}
               </span>
               <span className="muted small">
                 {' '}
-                · {t(`${x.year} target ${fmtFig(x.target)}`, `${x.year}年目標${fmtFig(x.target)}`)}
+                · {t(`${x.year} target ${fmtFig(x.target, lang)}`, `${x.year}年目標${fmtFig(x.target, lang)}`, `مستهدف ${x.year}: ${fmtFig(x.target, lang)}`)}
               </span>
             </p>
           ),
       )}
-      {series[0].last >= 0 && <p className="muted small">{t(`${MONTHS_EN[series[0].last]} ${series[0].year} is the latest month JTA has published.`, `観光庁の最新公表月は${series[0].year}年${series[0].last + 1}月。`)}</p>}
+      {series[0].last >= 0 && <p className="muted small">{t(
+            `${MONTHS_EN[series[0].last]} ${series[0].year} is the latest month JTA has published.`,
+            `観光庁の最新公表月は${series[0].year}年${series[0].last + 1}月。`,
+            `${MON_AR[series[0].last]} ${series[0].year} هو آخر شهر نشرته هيئة السياحة اليابانية.`,
+          )}</p>}
     </div>
   )
 }

@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import type { StrategicQuestion, StrategicQuestions } from '../../types/strategy'
 import { AsOf } from '../../components/AsOf'
 import { StatusPill } from '../../components/StatusPill'
-import { useLang } from '../../lib/i18n'
+import { arText, useLang } from '../../lib/i18n'
 import { StrategyCardView } from './cards'
 import { useJsonResource } from '../../hooks/useJsonResource'
 import { withMeasuredShares } from '../../lib/monthly'
 import { localize } from '../../lib/localize'
 import { withRealForecast } from '../../lib/dailyForecast'
+import { arrow } from './fmt'
 import type { RealDailyFile } from '../../lib/dailyForecast'
 import JA from '../../i18n/strategy.ja.json'
 import type { MonthlyForecastFile } from '../../types/monthly'
@@ -23,10 +24,11 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
   const [activeQ, setActiveQ] = useState(raw.questions[0]?.id)
   const monthly = useJsonResource<MonthlyForecastFile>('monthly_forecast.json').data
   const real = useJsonResource<RealDailyFile>('real_data.json').data
-  // Real 2025 shares and the real 7-day forecast first, then the Japanese text (strategy.ja.json) when the page is in Japanese.
+  // Real 2025 shares and the real 7-day forecast first, then the Japanese text (strategy.ja.json) or the Arabic
+  // (ar*.json by the English text) when the page is in that language.
   const data = useMemo(() => {
     const measured = { ...raw, questions: withRealForecast(withMeasuredShares(raw.questions, monthly, lang), real, lang) }
-    return lang === 'ja' ? localize(measured, JA as Record<string, string>) : measured
+    return lang === 'ja' ? localize(measured, JA as Record<string, string>) : lang === 'ar' ? localize(measured, arText) : measured
   }, [raw, monthly, real, lang])
   const { meta, equation, questions } = data
 
@@ -90,7 +92,7 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
               </div>
               {term.op && (
                 <span className="eq-op" aria-hidden="true">
-                  {term.op}
+                  {term.op === '→' ? arrow(lang) : term.op}
                 </span>
               )}
             </div>
@@ -110,7 +112,10 @@ export default function StrategyView({ data: raw, focus }: { data: StrategicQues
               document.getElementById(q.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
             }}
           >
-            <span className="q-num">Q{q.number}</span>
+            <span className="q-num">
+              {t('Q', 'Q', 'س')}
+              {q.number}
+            </span>
             <span className="q-nav-label">{q.nav}</span>
           </a>
         ))}
@@ -145,7 +150,10 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
   return (
     <section className="q-section" id={q.id} aria-labelledby={`${q.id}-title`}>
       <header className="q-head">
-        <span className="q-badge">Q{q.number}</span>
+        <span className="q-badge">
+          {t('Q', 'Q', 'س')}
+          {q.number}
+        </span>
         <div>
           <h2 className="q-title" id={`${q.id}-title`}>
             {q.title}

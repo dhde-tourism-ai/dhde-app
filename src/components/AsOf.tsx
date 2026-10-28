@@ -18,7 +18,7 @@ export function AsOf({ as_of, shared_date, is_estimated, stale, generated_at, la
     <span className={`asof ${className ?? ''}`}>
       {date && (
         <span>
-          {lang === 'ja' && label === 'As of' ? `${fmtDate(date, lang)}時点` : `${label} ${fmtDate(date, lang)}`}
+          {lang === 'ja' && label === 'As of' ? `${fmtDate(date, lang)}時点` : `${label === 'As of' ? t('As of', null, 'حتى') : label} ${fmtDate(date, lang)}`}
         </span>
       )}
       {shared_date && <span>· {t('aligned to', '基準日')} {fmtDate(shared_date, lang)}</span>}

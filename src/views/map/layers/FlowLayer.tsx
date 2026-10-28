@@ -8,6 +8,7 @@ import { useLeafletLayer } from '../canvas/useLeafletLayer'
 import { reversePath, routeById } from '../../../lib/routes'
 import { activeAdvisories } from '../../../lib/live'
 import { useLang } from '../../../lib/i18n'
+import { unit } from '../mapText'
 
 export const ARRIVE = '#3987e5'
 export const DEPART = '#d55181'
@@ -35,7 +36,7 @@ function streamFor(key: string, path: [number, number][], flow: number, dir: 1 |
  * in both directions, density and speed proportional to people per hour.
  */
 export function FlowLayer({ live, routes, t, paused }: { live: LiveData; routes: RoutesFile; t: number; paused: boolean }) {
-  const { t: tr } = useLang()
+  const { t: tr, lang } = useLang()
   const canvas = useLeafletLayer(() => new FlowCanvas())
   useEffect(() => {
     canvas.setPaused(paused)
@@ -93,7 +94,7 @@ export function FlowLayer({ live, routes, t, paused }: { live: LiveData; routes:
                 {tr('Departing', '出発')} <b className="num">{(f.reverse[t] ?? 0).toLocaleString('en-US')}</b> {tr('people/h', '人/時')}
               </div>
               <div className="tip-sub">
-                {rail ? tr('Hokuriku Shinkansen, line approximate', '北陸新幹線（線形は概略）') : `${r.distance_km} km · ${r.duration_min} min ${tr('by road', '（道路）')}`}
+                {rail ? tr('Hokuriku Shinkansen, line approximate', '北陸新幹線（線形は概略）') : `${r.distance_km} ${unit('km', lang)} · ${r.duration_min} ${unit('min', lang)} ${tr('by road', '（道路）')}`}
               </div>
             </Tooltip>
           </Polyline>
