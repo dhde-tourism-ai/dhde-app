@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react'
-import AR from '../i18n/ar.json'
 
 export type Lang = 'en' | 'ja' | 'ar'
 
@@ -10,7 +9,14 @@ export interface LangCtx {
   t: (en: string, ja?: string | null, ar?: string | null) => string
 }
 
-const AR_TEXT = AR as Record<string, string>
+// Arabic text by its English string: ar.json plus one ar.<area>.json per part of the app.
+const AR_TEXT: Record<string, string> = Object.assign(
+  {},
+  ...Object.values(import.meta.glob<Record<string, string>>('../i18n/ar*.json', { eager: true, import: 'default' })),
+)
+
+/** Arabic for an English string from the ar*.json files, or undefined. */
+export const arText = (en: string): string | undefined => AR_TEXT[en]
 
 /** The text for `lang`: Japanese when given, Arabic from `ar` or ar.json by the English text, else English. */
 export function pick(lang: Lang, en: string, ja?: string | null, ar?: string | null): string {
