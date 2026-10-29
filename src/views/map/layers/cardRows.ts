@@ -66,9 +66,9 @@ export function socialRow(s: Social, lang: 'en' | 'ja' | 'ar'): string {
   return `<span class="sc-dot" style="background:${sentimentColour(s.avg_sentiment)}"></span><b class="num">${s.posts_24h}</b><span class="ov-sub">${escapeHtml(postsIn(lang, '24h'))}</span>`
 }
 
-export function reviewsRow(r: Review): string {
+export function reviewsRow(r: Review, lang: 'en' | 'ja' | 'ar'): string {
   const ch = Math.round((r.rating - r.rating_30d_ago) * 10) / 10
-  return `${starsHtml(r.rating)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString('en-US')})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span>`
+  return `${starsHtml(r.rating, 11, lang)}<b class="num">${r.rating.toFixed(1)}</b><span class="ov-sub">(${r.real ? `+${r.new_30d}` : r.count.toLocaleString('en-US')})</span><span class="ov-delta ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(1)}</span>`
 }
 
 export interface CardLayers {
@@ -92,7 +92,7 @@ export function rowsFor(n: MapNode, frame: Record<string, NodeFrame> | null, mar
   const rows: CardRow[] = []
   if (layers.weather && f) rows.push({ key: 'weather', html: weatherRow(f, lang), attention: f.alerts.length > 0 || severeWeather(f) })
   const r = layers.reviews ? market?.reviews[n.id] : undefined
-  if (r) rows.push({ key: 'reviews', html: reviewsRow(r), attention: false })
+  if (r) rows.push({ key: 'reviews', html: reviewsRow(r, lang), attention: false })
   const s = layers.survey ? market?.survey[n.id] : undefined
   if (s) rows.push({ key: 'survey', html: surveyRow(s), attention: false })
   const so = layers.social ? market?.social[n.id] : undefined

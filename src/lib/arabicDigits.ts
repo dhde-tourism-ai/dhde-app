@@ -9,14 +9,14 @@ const DIGITS = /[0-9]/g
 const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE'])
 
 const ARABIC = /[٠-٩]/g
-// Digits glued to Latin letters are codes (A2, FY2024, Q5) and stay as they are.
+// Digits right after a Latin letter are codes or names (A2, FY2024, CC BY 4.0) and stay as they are.
 // Separators stay '.' and ',': in this font ٫ and ٬ look alike and like a comma.
 // A signed number (+٠.٥, +.٥٤٧, −١٢٪, ×١.٠٥) is isolated left-to-right so its sign stays in front.
 const LRI = '\u2066'
 const PDI = '\u2069'
 const toArabic = (s: string) =>
   s
-    .replace(/[A-Za-z]*[0-9]+/g, (m) => (/^[A-Za-z]/.test(m) ? m : m.replace(DIGITS, (d) => String.fromCharCode(0x0660 + Number(d)))))
+    .replace(/(?:[A-Za-z] ?)?[0-9]+(?:\.[0-9]+)*/g, (m) => (/^[A-Za-z]/.test(m) ? m : m.replace(DIGITS, (d) => String.fromCharCode(0x0660 + Number(d)))))
     .replace(/(?<=[٠-٩])%/g, '٪')
     .replace(/(?<![٠-٩\u2066])([+\-−×])(\.?[٠-٩][٠-٩.,]*٪?)/g, `${LRI}$1$2${PDI}`)
 const toWestern = (s: string) =>

@@ -46,7 +46,6 @@
   "Dark": "داكن",
   "Streets": "شوارع",
   "Some layers use real data; the rest is estimated or demo. Turn a layer on to see which part is estimated or demo.": "بعض الطبقات تستخدم بيانات حقيقية، والباقي تقديري أو تجريبي. فعّل طبقة لترى أي جزء منها تقديري أو تجريبي.",
-
   "Day totals are real estimates (each site's daily signal times one calibration factor from its official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: the 7-day model forecast, then the same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections and busyness (% of an average 2025 day) only.": "مجاميع الأيام تقديرات حقيقية (الإشارة اليومية لكل موقع مضروبة في معامل معايرة واحد مأخوذ من العدد السنوي الرسمي، مع مستوى ثقة لكل موقع). التوزيع على الساعات محاكاة بحيث يساوي مجموع كل يوم المجموع الحقيقي. الأيام القادمة: توقع النموذج لسبعة أيام، ثم متوسط اليوم نفسه من الأسبوع خلال آخر 4 أسابيع. لا يوجد عدد رسمي لمحطة فوكوي: رصدات الكاميرا ونسبة الازدحام (% من متوسط يوم في 2025) فقط.",
   "Follows the People layer: real day totals, simulated hourly shape.": "تتبع طبقة الناس: مجاميع يومية حقيقية، وتوزيع ساعي محاكى.",
   "Route volumes follow each destination’s real day total; the split by road and hour is simulated.": "أحجام المسارات تتبع المجموع اليومي الحقيقي لكل وجهة، أما التوزيع على الطرق والساعات فمحاكى.",
@@ -63,7 +62,6 @@
   "Crowding uses real daily visitor totals with a simulated hourly shape; weather advisories are demo.": "الازدحام يستخدم مجاميع الزوار اليومية الحقيقية مع توزيع ساعي محاكى، وتنبيهات الطقس تجريبية.",
   "Daily visitor totals for this site are real estimates; the hourly shape is simulated.": "مجاميع الزوار اليومية لهذا الموقع تقديرات حقيقية، والتوزيع الساعي محاكى.",
   "Past days: real daily visitor totals with a simulated hourly shape. Future days: forecast.": "الأيام الماضية: مجاميع زوار يومية حقيقية مع توزيع ساعي محاكى. الأيام القادمة: توقع.",
-
   "Demand alert": "تنبيه الطلب",
   "Weather-route": "الطقس والمسار",
   "Booking balance": "توازن الحجوزات",
@@ -76,7 +74,6 @@
   "Fukui Prefectural Dinosaur Museum (indoor)": "متحف محافظة فوكوي للديناصورات (مكان مغلق)",
   "Fukui City museums and Fukui Station area (indoor)": "متاحف مدينة فوكوي ومنطقة محطة فوكوي (أماكن مغلقة)",
   "Promote stay packages to day visitors and Kanazawa guests (dinner + room, late checkout).": "روّج لباقات الإقامة لدى زوار اليوم الواحد ونزلاء كانازاوا (عشاء مع الغرفة، ومغادرة متأخرة).",
-
   "Comfortable": "مريح",
   "Busy": "مزدحم قليلاً",
   "Crowded": "مزدحم",
@@ -95,7 +92,6 @@
   "Thunderstorm": "عاصفة رعدية",
   "Snow": "ثلج",
   "Fog": "ضباب",
-
   "Critical": "حرج",
   "Serious": "خطير",
   "Advisory": "تنبيه",
@@ -128,12 +124,10 @@
   "Time spent on site": "مدة البقاء في الموقع",
   "Age and gender": "العمر والجنس",
   "calendar 2025": "السنة الميلادية 2025",
-
   "People (camera)": "الناس (كاميرا)",
   "Vehicles (gate detections)": "المركبات (رصد البوابات)",
   "Footfall proxy (estimated)": "مؤشر بديل لحركة المشاة (تقديري)",
   "Reservations (entry bookings)": "الحجوزات (حجوزات الدخول)",
-
   "Fukui Station ↔ Tojinbo": "محطة فوكوي ↔ توجينبو",
   "Fukui Station ↔ Eiheiji": "محطة فوكوي ↔ إيهيجي",
   "Fukui Station ↔ Awara Onsen": "محطة فوكوي ↔ ينابيع أوارا الحارة",
@@ -162,7 +156,6 @@
   "Coastal fishing town": "بلدة صيد ساحلية",
   "Alpine route gateway": "بوابة طريق جبال الألب اليابانية",
   "Awara-Onsen Station": "محطة أوارا أونسن",
-
   "Heavy rain advisory": "تنبيه من أمطار غزيرة",
   "Rain band from the west; up to 20 mm/h on the coast Wednesday late morning.": "حزام مطر قادم من الغرب، حتى 20 مم/ساعة على الساحل في أواخر صباح الأربعاء.",
   "Strong wind advisory": "تنبيه من رياح قوية",
@@ -172,12 +165,10 @@
   "High wave advisory": "تنبيه من أمواج عالية",
   "Waves 3 m along the Echizen coast.": "أمواج بارتفاع 3 م على طول ساحل إتشيزن.",
   "Queue for the Tojinbo car parks backs onto the coastal road. Inland via Maruoka (Route 8) is about 10 minutes longer but moving.": "طابور مواقف سيارات توجينبو يمتد إلى الطريق الساحلي. الطريق الداخلي عبر ماروكا (الطريق 8) أطول بنحو 10 دقائق لكنه يتحرك.",
-
   "Mikuni": "ميكوني",
   "Mihama": "ميهاما",
   "Awara": "أوارا",
   "Fukui (nearest)": "فوكوي (الأقرب)",
-
   "FTAS reservations: Fukui Station": "حجوزات FTAS: محطة فوكوي",
   "FTAS reservations: Awara": "حجوزات FTAS: أوارا",
   "FTAS reservations: Echizen coast (regional)": "حجوزات FTAS: ساحل إتشيزن (إقليمي)",
@@ -269,7 +260,6 @@
   "moss and cedars": "الطحالب وأشجار الأرز",
   "sesame tofu": "توفو السمسم",
   "steep stairs": "سلالم شديدة الانحدار",
-
   "No official parking: city lot closed since Jul 2023 for redevelopment. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)": "لا يوجد موقف رسمي: موقف المدينة مغلق منذ يوليو 2023 لإعادة التطوير. المصدر: dhde-preprocessing-model docs/site_capacity.md (PR #6، الفرع add-remaining-six-nodes)",
   "200-space west-exit lot; 12 downtown lots, 2,065 spaces. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)": "موقف بـ200 مكان عند المخرج الغربي، و12 موقفاً في وسط المدينة بـ2,065 مكاناً. المصدر: dhde-preprocessing-model docs/site_capacity.md (PR #6، الفرع add-remaining-six-nodes)",
   "~1,400 parking spaces at the museum; timed-entry tickets. Source: dhde-preprocessing-model docs/site_capacity.md (PR #6, branch add-remaining-six-nodes)": "نحو 1,400 مكان للسيارات عند المتحف، وتذاكر دخول بمواعيد محددة. المصدر: dhde-preprocessing-model docs/site_capacity.md (PR #6، الفرع add-remaining-six-nodes)",
@@ -281,11 +271,11 @@
   "Fukui Station to Eiheiji: not yet measured.": "من محطة فوكوي إلى إيهيجي: لم يُقَس بعد.",
   "Fukui Station to Tojinbo: not yet measured.": "من محطة فوكوي إلى توجينبو: لم يُقَس بعد.",
   "Tsuruga to Rainbow Line: not yet measured.": "من تسوروغا إلى رينبو لاين: لم يُقَس بعد.",
-
   "Public transport access per node from open GTFS-JP timetables (dhde-preprocessing-model docs/transport.md). Times are scheduled, not live, and run stop to stop: the walk from the stop to the site is shown separately. Kanazawa and Kyoto add an estimated JR leg, since JR timetables are not open data.": "الوصول بالنقل العام لكل موقع من جداول GTFS-JP المفتوحة (dhde-preprocessing-model docs/transport.md). الأوقات حسب الجدول وليست مباشرة، ومن محطة إلى محطة، ويُعرض المشي من المحطة إلى الموقع بشكل منفصل. تُضاف لكانازاوا وكيوتو مرحلة تقديرية بقطارات JR لأن جداولها ليست بيانات مفتوحة.",
   "A toll road: the summit park is reached by car. JR Obama Line trains (Mikata, Kiyama) and the seasonal summit bus have no open timetable.": "طريق برسوم: يُصل إلى حديقة القمة بالسيارة. قطارات خط JR أوباما (ميكاتا، كيياما) وحافلة القمة الموسمية ليس لها جدول مفتوح.",
   "Anchored on the Dinosaur Museum (the node's visitor signal is museum bookings). Echizen Railway to Katsuyama station is not counted: it has no open timetable.": "محسوب من متحف الديناصورات (إشارة الزوار لهذا الموقع هي حجوزات المتحف). لا تُحسب سكة حديد إتشيزن إلى محطة كاتسوياما لأنها بلا جدول مفتوح.",
   "CC BY 4.0: credit \"京福バス株式会社 / Fukui Prefecture open data\". The permission line in the feed comes from the GTFS authoring tool (その筋屋), not from Keifuku; the official listings carry no such condition. Confirmed 3 Oct 2026.": "CC BY 4.0: يُنسب إلى \"京福バス株式会社 / البيانات المفتوحة لمحافظة فوكوي\". سطر الإذن في البيانات صادر عن أداة إعداد GTFS (その筋屋) وليس عن كيفوكو، والقوائم الرسمية لا تتضمن هذا الشرط. تم التأكيد في 3 أكتوبر 2026.",
   "Hokuriku Shinkansen, fastest scheduled trains (ekitan.com, Oct 2026): Kanazawa → Fukui 22-35 min, Kanazawa → Awara-Onsen 23-28 min. JR timetables are not open data, so the JR leg is a fixed estimate; then 5 min to change and the fastest local bus or train on the day's timetable.": "هوكوريكو شينكانسن، أسرع القطارات المجدولة (ekitan.com، أكتوبر 2026): كانازاوا ← فوكوي 22-35 دقيقة، كانازاوا ← أوارا أونسن 23-28 دقيقة. جداول JR ليست بيانات مفتوحة، لذا مرحلة JR تقدير ثابت، ثم 5 دقائق للتبديل وأسرع حافلة أو قطار محلي حسب جدول ذلك اليوم.",
-  "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable.": "القطار السريع المحدود ثندربيرد إلى تسوروغا، ثم التبديل (8-15 دقيقة) إلى هوكوريكو شينكانسن: كيوتو ← فوكوي نحو ساعة و28 دقيقة إلى ساعة و45 دقيقة (أدلة الرحلات المنشورة)، واستُخدمت 90 دقيقة، وأوارا أونسن بعدها بمحطة واحدة (+10 دقائق). جداول JR ليست بيانات مفتوحة، ثم 5 دقائق للتبديل وأسرع رحلة محلية حسب جدول ذلك اليوم."
+  "Limited express Thunderbird to Tsuruga, change (8-15 min), Hokuriku Shinkansen on: Kyoto → Fukui about 1 h 28 min to 1 h 45 min (published journey guides), 90 min used; Awara-Onsen is one stop further (+10 min). JR timetables are not open data; then 5 min to change and the fastest local journey on the day's timetable.": "القطار السريع المحدود ثندربيرد إلى تسوروغا، ثم التبديل (8-15 دقيقة) إلى هوكوريكو شينكانسن: كيوتو ← فوكوي نحو ساعة و28 دقيقة إلى ساعة و45 دقيقة (أدلة الرحلات المنشورة)، واستُخدمت 90 دقيقة، وأوارا أونسن بعدها بمحطة واحدة (+10 دقائق). جداول JR ليست بيانات مفتوحة، ثم 5 دقائق للتبديل وأسرع رحلة محلية حسب جدول ذلك اليوم.",
+  "Fukui municipalities jump 2-6x from 2026-03 onward (e.g. Mihama 3k in Feb, 60k in Mar), a step not seen in Tokyo or Kyoto; check whether the source changed method before quoting.": "أرقام بلديات فوكوي تقفز من ضعفين إلى ستة أضعاف ابتداءً من مارس 2026 (مثلاً ميهاما: 3 آلاف في فبراير و60 ألفاً في مارس)، وهي قفزة لا تظهر في طوكيو أو كيوتو؛ تأكد هل غيّر المصدر طريقة الحساب قبل الاستشهاد بالرقم."
 }

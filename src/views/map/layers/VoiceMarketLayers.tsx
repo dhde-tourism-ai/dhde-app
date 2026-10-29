@@ -495,7 +495,7 @@ export function ReviewsDetail({ r }: { r: Review }) {
       <div className="tt-hero">
         <b className="num">{r.rating.toFixed(1)}</b>
         <span>
-          <Stars value={r.rating} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規', 'جديدة')}`} · {ch >= 0 ? '+' : ''}
+          <Stars value={r.rating} lang={lang} /> {r.real ? `${r.new_30d} ${t('new reviews in 30 days', '件の新規レビュー（30日）')}` : `${r.count.toLocaleString('en-US')} ${t('reviews', '件')} · ${r.new_30d} ${t('new', '件新規', 'جديدة')}`} · {ch >= 0 ? '+' : ''}
           {ch.toFixed(1)} {t('vs previous 30 days', '（前30日比）')}
         </span>
       </div>
@@ -503,7 +503,7 @@ export function ReviewsDetail({ r }: { r: Review }) {
       {r.snippets[0] && (
         <ul className="tt-quotes">
           <li>
-            <Stars value={r.snippets[0].stars} small /> {lang === 'ar' ? '«' : '“'}{dataText(lang, r.snippets[0].en, r.snippets[0].ja)}{lang === 'ar' ? '»' : '”'} <span className="tt-demo">{t('Fictional', '架空')}</span>
+            <Stars value={r.snippets[0].stars} small lang={lang} /> {lang === 'ar' ? '«' : '“'}{dataText(lang, r.snippets[0].en, r.snippets[0].ja)}{lang === 'ar' ? '»' : '”'} <span className="tt-demo">{t('Fictional', '架空')}</span>
           </li>
         </ul>
       )}

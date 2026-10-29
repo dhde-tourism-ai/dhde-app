@@ -46,8 +46,8 @@ export function fmtDate(iso: string | undefined | null, lang: 'en' | 'ja' | 'ar'
 
 /* JMA forecast text ("くもり 時々 雨") word by word in Arabic, for the Arabic page. */
 const JMA_WORD: Record<string, string> = {
-  晴れ: 'صحو',
-  晴: 'صحو',
+  晴れ: 'صافٍ',
+  晴: 'صافٍ',
   くもり: 'غائم',
   曇り: 'غائم',
   雨: 'مطر',

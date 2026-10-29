@@ -35,7 +35,7 @@ export function sparkPath(values: number[], w: number, h: number): string {
 }
 
 /** Five stars as an HTML string (filled share = rating / 5). */
-export function starsHtml(rating: number, size = 11): string {
+export function starsHtml(rating: number, size = 11, lang: 'en' | 'ja' | 'ar' = 'en'): string {
   const pct = Math.max(0, Math.min(100, (rating / 5) * 100))
-  return `<span class="stars" style="--pct:${pct}%;font-size:${size}px" aria-label="${rating.toFixed(1)} of 5">★★★★★</span>`
+  return `<span class="stars" style="--pct:${pct}%;font-size:${size}px" aria-label="${rating.toFixed(1)} ${lang === 'ar' ? 'من' : 'of'} 5">★★★★★</span>`
 }
