@@ -3,28 +3,30 @@
  * one hour index. Views call frameAt() and never touch the raw arrays.
  */
 import type { LiveData, LiveWeatherAlert, RealSentiment, WeatherCondition } from '../types/live'
+import { DOW_AR, MON_AR } from './arFormat'
 
 export interface Tier {
   key: 'good' | 'warn' | 'serious' | 'crit'
   label: string
   label_ja: string
+  label_ar: string
   colour: string
 }
 
 /** Site crowding from people on site ÷ comfortable capacity. */
 export function crowdTier(load: number): Tier {
-  if (load < 0.45) return { key: 'good', label: 'Comfortable', label_ja: '快適', colour: '#0ca30c' }
-  if (load < 0.8) return { key: 'warn', label: 'Busy', label_ja: 'やや混雑', colour: '#fab219' }
-  if (load < 1.0) return { key: 'serious', label: 'Crowded', label_ja: '混雑', colour: '#ec835a' }
-  return { key: 'crit', label: 'Over capacity', label_ja: '過密', colour: '#d03b3b' }
+  if (load < 0.45) return { key: 'good', label: 'Comfortable', label_ja: '快適', label_ar: 'مريح', colour: '#0ca30c' }
+  if (load < 0.8) return { key: 'warn', label: 'Busy', label_ja: 'やや混雑', label_ar: 'مزدحم قليلاً', colour: '#fab219' }
+  if (load < 1.0) return { key: 'serious', label: 'Crowded', label_ja: '混雑', label_ar: 'مزدحم', colour: '#ec835a' }
+  return { key: 'crit', label: 'Over capacity', label_ja: '過密', label_ar: 'فوق السعة', colour: '#d03b3b' }
 }
 export const CROWD_TIERS: Tier[] = [0.2, 0.6, 0.9, 1.2].map(crowdTier)
 
 /** Road congestion 0..1. */
 export function trafficTier(c: number): Tier {
-  if (c < 0.4) return { key: 'good', label: 'Free flow', label_ja: '順調', colour: '#0ca30c' }
-  if (c < 0.7) return { key: 'warn', label: 'Slow', label_ja: '混雑気味', colour: '#fab219' }
-  return { key: 'crit', label: 'Jammed', label_ja: '渋滞', colour: '#d03b3b' }
+  if (c < 0.4) return { key: 'good', label: 'Free flow', label_ja: '順調', label_ar: 'حركة سلسة', colour: '#0ca30c' }
+  if (c < 0.7) return { key: 'warn', label: 'Slow', label_ja: '混雑気味', label_ar: 'حركة بطيئة', colour: '#fab219' }
+  return { key: 'crit', label: 'Jammed', label_ja: '渋滞', label_ar: 'ازدحام شديد', colour: '#d03b3b' }
 }
 export const TRAFFIC_TIERS: Tier[] = [0.2, 0.55, 0.85].map(trafficTier)
 
@@ -126,21 +128,28 @@ export function dayIndex(i: number) {
 }
 
 const DOW_JA: Record<string, string> = { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
+const DOW_INDEX: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export function dayLabel(live: LiveData, d: number, lang: 'en' | 'ja', short = false): string {
+export function dayLabel(live: LiveData, d: number, lang: 'en' | 'ja' | 'ar', short = false): string {
   const day = live.days[d]
   if (!day) return ''
   const [, m, dd] = day.date.split('-').map(Number)
   if (lang === 'ja') return short ? `${m}/${dd}(${DOW_JA[day.dow]})` : `${m}月${dd}日(${DOW_JA[day.dow]})`
+  if (lang === 'ar') return short ? `${dowAr(day.dow)} ${dd}` : `${dowAr(day.dow)} ${dd} ${MON_AR[m - 1]}`
   return short ? `${day.dow} ${dd}` : `${day.dow} ${dd} ${MONTHS[m - 1]}`
+}
+
+/** Arabic weekday for the data's "Sun".."Sat". */
+export function dowAr(dow: string): string {
+  return DOW_AR[DOW_INDEX[dow]] ?? dow
 }
 
 export function hourLabel(i: number): string {
   return `${String(i % 24).padStart(2, '0')}:00`
 }
 
-export function timeLabel(live: LiveData, i: number, lang: 'en' | 'ja'): string {
+export function timeLabel(live: LiveData, i: number, lang: 'en' | 'ja' | 'ar'): string {
   return `${dayLabel(live, dayIndex(i), lang)} ${hourLabel(i)}`
 }
 
@@ -169,12 +178,12 @@ export function sentimentColour(score: number): string {
   return `rgb(${c[0]},${c[1]},${c[2]})`
 }
 
-export function sentimentLabel(score: number): { en: string; ja: string } {
-  if (score >= 0.35) return { en: 'Very positive', ja: 'とても好評' }
-  if (score >= 0.1) return { en: 'Positive', ja: '好評' }
-  if (score > -0.1) return { en: 'Mixed', ja: '賛否' }
-  if (score > -0.35) return { en: 'Negative', ja: '不評' }
-  return { en: 'Very negative', ja: 'とても不評' }
+export function sentimentLabel(score: number): { en: string; ja: string; ar: string } {
+  if (score >= 0.35) return { en: 'Very positive', ja: 'とても好評', ar: 'إيجابي جداً' }
+  if (score >= 0.1) return { en: 'Positive', ja: '好評', ar: 'إيجابي' }
+  if (score > -0.1) return { en: 'Mixed', ja: '賛否', ar: 'متباين' }
+  if (score > -0.35) return { en: 'Negative', ja: '不評', ar: 'سلبي' }
+  return { en: 'Very negative', ja: 'とても不評', ar: 'سلبي جداً' }
 }
 
 /** Neutral band of the real sentiment model (dhde-preprocessing-model sentiment.NEUTRAL_BAND). */
@@ -185,23 +194,23 @@ export const REAL_NEUTRAL_BAND = 0.2
  * site's label agrees with its positive / neutral / negative split. No "very": a first
  * model's average isn't precise enough for that.
  */
-export function realSentimentLabel(score: number): { en: string; ja: string } {
-  if (score >= REAL_NEUTRAL_BAND) return { en: 'Positive', ja: '好評' }
-  if (score <= -REAL_NEUTRAL_BAND) return { en: 'Negative', ja: '不評' }
-  return { en: 'Mixed', ja: '賛否' }
+export function realSentimentLabel(score: number): { en: string; ja: string; ar: string } {
+  if (score >= REAL_NEUTRAL_BAND) return { en: 'Positive', ja: '好評', ar: 'إيجابي' }
+  if (score <= -REAL_NEUTRAL_BAND) return { en: 'Negative', ja: '不評', ar: 'سلبي' }
+  return { en: 'Mixed', ja: '賛否', ar: 'متباين' }
 }
 
-export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string }> = {
-  clear: { en: 'Sunny', ja: '晴れ' },
-  clear_night: { en: 'Clear', ja: '晴れ' },
-  partly: { en: 'Partly cloudy', ja: '晴れ時々曇り' },
-  partly_night: { en: 'Partly cloudy', ja: '晴れ時々曇り' },
-  cloudy: { en: 'Cloudy', ja: '曇り' },
-  rain: { en: 'Rain', ja: '雨' },
-  heavy_rain: { en: 'Heavy rain', ja: '大雨' },
-  thunder: { en: 'Thunderstorm', ja: '雷雨' },
-  snow: { en: 'Snow', ja: '雪' },
-  fog: { en: 'Fog', ja: '霧' },
+export const CONDITION_LABEL: Record<WeatherCondition, { en: string; ja: string; ar: string }> = {
+  clear: { en: 'Sunny', ja: '晴れ', ar: 'مشمس' },
+  clear_night: { en: 'Clear', ja: '晴れ', ar: 'صافٍ' },
+  partly: { en: 'Partly cloudy', ja: '晴れ時々曇り', ar: 'غائم جزئياً' },
+  partly_night: { en: 'Partly cloudy', ja: '晴れ時々曇り', ar: 'غائم جزئياً' },
+  cloudy: { en: 'Cloudy', ja: '曇り', ar: 'غائم' },
+  rain: { en: 'Rain', ja: '雨', ar: 'مطر' },
+  heavy_rain: { en: 'Heavy rain', ja: '大雨', ar: 'مطر غزير' },
+  thunder: { en: 'Thunderstorm', ja: '雷雨', ar: 'عاصفة رعدية' },
+  snow: { en: 'Snow', ja: '雪', ar: 'ثلج' },
+  fog: { en: 'Fog', ja: '霧', ar: 'ضباب' },
 }
 
 export function escapeHtml(s: string): string {

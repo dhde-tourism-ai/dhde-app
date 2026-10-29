@@ -380,8 +380,8 @@
   font-variant-numeric: tabular-nums;
   color: var(--text);
   font-weight: 700;
-  padding-left: 6px;
-  border-left: 1px solid var(--line-strong);
+  padding-inline-start: 6px;
+  border-inline-start: 1px solid var(--line-strong);
 }
 
 .nt-count.fc {
@@ -568,7 +568,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 12px 7px 7px;
+  padding-block: 7px;
+  padding-inline: 7px 12px;
   border-radius: var(--r-pill);
   background: var(--glass);
   border: 1px solid var(--line-strong);
@@ -813,7 +814,8 @@
 }
 
 .layer-legend {
-  padding: 2px 10px 10px 48px;
+  padding-block: 2px 10px;
+  padding-inline: 48px 10px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -896,7 +898,7 @@
   border: 0;
   background: none;
   border-radius: 8px;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   font-size: 12.5px;
 }
@@ -924,7 +926,7 @@
 }
 
 .board-val {
-  text-align: right;
+  text-align: end;
   font-weight: 600;
 }
 
@@ -947,7 +949,7 @@
 }
 
 .al-count {
-  margin-left: auto;
+  margin-inline-start: auto;
   min-width: 20px;
   text-align: center;
   padding: 0 6px;
@@ -972,7 +974,7 @@
   border: 0;
   background: none;
   border-radius: 8px;
-  text-align: left;
+  text-align: start;
   font-size: 12.5px;
   line-height: 1.45;
   color: var(--text);
@@ -1143,7 +1145,7 @@ button.al-item:hover {
   align-items: center;
   gap: 6px;
   color: var(--text);
-  text-align: right;
+  text-align: end;
 }
 
 .wx-block {
@@ -1529,13 +1531,14 @@ button.al-item:hover {
     transform: none;
     max-width: none;
     min-width: 0;
-    padding: 5px 10px 5px 5px;
+    padding-block: 5px;
+    padding-inline: 5px 10px;
     gap: 8px;
     font-size: 12px;
   }
 
   .status-strip .demo-badge {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
 
   .map-left,
@@ -1761,7 +1764,7 @@ button.al-item:hover {
   display: inline-block;
   width: 6px;
   height: 6px;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   border-radius: 50%;
   background: currentColor;
   vertical-align: 1px;
@@ -1778,4 +1781,58 @@ button.al-item:hover {
   .tl-mode.live::before {
     animation: none;
   }
+}
+
+/* ---------------- Arabic (right-to-left) ---------------- */
+/* Leaflet keeps its own left-to-right layout (tiles, controls, attribution); the cards and
+   tooltips drawn on it read right-to-left like the panels. */
+html[dir='rtl'] .leaflet-container {
+  direction: ltr;
+}
+
+html[dir='rtl'] .leaflet-tooltip,
+html[dir='rtl'] .leaflet-popup,
+html[dir='rtl'] .map-divicon > * {
+  direction: rtl;
+}
+
+html[lang='ar'] .leaflet-container,
+html[lang='ar'] .fp-title {
+  font-family: var(--font-ar);
+}
+
+/* Letter spacing breaks the joins between Arabic letters. */
+html[lang='ar'] .mapview * {
+  letter-spacing: 0;
+}
+
+/* Bars and scales fill from the right, so they match their right-to-left labels. */
+html[dir='rtl'] .lg-grad-bar,
+html[dir='rtl'] .meter,
+html[dir='rtl'] .div-bar,
+html[dir='rtl'] .tt-bar-track {
+  transform: scaleX(-1);
+}
+
+html[dir='rtl'] .stars {
+  background: linear-gradient(270deg, #ffc94a var(--pct), #3a4560 var(--pct));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* "Show on map ›" and "Open node dashboard ›" point the reading way. */
+html[dir='rtl'] .nc-focus svg,
+html[dir='rtl'] .drawer-open svg {
+  transform: scaleX(-1);
+}
+
+/* The timeline runs left to right (past to future), like the charts. */
+html[dir='rtl'] .tl-track {
+  direction: ltr;
+}
+
+/* Arabic day names are longer: the readout grows and the track gives way. */
+html[lang='ar'] .tl-readout {
+  width: auto;
+  min-width: 158px;
 }

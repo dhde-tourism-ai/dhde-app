@@ -3,12 +3,14 @@ const SKIP = new Set(['id', 'type', 'status', 'series', 'total', 'domestic', 'fo
 
 /**
  * A copy of `value` with every display string swapped for its entry in
- * `dict` (English → Japanese). Strings without an entry, numbers and the
- * keys in SKIP stay as they are.
+ * `dict` (English → Japanese), or for what `dict` returns when it is a
+ * lookup (English → Arabic, i18n.ts arText). Strings without an entry,
+ * numbers and the keys in SKIP stay as they are.
  */
-export function localize<T>(value: T, dict: Record<string, string>): T {
+export function localize<T>(value: T, dict: Record<string, string> | ((en: string) => string | undefined)): T {
+  const find = typeof dict === 'function' ? dict : (s: string) => dict[s]
   const walk = (v: unknown): unknown => {
-    if (typeof v === 'string') return dict[v.trim()] ?? v
+    if (typeof v === 'string') return find(v.trim()) ?? v
     if (Array.isArray(v)) return v.map(walk)
     if (v && typeof v === 'object') {
       const out: Record<string, unknown> = {}

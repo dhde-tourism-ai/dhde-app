@@ -15,6 +15,7 @@ import { OCC_STEPS, RSI_STEPS } from '../../../lib/market'
 import { PRIORITY } from '../../../lib/nudges'
 import type { BasemapId, LayerId } from '../layers'
 import { RailLegend, TransportLegend } from './TransportLegend'
+import { arOr } from '../mapText'
 
 interface Props {
   basemap: BasemapId
@@ -59,7 +60,7 @@ function Grad({ from, to, left, right }: { from: string; to: string; left: strin
 }
 
 export function LayersPanel(p: Props) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   // On a phone the panel is a sheet with its own close button, so it never collapses.
   const collapsible = !p.onClose
   const [openState, setOpenState] = useState(readPanelOpen)
@@ -88,8 +89,8 @@ export function LayersPanel(p: Props) {
           <div key={k} className="lg-row lg-priority">
             <span className="lg-flag" style={{ background: PRIORITY[k].colour }}></span>
             <span>
-              <strong>{t(PRIORITY[k].en, PRIORITY[k].ja)}</strong>
-              <span className="lg-note">{t(PRIORITY[k].hint_en, PRIORITY[k].hint_ja)}</span>
+              <strong>{t(PRIORITY[k].en, PRIORITY[k].ja, PRIORITY[k].ar)}</strong>
+              <span className="lg-note">{t(PRIORITY[k].hint_en, PRIORITY[k].hint_ja, PRIORITY[k].hint_ar)}</span>
             </span>
           </div>
         ))}
@@ -156,7 +157,7 @@ export function LayersPanel(p: Props) {
           {CROWD_TIERS.map((x) => (
             <span key={x.key} className="lg-row">
               <span className="lg-dot" style={{ background: x.colour }}></span>
-              {t(x.label, x.label_ja)}
+              {t(x.label, x.label_ja, x.label_ar)}
             </span>
           ))}
         </div>
@@ -187,7 +188,7 @@ export function LayersPanel(p: Props) {
           {TRAFFIC_TIERS.map((x) => (
             <span key={x.key} className="lg-row">
               <span className="lg-line" style={{ borderColor: x.colour }}></span>
-              {t(x.label, x.label_ja)}
+              {t(x.label, x.label_ja, x.label_ar)}
             </span>
           ))}
         </div>
@@ -246,7 +247,7 @@ export function LayersPanel(p: Props) {
             <div key={c} className="banner banner-warn">
               <Icon name="alert" />
               <span>
-                <strong>{t('Check before quoting:', '引用前に確認：')}</strong> {c}
+                <strong>{t('Check before quoting:', '引用前に確認：')}</strong> {lang === 'ar' ? arOr(c) : c}
               </span>
             </div>
           ))}

@@ -63,7 +63,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 9px 2px 7px;
+  padding: 2px 9px;
+  padding-inline-start: 7px;
   border-radius: var(--r-pill);
   font-size: 11.5px;
   font-weight: 600;
@@ -105,7 +106,7 @@
 }
 
 .data-table th {
-  text-align: left;
+  text-align: start;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -127,7 +128,7 @@
 }
 
 .data-table .num {
-  text-align: right;
+  text-align: end;
   white-space: nowrap;
 }
 
@@ -418,7 +419,7 @@
   padding: 10px 12px;
   border-radius: var(--r-md);
   background: var(--surface-2);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   font-size: 13px;
 }
 
@@ -574,7 +575,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 13px 7px 8px;
+  padding: 7px 13px;
+  padding-inline-start: 8px;
   border-radius: var(--r-pill);
   border: 1px solid var(--line);
   background: var(--surface);
@@ -670,7 +672,7 @@
   border-radius: var(--r-lg);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
 }
 
 .answer-label {
@@ -1096,7 +1098,7 @@
 
 .hbar-value {
   min-width: 56px;
-  text-align: right;
+  text-align: end;
   font-weight: 600;
 }
 
@@ -1223,7 +1225,7 @@
 }
 
 .heat th[scope='row'] {
-  text-align: left;
+  text-align: start;
 }
 
 .heat td {
@@ -2056,7 +2058,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 0 14px 38px;
+  padding: 0 0 14px;
+  padding-inline-start: 38px;
   font-size: 13.5px;
   color: var(--text-2);
 }
@@ -2252,7 +2255,7 @@
   padding: 10px 14px;
   border-radius: var(--r-md);
   background: var(--surface-2);
-  border-left: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--accent);
   font-size: 13.5px;
 }
 
@@ -2294,7 +2297,7 @@
 /* ---- Q1 economy block: GDP trend, tourism's contribution, ripple, what-if ---- */
 .card-badge {
   display: inline-block;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   padding: 1px 7px;
   border-radius: var(--r-pill);
   background: var(--accent);
@@ -2552,7 +2555,7 @@
 
 .ripple-flip {
   flex: none;
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--text-2);
 }
 
@@ -2600,7 +2603,7 @@
 
 .ripple-back-list .rb-val {
   grid-area: val;
-  text-align: right;
+  text-align: end;
 }
 
 .ripple-back-list .rb-bar {
@@ -2619,7 +2622,7 @@
 
 .ripple-back-list .rb-sub {
   grid-area: sub;
-  text-align: right;
+  text-align: end;
   font-size: 10.5px;
   color: var(--muted);
 }
@@ -2933,4 +2936,57 @@
   .ripple-flow {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ---------------- Right to left (Arabic) ---------------- */
+/* Chevrons that point "onward" point left. */
+html[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Bars grow from the label side: right in Arabic. */
+html[dir='rtl'] .cell-bar-fill {
+  left: auto;
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+html[dir='rtl'] .hbars:not(.signed) .hbar-fill {
+  left: auto;
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+html[dir='rtl'] .q-group .span-12 .hbars:not(.signed) .hbar-fill {
+  border-radius: 6px 0 0 6px;
+}
+
+html[dir='rtl'] .funnel-track span {
+  inset: 0 0 0 auto;
+}
+
+/* The funnel's arrows between stages point to the next stage, on the left. */
+html[dir='rtl'] .funnel-stage:not(:last-child)::after {
+  right: auto;
+  left: -10px;
+  border-left-color: transparent;
+  border-right-color: var(--line-strong);
+}
+
+/* Number lines that place marks with inline `left` (progress and pace ticks, the builder's stacked
+   bar, the signed bars and the scenario slider) stay left to right, like the charts. */
+html[dir='rtl'] .progress-track,
+html[dir='rtl'] .pace-track,
+html[dir='rtl'] .stack-track,
+html[dir='rtl'] .hbars.signed .hbar-track,
+html[dir='rtl'] .scn {
+  direction: ltr;
+}
+
+/* The slider's own labels are still Arabic text. */
+html[dir='rtl'] .scn-value,
+html[dir='rtl'] .scn-ref,
+html[dir='rtl'] .scn-tick-label {
+  direction: rtl;
+  unicode-bidi: isolate;
 }

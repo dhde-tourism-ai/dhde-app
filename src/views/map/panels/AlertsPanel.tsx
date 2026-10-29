@@ -34,7 +34,7 @@ function Group({ title, icon, items, empty, onPick }: { title: string; icon: Ico
                 <span className="al-sev" style={{ background: SEV_COLOUR[a.sev] }} aria-hidden="true"></span>
                 <span className="al-text">
                   <span className="sr-only">{t(SEV_LABEL[a.sev][0], SEV_LABEL[a.sev][1])}: </span>
-                  {t(a.en, a.ja)}
+                  {t(a.en, a.ja, a.ar)}
                 </span>
               </>
             )
@@ -91,7 +91,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         {frame && (
           <div className="board">
             <div className="board-total">
-              <span className="eyebrow">{withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`)}</span>
+              <span className="eyebrow">{withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`, `الناس في المواقع، ${withEst.length} مواقع لها تقديرات`)}</span>
               <span className="board-num">{Math.round(total).toLocaleString('en-US')}</span>
             </div>
             <ul className="board-list">
@@ -104,7 +104,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
                       <button className="board-row" onClick={() => onSelect(n.id)}>
                         <span className="sw" style={{ background: f.noEstimate ? 'transparent' : f.tier.colour, boxShadow: f.noEstimate ? 'inset 0 0 0 1.5px #c9d4ff' : undefined }} aria-hidden="true"></span>
                         <span className="board-name">{t(n.name.replace(' East Entrance', ''), n.name_ja)}</span>
-                        <span className="board-tier">{f.noEstimate ? t('no estimate', '推計なし') : t(f.tier.label, f.tier.label_ja)}</span>
+                        <span className="board-tier">{f.noEstimate ? t('no estimate', '推計なし') : t(f.tier.label, f.tier.label_ja, f.tier.label_ar)}</span>
                         <span className="board-val num">
                           {f.noEstimate ? '—' : `${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}`}
                         </span>

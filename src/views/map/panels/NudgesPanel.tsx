@@ -49,7 +49,7 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
           </button>
           {([1, 2, 3] as const).map((l) => (
             <button key={l} aria-pressed={loop === l} onClick={() => setLoop(l)}>
-              {t(LOOP_LABEL[l].en, LOOP_LABEL[l].ja)} {count(l)}
+              {t(LOOP_LABEL[l].en, LOOP_LABEL[l].ja, LOOP_LABEL[l].ar)} {count(l)}
             </button>
           ))}
         </div>
@@ -75,25 +75,25 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
                 <li key={n.id}>
                   <button className={`nudge-card ${n.id === activeId ? 'on' : ''} ${n.day === day ? 'today' : ''}`} onClick={() => onPick(n)}>
                     <div className="nc-top">
-                      <span className="nc-sev" title={t(pr.hint_en, pr.hint_ja)}>
+                      <span className="nc-sev" title={t(pr.hint_en, pr.hint_ja, pr.hint_ar)}>
                         <i style={{ background: pr.colour }} aria-hidden="true"></i>
-                        {t(pr.en, pr.ja)}
+                        {t(pr.en, pr.ja, pr.ar)}
                       </span>
                       <span className="nc-loop">
-                        {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja)}
+                        {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja, LOOP_LABEL[n.loop].ar)}
                       </span>
                       <span className="nc-time num">
                         {dayLabel(live, n.day, lang, true)} {hourLabel(n.start)}
                       </span>
                     </div>
-                    <div className="nc-title">{t(n.title_en, n.title_ja)}</div>
+                    <div className="nc-title">{t(n.title_en, n.title_ja, n.title_ar)}</div>
                     <div className="nc-row">
                       <span className="nc-k">{t('Why', '根拠')}</span>
-                      <span>{t(n.reason_en, n.reason_ja)}</span>
+                      <span>{t(n.reason_en, n.reason_ja, n.reason_ar)}</span>
                     </div>
                     <div className="nc-row">
                       <span className="nc-k">{t('Do', '対応')}</span>
-                      <span className="nc-action">{t(n.action_en, n.action_ja)}</span>
+                      <span className="nc-action">{t(n.action_en, n.action_ja, n.action_ar)}</span>
                     </div>
                     <div className="nc-foot">
                       {n.real ? (

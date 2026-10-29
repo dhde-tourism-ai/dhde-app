@@ -3,6 +3,8 @@ import type { RoutesFile } from '../types/routes'
 import type { RegistryNode } from '../types/nodes'
 import { activeAdvisories, crowdTier, timeLabel, trafficTier } from './live'
 import type { NodeFrame } from './live'
+import { arText, pick } from './i18n'
+import { alertText } from './jmaWarnings'
 
 export type Sev = 'crit' | 'serious' | 'warn' | 'info'
 export const SEV_RANK: Record<Sev, number> = { crit: 3, serious: 2, warn: 1, info: 0 }
@@ -13,6 +15,7 @@ export interface AlertItem {
   sev: Sev
   en: string
   ja: string
+  ar: string
   node?: string
 }
 
@@ -23,10 +26,10 @@ export interface AlertGroups {
   insights: AlertItem[]
 }
 
-function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja'): string {
+function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar'): string {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
-  return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
+  return pick(lang, n.name.replace(' East Entrance', ''), n.name_ja)
 }
 
 const bySev = (a: AlertItem, b: AlertItem) => SEV_RANK[b.sev] - SEV_RANK[a.sev]
@@ -39,7 +42,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
   const insights: AlertItem[] = []
 
   for (const a of activeAdvisories(live, t)) {
-    traffic.push({ id: a.id, sev: 'crit', en: `Reroute advised. ${a.reason_en}`, ja: `迂回推奨。${a.reason_ja}` })
+    traffic.push({ id: a.id, sev: 'crit', en: `Reroute advised. ${a.reason_en}`, ja: `迂回推奨。${a.reason_ja}`, ar: `يُنصح بطريق بديل. ${arText(a.reason_en) ?? a.reason_en}` })
   }
   for (const [rid, tr] of Object.entries(live.traffic)) {
     const r = routes?.routes.find((x) => x.id === rid)
@@ -52,18 +55,21 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
       sev: tier.key === 'crit' ? 'serious' : 'warn',
       en: `${tier.label}: ${r.label} (${Math.round(worst * 100)}% congestion)`,
       ja: `${tier.label_ja}：${r.label_ja}（混雑度${Math.round(worst * 100)}%）`,
+      ar: `${tier.label_ar}: ${pick('ar', r.label, r.label_ja)} (ازدحام ${Math.round(worst * 100)}%)`,
       node: r.to,
     })
   }
 
   for (const a of live.weather_alerts) {
-    const where = (lang: 'en' | 'ja') => a.nodes.map((id) => nm(reg, id, lang)).join(lang === 'ja' ? '・' : ', ')
+    const where = (lang: 'en' | 'ja' | 'ar') => a.nodes.map((id) => nm(reg, id, lang)).join(lang === 'ja' ? '・' : lang === 'ar' ? '، ' : ', ')
+    const ar = alertText(a, 'ar')
     if (t >= a.start && t <= a.end) {
       weather.push({
         id: a.id,
         sev: a.level === 'warning' ? 'crit' : 'warn',
         en: `${a.title_en} · ${where('en')}. ${a.detail_en}`,
         ja: `${a.title_ja}・${where('ja')}。${a.detail_ja}`,
+        ar: `${ar.title} · ${where('ar')}. ${ar.detail}`,
       })
     } else if (a.start > t && a.start - t <= 36) {
       weather.push({
@@ -71,6 +77,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
         sev: 'info',
         en: `Expected from ${timeLabel(live, a.start, 'en')}: ${a.title_en} · ${where('en')}`,
         ja: `${timeLabel(live, a.start, 'ja')}から見込み：${a.title_ja}・${where('ja')}`,
+        ar: `متوقع من ${timeLabel(live, a.start, 'ar')}: ${ar.title} · ${where('ar')}`,
       })
     }
   }
@@ -84,6 +91,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
         node: id,
         en: `${nm(reg, id, 'en')}: ${f.tier.label.toLowerCase()}, ${Math.round(f.onSite).toLocaleString('en-US')} on site (${Math.round(f.load * 100)}% of comfortable capacity)`,
         ja: `${nm(reg, id, 'ja')}：${f.tier.label_ja}、現地${Math.round(f.onSite).toLocaleString('en-US')}人（快適容量の${Math.round(f.load * 100)}%）`,
+        ar: `${nm(reg, id, 'ar')}: ${f.tier.label_ar}، ${Math.round(f.onSite).toLocaleString('en-US')} شخص في الموقع (${Math.round(f.load * 100)}% من السعة المريحة)`,
       })
     }
     // Operator insight: counts running ahead of forecast (the demo's "extend hours, staff up" nudge).
@@ -95,6 +103,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
         node: id,
         en: `${nm(reg, id, 'en')} is running ${pct}% ahead of forecast. Extend shop hours and add staff for the afternoon.`,
         ja: `${nm(reg, id, 'ja')}は予測を${pct}%上回っています。午後の営業時間延長と増員を。`,
+        ar: `${nm(reg, id, 'ar')} أعلى من التوقع بنسبة ${pct}%. مدّد ساعات عمل المحلات وأضف موظفين لفترة ما بعد الظهر.`,
       })
     }
     // Next forecast over-capacity window after t.
@@ -109,6 +118,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
             node: id,
             en: `${nm(reg, id, 'en')} forecast over capacity from ${timeLabel(live, i, 'en')}. Consider timed entry or promoting a nearby site.`,
             ja: `${nm(reg, id, 'ja')}は${timeLabel(live, i, 'ja')}から過密の予測。時間指定入場や周辺施設への誘導を検討。`,
+            ar: `يُتوقع أن يتجاوز ${nm(reg, id, 'ar')} السعة من ${timeLabel(live, i, 'ar')}. فكّر في الدخول بمواعيد محددة أو الترويج لموقع قريب.`,
           })
           break
         }

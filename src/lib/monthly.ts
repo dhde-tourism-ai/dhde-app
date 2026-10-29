@@ -1,5 +1,6 @@
 import type { MonthlyForecastFile, MonthlySeries } from '../types/monthly'
 import type { StrategicQuestion } from '../types/strategy'
+import { arText } from './i18n'
 
 /** A calendar year's total: actual months so far plus the forecast for the rest. */
 export function yearTotal(s: MonthlySeries, year: string) {
@@ -60,7 +61,7 @@ export function levellingRate(monthShares: number[]): number {
  * shares from monthly_forecast.json, and become real; without a full year
  * they keep their placeholder values and status.
  */
-export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null, lang: 'en' | 'ja' = 'en'): StrategicQuestion[] {
+export function withMeasuredShares(questions: StrategicQuestion[], file: MonthlyForecastFile | null, lang: 'en' | 'ja' | 'ar' = 'en'): StrategicQuestion[] {
   if (!file) return questions
   return questions.map((q) => ({
     ...q,
@@ -79,6 +80,7 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
       // The model keeps the last 12 months' pattern and changes only the level, so
       // its rate matches those months (not necessarily the calendar year above).
       const ja = lang === 'ja'
+      const ar = lang === 'ar'
       const same = fcRate !== null && recentRate !== null && Math.abs(fcRate - recentRate) < 0.05
       const fcNote =
         fcRate === null
@@ -87,23 +89,32 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
             ? same
               ? `今後12か月の予測は${fcRate.toFixed(1)}%で、直近の実績12か月（${last[0].month}〜${last[11].month}）と同じ。モデルは月別のパターンを保ち、水準のみを変えるため。`
               : `今後12か月の予測は${fcRate.toFixed(1)}%。`
-            : same
-              ? ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%, the same as the last 12 measured months (${last[0].month} to ${last[11].month}): the model keeps their monthly pattern and changes only the level.`
-              : ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%.`
+            : ar
+              ? same
+                ? ` توقع الأشهر القادمة (12 شهراً) يعطي ${fcRate.toFixed(1)}%، وهو نفس آخر 12 شهراً مقيسة (${last[0].month} إلى ${last[11].month}): النموذج يحافظ على نمطها الشهري ويغيّر المستوى فقط.`
+                : ` توقع الأشهر القادمة (12 شهراً) يعطي ${fcRate.toFixed(1)}%.`
+              : same
+                ? ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%, the same as the last 12 measured months (${last[0].month} to ${last[11].month}): the model keeps their monthly pattern and changes only the level.`
+                : ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%.`
       return {
         ...c,
         values: exact.map((v) => Math.round(v * 10) / 10),
         status: 'real' as const,
         // "actual" only once the measured shares are in: the file's own title stays neutral,
         // so a failed load never reads "actual" over the simulated placeholder.
-        title: `${c.title} (${c.year}, actual)`,
+        // (Arabic is built here, as the localize step after this looks strings up by their English text.)
+        title: ar ? `${arText(c.title) ?? c.title} (${c.year}، فعلي)` : `${c.title} (${c.year}, actual)`,
         kpi: c.kpi && { ...c.kpi, value_text: `${rate.toFixed(1)}%`, status: 'real' as const },
         note: ja
           ? `${c.year}年の${s.label_ja}の来訪者数に占める各月の割合。最も少ない連続3か月を強調。${fcNote}`
-          : `Monthly share of ${s.label} visitors in ${c.year}; quietest 3 consecutive months highlighted.${fcNote}`,
+          : ar
+            ? `حصة كل شهر من زوار ${arText(s.label) ?? s.label} في ${c.year}؛ مع إبراز أهدأ 3 أشهر متتالية.${fcNote}`
+            : `Monthly share of ${s.label} visitors in ${c.year}; quietest 3 consecutive months highlighted.${fcNote}`,
         source: ja
           ? '日本観光振興協会 デジタル観光統計（dhde-preprocessing-model の monthly_actuals.csv 経由）。'
-          : 'JTTA digital tourism statistics (日本観光振興協会 デジタル観光統計), via dhde-preprocessing-model monthly_actuals.csv.',
+          : ar
+            ? 'إحصاءات السياحة الرقمية من JTTA، عبر monthly_actuals.csv في dhde-preprocessing-model.'
+            : 'JTTA digital tourism statistics (日本観光振興協会 デジタル観光統計), via dhde-preprocessing-model monthly_actuals.csv.',
         todo: undefined,
       }
     }),

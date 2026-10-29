@@ -7,7 +7,7 @@ import { LOOP_LABEL, PRIORITY, priorityOf } from '../../../lib/nudges'
 import { routeById, reversePath } from '../../../lib/routes'
 import { escapeHtml } from '../../../lib/live'
 import { iconSvg } from '../../../lib/icons'
-import { useLang } from '../../../lib/i18n'
+import { pick, useLang } from '../../../lib/i18n'
 
 const ROUTE_COLOUR = '#3fd8c4'
 
@@ -43,14 +43,14 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
               <Polyline positions={path} pathOptions={{ color: '#0a1120', weight: 8, opacity: 0.55, lineCap: 'round' }} interactive={false} />
               <Polyline positions={path} pathOptions={{ color: ROUTE_COLOUR, weight: 4, opacity: 0.95, dashArray: '10 8', lineCap: 'round' }}>
                 <Tooltip sticky className="map-tip">
-                  <strong>{t(n.route_label_en ?? '', n.route_label_ja)}</strong>
-                  <div className="tip-row">{t(n.action_en, n.action_ja)}</div>
+                  <strong>{t(n.route_label_en ?? '', n.route_label_ja, n.route_label_ar)}</strong>
+                  <div className="tip-row">{t(n.action_en, n.action_ja, n.action_ar)}</div>
                 </Tooltip>
               </Polyline>
               <Marker
                 position={mid}
                 interactive={false}
-                icon={L.divIcon({ className: 'map-divicon', html: `<div class="route-flag nudge-route">${escapeHtml(lang === 'ja' ? (n.route_label_ja ?? '') : (n.route_label_en ?? ''))}</div>`, iconSize: [0, 0] })}
+                icon={L.divIcon({ className: 'map-divicon', html: `<div class="route-flag nudge-route">${escapeHtml(pick(lang, n.route_label_en ?? '', n.route_label_ja, n.route_label_ar))}</div>`, iconSize: [0, 0] })}
               />
             </Fragment>
           )
@@ -71,10 +71,10 @@ export function NudgeLayer({ nudges, routes, day, activeId, onPick }: { nudges: 
                 <div key={n.id} className="tt-nudge">
                   <div className="tt-nudge-h">
                     <i style={{ background: PRIORITY[priorityOf(n.sev)].colour }}></i>
-                    {t(PRIORITY[priorityOf(n.sev)].en, PRIORITY[priorityOf(n.sev)].ja)} · {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja)}
+                    {t(PRIORITY[priorityOf(n.sev)].en, PRIORITY[priorityOf(n.sev)].ja, PRIORITY[priorityOf(n.sev)].ar)} · {t(LOOP_LABEL[n.loop].en, LOOP_LABEL[n.loop].ja, LOOP_LABEL[n.loop].ar)}
                   </div>
-                  <div className="tt-nudge-t">{t(n.title_en, n.title_ja)}</div>
-                  <div className="tip-row">{t(n.action_en, n.action_ja)}</div>
+                  <div className="tt-nudge-t">{t(n.title_en, n.title_ja, n.title_ar)}</div>
+                  <div className="tip-row">{t(n.action_en, n.action_ja, n.action_ar)}</div>
                 </div>
               ))}
             </Tooltip>

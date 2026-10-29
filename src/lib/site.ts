@@ -143,3 +143,47 @@ export function siteDays(id: string, rn: RealNode, live: LiveData | null, today:
   }
   return rows
 }
+
+/* ---------------- Arabic for the calibration text ---------------- */
+
+const METHOD_WHAT_AR: Record<string, string> = {
+  'guests at the hotels in the feed': 'نزلاء الفنادق في بيانات الحجز',
+  'survey proxy': 'مؤشر الاستبيان',
+  'museum bookings': 'حجوزات المتحف',
+  'cars at the summit car parks': 'السيارات في مواقف القمة',
+  'camera detections': 'رصد الكاميرا',
+  'vehicle counts': 'عدد المركبات',
+  'hotel guests': 'نزلاء الفنادق',
+  'nearest-camera proxy': 'مؤشر أقرب كاميرا',
+}
+const METHOD_UNIT_AR: Record<string, string> = {
+  guest: 'نزيل',
+  response: 'إجابة',
+  booking: 'حجز',
+  car: 'سيارة',
+  vehicle: 'مركبة',
+  detection: 'رصدة',
+  detections: 'رصدات',
+}
+
+/** "FY2025" → "السنة المالية 2025"; "2025" stays. */
+export const periodAr = (label: string | null | undefined): string =>
+  !label ? '2025' : label.replace(/^FY\s?(\d{4})$/, 'السنة المالية $1')
+
+/**
+ * The pipeline's calibration line in Arabic, e.g. "museum bookings x 1.76 visitors per
+ * booking (official 1,298,975, FY2025)". Undefined when the text has another shape.
+ */
+export function methodTextAr(en: string | null | undefined): string | undefined {
+  if (!en) return undefined
+  const m = /^(.+?) (x|\/) ([\d.,]+) (\w+) per (\w+) \(official ([\d,]+), ([^)]+)\)$/.exec(en.trim())
+  if (!m) return undefined
+  const [, what, op, f, a, b, official, period] = m
+  const whatAr = METHOD_WHAT_AR[what]
+  if (!whatAr) return undefined
+  const tail = `(الرقم الرسمي ${official}، ${periodAr(period)})`
+  // "x F visitors per <unit>" or "/ F <unit> per visitor"
+  if (op === 'x' && a === 'visitors' && METHOD_UNIT_AR[b]) return `${whatAr} × ${f} زائر لكل ${METHOD_UNIT_AR[b]} ${tail}`
+  if (op === '/' && b === 'visitor' && METHOD_UNIT_AR[a]) return `${whatAr} ÷ ${f} ${METHOD_UNIT_AR[a]} لكل زائر ${tail}`
+  return undefined
+}

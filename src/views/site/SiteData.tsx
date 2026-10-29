@@ -2,17 +2,22 @@ import type { ReactNode } from 'react'
 import type { ProductData } from '../../hooks/useProductData'
 import type { RealDaily, RealNode } from '../../types/real'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
+import { MON_AR } from '../../lib/arFormat'
 import { ORIGIN_LABELS, PURPOSE_LABELS } from '../../lib/real'
 import { econNodeFor } from '../../lib/economics'
+import { alertText } from '../../lib/jmaWarnings'
 
 const n0 = (v: number) => Math.round(v).toLocaleString('en-US')
 
-/** "10/25" for a block's as-of date. */
-const md = (iso: string | null | undefined) => (iso ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}` : '')
+/** "10/25" (or "25 أكتوبر" in Arabic) for a block's as-of date. */
+const mdOf = (iso: string | null | undefined, lang: Lang) =>
+  !iso ? '' : lang === 'ar' ? `${Number(iso.slice(8, 10))} ${MON_AR[Number(iso.slice(5, 7)) - 1]}` : `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`
 
-/** ¥3,670,221,775 → "36.7億円" / "¥3.7bn". */
-function yen(v: number, lang: 'en' | 'ja'): string {
+/** ¥3,670,221,775 → "36.7億円" / "¥3.7bn" / "3.7 مليار ¥". */
+function yen(v: number, lang: Lang): string {
   if (lang === 'ja') return v >= 1e8 ? `${(v / 1e8).toFixed(1)}億円` : `${n0(v / 1e4)}万円`
+  if (lang === 'ar') return v >= 1e9 ? `${(v / 1e9).toFixed(1)} مليار ¥` : `${(v / 1e6).toFixed(0)} مليون ¥`
   return v >= 1e9 ? `¥${(v / 1e9).toFixed(1)}bn` : `¥${(v / 1e6).toFixed(0)}M`
 }
 
@@ -99,6 +104,7 @@ interface Props {
  */
 export function SiteData({ data, id, rn }: Props) {
   const { t, lang } = useLang()
+  const md = (iso: string | null | undefined) => mdOf(iso, lang)
   const live = data.merged?.live
   const social = data.merged?.market?.social[id]
   const reg = data.registry.data?.nodes.find((n) => n.id === id)
@@ -113,11 +119,11 @@ export function SiteData({ data, id, rn }: Props) {
     const month = lastDays(rn.daily, tLast.date, 30)
     const read = month.filter((r) => r.traffic_volume && r.date < today)
     blocks.push(
-      <Block key="traffic" title={t('Road traffic', '道路交通量')} src={t(`road counter · to ${md(tLast.date)}`, `道路の計測器 · ${md(tLast.date)}まで`)}>
+      <Block key="traffic" title={t('Road traffic', '道路交通量')} src={t(`road counter · to ${md(tLast.date)}`, `道路の計測器 · ${md(tLast.date)}まで`, `عدّاد الطريق · حتى ${md(tLast.date)}`)}>
         <Kv
           items={[
-            [n0(tLast.traffic_volume), t(`vehicles on ${md(tLast.date)}`, `${md(tLast.date)}の台数`)],
-            [n0(sumK(read, 'traffic_volume') / read.length), t(`daily mean, ${read.length} days`, `1日平均（${read.length}日分）`)],
+            [n0(tLast.traffic_volume), t(`vehicles on ${md(tLast.date)}`, `${md(tLast.date)}の台数`, `مركبة في ${md(tLast.date)}`)],
+            [n0(sumK(read, 'traffic_volume') / read.length), t(`daily mean, ${read.length} days`, `1日平均（${read.length}日分）`, `المتوسط اليومي، ${read.length} يومًا`)],
           ]}
         />
         <Spark values={month.map((r) => (r.traffic_volume && r.date < today ? r.traffic_volume : null))} />
@@ -131,7 +137,7 @@ export function SiteData({ data, id, rn }: Props) {
     const on = live.weather_alerts.filter((a) => a.nodes.includes(id) && a.start <= now && now < a.end)
     blocks.push(
       <Block key="warn" title={t('Weather warnings', '警報・注意報')} src={t('JMA · live', '気象庁 · 最新')}>
-        <div className="sd-text">{on.length ? on.map((a) => t(a.title_en, a.title_ja)).join(t(', ', '、')) : t('None in force', '発表なし')}</div>
+        <div className="sd-text">{on.length ? on.map((a) => alertText(a, lang).title).join(t(', ', '、')) : t('None in force', '発表なし')}</div>
       </Block>,
     )
   }
@@ -141,7 +147,7 @@ export function SiteData({ data, id, rn }: Props) {
     const s = rk.share_with_rooms_pct
     const pct = (v: number | null) => (v === null ? '—' : `${Math.round(v)}%`)
     blocks.push(
-      <Block key="rakuten" title={t('Hotels with rooms left', '空室のある宿')} src={t(`Rakuten, within 3 km · ${md(rk.as_of)}`, `楽天 · 3km以内 · ${md(rk.as_of)}`)}>
+      <Block key="rakuten" title={t('Hotels with rooms left', '空室のある宿')} src={t(`Rakuten, within 3 km · ${md(rk.as_of)}`, `楽天 · 3km以内 · ${md(rk.as_of)}`, `راكوتن، ضمن 3 كم · ${md(rk.as_of)}`)}>
         <Kv items={[[pct(s.d1), t('tomorrow', '明日')], [pct(s.d7), t('in 7 days', '7日後')], [pct(s.d30), t('in 30 days', '30日後')]]} />
       </Block>,
     )
@@ -152,7 +158,7 @@ export function SiteData({ data, id, rn }: Props) {
   if (week.length) {
     const month = lastDays(rn.daily, gAsOf, 30)
     blocks.push(
-      <Block key="gmb" title={t('Google Maps', 'Googleマップ')} src={t(`last 7 days · to ${md(gAsOf)}`, `直近7日 · ${md(gAsOf)}まで`)}>
+      <Block key="gmb" title={t('Google Maps', 'Googleマップ')} src={t(`last 7 days · to ${md(gAsOf)}`, `直近7日 · ${md(gAsOf)}まで`, `آخر 7 أيام · حتى ${md(gAsOf)}`)}>
         <Kv
           items={[
             [n0(sumK(week, 'gmb_map_views')), t('map views', '表示')],
@@ -191,7 +197,7 @@ export function SiteData({ data, id, rn }: Props) {
         .slice(0, n)
         .map(([k, v]) => ({ label: label(m, k), pct: v }))
     blocks.push(
-      <Block key="survey" title={t('Visitor survey', 'アンケート')} src={t(`FTAS · last 30 days, ${sv.responses} answers`, `FTAS · 直近30日 ${sv.responses}件`)}>
+      <Block key="survey" title={t('Visitor survey', 'アンケート')} src={t(`FTAS · last 30 days, ${sv.responses} answers`, `FTAS · 直近30日 ${sv.responses}件`, `FTAS · آخر 30 يومًا، ${sv.responses} إجابة`)}>
         <Kv items={[[sv.satisfaction.toFixed(2), t('satisfaction /5', '満足度 /5')], ...(sv.nps === null ? [] : ([[`${sv.nps > 0 ? '+' : ''}${Math.round(sv.nps)}`, 'NPS']] as [string, string][]))]} />
         <div className="sd-cols">
           <Shares title={t('Home region', '居住地')} rows={top(sv.origin_pct, ORIGIN_LABELS, 6)} />
@@ -217,7 +223,7 @@ export function SiteData({ data, id, rn }: Props) {
       <Block
         key="social"
         title={t('Social media', 'SNS')}
-        src={t(`Instagram, YouTube, Bluesky, Reddit · week to ${md(asOf)}`, `Instagram・YouTube・Bluesky・Reddit · ${md(asOf)}までの1週間`)}
+        src={t(`Instagram, YouTube, Bluesky, Reddit · week to ${md(asOf)}`, `Instagram・YouTube・Bluesky・Reddit · ${md(asOf)}までの1週間`, `Instagram وYouTube وBluesky وReddit · أسبوع حتى ${md(asOf)}`)}
         tip={t('Sentiment is scored by a language model not yet checked against hand labels: read it as a trend.', '感情は手作業の判定との照合前の言語モデルによる判定。傾向として見てください。')}
       >
         <Kv items={items} />

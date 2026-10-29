@@ -6,7 +6,7 @@ import { BusStopSchedule, StationSchedule } from './Schedules'
 import { MODE_COLOUR, MODE_LABEL, RAIL_LINE_COLOUR } from '../../../lib/transport'
 import { useLang } from '../../../lib/i18n'
 import { Tip } from './Tip'
-import { placeEn, routeEn } from '../../../lib/transportNames'
+import { placeName, routeName } from '../../../lib/transportNames'
 import { busRouteUrl, busStopUrl, railLineUrl, stationUrl } from '../../../lib/googleMaps'
 import { useIsNarrow } from '../../../hooks/useIsNarrow'
 
@@ -64,14 +64,14 @@ export function TransportLayer({
   const gmaps = (url: string | null) =>
     url && (
       <a className="tip-gmaps" href={url} target="_blank" rel="noopener noreferrer">
-        {tr('Open in Google Maps ↗', 'Google マップで開く ↗')}
+        {tr('Open in Google Maps ↗', 'Google マップで開く ↗', 'افتح في خرائط Google ↖')}
       </a>
     )
-  // In English: the English name, with the Japanese under it (what's on the signs).
-  const named = (en: string, ja: string) => (
+  // In English and Arabic: the name in that language, with the Japanese under it (what's on the signs).
+  const named = (name: string, ja: string) => (
     <>
-      <strong>{lang === 'ja' ? ja : en}</strong>
-      {lang !== 'ja' && en !== ja && <div className="tip-ja">{ja}</div>}
+      <strong>{name}</strong>
+      {lang !== 'ja' && name !== ja && <div className="tip-ja">{ja}</div>}
     </>
   )
   const zoom = useZoom()
@@ -110,7 +110,7 @@ export function TransportLayer({
           <Polyline key={l.id} positions={l.paths} pathOptions={{ ...RAIL_STYLE[l.kind], opacity: 0.95 }} eventHandlers={openOnClick(railLineUrl(stationsOf(l.id)))}>
             <Tip sticky above lingers>
               <strong>{tr(l.name, l.name_ja)}</strong>
-              <div className="tip-sub">{l.kind === 'shinkansen' ? 'Shinkansen' : tr(...MODE_LABEL.rail)}</div>
+              <div className="tip-sub">{l.kind === 'shinkansen' ? tr('Shinkansen', 'Shinkansen', 'شينكانسن') : tr(...MODE_LABEL.rail)}</div>
               {gmaps(railLineUrl(stationsOf(l.id)))}
             </Tip>
           </Polyline>
@@ -122,7 +122,7 @@ export function TransportLayer({
             <Polyline key={l.id} positions={l.path} eventHandlers={openOnClick(busRouteUrl(l.path))}
               pathOptions={{ color: l.mode === 'rail' ? (l.colour ?? MODE_COLOUR.rail) : MODE_COLOUR.bus, weight: l.mode === 'rail' ? 2.5 : 1.5, opacity: 0.85 }}>
               <Tip sticky above lingers>
-                {named(routeEn(l.name), l.name)}
+                {named(routeName(lang, l.name), l.name)}
                 <div className="tip-sub">{tr(...MODE_LABEL[l.mode])}</div>
                 {gmaps(busRouteUrl(l.path))}
               </Tip>
@@ -138,7 +138,7 @@ export function TransportLayer({
                 pathOptions={{ color: '#0a1120', weight: 0.6, fillColor: '#ffffff', fillOpacity: 1 }} />
               <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE} eventHandlers={openOnClick(busStopUrl(s.name, s.lat, s.lon))}>
                 <Tip above lingers>
-                  {named(placeEn(s.name), s.name)}
+                  {named(placeName(lang, s.name), s.name)}
                   <div className="tip-sub">{tr('Bus stop', 'バス停')}</div>
                   <BusStopSchedule trips={trips} stopId={s.id} />
                   {gmaps(busStopUrl(s.name, s.lat, s.lon))}
@@ -156,7 +156,7 @@ export function TransportLayer({
               pathOptions={{ color: RAIL_LINE_COLOUR, weight: 1, fillColor: '#ffffff', fillOpacity: 1 }} />
             <CircleMarker center={[s.lat, s.lon]} radius={HIT_R} pathOptions={HIT_STYLE} eventHandlers={openOnClick(stationUrl(s.name_ja, s.lat, s.lon))}>
               <Tip above lingers>
-                {named(placeEn(s.name_ja), s.name_ja)}
+                {named(placeName(lang, s.name_ja), s.name_ja)}
                 <div className="tip-sub">{s.lines.map((id) => railName[id]).join(' · ')}</div>
                 <StationSchedule runs={runs} stationId={s.id} />
                 {gmaps(stationUrl(s.name_ja, s.lat, s.lon))}

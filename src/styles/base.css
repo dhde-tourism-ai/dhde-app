@@ -27,6 +27,21 @@ html[lang='ja'] body {
   font-family: var(--font-ja);
 }
 
+html[lang='ar'] body {
+  font-family: var(--font-ar);
+}
+
+/* Headings and labels set in the display/body fonts: Latin first, then the Arabic face (not the system fallback). */
+html[lang='ar'] {
+  --font-display: 'Bricolage Grotesque', 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Charts keep their left-to-right axes in Arabic; flipping them overlaps the axis labels with the bars. */
+html[dir='rtl'] .recharts-wrapper {
+  direction: ltr;
+}
+
 a {
   color: var(--accent-strong);
 }
@@ -62,7 +77,7 @@ table th {
   color: var(--muted);
   font-family: var(--font-ja);
   font-weight: 400;
-  margin-left: 0.4em;
+  margin-inline-start: 0.4em;
   font-size: 0.9em;
 }
 
@@ -134,7 +149,7 @@ table th {
   font-weight: 500;
   font-size: 14px;
   color: var(--text-2);
-  margin-left: 0.6em;
+  margin-inline-start: 0.6em;
 }
 
 .tabs {
@@ -144,7 +159,7 @@ table th {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  margin-left: var(--sp-4);
+  margin-inline-start: var(--sp-4);
 }
 
 .tab {
@@ -177,7 +192,7 @@ table th {
 }
 
 .appbar-right {
-  margin-left: auto;
+  margin-inline-start: auto;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -387,7 +402,7 @@ table th {
   content: '';
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -403,6 +418,10 @@ table th {
 .switch input:checked + .switch-track::after {
   transform: translateX(14px);
   background: var(--accent-ink);
+}
+
+html[dir='rtl'] .switch input:checked + .switch-track::after {
+  transform: translateX(-14px);
 }
 
 .switch input:focus-visible + .switch-track {
@@ -703,7 +722,7 @@ table th {
   }
 
   .tabs {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
 
   .tab {
@@ -715,7 +734,7 @@ table th {
   }
 
   .appbar-right {
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   .fresh-chip {
@@ -807,13 +826,14 @@ table th {
 .itin {
   list-style: none;
   margin: 6px 0 2px;
-  padding: 0 0 0 10px;
-  border-left: 2px solid var(--line-strong);
+  padding: 0;
+  padding-inline-start: 10px;
+  border-inline-start: 2px solid var(--line-strong);
   display: grid;
   gap: 4px;
   font-size: 12px;
   color: var(--text-2);
-  text-align: left;
+  text-align: start;
 }
 
 .itin li {
@@ -861,4 +881,23 @@ details.itin-more summary::before {
 
 details.itin-more[open] summary::before {
   content: '▾ ';
+}
+
+html[dir='rtl'] details.itin-more:not([open]) summary::before {
+  content: '◂ ';
+}
+
+/* Arabic has no italic: a slanted face reads as broken. */
+html[lang='ar'] .itin-walk {
+  font-style: normal;
+}
+
+/* Letter spacing pulls Arabic letters apart (أغسطس became أ غسطس); Arabic has no capitals to space. */
+html[lang='ar'] * {
+  letter-spacing: 0 !important;
+}
+
+/* The mono font has no Arabic letters, so mixed text like "٢٤ أغسطس" fell back letter by letter. */
+html[lang='ar'] {
+  --font-mono: var(--font-ar);
 }

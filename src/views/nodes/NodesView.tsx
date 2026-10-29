@@ -49,7 +49,7 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
             stale={activeLive?.stale}
             label={t('Data as of', 'データ時点')}
           />
-          {measure && <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>}
+          {measure && <span className={`measure-tag ${isEstimatedMeasure(measure, activeLive) ? 'est' : ''}`}>{t(MEASURE_LABEL[measure])}</span>}
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export default function NodesView({ data: product, selected, onSelect }: Props) 
             </h2>
             <p className="page-sub">
               {t('No published data for this node yet. Its visitor estimate', 'このノードのデータはまだ公開されていません。来訪者推定')}
-              {measure ? ` (${MEASURE_LABEL[measure].toLowerCase()})` : ''}{' '}
+              {measure ? ` (${t(MEASURE_LABEL[measure]).toLowerCase()})` : ''}{' '}
               {t('is being added to the data pipeline and will appear here once it is published.', 'はデータパイプラインに追加中で、公開され次第ここに表示されます。')}
             </p>
             <a className="btn" href={`#/map/${selectedNode}`}>

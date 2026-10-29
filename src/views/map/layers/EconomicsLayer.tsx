@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Circle, CircleMarker, Polyline, Tooltip, useMapEvents } from 'react-leaflet'
 import type { EconomicsFigures, Metric, RegionalEconomics } from '../../../types/economics'
-import { fmtMetric } from '../../../lib/format'
-import { fmtLost, resolvePoint, sameNode } from '../../../lib/economics'
+import { arOr, arrow, lost, metric } from '../mapText'
+import { resolvePoint, sameNode } from '../../../lib/economics'
 import type { MapNode } from '../../../lib/nodes'
 import { StatusPill } from '../../../components/StatusPill'
 import { KddiPending } from '../../../components/KddiPending'
@@ -17,11 +17,12 @@ const STATUS_STROKE: Record<Metric['status'], string> = {
 }
 
 function MetricKV({ label, m, kind }: { label: string; m: Metric; kind?: 'yen' | 'count' }) {
+  const { lang } = useLang()
   return (
     <>
       <span className="tt-k">{label}</span>
       <span className="tt-v">
-        <b className="num">{fmtMetric(m, kind)}</b>
+        <b className="num">{metric(m, lang, kind)}</b>
         <StatusPill status={m.status} />
       </span>
     </>
@@ -29,17 +30,17 @@ function MetricKV({ label, m, kind }: { label: string; m: Metric; kind?: 'yen' |
 }
 
 function FiguresTooltip({ title, titleJa, f, note }: { title: string; titleJa: string; f: EconomicsFigures; note?: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const o = f.opportunity_lost_yen
   return (
     <div className="econ-tip">
       <div className="tt-head">
         <span>
-          {title} <span className="ja-sub">{titleJa}</span>
+          {lang === 'ar' ? arOr(title) : title} {lang !== 'ar' && <span className="ja-sub">{titleJa}</span>}
         </span>
       </div>
       <div className="tt-hero">
-        <b className="num">{fmtMetric(f.revenue_yen, 'yen')}</b>
+        <b className="num">{metric(f.revenue_yen, lang, 'yen')}</b>
         <span>{t('tourism revenue', '観光収入')}</span>
       </div>
       <div className="tt-grid">
@@ -47,13 +48,13 @@ function FiguresTooltip({ title, titleJa, f, note }: { title: string; titleJa: s
         <MetricKV label={t('Revenue', '観光収入')} m={f.revenue_yen} kind="yen" />
         <span className="tt-k">{t('Opportunity lost', '機会損失')}</span>
         <span className="tt-v">
-          <b className="num">{fmtLost(f)}</b>
+          <b className="num">{lost(f, lang)}</b>
         </span>
         <MetricKV label={t('· overnight gap', '・宿泊ギャップ')} m={o.overnight_gap} kind="yen" />
         <MetricKV label={t('· weather', '・天候')} m={o.weather} kind="yen" />
         <MetricKV label={t('· idle rooms', '・空室')} m={o.idle_rooms} kind="yen" />
       </div>
-      {note && <div className="tip-sub">{note}</div>}
+      {note && <div className="tip-sub">{lang === 'ar' ? arOr(note) : note}</div>}
     </div>
   )
 }
@@ -64,7 +65,7 @@ function FiguresTooltip({ title, titleJa, f, note }: { title: string; titleJa: s
  * and labelled "[pending]"; nothing is sized from a missing number.
  */
 export function EconomicsLayer({ economics, nodes, selectedId }: { economics: RegionalEconomics; nodes: MapNode[]; selectedId?: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   // Annotations are permanent when zoomed in (or for the selected node); at
   // prefecture zoom the close northern nodes would overlap, so they show on hover.
   const [zoom, setZoom] = useState<number | null>(null)
@@ -92,7 +93,7 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
             }}
           >
             <Tip sticky>
-              <FiguresTooltip title={r.name} titleJa={r.name_ja} f={r} note={economics.visitor_window?.regions ? `Visitors: JTA, ${economics.visitor_window.regions}` : undefined} />
+              <FiguresTooltip title={r.name} titleJa={r.name_ja} f={r} note={economics.visitor_window?.regions ? (lang === 'ar' ? `الزوار: وكالة السياحة اليابانية (JTA)، ${economics.visitor_window.regions.replace(' to ', ' إلى ')}` : `Visitors: JTA, ${economics.visitor_window.regions}`) : undefined} />
             </Tip>
           </Circle>
         )
@@ -117,7 +118,7 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
             <Tip sticky>
               <div className="tt-head">
                 <span>
-                  {a.name} → {b.name}
+                  {lang === 'ar' ? `${arOr(a.name)} ${arrow(lang)} ${arOr(b.name)}` : `${a.name} → ${b.name}`}
                 </span>
                 <StatusPill status={f.status} />
               </div>
@@ -128,11 +129,11 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
                 </div>
               ) : (
                 <div className="tt-hero">
-                  <b className="num">{fmtMetric(f.visitors)}</b>
+                  <b className="num">{metric(f.visitors, lang)}</b>
                   <span>{t('visitors on this flow', 'この経路の来訪者')}</span>
                 </div>
               )}
-              <div className="tip-sub">{f.note}</div>
+              <div className="tip-sub">{lang === 'ar' ? arOr(f.note) : f.note}</div>
             </Tip>
           </Polyline>
         )
@@ -152,7 +153,9 @@ export function EconomicsLayer({ economics, nodes, selectedId }: { economics: Re
             >
               {permanent ? (
                 <Tooltip permanent direction="bottom" offset={[0, 12]} className="econ-note map-tip">
-                  {n.name}: {fmtMetric(n.visitors)} visitors · {fmtMetric(n.revenue_yen, 'yen')} · lost {fmtLost(n)}
+                  {lang === 'ar'
+                    ? `${arOr(n.name)}: ${metric(n.visitors, lang)} زائر · ${metric(n.revenue_yen, lang, 'yen')} · خسارة ${lost(n, lang)}`
+                    : `${n.name}: ${metric(n.visitors, lang)} visitors · ${metric(n.revenue_yen, lang, 'yen')} · lost ${lost(n, lang)}`}
                 </Tooltip>
               ) : (
                 <Tip>

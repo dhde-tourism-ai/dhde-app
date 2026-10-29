@@ -1,6 +1,9 @@
 import type { DashboardData, NodeKey } from '../../types/dashboard'
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
+import { MON_AR } from '../../lib/arFormat'
+import { jmaWeatherAr } from '../../lib/format'
 import { Icon } from '../../components/icons'
 
 function fmtNum(n: number | null | undefined): string {
@@ -8,18 +11,20 @@ function fmtNum(n: number | null | undefined): string {
   return Math.round(n).toLocaleString('en-US')
 }
 
-function fmtShortDate(dateStr: unknown): string {
+/** "05 Oct" (English and Japanese pages), "5 أكتوبر" (Arabic). */
+function fmtShortDate(dateStr: unknown, lang: Lang = 'en'): string {
   if (!dateStr || typeof dateStr !== 'string') return String(dateStr ?? '')
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
+  if (lang === 'ar') return `${d.getDate()} ${MON_AR[d.getMonth()]}`
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
 }
 
-const BADGE: Record<string, { en: string; ja: string; tone: 'good' | 'warn' | 'serious' | 'crit' }> = {
-  HOT: { en: 'Superb', ja: '絶好調', tone: 'good' },
-  OK: { en: 'Strong', ja: '好調', tone: 'good' },
-  WARN: { en: 'Warning', ja: '注意', tone: 'warn' },
-  CRIT: { en: 'Critical', ja: '要警戒', tone: 'crit' },
+const BADGE: Record<string, { en: string; ja: string; ar: string; tone: 'good' | 'warn' | 'serious' | 'crit' }> = {
+  HOT: { en: 'Superb', ja: '絶好調', ar: 'ممتاز', tone: 'good' },
+  OK: { en: 'Strong', ja: '好調', ar: 'جيد', tone: 'good' },
+  WARN: { en: 'Warning', ja: '注意', ar: 'تحذير', tone: 'warn' },
+  CRIT: { en: 'Critical', ja: '要警戒', ar: 'حرج', tone: 'crit' },
 }
 
 function accuracyBadge(pct: number): 'OK' | 'WARN' | 'CRIT' {
@@ -30,11 +35,11 @@ function accuracyBadge(pct: number): 'OK' | 'WARN' | 'CRIT' {
 
 function Badge({ code, text }: { code: string; text?: string }) {
   const { t } = useLang()
-  const b = BADGE[code] ?? { en: code, ja: code, tone: 'warn' as const }
+  const b = BADGE[code] ?? { en: code, ja: code, ar: code, tone: 'warn' as const }
   return (
     <span className={`tone-badge tone-${b.tone}`}>
       <span className="sw" aria-hidden="true"></span>
-      {text ?? t(b.en, b.ja)}
+      {text ?? t(b.en, b.ja, b.ar)}
     </span>
   )
 }
@@ -52,7 +57,11 @@ const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', b
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function NodeDashboard({ data, selectedNode }: { data: DashboardData; selectedNode: NodeKey | 'all' }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const ar = lang === 'ar'
+  const day = (v: unknown) => fmtShortDate(v, lang)
+  // JMA forecast text is Japanese: shown as is on the English and Japanese pages, in Arabic words on the Arabic page.
+  const wx = (w: string | undefined) => (w ? (ar ? jmaWeatherAr(w) : w) : '—')
   const nodes = data.nodes || {}
   const activeNodeKey = selectedNode !== 'all' ? (selectedNode as NodeKey) : undefined
   const activeNodeData = activeNodeKey ? nodes[activeNodeKey] : undefined
@@ -79,17 +88,17 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
       <section className="nd-section">
         <div className="nd-head">
           <h2 className="nd-title">
-            {activeNodeData ? `${activeNodeData.label}` : t('All nodes overview', '全ノード概要')}
+            {activeNodeData ? t(activeNodeData.label) : t('All nodes overview', '全ノード概要')}
             <span className="nd-title-sub">{t('Executive summary', '概要')}</span>
           </h2>
-          {activeNodeData && <p className="nd-desc">{activeNodeData.description}</p>}
+          {activeNodeData && <p className="nd-desc">{t(activeNodeData.description)}</p>}
         </div>
 
         {selectedNode === 'all' && data.aggregate && (
           <div className="tile-grid two">
             <div className="tile tile-lead">
               <div className="tile-label">{t('Annual opportunity gap (¥)', '年間の機会損失（円）')}</div>
-              <div className="tile-value">¥{fmtNum(data.aggregate.opportunity_gap_yen)}</div>
+              <div className="tile-value">{ar ? `${fmtNum(data.aggregate.opportunity_gap_yen)} ¥` : `¥${fmtNum(data.aggregate.opportunity_gap_yen)}`}</div>
               <div className="tile-foot">{t('Weather-induced demand deficit', '天候による需要不足')}</div>
             </div>
             <div className="tile">
@@ -141,9 +150,9 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           ) : (
             weatherStrip.map((d: any, i: number) => (
               <div key={i} role="listitem" className={`wx-day ${d.rain_risk ? 'risk' : ''}`}>
-                <div className="wx-date">{fmtShortDate(d.date)}</div>
-                <div className="wx-desc" lang="ja">
-                  {d.weather || '—'}
+                <div className="wx-date">{day(d.date)}</div>
+                <div className="wx-desc" lang={ar ? undefined : 'ja'}>
+                  {wx(d.weather)}
                 </div>
                 <div className="wx-pop num">
                   {d.rain_risk && <Icon name="umbrella" size={12} />}
@@ -166,7 +175,7 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           </div>
           {modelAccuracy && modelAccuracy.mae_pct_of_mean !== null && (
             <span title={t('Mean absolute error from walk-forward backtesting (expanding-window refits), as a % of the average daily count: out-of-sample accuracy, not an in-sample fit.', 'ウォークフォワード検証の平均絶対誤差（日平均に対する%）。')}>
-              <Badge code={accuracyBadge(modelAccuracy.mae_pct_of_mean)} text={`${t('Model accuracy', 'モデル精度')} ±${modelAccuracy.mae_pct_of_mean.toFixed(0)}% MAE`} />
+              <Badge code={accuracyBadge(modelAccuracy.mae_pct_of_mean)} text={`${t('Model accuracy', 'モデル精度')} ±${modelAccuracy.mae_pct_of_mean.toFixed(0)}% ${ar ? '(متوسط الخطأ المطلق)' : 'MAE'}`} />
             </span>
           )}
         </div>
@@ -190,9 +199,9 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="#1f2a3f" vertical={false} />
-              <XAxis dataKey="date" tick={AXIS} tickFormatter={fmtShortDate} tickLine={false} axisLine={{ stroke: '#34425e' }} minTickGap={24} />
+              <XAxis dataKey="date" tick={AXIS} tickFormatter={day} tickLine={false} axisLine={{ stroke: '#34425e' }} minTickGap={24} />
               <YAxis tick={AXIS} tickFormatter={(val: number) => Number(val).toLocaleString('en-US')} tickLine={false} axisLine={false} width={56} />
-              <Tooltip contentStyle={TIP} formatter={(val: unknown, name: unknown) => [Number(val).toLocaleString('en-US'), String(name)]} labelFormatter={fmtShortDate} />
+              <Tooltip contentStyle={TIP} formatter={(val: unknown, name: unknown) => [Number(val).toLocaleString('en-US'), String(name)]} labelFormatter={day} />
               <Area type="monotone" dataKey="actual" name={t('Actual visitors', '実績来訪者数')} stroke={S1} strokeWidth={2} fill="url(#ndActual)" isAnimationActive={false} />
               <Line type="monotone" dataKey="forecast" name={t('Model forecast', 'モデル予測')} stroke={S2} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
             </ComposedChart>
@@ -219,9 +228,9 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           <div className="outlook-row">
             {estimatedOutlook.map((d: any, i: number) => (
               <div key={i} className="outlook-day">
-                <div className="wx-date">{fmtShortDate(d.date)}</div>
-                <div className="wx-desc" lang="ja">
-                  {d.weather || '—'}
+                <div className="wx-date">{day(d.date)}</div>
+                <div className="wx-desc" lang={ar ? undefined : 'ja'}>
+                  {wx(d.weather)}
                 </div>
                 <div className="outlook-value">{fmtNum(d.estimated_demand)}</div>
                 <span className="asof-flag est">{t('Estimated', '推定')}</span>
@@ -262,7 +271,7 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
                     .reverse()
                     .map((r: any, i: number) => (
                       <tr key={i}>
-                        <td className="mono">{r.date}</td>
+                        <td className="mono">{ar ? day(r.date) : r.date}</td>
                         <td className="num">{fmtNum(r.actual)}</td>
                         <td className="num">{fmtNum(r.forecast)}</td>
                         <td className="num">{r.rate !== undefined ? `${(r.rate * 100).toFixed(0)}%` : '—'}</td>
@@ -288,9 +297,9 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
                 <li key={i} className={`nudge ${n.type}`}>
                   <div className="nudge-type">
                     <Icon name={n.type === 'weather' ? 'weather' : 'people'} size={13} />
-                    {n.type === 'weather' ? t('Weather risk', '天候リスク') : t('Demand signal', '需要シグナル')} · <span className="mono">{n.date}</span>
+                    {n.type === 'weather' ? t('Weather risk', '天候リスク') : t('Demand signal', '需要シグナル')} · <span className="mono">{ar ? day(n.date) : n.date}</span>
                   </div>
-                  <div>{n.message}</div>
+                  <div>{t(n.message)}</div>
                 </li>
               ))}
             </ul>

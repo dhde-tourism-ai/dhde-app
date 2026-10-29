@@ -69,5 +69,6 @@ export function fmtMinutes(min: number | null | undefined, lang: string): string
   const h = Math.floor(min / 60)
   const m = Math.round(min % 60)
   if (lang === 'ja') return h ? `${h}時間${m ? `${m}分` : ''}` : `${m}分`
+  if (lang === 'ar') return h ? `${h} س${m ? ` ${m} د` : ''}` : `${m} د`
   return h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`
 }

@@ -9,7 +9,9 @@ import type { LiveData } from '../types/live'
 import type { MarketVoiceData } from '../types/market'
 import type { RegistryNode } from '../types/nodes'
 import type { Sev } from './alerts'
-import { dailyArrivals, dayLabel, hourLabel } from './live'
+import { dailyArrivals, dayLabel, dowAr, hourLabel } from './live'
+import { alertText } from './jmaWarnings'
+import { pick } from './i18n'
 
 /**
  * public/data/hotel_thresholds.json (scripts/build_hotel_thresholds.py): loop #3's
@@ -50,31 +52,35 @@ export interface Nudge {
   end: number
   title_en: string
   title_ja: string
+  title_ar: string
   /** Which signals triggered it. */
   reason_en: string
   reason_ja: string
+  reason_ar: string
   action_en: string
   action_ja: string
+  action_ar: string
   focus: [number, number]
   /** Suggested route to draw (loop #2). */
   route?: RouteLeg[]
   route_label_en?: string
   route_label_ja?: string
+  route_label_ar?: string
 }
 
-export const LOOP_LABEL: Record<Nudge['loop'], { en: string; ja: string }> = {
-  1: { en: 'Demand alert', ja: '需要アラート' },
-  2: { en: 'Weather-route', ja: '天候・ルート' },
-  3: { en: 'Booking balance', ja: '予約バランス' },
+export const LOOP_LABEL: Record<Nudge['loop'], { en: string; ja: string; ar: string }> = {
+  1: { en: 'Demand alert', ja: '需要アラート', ar: 'تنبيه الطلب' },
+  2: { en: 'Weather-route', ja: '天候・ルート', ar: 'الطقس والمسار' },
+  3: { en: 'Booking balance', ja: '予約バランス', ar: 'توازن الحجوزات' },
 }
 
 export type Priority = 'high' | 'medium' | 'low'
 
 /** Three urgency levels for government users; the map flag takes the priority's colour. */
-export const PRIORITY: Record<Priority, { colour: string; en: string; ja: string; hint_en: string; hint_ja: string }> = {
-  high: { colour: '#d03b3b', en: 'High priority', ja: '優先度：高', hint_en: 'Act today: visitor safety or access is at risk (severe weather, route problem).', hint_ja: '本日対応：来訪者の安全や交通に影響（荒天・ルートの問題）。' },
-  medium: { colour: '#ec835a', en: 'Medium priority', ja: '優先度：中', hint_en: 'Plan ahead: demand well above normal or hotels close to full.', hint_ja: '事前に準備：需要が平常より大幅に多い、またはホテルが満室に近い。' },
-  low: { colour: '#3987e5', en: 'Low priority', ja: '優先度：低', hint_en: 'Opportunity: a quiet day or empty rooms worth promoting.', hint_ja: '機会：閑散日や空室をPRできる。' },
+export const PRIORITY: Record<Priority, { colour: string; en: string; ja: string; ar: string; hint_en: string; hint_ja: string; hint_ar: string }> = {
+  high: { colour: '#d03b3b', en: 'High priority', ja: '優先度：高', ar: 'أولوية عالية', hint_en: 'Act today: visitor safety or access is at risk (severe weather, route problem).', hint_ja: '本日対応：来訪者の安全や交通に影響（荒天・ルートの問題）。', hint_ar: 'تصرّف اليوم: سلامة الزوار أو الوصول في خطر (طقس سيئ، مشكلة في الطريق).' },
+  medium: { colour: '#ec835a', en: 'Medium priority', ja: '優先度：中', ar: 'أولوية متوسطة', hint_en: 'Plan ahead: demand well above normal or hotels close to full.', hint_ja: '事前に準備：需要が平常より大幅に多い、またはホテルが満室に近い。', hint_ar: 'خطّط مسبقاً: الطلب أعلى بكثير من المعتاد أو الفنادق قريبة من الامتلاء.' },
+  low: { colour: '#3987e5', en: 'Low priority', ja: '優先度：低', ar: 'أولوية منخفضة', hint_en: 'Opportunity: a quiet day or empty rooms worth promoting.', hint_ja: '機会：閑散日や空室をPRできる。', hint_ar: 'فرصة: يوم هادئ أو غرف شاغرة تستحق الترويج.' },
 }
 
 export function priorityOf(sev: Sev): Priority {
@@ -83,25 +89,27 @@ export function priorityOf(sev: Sev): Priority {
 
 /** A day this far above (or below) the node's normal day is a demand alert (loop #1). Shared with the Strategy 7-day card. */
 export const DEMAND_THRESHOLD = 0.35
-const COASTAL: Record<string, { site_en: string; site_ja: string; to: string; route: RouteLeg[] }> = {
+const COASTAL: Record<string, { site_en: string; site_ja: string; site_ar: string; to: string; route: RouteLeg[] }> = {
   tojinbo: {
     site_en: 'Fukui Prefectural Dinosaur Museum (indoor)',
     site_ja: '福井県立恐竜博物館（屋内）',
+    site_ar: 'متحف محافظة فوكوي للديناصورات (مكان مغلق)',
     to: 'katsuyama',
     route: [{ id: 'fukui_station-tojinbo', reverse: true }, { id: 'fukui_station-katsuyama' }],
   },
   rainbow_line: {
     site_en: 'Fukui City museums and Fukui Station area (indoor)',
     site_ja: '福井市内の博物館・福井駅周辺（屋内）',
+    site_ar: 'متاحف مدينة فوكوي ومنطقة محطة فوكوي (أماكن مغلقة)',
     to: 'fukui_station',
     route: [{ id: 'fukui_station-rainbow_line', reverse: true }],
   },
 }
 
-function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja') {
+function nm(reg: RegistryNode[], id: string, lang: 'en' | 'ja' | 'ar') {
   const n = reg.find((r) => r.id === id)
   if (!n) return id
-  return lang === 'ja' ? n.name_ja : n.name.replace(' East Entrance', '')
+  return pick(lang, n.name.replace(' East Entrance', ''), n.name_ja)
 }
 
 /** "Normal" daily visitors: mean real visitors_est over the history when available, else 2025 annual ÷ 365, else the window's mean forecast. */
@@ -152,10 +160,13 @@ export function computeNudges(
         end: d * 24 + 17,
         title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')}: ${p} vs normal${rough ? ' (rough estimate)' : ''}`,
         title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')}：平常比${p}${rough ? '（概算）' : ''}`,
+        title_ar: `${nm(reg, id, 'ar')} ${dayLabel(live, d, 'ar')}: ${p} عن المعتاد${rough ? ' (تقدير تقريبي)' : ''}`,
         reason_en: `Forecast ${Math.round(predicted).toLocaleString('en-US')} visitors vs normal ${Math.round(normal).toLocaleString('en-US')}${live.node_meta?.[id] ? ' (90-day real average)' : ''} (${day.weekend ? 'weekend' : 'weekday'}${up ? '' : ', weather or weekday dip'}).${rough ? ' Rough estimate: no forecast model here, only the average of recent same weekdays.' : ''}`,
         reason_ja: `予測${Math.round(predicted).toLocaleString('en-US')}人、平常${Math.round(normal).toLocaleString('en-US')}人（${day.weekend ? '週末' : '平日'}）。${rough ? '概算：予測モデルがなく、最近の同じ曜日の平均です。' : ''}`,
+        reason_ar: `المتوقع ${Math.round(predicted).toLocaleString('en-US')} زائر مقابل ${Math.round(normal).toLocaleString('en-US')} في اليوم المعتاد${live.node_meta?.[id] ? ' (متوسط حقيقي لآخر 90 يوماً)' : ''} (${day.weekend ? 'عطلة نهاية الأسبوع' : 'يوم عمل'}${up ? '' : '، بسبب الطقس أو انخفاض أيام العمل'}).${rough ? ' تقدير تقريبي: لا يوجد نموذج توقع هنا، بل متوسط الأيام المماثلة من الأسبوع مؤخراً.' : ''}`,
         action_en: up ? 'Add staff, extend parking and shop hours; push timed entry.' : 'Run a same-week offer and promote to nearby overnight guests.',
         action_ja: up ? '増員、駐車場・営業時間の延長、時間指定入場の案内を。' : '今週限りの特典で近隣宿泊客へ告知を。',
+        action_ar: up ? 'أضف موظفين، ومدّد ساعات المواقف والمحلات، وشجّع الدخول بمواعيد محددة.' : 'قدّم عرضاً لهذا الأسبوع وروّج له لدى نزلاء الفنادق القريبة.',
         focus: pos(id),
       })
     }
@@ -196,14 +207,18 @@ export function computeNudges(
           end: i - 1,
           title_en: `${nm(reg, id, 'en')} ${dayLabel(live, d, 'en')} ${hourLabel(open)}–${hourLabel(i)}: severe weather`,
           title_ja: `${nm(reg, id, 'ja')} ${dayLabel(live, d, 'ja')} ${hourLabel(open)}–${hourLabel(i)}：荒天`,
+          title_ar: `${nm(reg, id, 'ar')} ${dayLabel(live, d, 'ar')} ${hourLabel(open)}–${hourLabel(i)}: طقس سيئ`,
           reason_en: `Rain up to ${peakMm.toFixed(0)} mm/h, wind ${peakWind.toFixed(0)} m/s${alerts.length ? '; ' + alerts.map((a) => a.title_en.toLowerCase()).join(', ') : ''}.`,
           reason_ja: `最大${peakMm.toFixed(0)}mm/h、風速${peakWind.toFixed(0)}m/s${alerts.length ? '、' + alerts.map((a) => a.title_ja).join('・') : ''}。`,
+          reason_ar: `أمطار حتى ${peakMm.toFixed(0)} مم/ساعة، ورياح ${peakWind.toFixed(0)} م/ث${alerts.length ? '؛ ' + alerts.map((a) => alertText(a, 'ar').title).join('، ') : ''}.`,
           action_en: `Recommend ${alt.site_en}; show the inland route on signage and apps.`,
           action_ja: `${alt.site_ja}を推奨し、内陸ルートを案内。`,
+          action_ar: `اقترح ${alt.site_ar}، واعرض الطريق الداخلي على اللوحات والتطبيقات.`,
           focus: pos(id),
           route: alt.route,
           route_label_en: `Suggested: ${nm(reg, alt.to, 'en')}`,
           route_label_ja: `推奨：${nm(reg, alt.to, 'ja')}`,
+          route_label_ar: `المقترح: ${nm(reg, alt.to, 'ar')}`,
         })
         open = null
         peakMm = 0
@@ -234,6 +249,10 @@ export function computeNudges(
         const tightWhyJa = th ? `この地域の上位10%の夜は${th.tight_occ_pct}%以上。` : ''
         const slackWhy = th && slackAt !== undefined ? ` The quietest 10% of ${dow} nights here are ${slackAt}% or less.` : ''
         const slackWhyJa = th && slackAt !== undefined ? `この地域の${dow}の下位10%は${slackAt}%以下。` : ''
+        const nightAr = `ليلة ${dayLabel(live, d, 'ar')}`
+        const tightWhyAr = th ? ` أعلى 10% من الليالي هنا تبدأ من ${th.tight_occ_pct}%.` : ''
+        const slackWhyAr = th && slackAt !== undefined && dow ? ` أهدأ 10% من ليالي ${dowAr(dow)} هنا عند ${slackAt}% أو أقل.` : ''
+        const hotelAr = pick('ar', h.name, h.name_ja)
         if (tight) {
           const alt = h.id === 'fukui_station' ? market.hotels.find((x) => x.id === 'awara_onsen') : fukuiHotels
           out.push({
@@ -248,14 +267,19 @@ export function computeNudges(
             end: d * 24 + 23,
             title_en: `${h.name}: ${occ}% booked for ${nights}`,
             title_ja: `${h.name_ja}：${dayLabel(live, d, 'ja')}泊は${occ}%予約済み`,
+            title_ar: `${hotelAr}: ${occ}% محجوز ${nightAr}`,
             reason_en: th && !th.demand_check
               ? `Occupancy ${occ}% (${h.rooms_left[d]} rooms left).${tightWhy}`
               : `Occupancy ${occ}% (${h.rooms_left[d]} rooms left) while demand at ${nm(reg, h.node, 'en')} is ${Math.round((ratio - 1) * 100)}% above normal.${tightWhy}`,
             reason_ja: th && !th.demand_check
               ? `稼働率${occ}%（残り${h.rooms_left[d]}室）。${tightWhyJa}`
               : `稼働率${occ}%（残り${h.rooms_left[d]}室）、${nm(reg, h.node, 'ja')}の需要は平常比+${Math.round((ratio - 1) * 100)}%。${tightWhyJa}`,
+            reason_ar: th && !th.demand_check
+              ? `نسبة الإشغال ${occ}% (${h.rooms_left[d]} غرفة متبقية).${tightWhyAr}`
+              : `نسبة الإشغال ${occ}% (${h.rooms_left[d]} غرفة متبقية)، بينما الطلب في ${nm(reg, h.node, 'ar')} أعلى من المعتاد بنسبة ${Math.round((ratio - 1) * 100)}%.${tightWhyAr}`,
             action_en: `Raise rates; redirect overflow to ${alt?.name ?? 'nearby hotels'} (${alt ? alt.rooms_left[d] : '?'} rooms left).`,
             action_ja: `料金を引き上げ、${alt?.name_ja ?? '近隣ホテル'}（残り${alt ? alt.rooms_left[d] : '?'}室）へ誘導。`,
+            action_ar: `ارفع الأسعار، ووجّه الطلب الزائد إلى ${alt ? pick('ar', alt.name, alt.name_ja) : 'الفنادق القريبة'} (${alt ? alt.rooms_left[d] : '?'} غرفة متبقية).`,
             focus: [h.lat, h.lon],
           })
         } else if (slack) {
@@ -271,10 +295,13 @@ export function computeNudges(
             end: d * 24 + 20,
             title_en: `${h.name}: only ${occ}% booked for ${nights}`,
             title_ja: `${h.name_ja}：${dayLabel(live, d, 'ja')}泊は${occ}%のみ`,
+            title_ar: `${hotelAr}: ${occ}% فقط محجوز ${nightAr}`,
             reason_en: `${h.rooms_left[d]} rooms free; ${nm(reg, h.node, 'en')} expects ${Math.round(daily[d]?.predicted ?? 0).toLocaleString('en-US')} day visitors (${ratio >= 1 ? 'at or above' : 'below'} normal).${slackWhy}`,
             reason_ja: `空室${h.rooms_left[d]}室、${nm(reg, h.node, 'ja')}の日帰り客は${Math.round(daily[d]?.predicted ?? 0).toLocaleString('en-US')}人の見込み。${slackWhyJa}`,
+            reason_ar: `${h.rooms_left[d]} غرفة شاغرة؛ ويُتوقع ${Math.round(daily[d]?.predicted ?? 0).toLocaleString('en-US')} زائراً ليوم واحد في ${nm(reg, h.node, 'ar')} (${ratio >= 1 ? 'عند المعتاد أو أعلى' : 'أقل من المعتاد'}).${slackWhyAr}`,
             action_en: 'Promote stay packages to day visitors and Kanazawa guests (dinner + room, late checkout).',
             action_ja: '日帰り客・金沢宿泊客に宿泊パッケージ（夕食付き・レイトチェックアウト）を訴求。',
+            action_ar: 'روّج لباقات الإقامة لدى زوار اليوم الواحد ونزلاء كانازاوا (عشاء مع الغرفة، ومغادرة متأخرة).',
             focus: [h.lat, h.lon],
           })
         }

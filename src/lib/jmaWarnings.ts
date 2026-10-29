@@ -7,6 +7,8 @@
  * sources/weather_warnings.py and its nodes' `jma_warning` config.
  */
 import type { LiveWeatherAlert } from '../types/live'
+import { pick } from './i18n'
+import type { Lang } from './i18n'
 
 const URL = 'https://www.jma.go.jp/bosai/warning/data/r8/180000.json' // 福井県
 export const REFRESH_MS = 10 * 60 * 1000
@@ -44,6 +46,27 @@ const HAZARD = {
 } as const satisfies Record<string, readonly [string, string, LiveWeatherAlert['type']]>
 const STRONGER: Partial<Record<Hazard, [string, string]>> = { wind: ['暴風', 'Storm'], wind_snow: ['暴風雪', 'Snowstorm'] }
 const LEVEL: Record<number, [string, string]> = { 2: ['注意報', 'advisory'], 3: ['警報', 'warning'], 4: ['危険警報', 'danger warning'], 5: ['特別警報', 'emergency warning'] }
+/** Arabic names: hazard (and its stronger form), and level. */
+const HAZARD_AR: Record<Hazard, string> = {
+  rain: 'أمطار غزيرة',
+  landslide: 'انهيارات أرضية',
+  tide: 'مد عاصف',
+  wind: 'رياح قوية',
+  wind_snow: 'رياح وثلوج',
+  snow: 'ثلوج كثيفة',
+  wave: 'أمواج عالية',
+  thunder: 'عواصف رعدية',
+  snow_melting: 'ذوبان الثلوج',
+  fog: 'ضباب كثيف',
+  dry: 'هواء جاف',
+  avalanche: 'انهيارات ثلجية',
+  cold: 'انخفاض الحرارة',
+  frost: 'صقيع',
+  ice_accretion: 'تراكم الجليد',
+  snow_accretion: 'تراكم الثلوج',
+}
+const STRONGER_AR: Partial<Record<Hazard, string>> = { wind: 'عاصفة', wind_snow: 'عاصفة ثلجية' }
+const LEVEL_AR: Record<number, string> = { 2: 'تنبيه', 3: 'تحذير', 4: 'تحذير خطر', 5: 'تحذير طارئ' }
 const LEVELLED = new Set<Hazard>(['rain', 'landslide', 'tide'])
 
 const CODES: Record<string, [Hazard, number]> = {
@@ -107,11 +130,37 @@ export function parseWarnings(reports: unknown): JmaWarning[] {
   return [...byCode.values()].sort((a, b) => b.level - a.level || a.code.localeCompare(b.code))
 }
 
-export function warningName(w: Pick<JmaWarning, 'hazard' | 'level'>): { ja: string; en: string } {
+export function warningName(w: Pick<JmaWarning, 'hazard' | 'level'>): { ja: string; en: string; ar: string } {
   const [hja, hen] = (w.level >= 3 && STRONGER[w.hazard]) || HAZARD[w.hazard]
   const [lja, len] = LEVEL[w.level]
   const lv = LEVELLED.has(w.hazard)
-  return { ja: `${lv ? `レベル${'０１２３４５'[w.level]}` : ''}${hja}${lja}`, en: `${hen} ${len}${lv ? ` (level ${w.level})` : ''}` }
+  const har = (w.level >= 3 && STRONGER_AR[w.hazard]) || HAZARD_AR[w.hazard]
+  return {
+    ja: `${lv ? `レベル${'０１２３４５'[w.level]}` : ''}${hja}${lja}`,
+    en: `${hen} ${len}${lv ? ` (level ${w.level})` : ''}`,
+    ar: `${LEVEL_AR[w.level]} من ${har}${lv ? ` (المستوى ${w.level})` : ''}`,
+  }
+}
+
+/**
+ * A weather alert's title and detail in `lang`. The alert type (types/live.ts) has no Arabic
+ * fields, so Arabic is rebuilt here: a JMA warning from its code (and the read times in its
+ * English text), a demo alert from the ar*.json dictionary by its English text.
+ */
+export function alertText(a: LiveWeatherAlert, lang: Lang): { title: string; detail: string } {
+  const plain = { title: pick(lang, a.title_en, a.title_ja), detail: pick(lang, a.detail_en, a.detail_ja) }
+  const c = lang === 'ar' && a.id.startsWith('jma-') ? CODES[a.id.slice(4)] : undefined
+  if (!c) return plain
+  const name = warningName({ hazard: c[0], level: c[1] }).ar
+  const stale = /\(unconfirmed since (\d\d:\d\d)\)$/.exec(a.title_en)
+  if (stale) {
+    return {
+      title: `${name} (غير مؤكد منذ ${stale[1]})`,
+      detail: `تعذّر الوصول إلى هيئة الأرصاد اليابانية (JMA) منذ ${stale[1]}؛ ربما رُفع التحذير.`,
+    }
+  }
+  const report = /report (\d\d:\d\d)/.exec(a.detail_en)
+  return { title: name, detail: `سارٍ (JMA${report ? `، نشرة ${report[1]}` : ''}). لا يُحدَّد وقت للانتهاء حتى ترفعه الهيئة.` }
 }
 
 /**

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useProductData } from './hooks/useProductData'
 import { useHashRoute } from './hooks/useHashRoute'
 import { useDataFallback } from './hooks/useDataFallback'
@@ -52,6 +52,12 @@ export default function App() {
   const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
   const isDemo = !shared && live.data?.demo
 
+  // The browser tab's title in Arabic; English and Japanese keep index.html's.
+  const title = `DHDE · ${lang === 'ar' ? t('Fukui Tourism Intelligence') : 'Fukui Tourism Intelligence'}`
+  useEffect(() => {
+    document.title = title
+  }, [title])
+
   return (
     <div className={`app view-${route.view}`}>
       <header className="appbar">
@@ -104,6 +110,9 @@ export default function App() {
             <button aria-pressed={lang === 'ja'} onClick={() => setLang('ja')} lang="ja">
               日本語
             </button>
+            <button aria-pressed={lang === 'ar'} onClick={() => setLang('ar')} lang="ar">
+              العربية
+            </button>
           </div>
         </div>
       </header>
@@ -111,7 +120,7 @@ export default function App() {
       {fallback && (
         <div className="saved-data-note" role="status">
           {fallback.date
-            ? t(`Showing saved data from ${fmtDate(fallback.date, lang)}`, `${fmtDate(fallback.date, lang)}時点の保存データを表示中`)
+            ? t(`Showing saved data from ${fmtDate(fallback.date, lang)}`, `${fmtDate(fallback.date, lang)}時点の保存データを表示中`, `عرض البيانات المحفوظة بتاريخ ${fmtDate(fallback.date, lang)}`)
             : t('Showing saved data', '保存データを表示中')}
         </div>
       )}

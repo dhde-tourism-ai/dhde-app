@@ -8,9 +8,11 @@ import { MEASURE_LABEL, isEstimatedMeasure } from '../../../lib/nodes'
 import type { NodeFrame } from '../../../lib/live'
 import { CONDITION_LABEL, dailyArrivals, dayLabel, routeCongestion, sentimentColour, sentimentLabel, trafficTier } from '../../../lib/live'
 import { routesTouching } from '../../../lib/routes'
-import { econNodeFor, fmtLost } from '../../../lib/economics'
-import { fmtCompact, fmtDate, fmtMetric } from '../../../lib/format'
+import { econNodeFor } from '../../../lib/economics'
+import { fmtDate } from '../../../lib/format'
 import { useLang } from '../../../lib/i18n'
+import { alertText } from '../../../lib/jmaWarnings'
+import { arOr, compact, daysAr, forecastMethodAr, lost, methodAr, metric, periodAr, signalAr, unit } from '../mapText'
 import { Icon, WeatherIcon } from '../../../components/icons'
 import { StatusPill } from '../../../components/StatusPill'
 import { StatusTag } from '../../../components/StatusTag'
@@ -51,18 +53,19 @@ interface Props {
 }
 
 function MetricRow({ label, m, kind }: { label: string; m: Metric; kind?: 'yen' | 'count' }) {
+  const { lang } = useLang()
   return (
     <div className="kv">
       <span>{label}</span>
       <span className="kv-v">
-        <span className="num">{fmtMetric(m, kind)}</span> <StatusPill status={m.status} />
+        <span className="num">{metric(m, lang, kind)}</span> <StatusPill status={m.status} />
       </span>
     </div>
   )
 }
 
 function Econ({ f }: { f: EconomicsFigures }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const o = f.opportunity_lost_yen
   return (
     <>
@@ -70,7 +73,7 @@ function Econ({ f }: { f: EconomicsFigures }) {
       <MetricRow label={t('Revenue', '観光収入')} m={f.revenue_yen} kind="yen" />
       <div className="kv">
         <span>{t('Opportunity lost', '機会損失')}</span>
-        <span className="kv-v num">{fmtLost(f)}</span>
+        <span className="kv-v num">{lost(f, lang)}</span>
       </div>
       <MetricRow label={t('· overnight gap', '・宿泊ギャップ')} m={o.overnight_gap} kind="yen" />
       <MetricRow label={t('· weather', '・天候')} m={o.weather} kind="yen" />
@@ -135,7 +138,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
       <div className="fp-body">
         <div className="drawer-tags">
           {measure ? (
-            <span className={`measure-tag ${est ? 'est' : ''}`}>{MEASURE_LABEL[measure]}</span>
+            <span className={`measure-tag ${est ? 'est' : ''}`}>{lang === 'ar' ? arOr(MEASURE_LABEL[measure]) : MEASURE_LABEL[measure]}</span>
           ) : (
             <span className="measure-tag est">{tr('Not measured yet', '未計測')}</span>
           )}
@@ -173,8 +176,8 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 <span className="dk-val">{Math.round(frame.realDay?.visitors ?? daily[day]?.predicted ?? 0).toLocaleString('en-US')}</span>
                 <div className="tt-grid">
                   <span className="tt-k">{tr('Method', '方法')}</span>
-                  <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`)}</span>
-                  <span className="tt-k">{tr(`Official ${meta.official_period_label ?? '2025'}`, `${meta.official_period_label_ja ?? '2025年'}公式`)}</span>
+                  <span className="tt-v">{meta.method_text ? tr(meta.method_text, meta.method_text_ja ?? meta.method_text, methodAr(meta.method_text)) : tr(`${measureLabel(meta.measure)} scaled to the 2025 official annual count`, `${measureLabel(meta.measure)}を2025年公式年間値に換算`, `${signalAr(measureLabel(meta.measure))} محوّلة إلى الرقم الرسمي السنوي لعام 2025`)}</span>
+                  <span className="tt-k">{tr(`Official ${meta.official_period_label ?? '2025'}`, `${meta.official_period_label_ja ?? '2025年'}公式`, `الرقم الرسمي ${periodAr(meta.official_period_label ?? '2025')}`)}</span>
                   <span className="tt-v num">{meta.official_2025?.toLocaleString('en-US') ?? '—'}</span>
                   <span className="tt-k">{tr('Confidence', '信頼度')}</span>
                   <span className="tt-v">
@@ -187,7 +190,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                     </>
                   )}
                 </div>
-                <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。')}</p>
+                <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。', forecastMethodAr(meta.forecast_method))}</p>
               </div>
             ) : null}
             {!frame.noEstimate && (
@@ -220,7 +223,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <ResponsiveContainer width="100%" height={130}>
                 <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="h" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} ticks={[0, 6, 12, 18, 23]} tickFormatter={(h: number) => `${h}:00`} />
-                  <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
+                  <YAxis tick={AXIS} tickLine={false} axisLine={false} width={lang === 'ar' ? 56 : 40} tickFormatter={(v: number) => compact(v, lang)} />
                   <Tooltip contentStyle={TIP} labelFormatter={(h) => `${h}:00`} formatter={(v: unknown, n: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(n)]} />
                   <Area dataKey="band" name={tr('Range', '予測幅')} stroke="none" fill={S1} fillOpacity={0.12} isAnimationActive={false} />
                   <Line dataKey="forecast" name={tr('Forecast', '予測')} stroke={S1} strokeWidth={2} strokeDasharray="4 3" dot={false} isAnimationActive={false} />
@@ -240,7 +243,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <ResponsiveContainer width="100%" height={110}>
                 <BarChart data={daily} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
                   <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={{ stroke: '#34425e' }} interval={0} />
-                  <YAxis tick={AXIS} tickLine={false} axisLine={false} width={40} tickFormatter={(v: number) => fmtCompact(v)} />
+                  <YAxis tick={AXIS} tickLine={false} axisLine={false} width={lang === 'ar' ? 56 : 40} tickFormatter={(v: number) => compact(v, lang)} />
                   <Tooltip contentStyle={TIP} cursor={{ fill: 'rgba(139,157,255,.08)' }} labelFormatter={(_l, p) => String((p?.[0]?.payload as { label?: string } | undefined)?.label ?? '')} formatter={(v: unknown, _n: unknown, it: { payload?: { isReal?: boolean } }) => [Math.round(Number(v)).toLocaleString('en-US'), it?.payload?.isReal ? tr('Visitors (real estimate)', '来訪者（実推計）') : tr('Forecast', '予測')]} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false}>
                     {daily.map((d) => (
@@ -265,17 +268,17 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <WeatherIcon cond={frame.weather.cond} size={34} />
               <div>
                 <div className="wx-big">
-                  {Math.round(frame.weather.temp)}°C <span className="muted">{tr(CONDITION_LABEL[frame.weather.cond].en, CONDITION_LABEL[frame.weather.cond].ja)}</span>
+                  {Math.round(frame.weather.temp)}{unit('°C', lang)} <span className="muted">{tr(CONDITION_LABEL[frame.weather.cond].en, CONDITION_LABEL[frame.weather.cond].ja, CONDITION_LABEL[frame.weather.cond].ar)}</span>
                 </div>
                 <div className="muted num">
-                  {tr('Rain', '降水確率')} {frame.weather.pop}% · {frame.weather.mm} mm/h · {tr('wind', '風')} {frame.weather.wind} m/s
+                  {tr('Rain', '降水確率')} {frame.weather.pop}% · {frame.weather.mm} {unit('mm/h', lang)} · {tr('wind', '風')} {frame.weather.wind} {unit('m/s', lang)}
                 </div>
                 {frame.wxDay.real && (
                   <div className="muted num small">
-                    {tr('Day', '日')}: {frame.wxDay.temp?.toFixed(1)}°C · {frame.wxDay.precip?.toFixed(1)} mm · {frame.wxDay.wind?.toFixed(1)} m/s
+                    {tr('Day', '日')}: {frame.wxDay.temp?.toFixed(1)}{unit('°C', lang)} · {frame.wxDay.precip?.toFixed(1)} {unit('mm', lang)} · {frame.wxDay.wind?.toFixed(1)} {unit('m/s', lang)}
                     {frame.wxDay.humidity !== null ? ` · ${tr('humidity', '湿度')} ${Math.round(frame.wxDay.humidity)}%` : ''}
-                    {frame.wxDay.sun !== null ? ` · ${tr('sun', '日照')} ${frame.wxDay.sun.toFixed(2)} h` : ''}
-                    {frame.wxDay.snow !== null ? ` · ${tr('snow', '積雪')} ${frame.wxDay.snow} cm` : ''}
+                    {frame.wxDay.sun !== null ? ` · ${tr('sun', '日照')} ${frame.wxDay.sun.toFixed(2)} ${unit('h', lang)}` : ''}
+                    {frame.wxDay.snow !== null ? ` · ${tr('snow', '積雪')} ${frame.wxDay.snow} ${unit('cm', lang)}` : ''}
                   </div>
                 )}
                 <div className="muted small">
@@ -283,14 +286,17 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 </div>
               </div>
             </div>
-            {frame.alerts.map((a) => (
-              <div key={a.id} className="banner banner-warn">
-                <Icon name="alert" />
-                <span>
-                  <strong>{tr(a.title_en, a.title_ja)}.</strong> {tr(a.detail_en, a.detail_ja)}
-                </span>
-              </div>
-            ))}
+            {frame.alerts.map((a) => {
+              const at = alertText(a, lang)
+              return (
+                <div key={a.id} className="banner banner-warn">
+                  <Icon name="alert" />
+                  <span>
+                    <strong>{at.title}.</strong> {at.detail}
+                  </span>
+                </div>
+              )
+            })}
 
             <h3 className="drawer-h">{tr('Roads in', '接続道路')}</h3>
             <ul className="road-list">
@@ -323,7 +329,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 ></span>
               </div>
               <div className="kv">
-                <span>{tr(sentimentLabel(frame.sentiment.score).en, sentimentLabel(frame.sentiment.score).ja)}</span>
+                <span>{tr(sentimentLabel(frame.sentiment.score).en, sentimentLabel(frame.sentiment.score).ja, sentimentLabel(frame.sentiment.score).ar)}</span>
                 <span className="kv-v num">
                   {frame.sentiment.score > 0 ? '+' : ''}
                   {frame.sentiment.score.toFixed(2)} · {frame.sentiment.posts} {tr('posts', '件')}
@@ -372,7 +378,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 <div className="vg-cell">
                   {market.social[node.id].real ? (
                     <>
-                      <span className="eyebrow">{tr(`Instagram, ${market.social[node.id].real!.days} days`, `Instagram（${market.social[node.id].real!.days}日間）`)}</span>
+                      <span className="eyebrow">{tr(`Instagram, ${market.social[node.id].real!.days} days`, `Instagram（${market.social[node.id].real!.days}日間）`, `إنستغرام، ${daysAr(market.social[node.id].real!.days)}`)}</span>
                       <span className="vg-val num">{market.social[node.id].real!.posts}</span>
                       <span className="muted small">
                         {market.social[node.id].real!.photos} {tr('photos', '写真')} · {tr('to', '〜')} {fmtDate(market.social[node.id].real!.as_of, lang)}
@@ -419,10 +425,10 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
           <>
             <h3 className="drawer-h">
               {tr('Economics', '経済')}
-              {economics?.visitor_window?.nodes ? <span className="muted small"> · {economics.visitor_window.nodes}</span> : null}
+              {economics?.visitor_window?.nodes ? <span className="muted small"> · {lang === 'ar' ? arOr(economics.visitor_window.nodes) : economics.visitor_window.nodes}</span> : null}
             </h3>
             <Econ f={econ} />
-            {econ.annotation && <p className="muted small">{econ.annotation}</p>}
+            {econ.annotation && <p className="muted small">{lang === 'ar' ? arOr(econ.annotation) : econ.annotation}</p>}
           </>
         )}
 

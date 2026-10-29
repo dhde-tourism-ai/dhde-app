@@ -7,20 +7,22 @@ import '../../styles/site.css'
 import type { ProductData } from '../../hooks/useProductData'
 import type { RealForecast } from '../../types/real'
 import { useLang } from '../../lib/i18n'
+import type { Lang } from '../../lib/i18n'
+import { dayAr } from '../../lib/arFormat'
 import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { CONDITION_LABEL } from '../../lib/live'
 import { fmtDate } from '../../lib/format'
 import { SITES } from '../../lib/sites'
-import { demandLevel, normalDay, siteDays } from '../../lib/site'
+import { demandLevel, methodTextAr, normalDay, periodAr, siteDays } from '../../lib/site'
 import type { DemandLevel, SiteDay } from '../../lib/site'
 import { Basemap } from '../map/Basemap'
 import { SiteData } from './SiteData'
 import { SiteTransit } from './SiteTransit'
 
-const LEVEL: Record<DemandLevel, { en: string; ja: string }> = {
-  quiet: { en: 'Quiet', ja: '少なめ' },
-  normal: { en: 'Normal', ja: 'ふつう' },
-  busy: { en: 'Busy', ja: '多い' },
+const LEVEL: Record<DemandLevel, { en: string; ja: string; ar: string }> = {
+  quiet: { en: 'Quiet', ja: '少なめ', ar: 'هادئ' },
+  normal: { en: 'Normal', ja: 'ふつう', ar: 'عادي' },
+  busy: { en: 'Busy', ja: '多い', ar: 'مزدحم' },
 }
 /** Halo around the counting point, by the picked day's demand (metres). */
 const HALO_M: Record<DemandLevel, number> = { quiet: 220, normal: 320, busy: 460 }
@@ -34,10 +36,11 @@ function jstToday(): string {
 const n0 = (v: number) => Math.round(v).toLocaleString('en-US')
 const pct = (v: number | null) => (v === null ? '?' : `${Math.round(v * 100)}%`)
 
-/** "10/26（月）" or "Mon 26 Oct". */
-function dayName(iso: string, lang: 'en' | 'ja'): string {
+/** "10/26（月）", "الاثنين 26 أكتوبر" or "Mon 26 Oct". */
+function dayName(iso: string, lang: Lang): string {
   const d = new Date(`${iso}T00:00:00Z`)
   if (lang === 'ja') return `${d.getUTCMonth() + 1}/${d.getUTCDate()}（${DOW_JA[d.getUTCDay()]}）`
+  if (lang === 'ar') return dayAr(d)
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
 }
 
@@ -58,14 +61,16 @@ function Weather({ day }: { day: SiteDay }) {
   const { lang } = useLang()
   const w = day.weather
   if (!w) return <span className="muted">—</span>
-  const temp = w.tMin === null ? '' : w.tMin === w.tMax || w.tMax === null ? `${Math.round(w.tMin)}℃` : `${Math.round(w.tMin)}${lang === 'ja' ? '〜' : '–'}${Math.round(w.tMax)}℃`
+  const deg = lang === 'ar' ? '°م' : '℃'
+  const temp = w.tMin === null ? '' : w.tMin === w.tMax || w.tMax === null ? `${Math.round(w.tMin)}${deg}` : `${Math.round(w.tMin)}${lang === 'ja' ? '〜' : '–'}${Math.round(w.tMax)}${deg}`
+  const wind = (v: number) => (lang === 'ja' ? ` 風${v}m/s` : lang === 'ar' ? ` رياح ${v} م/ث` : ` wind ${v} m/s`)
   return (
     <>
       {CONDITION_LABEL[w.cond][lang]}
       <span className="muted">
-        {w.mm !== null && w.mm >= 1 ? ` ${Math.round(w.mm)}mm` : ''}
-        {w.wind !== null && w.wind >= 10 ? (lang === 'ja' ? ` 風${Math.round(w.wind)}m/s` : ` wind ${Math.round(w.wind)} m/s`) : ''}
-        {temp ? ` · ${temp}` : ''}
+        {w.mm !== null && w.mm >= 1 ? ` ${Math.round(w.mm)}${lang === 'ar' ? ' مم' : 'mm'}` : ''}
+        {w.wind !== null && w.wind >= 10 ? wind(Math.round(w.wind)) : ''}
+        {temp ? <> · <span className="nowrap">{temp}</span></> : ''}
       </span>
     </>
   )
@@ -76,7 +81,7 @@ function Level({ level }: { level: DemandLevel }) {
   return (
     <span className={`site-level ${level}`}>
       <i aria-hidden="true"></i>
-      {t(LEVEL[level].en, LEVEL[level].ja)}
+      {t(LEVEL[level].en, LEVEL[level].ja, LEVEL[level].ar)}
     </span>
   )
 }
@@ -92,11 +97,14 @@ function Hotel({ day }: { day: SiteDay }) {
   )
 }
 
+const MODEL_AR: Record<string, string> = { regression: 'انحدار', lightgbm: 'تعزيز متدرّج', seasonal_naive: 'موسمي بسيط' }
+
 /** One line on how good the model is, from its walk-forward backtest. */
-function modelLine(f: RealForecast, t: (en: string, ja: string) => string): string {
+function modelLine(f: RealForecast, t: (en: string, ja: string, ar: string) => string): string {
   return t(
     `Model forecast (${f.model}): typical error ${pct(f.backtest_wape)} vs ${pct(f.baseline_wape)} for "same weekday last week"; ${pct(f.range_coverage)} of past test days fell inside the range.`,
     `予測モデル（${f.model}）：誤差 ${pct(f.backtest_wape)}（「先週の同じ曜日」なら ${pct(f.baseline_wape)}）。過去の検証日の ${pct(f.range_coverage)} が予測範囲内。`,
+    `توقع النموذج (${MODEL_AR[f.model] ?? f.model}): الخطأ المعتاد ${pct(f.backtest_wape)} مقابل ${pct(f.baseline_wape)} لطريقة «نفس اليوم من الأسبوع الماضي»؛ و${pct(f.range_coverage)} من أيام الاختبار السابقة وقعت داخل النطاق.`,
   )
 }
 
@@ -154,21 +162,26 @@ export default function SiteView({ data, id }: Props) {
         : t('Measured signal', '計測値')
   const signalLine = (value: number, forecast: boolean) => {
     const n = n0(value)
-    if (rn.measure === 'vehicles') return forecast ? t(`about ${n} cars`, `駐車場 約${n}台`) : t(`${n} cars`, `駐車場 ${n}台`)
-    if (rn.measure === 'camera') return forecast ? t(`about ${n} camera detections`, `カメラ検知 約${n}件`) : t(`${n} camera detections`, `カメラ検知 ${n}件`)
-    if (surveyProxy) return t(`Survey-response proxy: ${n} ${value === 1 ? 'response' : 'responses'}`, `アンケート回答の代理指標 ${n}件`)
-    return t(`${signalLabel}: ${n}`, `${signalLabel} ${n}`)
+    if (rn.measure === 'vehicles') return forecast ? t(`about ${n} cars`, `駐車場 約${n}台`, `نحو ${n} سيارة`) : t(`${n} cars`, `駐車場 ${n}台`, `${n} سيارة`)
+    if (rn.measure === 'camera') return forecast ? t(`about ${n} camera detections`, `カメラ検知 約${n}件`, `نحو ${n} رصدة كاميرا`) : t(`${n} camera detections`, `カメラ検知 ${n}件`, `${n} رصدة كاميرا`)
+    if (surveyProxy) return t(`Survey-response proxy: ${n} ${value === 1 ? 'response' : 'responses'}`, `アンケート回答の代理指標 ${n}件`, `مؤشر إجابات الاستبيان: ${n} إجابة`)
+    return t(`${signalLabel}: ${n}`, `${signalLabel} ${n}`, `${signalLabel}: ${n}`)
   }
   const cal = rn.calibration
   const level = demandLevel(sel.visitors, normal?.visitors ?? null)
   const max = Math.max(...days.map((d) => Math.max(d.visitors, d.hi ?? 0)))
   const normalLabel = normal
     ? normal.annual
-      ? t(`normal day ${n0(normal.visitors)} (${cal.official_period_label ?? '2025'} average)`, `平常 ${n0(normal.visitors)}人（${cal.official_period_label_ja ?? '2025年'}の1日平均）`)
-      : t(`normal day ${n0(normal.visitors)} (recent average)`, `平常 ${n0(normal.visitors)}人（直近の平均）`)
+      ? t(
+          `normal day ${n0(normal.visitors)} (${cal.official_period_label ?? '2025'} average)`,
+          `平常 ${n0(normal.visitors)}人（${cal.official_period_label_ja ?? '2025年'}の1日平均）`,
+          `اليوم العادي ${n0(normal.visitors)} (متوسط ${periodAr(cal.official_period_label)})`,
+        )
+      : t(`normal day ${n0(normal.visitors)} (recent average)`, `平常 ${n0(normal.visitors)}人（直近の平均）`, `اليوم العادي ${n0(normal.visitors)} (متوسط الفترة الأخيرة)`)
     : null
   const firstForecast = days.findIndex((d) => d.kind === 'forecast')
   const hotelArea = t(site.hotel_area.en, site.hotel_area.ja)
+  const method = t(cal.method_text ?? '', cal.method_text_ja, methodTextAr(cal.method_text))
 
   return (
     <div className="siteview">
@@ -183,7 +196,7 @@ export default function SiteView({ data, id }: Props) {
         >
           <FitSite bounds={bounds} options={narrow ? FIT_NARROW : FIT_WIDE} />
           <Basemap id="hybrid" />
-          <ZoomControl position="topleft" />
+          <ZoomControl key={lang} position="topleft" zoomInTitle={t('Zoom in', '拡大', 'تكبير')} zoomOutTitle={t('Zoom out', '縮小', 'تصغير')} />
           <SiteTransit />
           {site.lines.map((line, i) => (
             <Polyline key={`c${i}`} positions={line} pathOptions={{ color: '#000', opacity: 0.55, weight: 9, interactive: false }} />
@@ -213,14 +226,18 @@ export default function SiteView({ data, id }: Props) {
 
         <aside className="site-drawer">
           <div className="eyebrow">
-            {sel.kind === 'forecast' ? t(`Forecast · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の予測`) : surveyProxy ? t(`Estimate · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の推計`) : t(`Count · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の実績`)}
+            {sel.kind === 'forecast'
+              ? t(`Forecast · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の予測`, `التوقع · ${dayName(sel.date, lang)}`)
+              : surveyProxy
+                ? t(`Estimate · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の推計`, `التقدير · ${dayName(sel.date, lang)}`)
+                : t(`Count · ${dayName(sel.date, lang)}`, `${dayName(sel.date, lang)}の実績`, `العدد الفعلي · ${dayName(sel.date, lang)}`)}
           </div>
           <div className="site-big">
             {n0(sel.visitors)}
             <small>{surveyProxy ? t(' estimated visitors', '人（推計）') : t(' visitors', '人')}</small>
           </div>
           <div className="site-sub">
-            {sel.lo !== null && sel.hi !== null && <>{t(`Range ${n0(sel.lo)} to ${n0(sel.hi)}`, `予測範囲 ${n0(sel.lo)}〜${n0(sel.hi)}人`)} · </>}
+            {sel.lo !== null && sel.hi !== null && <>{t(`Range ${n0(sel.lo)} to ${n0(sel.hi)}`, `予測範囲 ${n0(sel.lo)}〜${n0(sel.hi)}人`, `النطاق من ${n0(sel.lo)} إلى ${n0(sel.hi)}`)} · </>}
             {sel.signal !== null && signalLine(sel.signal, sel.kind === 'forecast')}
           </div>
           {surveyProxy && <p className="site-estimate">{t('Visitor estimate from survey responses. Calibration confidence is low.', '来場者数はアンケート回答からの推計です。校正の信頼度は低いです。')}</p>}
@@ -233,13 +250,13 @@ export default function SiteView({ data, id }: Props) {
             <dd>
               <Weather day={sel} />
             </dd>
-            <dt>{t(`Hotels, ${hotelArea}`, `${hotelArea}の宿泊`)}</dt>
+            <dt>{t(`Hotels, ${hotelArea}`, `${hotelArea}の宿泊`, `الفنادق، ${hotelArea}`)}</dt>
             <dd>
               <Hotel day={sel} />
               {sel.hotel && <span className="muted">{sel.kind === 'forecast' ? t(' booked', ' 予約済み') : t(' occupied', ' 稼働')}</span>}
             </dd>
             <dt>{t('Method', '計測方法')}</dt>
-            <dd>{t(cal.method_text ?? '', cal.method_text_ja)}</dd>
+            <dd>{method}</dd>
             {sel.kind === 'forecast' && rn.forecast && (
               <>
                 <dt>{t('Accuracy', '精度')}</dt>
@@ -286,7 +303,7 @@ export default function SiteView({ data, id }: Props) {
                   <th title={rn.forecast ? modelLine(rn.forecast, t) : undefined}>{t('Range', '予測範囲')}</th>
                   <th>{t('Demand', '混雑')}</th>
                   <th>{t('Weather', '天気')}</th>
-                  <th className="num">{t(`Hotels, ${hotelArea}`, `宿泊（${hotelArea}）`)}</th>
+                  <th className="num">{t(`Hotels, ${hotelArea}`, `宿泊（${hotelArea}）`, `الفنادق، ${hotelArea}`)}</th>
                 </tr>
               </thead>
               <tbody>
@@ -323,12 +340,14 @@ export default function SiteView({ data, id }: Props) {
           {rn.measure === 'vehicles' ? t(
             `Visitors = cars × ${cal.factor?.toFixed(2) ?? '?'}, scaled to the official ${n0(cal.official_annual_2025 ?? 0)} visitors in 2025.`,
             `来場者 = 駐車台数 × ${cal.factor?.toFixed(2) ?? '?'}人（2025年の公式値 ${n0(cal.official_annual_2025 ?? 0)}人で校正）。`,
-          ) : t(cal.method_text ?? '', cal.method_text_ja)}{' '}
+            `الزوار = السيارات × ${cal.factor?.toFixed(2) ?? '?'}، بمعايرة على الرقم الرسمي ${n0(cal.official_annual_2025 ?? 0)} زائر في 2025.`,
+          ) : method}{' '}
           {surveyProxy && <>{t('Visitor counts are estimates from survey responses with low calibration confidence.', '来場者数はアンケート回答からの推計で、校正の信頼度は低いです。')}{' '}</>}
           {rn.measure === 'camera' && <>{t('The map marks the site area, not verified camera positions or coverage.', '地図は施設周辺のエリアを示しています。カメラの位置や検知範囲は未確認です。')}{' '}</>}
           {t(
             `Demand: 35% or more above or below the normal day. Hotels: rooms booked in the ${hotelArea} reservation feed. Weather: JMA observations and the JMA model forecast. Counts to ${fmtDate(rn.as_of.visitors, lang)}.`,
             `混雑は平常日より35%以上多いか少ないか。宿泊は${hotelArea}の予約データ。天気は気象庁の観測とモデル予報。実績は${fmtDate(rn.as_of.visitors, lang)}まで。`,
+            `الازدحام: أعلى أو أقل من اليوم العادي بنسبة 35% أو أكثر. الفنادق: الغرف المحجوزة في بيانات حجز ${hotelArea}. الطقس: أرصاد هيئة الأرصاد اليابانية (JMA) وتوقعات نموذجها. الأعداد حتى ${fmtDate(rn.as_of.visitors, lang)}.`,
           )}
         </p>
       </section>

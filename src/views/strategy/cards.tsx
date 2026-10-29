@@ -18,8 +18,8 @@ import type {
 } from '../../types/strategy'
 import { StatusPill } from '../../components/StatusPill'
 import { Icon } from '../../components/icons'
-import { fmtCompact, fmtYen, PENDING } from '../../lib/format'
-import { useLang } from '../../lib/i18n'
+import { PENDING } from '../../lib/format'
+import { arText, useLang } from '../../lib/i18n'
 import { storeLayers, storePanelOpen } from '../map/layers'
 import type { LayerId } from '../map/layers'
 import { useJsonResource } from '../../hooks/useJsonResource'
@@ -32,11 +32,12 @@ import { GdpTrend, Ripple, TourismTrend, WhatIf } from './economy'
 import { FlowSankey } from './flowSankey'
 import { SearchTrends } from './searchTrends'
 import { ScenarioSlider } from './slider'
+import { arrow, compact, figures, withUnit, yen } from './fmt'
 
 /** "[pending]" in the current language, for values not measured yet. */
 function usePending() {
   const { t } = useLang()
-  return t(PENDING, '[未取得]')
+  return t(PENDING, '[未取得]', '[قيد الانتظار]')
 }
 
 /** Card frame: title, status pill (always shown), notes and TODOs. Lean cards drop the New/Updated badge, detail line, notes, sources and TODOs. */
@@ -69,7 +70,7 @@ export function StrategyCardView({ card, lean = false, theme }: { card: Strategy
           )}
           {card.todo && (
             <p className="s-todo">
-              <span className="s-k">TODO:</span> {card.todo}
+              <span className="s-k">{t('TODO', null, 'للمتابعة')}:</span> {card.todo}
             </p>
           )}
         </footer>
@@ -136,12 +137,11 @@ function Stat({ card, lean }: { card: StatCard; lean: boolean }) {
   )
 }
 
-function fmtUnit(v: number, prefix: string, unit: string): string {
-  return `${prefix}${v.toLocaleString('en-US')}${unit}`
-}
-
 function Progress({ card }: { card: ProgressCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  const fmtUnit = (v: number, prefix: string, unit: string) => withUnit(v, prefix, unit, lang)
+  // "FY2023" (the card's default years) reads "السنة المالية 2023" in Arabic.
+  const fy = (y: string | undefined, fallback: string) => (lang === 'ar' ? (y ?? fallback).replace(/^FY/, 'السنة المالية ') : (y ?? fallback))
   const el = Math.round(card.elapsed_share * 100)
   return (
     <div className="progress-list">
@@ -177,11 +177,11 @@ function Progress({ card }: { card: ProgressCard }) {
               <div className="progress-tick" style={{ left: `${card.elapsed_share * 100}%` }}></div>
             </div>
             <div className="progress-meta num">
-              {card.baseline_year ?? 'FY2023'} {fmtUnit(r.baseline, r.prefix, r.unit)} → <strong>{fmtUnit(r.current, r.prefix, r.unit)}</strong>{' '}
+              {fy(card.baseline_year, 'FY2023')} {fmtUnit(r.baseline, r.prefix, r.unit)} {arrow(lang)} <strong>{fmtUnit(r.current, r.prefix, r.unit)}</strong>{' '}
               <span className={`year-tag ${r.todo ? 'flag' : ''}`} title={r.todo}>
                 {r.current_year}
               </span>{' '}
-              → {card.target_year ?? 'FY2029'} {fmtUnit(r.target, r.prefix, r.unit)}
+              {arrow(lang)} {fy(card.target_year, 'FY2029')} {fmtUnit(r.target, r.prefix, r.unit)}
             </div>
             {r.source && (
               <div className="progress-source">
@@ -197,7 +197,7 @@ function Progress({ card }: { card: ProgressCard }) {
 }
 
 function FormulaTable({ card }: { card: FormulaTableCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const rows = card.rows.map((r) => ({ ...r, total: r.terms.reduce((a, b) => a * b, 1) }))
   const max = Math.max(1, ...rows.map((r) => r.total))
   return (
@@ -214,11 +214,11 @@ function FormulaTable({ card }: { card: FormulaTableCard }) {
           {rows.map((r) => (
             <tr key={r.lever}>
               <td>{r.lever}</td>
-              <td className="mono muted">{r.formula}</td>
+              <td className="mono muted">{figures(r.formula, lang)}</td>
               <td className="num">
                 <span className="cell-bar">
                   <span className="cell-bar-fill" style={{ width: `${(r.total / max) * 100}%` }}></span>
-                  <span className="cell-bar-val">{fmtYen(r.total)}</span>
+                  <span className="cell-bar-val">{yen(r.total, lang)}</span>
                 </span>
               </td>
             </tr>
@@ -231,11 +231,12 @@ function FormulaTable({ card }: { card: FormulaTableCard }) {
 
 function Bars({ card }: { card: BarsCard }) {
   const pending = usePending()
+  const { lang } = useLang()
   const values = card.rows.map((r) => Math.abs(r.value ?? 0))
   const max = Math.max(1e-9, ...values)
   const fmt = (v: number) => {
     const s = card.decimals !== undefined ? v.toFixed(card.decimals).replace(/^(-?)0\./, '$1.') : v.toLocaleString('en-US')
-    return `${card.signed && v > 0 ? '+' : ''}${card.prefix ?? ''}${s}${card.unit ?? ''}`
+    return `${card.signed && v > 0 ? '+' : ''}${withUnit(s, card.prefix ?? '', card.unit ?? '', lang)}`
   }
   return (
     <div className={`hbars ${card.signed ? 'signed' : ''}`} role="list">
@@ -264,11 +265,21 @@ function Bars({ card }: { card: BarsCard }) {
   )
 }
 
-// English and Japanese (strategy.ja.json) action names.
-const ACTION_TONE: Record<string, string> = { Normal: 'ok', 'Extend hours': 'up', 'Push indoor sites': 'warn', 通常: 'ok', 営業時間を延長: 'up', 屋内施設を案内: 'warn' }
+// English, Japanese (strategy.ja.json) and Arabic (ar.strategy.json) action names.
+const ACTION_TONE: Record<string, string> = {
+  Normal: 'ok',
+  'Extend hours': 'up',
+  'Push indoor sites': 'warn',
+  通常: 'ok',
+  営業時間を延長: 'up',
+  屋内施設を案内: 'warn',
+  عادي: 'ok',
+  'تمديد ساعات العمل': 'up',
+  'الترويج للمواقع الداخلية': 'warn',
+}
 
 function Forecast({ card }: { card: ForecastCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [siteId, setSiteId] = useState(card.sites[0]?.id)
   const site = card.sites.find((s) => s.id === siteId) ?? card.sites[0]
   if (!site) return null
@@ -313,7 +324,7 @@ function Forecast({ card }: { card: ForecastCard }) {
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
                 {firstFc && last && <ReferenceArea x1={firstFc} x2={last} fill="#8b9dff" fillOpacity={0.06} ifOverflow="visible" />}
                 <XAxis dataKey="date" tick={AXIS} tickFormatter={(d: string) => d.slice(5).replace('-', '/')} minTickGap={28} tickLine={false} axisLine={{ stroke: '#34425e' }} />
-                <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={44} tickLine={false} axisLine={false} />
+                <YAxis tick={AXIS} tickFormatter={(v: number) => compact(v, lang)} width={lang === 'ar' ? 58 : 44} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
                   formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => Number(x).toLocaleString('en-US')).join('–') : Number(v).toLocaleString('en-US'), String(name)]}
@@ -384,7 +395,7 @@ const MODEL_LABEL: Record<string, [string, string]> = {
 /** 12-month forecast (F2) from monthly_forecast.json: actual months, forecast and range, and this year's expected total. */
 function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
   const pending = usePending()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const file = useJsonResource<MonthlyForecastFile>('monthly_forecast.json')
   const [pick, setPick] = useState(card.series[0])
   const offered = (file.data?.series ?? []).filter((x) => card.series.includes(x.id))
@@ -407,7 +418,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
     const p = Math.round(((v - prev!) / prev!) * 1000) / 10
     return `${p >= 0 ? '+' : ''}${p}%`
   }
-  const unit = s.kind === 'guest_nights' ? t('guest-nights', '延べ宿泊者') : t('visitors', '来訪者')
+  const unit = s.kind === 'guest_nights' ? t('guest-nights', '延べ宿泊者') : t('visitors', '来訪者', 'الزوار')
   const fmtN = (v: number) => Math.round(v).toLocaleString('en-US')
 
   return (
@@ -441,7 +452,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
               <ComposedChart data={rows} margin={{ top: 10, right: 12, left: 0, bottom: 4 }}>
                 <CartesianGrid stroke="#1f2a3f" vertical={false} />
                 <XAxis dataKey="month" tick={AXIS} tickFormatter={(m: string) => `${m.slice(2, 4)}/${m.slice(5)}`} minTickGap={16} tickLine={false} axisLine={{ stroke: '#34425e' }} />
-                <YAxis tick={AXIS} tickFormatter={(v: number) => fmtCompact(v)} width={48} tickLine={false} axisLine={false} />
+                <YAxis tick={AXIS} tickFormatter={(v: number) => compact(v, lang)} width={lang === 'ar' ? 64 : 48} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={TIP} itemStyle={TIP_ITEM} labelStyle={TIP_LABEL}
                   formatter={(v: unknown, name: unknown) => [Array.isArray(v) ? v.map((x) => fmtN(Number(x))).join('–') : fmtN(Number(v)), String(name)]}
@@ -454,7 +465,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
           </div>
         </div>
         <div className="next7">
-          <h4 className="mini-h">{t(`Expected in ${year}`, `${year}年の見込み`)}</h4>
+          <h4 className="mini-h">{t(`Expected in ${year}`, `${year}年の見込み`, `المتوقع في ${year}`)}</h4>
           {total ? (
             <>
               <div className="stat-value num">{fmtN(total.total)}</div>
@@ -465,7 +476,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
               )}
               {prev !== null && (
                 <p className="mf-vs num">
-                  {t(`vs ${prevYear}: ${fmtN(prev)}`, `${prevYear}年：${fmtN(prev)}`)} <strong className={total.total >= prev ? 'sum-up' : 'sum-down'}>{pct(total.total)}</strong>
+                  {t(`vs ${prevYear}: ${fmtN(prev)}`, `${prevYear}年：${fmtN(prev)}`, `مقابل ${prevYear}: ${fmtN(prev)}`)} <strong className={total.total >= prev ? 'sum-up' : 'sum-down'}>{pct(total.total)}</strong>
                   {total.low !== null && total.high !== null && (
                     <span className="muted small">
                       {' '}
@@ -478,6 +489,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
                 {t(
                   `${unit}: ${total.actualMonths} actual months (${fmtN(total.actualSum)}) plus the forecast for the other ${12 - total.actualMonths}.`,
                   `${unit}：実績${total.actualMonths}か月（${fmtN(total.actualSum)}）＋残り${12 - total.actualMonths}か月の予測。`,
+                  `${unit}: ${total.actualMonths} أشهر فعلية (${fmtN(total.actualSum)}) مع توقع الأشهر الباقية (${12 - total.actualMonths}).`,
                 )}
               </p>
             </>
@@ -582,7 +594,7 @@ function Heatmap({ card }: { card: HeatmapCard }) {
               {card.cells[ri].map((c, ci) => {
                 if (c.n < card.min_n)
                   return (
-                    <td key={ci} className="heat-hidden" title={`n = ${c.n} (< ${card.min_n}), hidden`}>
+                    <td key={ci} className="heat-hidden" title={t(`n = ${c.n} (< ${card.min_n}), hidden`, null, `n = ${c.n} (< ${card.min_n})، مخفي`)}>
                       n&lt;{card.min_n}
                     </td>
                   )
@@ -624,6 +636,8 @@ const FUNNEL_MAP: Record<string, { ja: string; layers: LayerId[]; node?: string;
 }
 
 const stageKey = (stage: string) => stage.split(/[\s/]/)[0].toLowerCase()
+/** A stage's map entry; in Arabic the stage name has no English first word, so it falls back to its place in the funnel. */
+const stageMap = (stage: string, i: number, lang: string) => FUNNEL_MAP[stageKey(stage)] ?? (lang === 'ar' ? Object.values(FUNNEL_MAP)[i] : undefined)
 
 /** Opens the map with the stage's layers on (and its site, if any) through the saved layer choice. */
 function showOnMap(where: { layers: LayerId[]; node?: string }) {
@@ -634,10 +648,11 @@ function showOnMap(where: { layers: LayerId[]; node?: string }) {
 
 function Funnel({ card }: { card: FunnelCard }) {
   const pending = usePending()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [picked, setPicked] = useState<string | null>(null)
-  const sel = card.stages.find((s) => s.stage === picked)
-  const where = sel ? FUNNEL_MAP[stageKey(sel.stage)] : undefined
+  const selIndex = card.stages.findIndex((s) => s.stage === picked)
+  const sel = card.stages[selIndex] as (typeof card.stages)[number] | undefined
+  const where = sel ? stageMap(sel.stage, selIndex, lang) : undefined
   return (
     <>
       <ol className="funnel">
@@ -646,7 +661,7 @@ function Funnel({ card }: { card: FunnelCard }) {
             <div className="funnel-step">{i + 1}</div>
             <div className="funnel-name">
               <button className="funnel-pick" aria-pressed={picked === s.stage} onClick={(e) => { e.stopPropagation(); setPicked(picked === s.stage ? null : s.stage) }}>
-                {t(s.stage, FUNNEL_MAP[stageKey(s.stage)]?.ja ?? s.stage)}
+                {t(s.stage, stageMap(s.stage, i, lang)?.ja ?? s.stage)}
               </button>
             </div>
             <div className={`funnel-gap ${s.gap_pct === null ? 'pending' : ''}`}>
@@ -658,7 +673,7 @@ function Funnel({ card }: { card: FunnelCard }) {
             </div>
             <div className="funnel-evidence">{s.evidence}</div>
             <div className="funnel-value">
-              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? '¥[x]bn'}</strong>
+              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? t('¥[x]bn', null, '[x] مليار ¥')}</strong>
             </div>
           </li>
         ))}
@@ -714,6 +729,7 @@ function Indicators({ card }: { card: IndicatorsCard }) {
 }
 
 function PaceBar({ pace }: { pace: { value: number; expected: number; label?: string } }) {
+  const { t } = useLang()
   const behind = pace.value < pace.expected
   return (
     <span className="pace" title={pace.label}>
@@ -722,7 +738,7 @@ function PaceBar({ pace }: { pace: { value: number; expected: number; label?: st
         <span className="pace-exp" style={{ left: `${pace.expected * 100}%` }}></span>
       </span>
       <span className="num">
-        {pace.value.toFixed(2).replace(/^0/, '')} vs {pace.expected.toFixed(2).replace(/^0/, '')}
+        {pace.value.toFixed(2).replace(/^0/, '')} {t('vs', 'vs', 'مقابل')} {pace.expected.toFixed(2).replace(/^0/, '')}
       </span>
     </span>
   )
@@ -731,7 +747,8 @@ function PaceBar({ pace }: { pace: { value: number; expected: number; label?: st
 function DataTable({ card }: { card: TableCard }) {
   const pending = usePending()
   const hasStatusCol = card.columns.length > (card.rows[0]?.cells.length ?? 0)
-  const paceCol = card.columns.findIndex((c) => c.toLowerCase() === 'pace')
+  // In Arabic the column names are translated with the rest of the card (ar.strategy.json).
+  const paceCol = card.columns.findIndex((c) => c.toLowerCase() === 'pace' || c === arText('Pace'))
   return (
     <div className="table-scroll">
       <table className="data-table">
@@ -746,7 +763,7 @@ function DataTable({ card }: { card: TableCard }) {
           {card.rows.map((r, i) => (
             <tr key={i}>
               {r.cells.map((c, j) => (
-                <td key={j} className={c === null ? 'pending-cell' : c === 'Not yet measurable' ? 'muted' : ''}>
+                <td key={j} className={c === null ? 'pending-cell' : c === 'Not yet measurable' || c === arText('Not yet measurable') ? 'muted' : ''}>
                   {j === paceCol && r.pace ? <PaceBar pace={r.pace} /> : (c ?? pending)}
                 </td>
               ))}
@@ -764,7 +781,7 @@ function DataTable({ card }: { card: TableCard }) {
 }
 
 function Builder({ card }: { card: BuilderCard }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [vals, setVals] = useState<Record<string, number>>(() => Object.fromEntries(card.levers.map((l) => [l.id, l.default])))
   const added = card.levers.map((l, k) => {
     const v = vals[l.id] ?? 0
@@ -778,7 +795,7 @@ function Builder({ card }: { card: BuilderCard }) {
       <div className="builder-levers">
         {card.levers.map((l, k) => {
           const fmt = (v: number) => (l.unit === '%' ? `${v}%` : `${v.toLocaleString('en-US')} ${t(l.unit, l.unit_ja ?? l.unit)}`)
-          const tick = (v: number) => (l.unit === '%' ? `${v}%` : v >= 1e3 ? `${v / 1e3}k` : String(v))
+          const tick = (v: number) => (l.unit === '%' ? `${v}%` : v >= 1e3 ? withUnit(v / 1e3, '', 'k', lang) : String(v))
           return (
             <div key={l.id} className="lever-card" style={{ ['--c' as string]: S[k % S.length] }}>
               <div className="lever-card-id">{l.id}</div>
@@ -816,9 +833,9 @@ function Builder({ card }: { card: BuilderCard }) {
                 colour: p.colour,
                 title: p.lever.label,
                 lines: [
-                  `${fmtCompact(p.guests)} ${t('guest-nights', '泊')}`,
+                  `${compact(p.guests, lang)} ${t('guest-nights', '泊')}`,
                   `${Math.round((p.guests / g.gap) * 100)}% ${t('of the gap', '（ギャップ比）')}`,
-                  `${fmtYen(p.spend)} ${t('revenue a year', '/年の消費')}`,
+                  `${yen(p.spend, lang)} ${t('revenue a year', '/年の消費')}`,
                 ],
               })
             acc += w
@@ -830,7 +847,7 @@ function Builder({ card }: { card: BuilderCard }) {
               w: 1 - acc,
               colour: 'transparent',
               title: t('Still to close', '残りのギャップ'),
-              lines: [`${fmtCompact(Math.max(0, g.gap - closed))} ${t('guest-nights', '泊')} (${Math.round((1 - acc) * 100)}%)`],
+              lines: [`${compact(Math.max(0, g.gap - closed), lang)} ${t('guest-nights', '泊')} (${Math.round((1 - acc) * 100)}%)`],
             })
           const hovered = tip?.gap === g.id ? segs.find((x) => x.key === tip.key) : undefined
           return (
@@ -838,7 +855,7 @@ function Builder({ card }: { card: BuilderCard }) {
               <div className="progress-top">
                 <span className="progress-label">{g.label}</span>
                 <span className="num">
-                  {fmtCompact(closed)} {t('of', '/')} {fmtCompact(g.gap)} <strong>({Math.round(share * 100)}%)</strong>
+                  {compact(closed, lang)} {t('of', '/')} {compact(g.gap, lang)} <strong>({Math.round(share * 100)}%)</strong>
                 </span>
               </div>
               <div className="stack-wrap" onMouseLeave={() => setTip(null)}>
@@ -868,11 +885,11 @@ function Builder({ card }: { card: BuilderCard }) {
                 {parts.map((p) => (
                   <span key={p.lever.id}>
                     <i style={{ background: p.colour }}></i>
-                    {p.lever.id} {fmtCompact(p.guests)}
+                    {p.lever.id} {compact(p.guests, lang)}
                   </span>
                 ))}
                 <span className="muted">
-                  {t('Gap', 'ギャップ')} = {g.formula}
+                  {t('Gap', 'ギャップ')} = {figures(g.formula, lang)}
                 </span>
               </div>
             </div>
@@ -880,9 +897,9 @@ function Builder({ card }: { card: BuilderCard }) {
         })}
         <div className="builder-total">
           <span className="eyebrow">{t('Spend added per year', '年間の追加消費')}</span>
-          <span className="stat-value">{fmtYen(totalSpend)}</span>
+          <span className="stat-value">{yen(totalSpend, lang)}</span>
           <span className="muted small">
-            {t('Spend per added guest', '追加1人あたり消費')}: {card.levers.map((l) => `${l.id} ¥${l.spend_per.toLocaleString('en-US')}`).join(' · ')}
+            {t('Spend per added guest', '追加1人あたり消費')}: {card.levers.map((l) => `${l.id} ${withUnit(l.spend_per, '¥', '', lang)}`).join(' · ')}
           </span>
         </div>
       </div>
