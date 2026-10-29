@@ -482,3 +482,12 @@
   font-variant-numeric: tabular-nums;
   color: var(--text-2);
 }
+
+.siteview .nowrap {
+  white-space: nowrap;
+}
+
+/* Long Arabic labels (e.g. the hotel area) would squeeze the values; cap the label column. */
+html[dir='rtl'] .site-facts {
+  grid-template-columns: fit-content(38%) 1fr;
+}

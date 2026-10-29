@@ -9,8 +9,19 @@ const DIGITS = /[0-9]/g
 const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE'])
 
 const ARABIC = /[٠-٩]/g
-const toArabic = (s: string) => s.replace(DIGITS, (d) => String.fromCharCode(0x0660 + Number(d)))
-const toWestern = (s: string) => s.replace(ARABIC, (d) => String(d.charCodeAt(0) - 0x0660))
+// Between digits, ',' and '.' become the Arabic separators (٬ ٫); '%' after a digit becomes ٪.
+const toArabic = (s: string) =>
+  s
+    .replace(DIGITS, (d) => String.fromCharCode(0x0660 + Number(d)))
+    .replace(/(?<=[٠-٩]),(?=[٠-٩])/g, '٬')
+    .replace(/(?<=[٠-٩])\.(?=[٠-٩])/g, '٫')
+    .replace(/(?<=[٠-٩])%/g, '٪')
+const toWestern = (s: string) =>
+  s
+    .replace(ARABIC, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/(?<=[0-9])٬(?=[0-9])/g, ',')
+    .replace(/(?<=[0-9])٫(?=[0-9])/g, '.')
+    .replace(/(?<=[0-9])٪/g, '%')
 
 function swap(node: Node, to: (s: string) => string = toArabic) {
   if (node.nodeType === Node.TEXT_NODE) {

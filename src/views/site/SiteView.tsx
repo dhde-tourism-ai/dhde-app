@@ -61,7 +61,8 @@ function Weather({ day }: { day: SiteDay }) {
   const { lang } = useLang()
   const w = day.weather
   if (!w) return <span className="muted">—</span>
-  const temp = w.tMin === null ? '' : w.tMin === w.tMax || w.tMax === null ? `${Math.round(w.tMin)}℃` : `${Math.round(w.tMin)}${lang === 'ja' ? '〜' : '–'}${Math.round(w.tMax)}℃`
+  const deg = lang === 'ar' ? '°م' : '℃'
+  const temp = w.tMin === null ? '' : w.tMin === w.tMax || w.tMax === null ? `${Math.round(w.tMin)}${deg}` : `${Math.round(w.tMin)}${lang === 'ja' ? '〜' : '–'}${Math.round(w.tMax)}${deg}`
   const wind = (v: number) => (lang === 'ja' ? ` 風${v}m/s` : lang === 'ar' ? ` رياح ${v} م/ث` : ` wind ${v} m/s`)
   return (
     <>
@@ -69,7 +70,7 @@ function Weather({ day }: { day: SiteDay }) {
       <span className="muted">
         {w.mm !== null && w.mm >= 1 ? ` ${Math.round(w.mm)}${lang === 'ar' ? ' مم' : 'mm'}` : ''}
         {w.wind !== null && w.wind >= 10 ? wind(Math.round(w.wind)) : ''}
-        {temp ? ` · ${temp}` : ''}
+        {temp ? <> · <span className="nowrap">{temp}</span></> : ''}
       </span>
     </>
   )
@@ -96,12 +97,14 @@ function Hotel({ day }: { day: SiteDay }) {
   )
 }
 
+const MODEL_AR: Record<string, string> = { regression: 'انحدار', lightgbm: 'تعزيز متدرّج', seasonal_naive: 'موسمي بسيط' }
+
 /** One line on how good the model is, from its walk-forward backtest. */
 function modelLine(f: RealForecast, t: (en: string, ja: string, ar: string) => string): string {
   return t(
     `Model forecast (${f.model}): typical error ${pct(f.backtest_wape)} vs ${pct(f.baseline_wape)} for "same weekday last week"; ${pct(f.range_coverage)} of past test days fell inside the range.`,
     `予測モデル（${f.model}）：誤差 ${pct(f.backtest_wape)}（「先週の同じ曜日」なら ${pct(f.baseline_wape)}）。過去の検証日の ${pct(f.range_coverage)} が予測範囲内。`,
-    `توقع النموذج (${f.model}): الخطأ المعتاد ${pct(f.backtest_wape)} مقابل ${pct(f.baseline_wape)} لطريقة «نفس اليوم من الأسبوع الماضي»؛ و${pct(f.range_coverage)} من أيام الاختبار السابقة وقعت داخل النطاق.`,
+    `توقع النموذج (${MODEL_AR[f.model] ?? f.model}): الخطأ المعتاد ${pct(f.backtest_wape)} مقابل ${pct(f.baseline_wape)} لطريقة «نفس اليوم من الأسبوع الماضي»؛ و${pct(f.range_coverage)} من أيام الاختبار السابقة وقعت داخل النطاق.`,
   )
 }
 
