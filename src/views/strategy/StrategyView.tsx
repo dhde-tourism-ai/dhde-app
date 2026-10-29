@@ -135,7 +135,9 @@ const LEAN_QUESTIONS = new Set(['q1', 'q5'])
 const NO_INTRO = new Set(['q2', 'q3', 'q4'])
 
 function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: boolean }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  // localize() leaves `spec` alone (Japanese keeps it in English); Arabic reads it from the dictionary.
+  const specText = (s: string) => (lang === 'ar' ? (arText(s) ?? s) : s)
   const lean = LEAN_QUESTIONS.has(q.id)
   const noIntro = lean || NO_INTRO.has(q.id)
   const themes = q.themes ?? []
@@ -236,15 +238,15 @@ function QuestionSection({ q, showSpecs }: { q: StrategicQuestion; showSpecs: bo
           <div className="spec-title">{t('Build spec', 'ビルド仕様')}</div>
           <dl>
             <dt>{t('Data', 'データ')}</dt>
-            <dd>{q.spec.data}</dd>
+            <dd>{specText(q.spec.data)}</dd>
             <dt>{t('Model', 'モデル')}</dt>
-            <dd>{q.spec.model}</dd>
+            <dd>{specText(q.spec.model)}</dd>
             <dt>{t('Outputs', '出力')}</dt>
-            <dd>{q.spec.outputs}</dd>
+            <dd>{specText(q.spec.outputs)}</dd>
             <dt>{t('Acceptance test', '受入基準')}</dt>
-            <dd>{q.spec.acceptance}</dd>
+            <dd>{specText(q.spec.acceptance)}</dd>
             <dt>{t('Status', '状況')}</dt>
-            <dd>{q.spec.status}</dd>
+            <dd>{specText(q.spec.status)}</dd>
           </dl>
         </div>
       )}
