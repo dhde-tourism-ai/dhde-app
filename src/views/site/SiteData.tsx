@@ -14,10 +14,10 @@ const n0 = (v: number) => Math.round(v).toLocaleString('en-US')
 const mdOf = (iso: string | null | undefined, lang: Lang) =>
   !iso ? '' : lang === 'ar' ? `${Number(iso.slice(8, 10))} ${MON_AR[Number(iso.slice(5, 7)) - 1]}` : `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`
 
-/** ¥3,670,221,775 → "36.7億円" / "¥3.7bn" / "3.7 مليار ين". */
+/** ¥3,670,221,775 → "36.7億円" / "¥3.7bn" / "3.7 مليار ¥". */
 function yen(v: number, lang: Lang): string {
   if (lang === 'ja') return v >= 1e8 ? `${(v / 1e8).toFixed(1)}億円` : `${n0(v / 1e4)}万円`
-  if (lang === 'ar') return v >= 1e9 ? `${(v / 1e9).toFixed(1)} مليار ين` : `${(v / 1e6).toFixed(0)} مليون ين`
+  if (lang === 'ar') return v >= 1e9 ? `${(v / 1e9).toFixed(1)} مليار ¥` : `${(v / 1e6).toFixed(0)} مليون ¥`
   return v >= 1e9 ? `¥${(v / 1e9).toFixed(1)}bn` : `¥${(v / 1e6).toFixed(0)}M`
 }
 

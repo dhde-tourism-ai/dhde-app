@@ -673,7 +673,7 @@ function Funnel({ card }: { card: FunnelCard }) {
             </div>
             <div className="funnel-evidence">{s.evidence}</div>
             <div className="funnel-value">
-              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? t('¥[x]bn', null, '[x] مليار ين')}</strong>
+              <span className="muted">{t('At stake', '損失額')}</span> <strong className={s.value_text === null ? 'pending' : ''}>{s.value_text ?? t('¥[x]bn', null, '[x] مليار ¥')}</strong>
             </div>
           </li>
         ))}

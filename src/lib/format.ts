@@ -12,9 +12,9 @@ export function fmtCompact(n: number, lang: 'en' | 'ja' | 'ar' = 'en'): string {
   return Math.round(n).toLocaleString('en-US')
 }
 
-/** Yen, compact: ¥12bn, ¥340M; in Arabic 12 مليار ين. */
+/** Yen, compact: ¥12bn, ¥340M; in Arabic 12 مليار ¥. */
 export function fmtYen(n: number, lang: 'en' | 'ja' | 'ar' = 'en'): string {
-  return lang === 'ar' ? `${fmtCompact(n, lang)} ين` : '¥' + fmtCompact(n)
+  return lang === 'ar' ? `${fmtCompact(n, lang)} ¥` : '¥' + fmtCompact(n)
 }
 
 /** A Metric's value, or "[pending]" when null. Never invents a number. */

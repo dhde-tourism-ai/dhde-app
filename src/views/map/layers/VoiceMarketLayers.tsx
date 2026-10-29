@@ -122,7 +122,7 @@ export function HotelsLayer({ data, day, nodes }: { data: MarketVoiceData; day: 
             {h.adr_yen?.[d] ? (
               <div className="tt-grid">
                 <span className="tt-k">{t('Average daily rate', '平均客室単価')}</span>
-                <span className="tt-v num">{lang === 'ar' ? `${Math.round(h.adr_yen[d]!).toLocaleString('en-US')} ين` : `¥${Math.round(h.adr_yen[d]!).toLocaleString('en-US')}`}</span>
+                <span className="tt-v num">{lang === 'ar' ? `${Math.round(h.adr_yen[d]!).toLocaleString('en-US')} ¥` : `¥${Math.round(h.adr_yen[d]!).toLocaleString('en-US')}`}</span>
               </div>
             ) : null}
             {h.forward && h.forward.length > 0 ? (

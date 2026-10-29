@@ -11,17 +11,18 @@ const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE'])
 const ARABIC = /[٠-٩]/g
 // Digits right after a Latin letter are codes or names (A2, FY2024, CC BY 4.0) and stay as they are.
 // Separators stay '.' and ',': in this font ٫ and ٬ look alike and like a comma.
-// A signed number (+٠.٥, +.٥٤٧, −١٢٪, ×١.٠٥) is isolated left-to-right so its sign stays in front.
-const LRI = '\u2066'
+// A signed number (+٠.٥, +.٥٤٧, −١٢٪, ×١.٠٥) is isolated right-to-left so its sign sits on its right,
+// as Arabic reads it; a bare '.٥' gets its ٠.
+const RLI = '\u2067'
 const PDI = '\u2069'
 const toArabic = (s: string) =>
   s
     .replace(/(?:[A-Za-z] ?)?[0-9]+(?:\.[0-9]+)*/g, (m) => (/^[A-Za-z]/.test(m) ? m : m.replace(DIGITS, (d) => String.fromCharCode(0x0660 + Number(d)))))
     .replace(/(?<=[٠-٩])%/g, '٪')
-    .replace(/(?<![٠-٩\u2066])([+\-−×])(\.?[٠-٩][٠-٩.,]*٪?)/g, `${LRI}$1$2${PDI}`)
+    .replace(/(?<![٠-٩\u2067])([+\-−×])(\.?[٠-٩][٠-٩.,]*٪?)/g, (_, sign: string, n: string) => `${RLI}${sign}${n[0] === '.' ? '٠' : ''}${n}${PDI}`)
 const toWestern = (s: string) =>
   s
-    .replace(/[\u2066\u2069]/g, '')
+    .replace(/[\u2067\u2069]/g, '')
     .replace(ARABIC, (d) => String(d.charCodeAt(0) - 0x0660))
     .replace(/(?<=[0-9])٪/g, '%')
 

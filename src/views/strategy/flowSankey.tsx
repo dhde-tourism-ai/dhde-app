@@ -11,8 +11,8 @@ const GROUP_OF: Record<string, string> = { fukui: 'res', abroad: 'for' }
 
 /** Values are in thousands: 1,234 → 1.23M (1.23 مليون in Arabic). */
 const fmtK = (k: number, lang: Lang) => (k >= 1000 ? `${(k / 1000).toFixed(2)}${lang === 'ar' ? ' مليون' : 'M'}` : `${Math.round(k)}${lang === 'ar' ? ' ألف' : 'k'}`)
-/** Values are in 億円 (¥100M): 805 → ¥80.5bn (80.5 مليار ين in Arabic). */
-const fmtOku = (v: number, lang: Lang) => (lang === 'ar' ? `${(v / 10).toFixed(1)} مليار ين` : `¥${(v / 10).toFixed(1)}bn`)
+/** Values are in 億円 (¥100M): 805 → ¥80.5bn (80.5 مليار ¥ in Arabic). */
+const fmtOku = (v: number, lang: Lang) => (lang === 'ar' ? `${(v / 10).toFixed(1)} مليار ¥` : `¥${(v / 10).toFixed(1)}bn`)
 
 interface NodeP {
   x: number

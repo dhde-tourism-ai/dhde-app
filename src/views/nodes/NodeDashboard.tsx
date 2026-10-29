@@ -98,7 +98,7 @@ export default function NodeDashboard({ data, selectedNode }: { data: DashboardD
           <div className="tile-grid two">
             <div className="tile tile-lead">
               <div className="tile-label">{t('Annual opportunity gap (¥)', '年間の機会損失（円）')}</div>
-              <div className="tile-value">{ar ? `${fmtNum(data.aggregate.opportunity_gap_yen)} ين` : `¥${fmtNum(data.aggregate.opportunity_gap_yen)}`}</div>
+              <div className="tile-value">{ar ? `${fmtNum(data.aggregate.opportunity_gap_yen)} ¥` : `¥${fmtNum(data.aggregate.opportunity_gap_yen)}`}</div>
               <div className="tile-foot">{t('Weather-induced demand deficit', '天候による需要不足')}</div>
             </div>
             <div className="tile">

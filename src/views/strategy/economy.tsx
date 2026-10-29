@@ -34,13 +34,13 @@ function useTierNames(): Record<RippleTierId, string> {
 
 const fixed = (v: number, d = 1) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
 
-/** Yen in billions and trillions (from ¥bn) for the page's language: ¥139.0bn and ¥4.08tn, in Arabic 139.0 مليار ين and 4.08 تريليون ين. */
+/** Yen in billions and trillions (from ¥bn) for the page's language: ¥139.0bn and ¥4.08tn, in Arabic 139.0 مليار ¥ and 4.08 تريليون ¥. */
 function useMoney() {
   const { lang } = useLang()
   const ar = lang === 'ar'
   return {
-    bn: (v: number, d = 1) => (ar ? `${fixed(v, d)} مليار ين` : `¥${fixed(v, d)}bn`),
-    tn: (v: number) => (ar ? `${(v / 1e3).toFixed(2)} تريليون ين` : `¥${(v / 1e3).toFixed(2)}tn`),
+    bn: (v: number, d = 1) => (ar ? `${fixed(v, d)} مليار ¥` : `¥${fixed(v, d)}bn`),
+    tn: (v: number) => (ar ? `${(v / 1e3).toFixed(2)} تريليون ¥` : `¥${(v / 1e3).toFixed(2)}tn`),
   }
 }
 /** Jobs rounded to 10 (to 100 from 1,000 up): 33,900 */

@@ -208,15 +208,15 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         : `${Math.round(v / 1e4).toLocaleString()}万円`
       : lang === 'ar'
         ? v >= 1e9
-          ? `${(v / 1e9).toFixed(2)} مليار ين`
-          : `${Math.round(v / 1e6)} مليون ين`
+          ? `${(v / 1e9).toFixed(2)} مليار ¥`
+          : `${Math.round(v / 1e6)} مليون ¥`
         : v >= 1e9
         ? `¥${(v / 1e9).toFixed(2)}bn`
         : `¥${Math.round(v / 1e6)}M`
   const people = (v: number) =>
     lang === 'ja' ? `${Math.round(v / 1e4)}万人` : lang === 'ar' ? `${(v / 1e6).toFixed(2)} مليون` : `${(v / 1e6).toFixed(2)}M`
-  /** A full yen amount: "¥1,200", or "1,200 ين" in Arabic. */
-  const yenFull = (v: number) => (lang === 'ar' ? `${v.toLocaleString('en-US')} ين` : `¥${v.toLocaleString()}`)
+  /** A full yen amount: "¥1,200", or "1,200 ¥" in Arabic. */
+  const yenFull = (v: number) => (lang === 'ar' ? `${v.toLocaleString('en-US')} ¥` : `¥${v.toLocaleString()}`)
 
   // chart data
   const modeBars = byMode ? MODE_ORDER.map((m) => ({ id: m, name: t(...MODE_NAME[m]), value: byMode[m].visitors })) : []

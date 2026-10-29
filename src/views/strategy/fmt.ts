@@ -4,7 +4,7 @@ import type { Lang } from '../../lib/i18n'
 
 /**
  * Number and month formats for the Summary and Strategy pages in the page's
- * language: Arabic gets words (مليون، مليار، ين) where English has M, bn and ¥.
+ * language: Arabic gets words (مليون، مليار، ¥) where English has M, bn and ¥.
  */
 
 export const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -20,18 +20,18 @@ export function compact(v: number, lang: Lang): string {
   return compactAr(v, a >= 1e9 ? (a >= 1e10 ? 0 : 1) : a >= 1e6 ? (a >= 1e7 ? 0 : 1) : 0)
 }
 
-/** Compact yen: ¥12bn; in Arabic 12 مليار ين. */
-export const yen = (v: number, lang: Lang): string => (lang === 'ar' ? `${compact(v, lang)} ين` : fmtYen(v))
+/** Compact yen: ¥12bn; in Arabic 12 مليار ¥. */
+export const yen = (v: number, lang: Lang): string => (lang === 'ar' ? `${compact(v, lang)} ¥` : fmtYen(v))
 
 const UNIT_AR: Record<string, string> = { M: 'مليون', bn: 'مليار', tn: 'تريليون', k: 'ألف', m: 'مليون' }
 
-/** A figure with the data's prefix and unit (¥ … bn, … M, … %): "¥198.7bn" or "198.7 مليار ين". */
+/** A figure with the data's prefix and unit (¥ … bn, … M, … %): "¥198.7bn" or "198.7 مليار ¥". */
 export function withUnit(v: number | string, prefix: string, unit: string, lang: Lang): string {
   const n = typeof v === 'number' ? v.toLocaleString('en-US') : v
   if (lang !== 'ar') return `${prefix}${n}${unit}`
   const word = UNIT_AR[unit]
   const u = word ? ` ${word}` : unit
-  return `${prefix === '¥' ? '' : prefix}${n}${u}${prefix === '¥' ? ' ين' : ''}`
+  return `${prefix === '¥' ? '' : prefix}${n}${u}${prefix === '¥' ? ' ¥' : ''}`
 }
 
 /** Short figures inside a data string ("400k − 108.6k", "21.44M × ¥24,675") in Arabic words; other languages unchanged. */

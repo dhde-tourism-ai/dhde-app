@@ -16,8 +16,8 @@ export function compactAr(v: number, digits = 1): string {
   return `${Math.round(v)}`
 }
 
-/** Yen amounts: "8.76 مليار ين". */
-export const yenAr = (v: number, digits = 1): string => `${compactAr(v, digits)} ين`
+/** Yen amounts: "8.76 مليار ¥". */
+export const yenAr = (v: number, digits = 1): string => `${compactAr(v, digits)} ¥`
 
 /** "الأربعاء 28 أكتوبر" from a Date (UTC parts, like the other day labels). */
 export const dayAr = (d: Date, short = false): string =>
