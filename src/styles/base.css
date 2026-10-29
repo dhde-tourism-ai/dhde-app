@@ -891,3 +891,13 @@ html[dir='rtl'] details.itin-more:not([open]) summary::before {
 html[lang='ar'] .itin-walk {
   font-style: normal;
 }
+
+/* Letter spacing pulls Arabic letters apart (أغسطس became أ غسطس); Arabic has no capitals to space. */
+html[lang='ar'] * {
+  letter-spacing: 0 !important;
+}
+
+/* The mono font has no Arabic letters, so mixed text like "٢٤ أغسطس" fell back letter by letter. */
+html[lang='ar'] {
+  --font-mono: var(--font-ar);
+}

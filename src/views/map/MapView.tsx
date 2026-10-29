@@ -318,7 +318,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
     <section className={`mapview sheet-${sheetState}`}>
       <MapContainer bounds={VIEW_BOUNDS} zoomSnap={0.25} zoomDelta={0.5} zoomControl={false} scrollWheelZoom className="map-canvas" preferCanvas={false} worldCopyJump={false}>
         <FitView narrow={narrow} />
-        {!narrow && <ZoomControl position="bottomright" />}
+        {!narrow && <ZoomControl key={lang} position="bottomright" zoomInTitle={tr('Zoom in', '拡大', 'تكبير')} zoomOutTitle={tr('Zoom out', '縮小', 'تصغير')} />}
         <Basemap id={basemap} />
 
         {live && frame && routes && (

@@ -324,5 +324,11 @@
   "OK": "جيد",
   "Pending": "قيد الانتظار",
   "riders": "راكب",
-  "Visitors are estimates: each site's signal (cameras, reservations or survey responses) scaled to its 2025 official annual count. Forecasts are the FTAS model's.": "أعداد الزوار تقديرية: إشارة كل موقع (الكاميرات أو الحجوزات أو ردود الاستبيان) محوّلة إلى عدده السنوي الرسمي لعام 2025. التوقعات من نموذج FTAS."
+  "Visitors are estimates: each site's signal (cameras, reservations or survey responses) scaled to its 2025 official annual count. Forecasts are the FTAS model's.": "أعداد الزوار تقديرية: إشارة كل موقع (الكاميرات أو الحجوزات أو ردود الاستبيان) محوّلة إلى عدده السنوي الرسمي لعام 2025. التوقعات من نموذج FTAS.",
+  "Chukyo": "تشوكيو",
+  "Fukui residents": "سكان فوكوي",
+  "From outside Fukui": "من خارج فوكوي",
+  "Kansai": "كانساي",
+  "Other": "أخرى",
+  "Fukui": "فوكوي"
 }

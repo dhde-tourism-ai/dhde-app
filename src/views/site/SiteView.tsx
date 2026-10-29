@@ -196,7 +196,7 @@ export default function SiteView({ data, id }: Props) {
         >
           <FitSite bounds={bounds} options={narrow ? FIT_NARROW : FIT_WIDE} />
           <Basemap id="hybrid" />
-          <ZoomControl position="topleft" />
+          <ZoomControl key={lang} position="topleft" zoomInTitle={t('Zoom in', '拡大', 'تكبير')} zoomOutTitle={t('Zoom out', '縮小', 'تصغير')} />
           <SiteTransit />
           {site.lines.map((line, i) => (
             <Polyline key={`c${i}`} positions={line} pathOptions={{ color: '#000', opacity: 0.55, weight: 9, interactive: false }} />
