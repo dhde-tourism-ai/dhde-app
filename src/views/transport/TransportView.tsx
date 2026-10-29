@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { MON_AR } from '../../lib/arFormat'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { NodeRegistry } from '../../types/nodes'
 import type { DayType, MarketStatus, ModeId, TransportFile, TransportMarketFile, TransportModesFile, TransportTrendsFile } from '../../types/transport'
@@ -200,7 +201,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
         .map((m) => ({ id: m, name: t(...MODE_NAME[m]), yen: spend.visitors_from_outside[m]?.yen ?? 0, local: spend.fukui_residents[m]?.yen ?? null }))
         .filter((r) => r.yen > 0)
     : []
-  const trendRows = trends ? trends.weeks.map((w, i) => Object.fromEntries([['week', w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) : []
+  const trendRows = trends ? trends.weeks.map((w, i) => Object.fromEntries([['week', lang === 'ar' ? `${Number(w.slice(8, 10))} ${MON_AR[Number(w.slice(5, 7)) - 1]}` : w.slice(5)], ...trends.terms.map((x) => [x.label, x.values[i]])])) : []
   const yen = (v: number) =>
     lang === 'ja'
       ? v >= 1e8
@@ -619,7 +620,8 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                             } = p as { x?: number; y?: number; width?: number; height?: number; index?: number }
                             const r = spendRows[index]
                             return (
-                              <text x={Number(x) + Number(width) + 8} y={Number(y) + Number(height) / 2 + 4} fill={INK} fontSize={12.5} fontWeight={600}>
+                              // Charts are drawn left-to-right; the Arabic label reads right-to-left from the bar's end.
+                              <text x={Number(x) + Number(width) + 8} y={Number(y) + Number(height) / 2 + 4} fill={INK} fontSize={12.5} fontWeight={600} {...(lang === 'ar' ? { direction: 'rtl', textAnchor: 'end' } : {})}>
                                 {yenFull(r.yen)}
                                 <tspan fill="#7f8ba3" fontWeight={400}>
                                   {r.local != null ? `  ·  ${yenFull(r.local)}` : ''}

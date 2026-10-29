@@ -489,7 +489,7 @@ function MonthlyForecast({ card }: { card: MonthlyForecastCard }) {
                 {t(
                   `${unit}: ${total.actualMonths} actual months (${fmtN(total.actualSum)}) plus the forecast for the other ${12 - total.actualMonths}.`,
                   `${unit}：実績${total.actualMonths}か月（${fmtN(total.actualSum)}）＋残り${12 - total.actualMonths}か月の予測。`,
-                  `${unit}: ${total.actualMonths} أشهر فعلية (${fmtN(total.actualSum)}) مع توقع الأشهر الـ${12 - total.actualMonths} الباقية.`,
+                  `${unit}: ${total.actualMonths} أشهر فعلية (${fmtN(total.actualSum)}) مع توقع الأشهر الباقية (${12 - total.actualMonths}).`,
                 )}
               </p>
             </>

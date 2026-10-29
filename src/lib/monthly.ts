@@ -91,8 +91,8 @@ export function withMeasuredShares(questions: StrategicQuestion[], file: Monthly
               : `今後12か月の予測は${fcRate.toFixed(1)}%。`
             : ar
               ? same
-                ? ` توقع الأشهر الـ12 القادمة يعطي ${fcRate.toFixed(1)}%، وهو نفس آخر 12 شهراً مقيسة (${last[0].month} إلى ${last[11].month}): النموذج يحافظ على نمطها الشهري ويغيّر المستوى فقط.`
-                : ` توقع الأشهر الـ12 القادمة يعطي ${fcRate.toFixed(1)}%.`
+                ? ` توقع الأشهر القادمة (12 شهراً) يعطي ${fcRate.toFixed(1)}%، وهو نفس آخر 12 شهراً مقيسة (${last[0].month} إلى ${last[11].month}): النموذج يحافظ على نمطها الشهري ويغيّر المستوى فقط.`
+                : ` توقع الأشهر القادمة (12 شهراً) يعطي ${fcRate.toFixed(1)}%.`
               : same
                 ? ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%, the same as the last 12 measured months (${last[0].month} to ${last[11].month}): the model keeps their monthly pattern and changes only the level.`
                 : ` The next 12 months' forecast gives ${fcRate.toFixed(1)}%.`
