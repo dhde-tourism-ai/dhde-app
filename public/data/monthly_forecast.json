@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T06:01:23Z",
+  "generated_at": "2026-10-30T06:03:05Z",
   "source": {
     "repo": "dhde-tourism-ai/dhde-preprocessing-model",
     "commit": "de18acb"
@@ -1216,10 +1216,10 @@
       "label": "Fukui guest-nights",
       "label_ja": "福井県の延べ宿泊者数",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 9.6,
-      "baseline_mape_pct": 9.6,
+      "backtest_mape_pct": 9.2,
+      "baseline_mape_pct": 9.2,
       "range_rough": false,
-      "data_through": "2026-07",
+      "data_through": "2026-08",
       "comparable_from": "2023-01",
       "actual": [
         {
@@ -1393,15 +1393,13 @@
         {
           "month": "2026-07",
           "value": 366810.0
+        },
+        {
+          "month": "2026-08",
+          "value": 500990.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-08",
-          "predicted": 495810.0,
-          "low": 451690.0,
-          "high": 642163.0
-        },
         {
           "month": "2026-09",
           "predicted": 314540.0,
@@ -1467,6 +1465,12 @@
           "predicted": 366810.0,
           "low": 334169.0,
           "high": 475085.0
+        },
+        {
+          "month": "2027-08",
+          "predicted": 500990.0,
+          "low": 456409.0,
+          "high": 648872.0
         }
       ]
     },
@@ -1476,10 +1480,10 @@
       "label": "Fukui guest-nights, Japanese",
       "label_ja": "福井県の延べ宿泊者数（日本人）",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 9.6,
-      "baseline_mape_pct": 9.6,
+      "backtest_mape_pct": 9.2,
+      "baseline_mape_pct": 9.2,
       "range_rough": false,
-      "data_through": "2026-07",
+      "data_through": "2026-08",
       "comparable_from": "2023-01",
       "actual": [
         {
@@ -1653,15 +1657,13 @@
         {
           "month": "2026-07",
           "value": 358180.0
+        },
+        {
+          "month": "2026-08",
+          "value": 492930.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-08",
-          "predicted": 490460.0,
-          "low": 441463.0,
-          "high": 631207.0
-        },
         {
           "month": "2026-09",
           "predicted": 308120.0,
@@ -1727,6 +1729,12 @@
           "predicted": 358180.0,
           "low": 322398.0,
           "high": 460967.0
+        },
+        {
+          "month": "2027-08",
+          "predicted": 492930.0,
+          "low": 443686.0,
+          "high": 634386.0
         }
       ]
     },
@@ -1736,10 +1744,10 @@
       "label": "Fukui guest-nights, foreign",
       "label_ja": "福井県の延べ宿泊者数（外国人）",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 17.4,
-      "baseline_mape_pct": 17.4,
+      "backtest_mape_pct": 18.1,
+      "baseline_mape_pct": 18.1,
       "range_rough": false,
-      "data_through": "2026-07",
+      "data_through": "2026-08",
       "comparable_from": "2023-01",
       "actual": [
         {
@@ -1913,15 +1921,13 @@
         {
           "month": "2026-07",
           "value": 8630.0
+        },
+        {
+          "month": "2026-08",
+          "value": 8060.0
         }
       ],
       "forecast": [
-        {
-          "month": "2026-08",
-          "predicted": 5350.0,
-          "low": 5109.0,
-          "high": 9525.0
-        },
         {
           "month": "2026-09",
           "predicted": 6420.0,
@@ -1987,6 +1993,12 @@
           "predicted": 8630.0,
           "low": 8241.0,
           "high": 15364.0
+        },
+        {
+          "month": "2027-08",
+          "predicted": 8060.0,
+          "low": 7697.0,
+          "high": 14349.0
         }
       ]
     }
