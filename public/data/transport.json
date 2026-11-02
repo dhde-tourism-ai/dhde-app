@@ -1,11 +1,11 @@
 {
- "generated_at": "2026-11-01T06:25:41Z",
+ "generated_at": "2026-11-02T06:27:24Z",
  "timezone": "Asia/Tokyo",
  "hub": "fukui_station",
  "reference_days": {
   "weekday": "2026-11-04",
   "saturday": "2026-11-07",
-  "sunday": "2026-11-01"
+  "sunday": "2026-11-08"
  },
  "timetable_dates": {
   "weekday": {
@@ -21,10 +21,10 @@
    "sakai_city_bus": "2026-11-07"
   },
   "sunday": {
-   "keifuku_bus": "2026-11-01",
-   "katsuyama_city_bus": "2026-11-01",
-   "eiheiji_town_bus": "2026-11-01",
-   "sakai_city_bus": "2026-11-01"
+   "keifuku_bus": "2026-11-08",
+   "katsuyama_city_bus": "2026-11-08",
+   "eiheiji_town_bus": "2026-11-08",
+   "sakai_city_bus": "2026-11-08"
   }
  },
  "walk": {
