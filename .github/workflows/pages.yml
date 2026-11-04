@@ -35,10 +35,9 @@ jobs:
       - run: npm run build
         env:
           VITE_DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
-      # Other sites await the transit isolation and browser checks in docs/site-builds.md.
       - name: Build partner sites
         run: |
-          for site in tojinbo; do
+          for site in tojinbo eiheiji rainbow_line; do
             npm run build:site -- "$site"
             node scripts/check_site_dist.mjs "$site"
           done

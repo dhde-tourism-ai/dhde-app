@@ -1,7 +1,7 @@
 import { SITE_ID, siteLayerAllowed } from '../../lib/siteMode'
 import { SITES } from '../../lib/sites'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, Polyline, Polygon, useMap, ZoomControl } from 'react-leaflet'
+import { MapContainer, Polyline, Polygon, Tooltip, useMap, ZoomControl } from 'react-leaflet'
 import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
@@ -56,7 +56,8 @@ const REGION_BOUNDS: [[number, number], [number, number]] = [
 ]
 
 /** Fit the site's geometry and nearby approach stops with the usual panel padding. */
-const sitePoints = SITE_ID ? [...SITES[SITE_ID].lines.flat(), ...SITES[SITE_ID].polygons.flatMap((p) => p.polygon)] : []
+const counting = SITE_ID ? SITES[SITE_ID].counting : null
+const sitePoints = SITE_ID ? [...SITES[SITE_ID].lines.flat(), ...SITES[SITE_ID].polygons.flatMap((p) => p.polygon), ...(counting && 'area' in counting ? counting.area : counting && 'point' in counting ? [counting.point] : [])] : []
 const VIEW_BOUNDS: [[number, number], [number, number]] = sitePoints.length ? [[Math.min(...sitePoints.map((p) => p[0])) - 0.002, Math.min(...sitePoints.map((p) => p[1])) - 0.002], [Math.max(...sitePoints.map((p) => p[0])) + 0.002, Math.max(...sitePoints.map((p) => p[1])) + 0.004]] : REGION_BOUNDS
 
 function FitView({ narrow }: { narrow: boolean }) {
@@ -329,7 +330,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
         {!narrow && <ZoomControl key={lang} position="bottomright" zoomInTitle={tr('Zoom in', '拡大', 'تكبير')} zoomOutTitle={tr('Zoom out', '縮小', 'تصغير')} />}
         <Basemap id={basemap} />
         {SITE_ID && SITES[SITE_ID].lines.map((line, i) => <Polyline key={`site-line-${i}`} positions={line} pathOptions={{ color: '#fab219', weight: 3 }} />)}
-        {SITE_ID && SITES[SITE_ID].polygons.map((p) => <Polygon key={p.id} positions={p.polygon} pathOptions={{ color: '#fab219', fillOpacity: 0.08 }} />)}
+        {SITE_ID && SITES[SITE_ID].polygons.map((p) => <Polygon key={p.id} positions={p.polygon} pathOptions={{ color: '#fab219', fillOpacity: 0.08 }}>{p.badge && <Tooltip permanent direction="center" className="site-park-tip">{p.badge}</Tooltip>}</Polygon>)}
 
         {live && frame && routes && (
           <>

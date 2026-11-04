@@ -92,6 +92,8 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
   const survey = market?.survey[node.id]
   const day = Math.floor(t / 24)
   const ln = live?.nodes[node.id]
+  const publishedForecast = !SITE_ID || Boolean(live?.node_meta?.[node.id]?.forecast_source_daily[day])
+  const surveyProxy = Boolean(SITE_ID && live?.node_meta?.[node.id]?.measure === 'proxy_survey')
 
   const hourly = ln
     ? Array.from({ length: 24 }, (_, h) => {
@@ -111,7 +113,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
       ? dailyArrivals(live, node.id).map((d) => {
           const realV = meta?.visitors_daily[d.d] ?? null
           const isReal = realV !== null && d.d < todayDay
-          return { ...d, value: isReal ? realV : d.predicted, isReal, label: dayLabel(live, d.d, lang, true), day: live.days[d.d].date.slice(8).replace(/^0/, '') }
+          return { ...d, value: isReal ? realV : SITE_ID && !meta?.forecast_source_daily[d.d] ? null : d.predicted, isReal, label: dayLabel(live, d.d, lang, true), day: live.days[d.d].date.slice(8).replace(/^0/, '') }
         })
       : []
   const lastSig = (() => {
@@ -150,7 +152,10 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
           <p className="muted">{tr('No live feed for this node yet. It is placed on the map from the node registry.', 'このノードのライブデータはまだありません。')}</p>
         ) : (
           <>
-            {frame.noEstimate ? (
+            {SITE_ID && meta?.measure === 'proxy_survey' && <p className="muted small">{tr('Survey proxy, low confidence. No model forecast is published.', 'アンケート代理指標・信頼度低。モデル予測はありません。')}</p>}
+            {SITE_ID && frame.noEstimate ? (
+              <p className="muted">{tr('No daily estimate or published forecast for this date.', 'この日の日別推計・公表予測はありません。')}</p>
+            ) : frame.noEstimate ? (
               <div className="real-card">
                 <div className="rc-head">
                   <span className="eyebrow">{tr('Camera detections', 'カメラ検知数')}</span>
@@ -202,7 +207,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString('en-US')}</span>
                 <StatusTag tier={frame.tier} />
               </div>
-              <div className="dk">
+              {publishedForecast && <div className="dk">
                 <span className="eyebrow">{tr('Forecast', '予測')}</span>
                 <span className="dk-val sm">{Math.round(frame.predicted).toLocaleString('en-US')}</span>
                 {frame.lo !== null && frame.hi !== null && (
@@ -210,7 +215,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                     {frame.lo.toLocaleString('en-US')}–{frame.hi.toLocaleString('en-US')}
                   </span>
                 )}
-              </div>
+              </div>}
             </div>
             <div className="meter" role="img" aria-label={`${Math.round(frame.load * 100)}% ${tr('of comfortable capacity', '（快適容量比）')}`}>
               <span className="meter-fill" style={{ width: `${Math.min(100, frame.load * 100)}%`, background: frame.tier.colour }}></span>
@@ -219,6 +224,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             <p className="meter-lab muted">
               {Math.round(frame.load * 100)}% {tr(SITE_ID ? 'of normal day' : 'of comfortable capacity', SITE_ID ? '（平常日比）' : 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
+            {!SITE_ID && <>
             <h3 className="drawer-h">{tr(SITE_ID ? 'Daily total across the selected day' : 'Today’s rhythm, people on site', SITE_ID ? '選択日の日合計（時間別推計なし）' : '1日の推移（現地人数）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={130}>
@@ -239,7 +245,8 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               </div>
             </div>
 
-            <h3 className="drawer-h">{meta ? tr('Daily visitors: last 7 days (real) and next 7 (forecast)', '1日の来訪者数：直近7日（実）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
+            </>}
+            <h3 className="drawer-h">{surveyProxy ? tr('Daily survey-proxy estimates', '日別アンケート代理推計') : meta ? tr('Daily visitors: last 7 days (real) and next 7 (forecast)', '1日の来訪者数：直近7日（実）と今後7日（予測）') : tr('Daily arrivals, next 7 days (forecast)', '1日の来訪者数（7日間予測）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={110}>
                 <BarChart data={daily} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
@@ -256,7 +263,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               {meta && (
                 <div className="chart-key">
                   <span><i className="k-band" style={{ background: S1 }}></i>{tr('Real estimate', '実推計')}</span>
-                  <span><i className="k-band" style={{ background: '#6d86ad', opacity: 0.6 }}></i>{tr('Forecast', '予測')}</span>
+                  {!surveyProxy && <span><i className="k-band" style={{ background: '#6d86ad', opacity: 0.6 }}></i>{tr('Forecast', '予測')}</span>}
                   <span><i className="k-band" style={{ background: '#8b9dff' }}></i>{tr('Selected day', '選択日')}</span>
                 </div>
               )}
@@ -301,6 +308,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               )
             })}
 
+            {!SITE_ID && <>
             <h3 className="drawer-h">{tr('Roads in', '接続道路')}</h3>
             <ul className="road-list">
               {routesTouching(routes, node.id)
@@ -346,6 +354,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 ))}
               </div>
             </div>
+            </>}
           </>
         )}
 
@@ -377,7 +386,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                   </span>
                 </div>
               )}
-              {market.social[node.id] && (
+              {market.social[node.id] && (!SITE_ID || market.social[node.id].real) && (
                 <div className="vg-cell">
                   {market.social[node.id].real ? (
                     <>

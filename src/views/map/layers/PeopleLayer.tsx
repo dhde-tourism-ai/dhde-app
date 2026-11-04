@@ -87,7 +87,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
           )
         }
         if (f.noEstimate) {
-          const sig = lastSignal(meta?.[n.id], day)
+          const sig = SITE_ID ? null : lastSignal(meta?.[n.id], day)
           return (
             <CircleMarker
               key={n.id}
@@ -99,14 +99,14 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
               <Tooltip className="map-tip wide" direction="top" offset={[0, -10]}>
                 <div className="tt-head">
                   <span>{t(n.name, n.name_ja)}</span>
-                  <span className="tt-real">{t('Real signal', '実シグナル')}</span>
+                  <span className="tt-real">{SITE_ID ? t('No estimate', '推計なし') : t('Real signal', '実シグナル')}</span>
                 </div>
                 <div className="tt-hero">
                   <b className="num">{sig ? Math.round(sig.v).toLocaleString('en-US') : '—'}</b>
-                  <span>{t('camera detections in the day (not unique visitors)', '1日のカメラ検知数（延べ、来訪者数ではない）')}</span>
+                  <span>{SITE_ID ? t('No daily estimate or published forecast for this date.', 'この日の日別推計・公表予測はありません。') : t('camera detections in the day (not unique visitors)', '1日のカメラ検知数（延べ、来訪者数ではない）')}</span>
                 </div>
                 <div className="tip-sub">
-                  {t('No visitor estimate: there is no official annual count for this site to calibrate against.', '来訪者推計なし：換算に使う公式年間値がありません。')}
+                  {SITE_ID ? meta?.[n.id]?.measure === 'proxy_survey' && t('Survey proxy, low confidence. No model forecast is published.', 'アンケート代理指標・信頼度低。モデル予測はありません。') : t('No visitor estimate: there is no official annual count for this site to calibrate against.', '来訪者推計なし：換算に使う公式年間値がありません。')}
                   {sig && meta?.[n.id] ? ` ${t('Latest', '最新')}: ${meta[n.id].visitors_as_of ?? ''}` : ''}
                 </div>
               </Tooltip>
@@ -129,13 +129,13 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 pathOptions={{ color: ACCENT, weight: 2.5, fillOpacity: 0, opacity: 0.95 }}
               />
             )}
-            {/* forecast: dashed ring */}
-            <CircleMarker
+            {/* Only published forecasts get a dashed ring in scoped builds. */}
+            {(!SITE_ID || m?.forecast_source_daily[day]) && <CircleMarker
               center={[n.lat, n.lon]}
               radius={rPred}
               interactive={false}
               pathOptions={{ color: '#ffffff', weight: 1.8, dashArray: '3 4', fillOpacity: 0, opacity: 0.9 }}
-            />
+            />}
             {/* actual (or forecast-only) body */}
             <CircleMarker
               center={[n.lat, n.lon]}
@@ -164,6 +164,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                   <b className="num">{Math.round(f.onSite).toLocaleString('en-US')}</b>
                   <span>{f.observed ? t(SITE_ID ? 'daily visitors' : 'people on site now', SITE_ID ? '日別来訪者数' : '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
                 </div>
+                {SITE_ID && m?.measure === 'proxy_survey' && <p>{t('Survey proxy, low confidence. No model forecast is published.', 'アンケート代理指標・信頼度低。モデル予測はありません。')}</p>}
                 <div className="tt-grid">
                   <span className="tt-k">{t('Crowding', '混雑')}</span>
                   <span className="tt-v">
