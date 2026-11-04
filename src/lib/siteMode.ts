@@ -1,3 +1,4 @@
+import type { RegionalEconomics } from '../types/economics'
 import type { LiveData, DataSources } from '../types/live'
 import type { MarketVoiceData } from '../types/market'
 import type { LayerId } from '../views/map/layers'
@@ -6,9 +7,10 @@ import type { mergeAll } from './real'
 export const SITE_ID: string = import.meta.env.VITE_SITE ?? ''
 
 /** Only measured sources and explicitly labelled town economics are available. */
-export function siteLayerAllowed(layer: LayerId, sources?: DataSources): boolean {
+export function siteLayerAllowed(layer: LayerId, sources?: DataSources, economics?: RegionalEconomics | null): boolean {
   if (!SITE_ID) return true
-  if (['transport', 'rail', 'economics'].includes(layer)) return true
+  if (layer === 'economics') return Boolean(economics?.nodes.some((n) => (n.id === SITE_ID || n.aliases?.includes(SITE_ID)) && n.visitors.value != null))
+  if (['transport', 'rail'].includes(layer)) return true
   if (['flow', 'traffic', 'nudges', 'density'].includes(layer)) return false
   return Boolean(sources?.[layer as keyof DataSources]?.real.includes(SITE_ID))
 }

@@ -9,18 +9,26 @@ Japanese is the default unless the browser has a saved language preference.
 ## Scoping and layers
 
 `scripts/site-config.mjs` defines sites, municipality and hotel feeds, and the
-12 km transport clipping radius. `scripts/scope_site_data.mjs` allowlists files
-and retains one site's node, real history, forecasts and market data. Neutral
+12 km transport clipping radius, measured by haversine distance from the site
+anchor. `scripts/scope_site_data.mjs` allowlists files
+and picks known output fields at every depth, dropping unknown fields with a
+`::warning::` annotation. It retains one site's node, real history,
+forecasts and market data. Neutral
 templates provide array shapes only. Routes and legacy dashboard totals are
 empty. Transport keeps serving routes and nearby public infrastructure.
-Economics keeps the site and its municipality, with modelled totals labelled.
+Economics uses explicit node and town mappings and is offered only when the scoped
+file contains site visitor data, with modelled totals labelled. Unused operator
+`timetable_dates` metadata is omitted.
 Regional strategy, comparisons, demo posts and other unlisted files are omitted.
 
 `src/lib/siteMode.ts` removes demo fallbacks and gates layers against the merged
 real-source lists. `src/lib/sites.ts` selects geometry from `siteGeometry/` so
-Vite removes other sites' geometry. `scripts/check_site_dist.mjs` rejects foreign
-priority IDs as keys, whole values or hyphen-separated ID segments and checks
-JavaScript for foreign geometry. Public transit identifiers containing a site's
+Vite removes other sites' geometry. `scripts/check_site_dist.mjs` rejects
+foreign IDs and aliases derived from `public/data` as keys, whole values or
+hyphen-separated ID segments in JSON. It scans JSON and JavaScript for other
+priority nodes' calibration and daily visitor fingerprints and checks JavaScript
+for foreign geometry. Shared hotel feeds are not fingerprinted. Public transit
+identifiers containing a site's
 name as a substring are allowed. Data loads from the local scoped snapshot;
 hourly weather and public JMA warnings use their existing external feeds.
 
@@ -44,11 +52,17 @@ snippets and social omits posts. People values are daily totals, held constant
 across hours. Missing weather and hotel dates stay hidden. Continuous CSS
 animations are disabled within the site shell.
 
+Site layer preferences read and write `dhde.layers.<site>` in local storage;
+the full app continues to use `dhde.layers`.
+
+Site builds keep data out of other partners' bundles, but GitHub Pages is public,
+so this is not access control.
+
 ## Adding a site
 
 Add its feed mappings to `scripts/site-config.mjs`, geometry under
 `src/lib/siteGeometry/`, and a static selection branch in `src/lib/sites.ts`.
 Check the real-source lists and initial bounds at desktop and phone widths.
-Add distinctive geometry fingerprints to `scripts/check_site_dist.mjs` and the
-site ID to its priority list. Add the site to the single Pages build list.
+Add distinctive geometry fingerprints to `scripts/site-config.mjs`. Pages reads
+the site list from that file.
 Build and check both the full app and every scoped site after changes.

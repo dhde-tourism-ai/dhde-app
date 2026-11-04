@@ -299,7 +299,7 @@ export function LayersPanel(p: Props) {
           <div key={g.id} className="layer-group">
             <h3 className="layer-group-title">{t(g.en, g.ja)}</h3>
             <ul className="layer-list">
-              {LAYERS.filter((l) => l.group === g.id && siteLayerAllowed(l.id, p.sources)).map((l) => {
+              {LAYERS.filter((l) => l.group === g.id && siteLayerAllowed(l.id, p.sources, p.economics)).map((l) => {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
@@ -322,7 +322,7 @@ export function LayersPanel(p: Props) {
                     {on && (
                       <div className="layer-legend">
                         {realNote(l.id)}
-                        {SITE_ID ? <p className="lg-note">{t(l.id === 'people' ? 'Daily visitor estimate and published forecast; colour compares with a normal day.' : l.id === 'rail' ? 'Rail lines and stations only. No illustrative trains.' : l.id === 'economics' ? 'Modelled town totals, covering the whole municipality.' : l.id === 'transport' ? 'Local routes, stops, timetables and walking areas.' : 'Collected site aggregates; missing values are omitted.', l.id === 'people' ? '日別来訪者推計と公表予測。色は平常日との比較。' : l.id === 'rail' ? '鉄道路線と駅のみ。参考列車は非表示。' : l.id === 'economics' ? '市町全体のモデル推計値。' : l.id === 'transport' ? '周辺路線・停留所・時刻表・徒歩圏。' : 'この地点の収集済み集計値。欠測値は表示しません。')}</p> : legend[l.id]}
+                        {SITE_ID ? <p className="lg-note">{t(...(SITE_LEGEND[l.id] ?? SITE_LEGEND_DEFAULT))}</p> : legend[l.id]}
                       </div>
                     )}
                   </li>
@@ -337,4 +337,12 @@ export function LayersPanel(p: Props) {
       </div>
     </section>
   )
+}
+
+const SITE_LEGEND_DEFAULT: [string, string] = ['Collected site aggregates; missing values are omitted.', 'この地点の収集済み集計値。欠測値は表示しません。']
+const SITE_LEGEND: Partial<Record<LayerId, [string, string]>> = {
+  people: ['Daily visitor estimate and published forecast; colour compares with a normal day.', '日別来訪者推計と公表予測。色は平常日との比較。'],
+  rail: ['Rail lines and stations only. No illustrative trains.', '鉄道路線と駅のみ。参考列車は非表示。'],
+  economics: ['Modelled town totals, covering the whole municipality.', '市町全体のモデル推計値。'],
+  transport: ['Local routes, stops, timetables and walking areas.', '周辺路線・停留所・時刻表・徒歩圏。'],
 }

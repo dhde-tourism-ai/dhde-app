@@ -37,7 +37,7 @@ jobs:
           VITE_DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
       - name: Build partner sites
         run: |
-          for site in tojinbo eiheiji rainbow_line; do
+          for site in $(node --input-type=module -e "import { sites } from './scripts/site-config.mjs'; console.log(Object.keys(sites).join(' '))"); do
             npm run build:site -- "$site"
             node scripts/check_site_dist.mjs "$site"
           done

@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
+import { schemas, pickOutput } from './site-data-schema.mjs'
 import { sites } from './site-config.mjs'
 const read = async (name) => JSON.parse(await readFile(`public/data/${name}.json`, 'utf8'))
 
@@ -11,16 +12,22 @@ export async function scopeSite(site) {
   await rm(root, { recursive: true, force: true })
   await mkdir(`${root}/data`, { recursive: true })
   const save = (name, data) => {
-    // Timetable dates are keyed by operator, including operators outside this site.
-    if (data.timetable_dates) for (const day of Object.keys(data.timetable_dates)) {
-      const dates = data.timetable_dates[day]
-      for (const id of Object.keys(dates)) if (['katsuyama_city_bus', 'eiheiji_town_bus'].includes(id) && !JSON.stringify(data.nodes ?? {}).includes(id)) delete dates[id]
+    if (name.startsWith('transport')) {
+      delete data.timetable_dates; delete data.walk; delete data.hub
+      if (name !== 'transport') { delete data.timezone; delete data.reference_days }
     }
-    return writeFile(`${root}/data/${name}.json`, JSON.stringify(data))
+    const warnings = new Set()
+    const output = pickOutput(data, schemas[name], name, warnings)
+    for (const key of warnings) console.warn(`::warning::Dropped unknown site output field ${key}`)
+    return writeFile(`${root}/data/${name}.json`, JSON.stringify(output))
   }
   const registry = await read('nodes')
   const node = registry.nodes.find((n) => n.id === site)
-  const inside = ([lat, lon]) => Math.abs(lat - node.lat) <= config.radiusKm / 111 && Math.abs(lon - node.lon) <= config.radiusKm / (111 * Math.cos(node.lat * Math.PI / 180))
+  const inside = ([lat, lon]) => {
+    const rad = (v) => v * Math.PI / 180
+    const a = Math.sin(rad(lat - node.lat) / 2) ** 2 + Math.cos(rad(node.lat)) * Math.cos(rad(lat)) * Math.sin(rad(lon - node.lon) / 2) ** 2
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= config.radiusKm
+  }
   const only = (nodes) => Object.fromEntries(Object.entries(nodes).filter(([id]) => id === site))
   await save('nodes', { generated_at: registry.generated_at, prefectures: registry.prefectures, nodes: [node] })
   const real = await read('real_data')
@@ -80,8 +87,8 @@ export async function scopeSite(site) {
   }).filter((r) => r[1].length > 1)
   await save('transport_trips', trips)
   const economics = await read('regional_economics')
-  economics.nodes = economics.nodes.filter((n) => n.id === site)
-  economics.regions = economics.regions.filter((r) => r.id === node.municipality).map((r) => ({ ...r, nodes: [site] }))
+  economics.nodes = economics.nodes.filter((n) => n.id === config.economicsNode)
+  economics.regions = economics.regions.filter((r) => r.id === config.town).map((r) => ({ ...r, nodes: [site] }))
   economics.prefecture = {}; economics.assumptions = {}; economics.flows = []; economics.comparison_regions = []; economics.external_points = {}
   economics.notes = ['Modelled town economics. Municipal totals cover the whole town, not just this site.']
   await save('regional_economics', economics)

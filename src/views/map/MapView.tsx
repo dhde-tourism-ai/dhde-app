@@ -179,13 +179,13 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? (SITE_ID ? null : readStoredLayers()) ?? (SITE_ID ? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? readStoredLayers() ?? (SITE_ID ? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
   const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
-  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
+  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(SITE_ID ? 'board' : url.panel ?? 'board')
   const [showAllNudges, setShowAllNudges] = useState(false)
   const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
@@ -227,7 +227,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   // Saved only when the viewer toggles a layer: a ?layers= link or a picked
   // nudge turning a layer on doesn't replace the viewer's own choice.
   const toggle = (l: LayerId) => {
-    if (!siteLayerAllowed(l, live?.sources)) return
+    if (!siteLayerAllowed(l, live?.sources, economics)) return
     const n = new Set(active)
     if (n.has(l)) n.delete(l)
     else {
@@ -245,7 +245,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
   const top = alerts ? topAlert(alerts) : null
   const day = Math.floor(t / 24)
-  const visibleMarket = SITE_ID && market ? { ...market, hotels: market.hotels.filter((h) => h.real_days?.[day]) } : market
+  const visibleMarket = useMemo(() => SITE_ID && market ? { ...market, hotels: market.hotels.filter((h) => h.real_days?.[day]) } : market, [market, day])
+  const weatherFrame = useMemo(() => SITE_ID && frame ? Object.fromEntries(Object.entries(frame).filter(([, f]) => f.weather.hourly)) : frame, [frame])
   // Optional: without hotel_thresholds.json loop #3 keeps its demo rule.
   const hotelThresholds = useJsonResource<HotelThresholds>(SITE_ID ? null : 'hotel_thresholds.json').data
   // Optional: public transport access (built daily by dhde-preprocessing-model). Without it the card and layer just don't show.
@@ -276,11 +277,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const hubName: [string, string] = hubNode ? [hubNode.name, hubNode.name_ja] : ['Fukui Station', '福井駅']
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
-  const layerOn = (l: LayerId) => active.has(l) && siteLayerAllowed(l, live?.sources)
+  const layerOn = (l: LayerId) => active.has(l) && siteLayerAllowed(l, live?.sources, economics)
   const cardLayers = useMemo(
     () => ({ people: active.has('people'), weather: active.has('weather'), reviews: active.has('reviews'), survey: active.has('survey'), social: active.has('social') }),
     [active],
   )
+  const cardNodes = useMemo(() => active.has('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority), [active, nodes, frame])
   const paused = false
 
   const tabs = (
@@ -293,7 +295,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
       </button>}
     </div>
   )
-  const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
+  const showNudges = !SITE_ID && (narrow ? sheet === 'nudges' : rightTab === 'nudges')
   const nudgeTitle = (
     <h2 className="fp-title">
       <Icon name="flag" /> {tr('Action nudges', '推奨アクション')}
@@ -316,9 +318,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
       onOpenNode={onOpenNode}
     />
   ) : showNudges && live ? (
-    <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
+    !SITE_ID && <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
-    <AlertsPanel source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
+    <AlertsPanel meta={live?.node_meta} source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
 
   const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
@@ -369,10 +371,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
           />
         )}
         {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}
-        {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={SITE_ID ? Object.fromEntries(Object.entries(frame).filter(([, f]) => f.weather.hourly)) : frame} showPrecip={showPrecip} />}
+        {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={weatherFrame ?? frame} showPrecip={showPrecip} />}
         {/* One card per site: its name, then a row per active layer (weather, reviews, survey, posts). */}
         <SiteCards
-          nodes={layerOn('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority)}
+          nodes={cardNodes}
           extra={nodes}
           frame={frame}
           market={visibleMarket}

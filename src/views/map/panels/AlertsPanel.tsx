@@ -6,7 +6,7 @@ import { useLang } from '../../../lib/i18n'
 import { Icon } from '../../../components/icons'
 import type { IconName } from '../../../lib/icons'
 import { SourceBadge } from '../../../components/SourceBadge'
-import type { SourceInfo } from '../../../types/live'
+import type { SourceInfo, RealNodeMeta } from '../../../types/live'
 import type { NodeFrame } from '../../../lib/live'
 import type { MapNode } from '../../../lib/nodes'
 
@@ -65,11 +65,12 @@ interface Props {
   onSelect: (id: string) => void
   onClose?: () => void
   tabs?: ReactNode
+  meta?: Record<string, RealNodeMeta>
   source?: SourceInfo
 }
 
 /** Right-hand panel when no node is selected: node board plus traffic, weather and operator alerts. */
-export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs, source }: Props) {
+export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs, source, meta }: Props) {
   const { t } = useLang()
   const withEst = frame ? Object.values(frame).filter((f) => !f.noEstimate) : []
   const total = withEst.reduce((a, f) => a + f.onSite, 0)
@@ -92,7 +93,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         {frame && (
           <div className="board">
             <div className="board-total">
-              <span className="eyebrow">{SITE_ID === 'eiheiji' ? t('Survey proxy · low confidence', 'アンケート代理指標・信頼度低') : SITE_ID ? t('Daily visitor estimate', '日別来訪者推計') : withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`, `الناس في المواقع، ${withEst.length} مواقع لها تقديرات`)}</span>
+              <span className="eyebrow">{SITE_ID && meta?.[SITE_ID]?.measure === 'proxy_survey' ? t('Survey proxy · low confidence', 'アンケート代理指標・信頼度低') : SITE_ID ? t('Daily visitor estimate', '日別来訪者推計') : withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`, `الناس في المواقع، ${withEst.length} مواقع لها تقديرات`)}</span>
               <span className="board-num">{SITE_ID && !withEst.length ? '—' : Math.round(total).toLocaleString('en-US')}</span>
             </div>
             <ul className="board-list">
