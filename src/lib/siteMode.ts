@@ -6,22 +6,6 @@ import type { mergeAll } from './real'
 
 export const SITE_ID: string = import.meta.env.VITE_SITE ?? ''
 
-/** Scoped sites without any published model days open on their latest counted day. */
-export function siteWithoutForecast(live: LiveData): boolean {
-  const meta = live.node_meta?.[SITE_ID]
-  return Boolean(SITE_ID && meta && !meta.forecast_source_daily.some((source) => source === 'model'))
-}
-
-export function siteOpeningIndex(live: LiveData): number | null {
-  if (!siteWithoutForecast(live)) return null
-  const counts = live.node_meta![SITE_ID].visitors_daily
-  const today = live.today_day ?? Math.floor((live.now_index ?? live.observed_until) / 24)
-  for (let day = Math.min(today, counts.length - 1); day >= 0; day--) {
-    if (counts[day] != null) return day * 24 + 12
-  }
-  return null
-}
-
 /** Only measured sources and explicitly labelled town economics are available. */
 export function siteLayerAllowed(layer: LayerId, sources?: DataSources, economics?: RegionalEconomics | null): boolean {
   if (!SITE_ID) return true

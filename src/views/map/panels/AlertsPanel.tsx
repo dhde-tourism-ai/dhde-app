@@ -64,23 +64,22 @@ interface Props {
   isDemo: boolean
   onSelect: (id: string) => void
   onClose?: () => void
-  title?: string
   tabs?: ReactNode
   meta?: Record<string, RealNodeMeta>
   source?: SourceInfo
 }
 
 /** Right-hand panel when no node is selected: node board plus traffic, weather and operator alerts. */
-export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, title, tabs, source, meta }: Props) {
+export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs, source, meta }: Props) {
   const { t } = useLang()
   const withEst = frame ? Object.values(frame).filter((f) => !f.noEstimate) : []
   const total = withEst.reduce((a, f) => a + f.onSite, 0)
   return (
-    <section className="float-panel alerts-panel" aria-label={title ?? t('Live board', 'ライブボード')}>
+    <section className="float-panel alerts-panel" aria-label={t('Live board', 'ライブボード')}>
       <header className="fp-head">
         {tabs ?? (
           <h2 className="fp-title">
-            <Icon name="alert" /> {title ?? t('Live board', 'ライブボード')}
+            <Icon name="alert" /> {t('Live board', 'ライブボード')}
           </h2>
         )}
         {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} note={['Crowding uses real daily visitor totals with a simulated hourly shape; weather advisories are demo.', '混雑は来訪者の日合計が実データ（時間別は模擬）。気象注意報はデモ。']} />}

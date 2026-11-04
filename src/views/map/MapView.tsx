@@ -1,4 +1,4 @@
-import { SITE_ID, siteLayerAllowed, siteOpeningIndex, siteWithoutForecast } from '../../lib/siteMode'
+import { SITE_ID, siteLayerAllowed } from '../../lib/siteMode'
 import { SITES } from '../../lib/sites'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Polyline, Polygon, Tooltip, useMap, ZoomControl } from 'react-leaflet'
@@ -190,7 +190,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
 
-  const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? (live ? siteOpeningIndex(live) : null) ?? live?.now_index ?? live?.observed_until ?? 0))
+  const t = Math.max(0, Math.min((live?.hours ?? 1) - 1, tIdx ?? live?.now_index ?? live?.observed_until ?? 0))
 
   // A shared ?t=2026-10-02T14 is a JST date and hour: once the timeline is known, turn it into
   // its index (ignored when that hour isn't in the timeline any more).
@@ -217,7 +217,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
     if (!playing || !live) return
     const id = window.setInterval(() => {
       setT((cur) => {
-        const c = cur ?? siteOpeningIndex(live) ?? live.now_index ?? live.observed_until
+        const c = cur ?? live.now_index ?? live.observed_until
         return c + 1 >= live.hours ? 0 : c + 1
       })
     }, 900 / speed)
@@ -285,12 +285,10 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const cardNodes = useMemo(() => active.has('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority), [active, nodes, frame])
   const paused = false
 
-  const countLabel = live && siteWithoutForecast(live) ? `${frame?.[SITE_ID]?.actual != null ? tr('Observed', '実測') : tr('No estimate', '推計なし')} ${live.days[day].date}` : undefined
-
   const tabs = (
     <div className="panel-tabs" role="tablist" aria-label={tr('Right panel', 'パネル')}>
       <button role="tab" aria-selected={rightTab === 'board'} onClick={() => setRightTab('board')}>
-        <Icon name="alert" size={14} /> {countLabel ?? tr('Live board', 'ライブボード')}
+        <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
       </button>
       {!SITE_ID && <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
         <Icon name="flag" size={14} /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
@@ -322,7 +320,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   ) : showNudges && live ? (
     !SITE_ID && <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
-    <AlertsPanel title={countLabel} meta={live?.node_meta} source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
+    <AlertsPanel meta={live?.node_meta} source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
 
   const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
@@ -395,7 +393,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
       <div className="map-ui">
         {live && (
           <div className="status-strip" role="status" aria-live="polite">
-            <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{countLabel ?? (observed ? tr('LIVE', 'ライブ') : tr('FORECAST', '予測'))}</span>
+            <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{observed ? tr('LIVE', 'ライブ') : tr('FORECAST', '予測')}</span>
             <span className="ss-time">{timeLabel(live, t, lang)}</span>
             {top ? (
               <span className="ss-msg">
@@ -440,7 +438,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
                 <Icon name="layers" /> {tr('Layers', 'レイヤー')} <span className="count-badge">{active.size}</span>
               </button>
               <button className="btn" aria-pressed={sheet === 'alerts' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'alerts' ? null : 'alerts') }}>
-                <Icon name="alert" /> {countLabel ?? tr('Live', 'ライブ')}
+                <Icon name="alert" /> {tr('Live', 'ライブ')}
                 {alerts && alerts.traffic.length + alerts.weather.length + alerts.crowd.length > 0 && (
                   <span className="count-badge warn">{alerts.traffic.length + alerts.weather.length + alerts.crowd.length}</span>
                 )}
