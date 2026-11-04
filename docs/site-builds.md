@@ -4,6 +4,7 @@ Run `npm run build:site -- <site>` and `node scripts/check_site_dist.mjs <site>`
 Supported sites are `tojinbo`, `eiheiji` and `rainbow_line`. Output goes to
 `dist/<site>/`. Run the full `npm run build` first when building all outputs;
 it clears dist. Site builds preserve the root app. Pages builds all three sites.
+Sites without a model forecast open on the latest observed or proxy count day, labelled with its date; the Now button still selects now.
 Japanese is the default unless the browser has a saved language preference.
 
 ## Scoping and layers

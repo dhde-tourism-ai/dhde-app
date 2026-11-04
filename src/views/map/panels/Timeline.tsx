@@ -1,3 +1,4 @@
+import { SITE_ID, siteWithoutForecast } from '../../../lib/siteMode'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import type { LiveData } from '../../../types/live'
@@ -105,7 +106,9 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   }
 
   const day = Math.floor(t / 24)
-  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${observed ? tr('observed', '実測') : tr('forecast', '予測')}`
+  const noForecast = siteWithoutForecast(live)
+  const countLabel = noForecast ? `${live.node_meta?.[SITE_ID]?.visitors_daily[day] != null ? tr('Observed', '実測') : tr('No estimate', '推計なし')} ${live.days[day].date}` : null
+  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${countLabel ?? (observed ? tr('observed', '実測') : tr('forecast', '予測'))}`
 
   return (
     <div className="timeline" aria-label={tr('Timeline', 'タイムライン')}>
@@ -113,13 +116,15 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
         <Icon name={playing ? 'pause' : 'play'} size={18} />
       </button>
 
-      <div className="tl-readout">
+      <div className={`tl-readout ${noForecast ? 'tl-daily' : ''}`}>
         <div className="tl-time">
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
           {/* While playing, the timeline's hour (the vehicles run on at their own, slower pace). */}
-          {vehicles && !playing ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
+          {vehicles && !noForecast && !playing ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
         </div>
-        {vehicles && !isLive && !playing ? (
+        {noForecast ? (
+          <span className="tl-mode obs">{countLabel}</span>
+        ) : vehicles && !isLive && !playing ? (
           <span className="tl-mode run" title={tr('Off Now, buses and trains are simulated from the time shown (scheduled positions)', '現在以外の時刻：表示時刻からのシミュレーション（時刻表上の位置）')}>
             {tr('Simulated', 'シミュレーション')}
           </span>
