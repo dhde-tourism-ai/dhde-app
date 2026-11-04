@@ -20,6 +20,10 @@ npm run lint
 
 Shareable map state: `#/map/<node>` opens a node's drawer; `?layers=people,flow,traffic&base=dark&t=38&panel=nudges` sets layers, basemap (`hybrid`, `dark`, `streets`), hour index and the right-hand panel. `?layer=economics` still works.
 
+Scoped builds for Tojinbo, Eiheiji and Rainbow Line reuse the map and forecast
+page with only that site's data. See [Site builds](docs/site-builds.md) for build
+commands, scoping rules, layer policy and how to add a site.
+
 ## Data
 
 The app only reads JSON from `data/`: the live CloudFront copy when configured (see Hosting), otherwise the `public/data/` snapshot. It does no data processing and makes no runtime calls except map tiles.

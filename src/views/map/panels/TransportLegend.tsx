@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../../lib/siteMode'
 import type { TransportTrendsFile } from '../../../types/transport'
 import { useJsonResource } from '../../../hooks/useJsonResource'
 import { useLang } from '../../../lib/i18n'
@@ -16,7 +17,7 @@ const TREND_COLOUR: Record<string, string> = { ...MODE_COLOUR, bike: '#c39bff' }
 /** Legend for the Transport layer, plus Google Trends interest in transport terms (Illustrative). */
 export function TransportLegend() {
   const { t } = useLang()
-  const trends = useJsonResource<TransportTrendsFile>('transport_trends.json').data
+  const trends = useJsonResource<TransportTrendsFile>(SITE_ID ? null : 'transport_trends.json').data
   return (
     <>
       <div className="lg-row">

@@ -1,3 +1,4 @@
+import { SITE_ID, cleanSiteMerge } from '../lib/siteMode'
 import { useEffect, useMemo, useState } from 'react'
 import { useDashboardData } from './useDashboardData'
 import { mergeAll, parseReal } from '../lib/real'
@@ -18,8 +19,8 @@ import type { MarketVoiceData } from '../types/market'
 export function useProductData() {
   const dashboard = useDashboardData()
   const registry = useJsonResource<NodeRegistry>('nodes.json')
-  const economics = useJsonResource<RegionalEconomics>('regional_economics.json')
-  const strategy = useJsonResource<StrategicQuestions>('strategic_questions.json')
+  const economics = useJsonResource<RegionalEconomics>(SITE_ID ? null : 'regional_economics.json')
+  const strategy = useJsonResource<StrategicQuestions>(SITE_ID ? null : 'strategic_questions.json')
   const live = useJsonResource<LiveData>('live_demo.json')
   const routes = useJsonResource<RoutesFile>('routes.json')
   const market = useJsonResource<MarketVoiceData>('market_voice_demo.json')
@@ -48,10 +49,10 @@ export function useProductData() {
       parsed = null
     }
     try {
-      return mergeAll(live.data, market.data, parsed, hourly, now, warnings)
+      return cleanSiteMerge(mergeAll(live.data, market.data, parsed, hourly, now, warnings))
     } catch (e) {
       console.error('real_data.json merge failed; using demo data', e)
-      return mergeAll(live.data, market.data, null)
+      return cleanSiteMerge(mergeAll(live.data, market.data, null))
     }
   }, [live.data, market.data, real.data, hourly, now, warnings])
   return { dashboard, registry, economics, strategy, live, routes, market, merged, realLoading: real.isLoading }

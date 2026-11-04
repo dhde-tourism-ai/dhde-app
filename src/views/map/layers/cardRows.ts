@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../../lib/siteMode'
 /**
  * The rows of the site cards (SiteCards.tsx), as HTML for their Leaflet icons: one
  * per layer. Each layer's hover detail stays with its layer (WeatherDetail,
@@ -90,7 +91,7 @@ export interface CardRow {
 export function rowsFor(n: MapNode, frame: Record<string, NodeFrame> | null, market: MarketVoiceData | null, layers: CardLayers, lang: 'en' | 'ja' | 'ar'): CardRow[] {
   const f = frame?.[n.id]
   const rows: CardRow[] = []
-  if (layers.weather && f) rows.push({ key: 'weather', html: weatherRow(f, lang), attention: f.alerts.length > 0 || severeWeather(f) })
+  if (layers.weather && f && (!SITE_ID || f.weather.hourly)) rows.push({ key: 'weather', html: weatherRow(f, lang), attention: f.alerts.length > 0 || severeWeather(f) })
   const r = layers.reviews ? market?.reviews[n.id] : undefined
   if (r) rows.push({ key: 'reviews', html: reviewsRow(r, lang), attention: false })
   const s = layers.survey ? market?.survey[n.id] : undefined

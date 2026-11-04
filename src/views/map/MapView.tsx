@@ -1,5 +1,7 @@
+import { SITE_ID, siteLayerAllowed } from '../../lib/siteMode'
+import { SITES } from '../../lib/sites'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, useMap, ZoomControl } from 'react-leaflet'
+import { MapContainer, Polyline, Polygon, Tooltip, useMap, ZoomControl } from 'react-leaflet'
 import type L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '../../styles/map.css'
@@ -48,10 +50,15 @@ import { Declutter } from './Declutter'
 import { Basemap } from './Basemap'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
-const VIEW_BOUNDS: [[number, number], [number, number]] = [
+const REGION_BOUNDS: [[number, number], [number, number]] = [
   [35.57, 135.84],
   [36.3, 136.56],
 ]
+
+/** Fit the site's geometry and nearby approach stops with the usual panel padding. */
+const counting = SITE_ID ? SITES[SITE_ID].counting : null
+const sitePoints = SITE_ID ? [...SITES[SITE_ID].lines.flat(), ...SITES[SITE_ID].polygons.flatMap((p) => p.polygon), ...(counting && 'area' in counting ? counting.area : counting && 'point' in counting ? [counting.point] : [])] : []
+const VIEW_BOUNDS: [[number, number], [number, number]] = sitePoints.length ? [[Math.min(...sitePoints.map((p) => p[0])) - 0.002, Math.min(...sitePoints.map((p) => p[1])) - 0.002], [Math.max(...sitePoints.map((p) => p[0])) + 0.002, Math.max(...sitePoints.map((p) => p[1])) + 0.004]] : REGION_BOUNDS
 
 function FitView({ narrow }: { narrow: boolean }) {
   const map = useMap()
@@ -172,13 +179,13 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set(url.layers ?? readStoredLayers() ?? DEFAULT_LAYERS))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? readStoredLayers() ?? (SITE_ID ? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
   const [sheet, setSheet] = useState<'layers' | 'alerts' | 'nudges' | null>(null)
-  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(url.panel ?? 'board')
+  const [rightTab, setRightTab] = useState<'board' | 'nudges'>(SITE_ID ? 'board' : url.panel ?? 'board')
   const [showAllNudges, setShowAllNudges] = useState(false)
   const [activeNudge, setActiveNudge] = useState<string | undefined>(undefined)
   const [fly, setFly] = useState<{ at: [number, number]; key: number } | null>(null)
@@ -220,6 +227,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   // Saved only when the viewer toggles a layer: a ?layers= link or a picked
   // nudge turning a layer on doesn't replace the viewer's own choice.
   const toggle = (l: LayerId) => {
+    if (!siteLayerAllowed(l, live?.sources)) return
     const n = new Set(active)
     if (n.has(l)) n.delete(l)
     else {
@@ -237,17 +245,19 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const alerts = useMemo(() => (live && frame ? computeAlerts(live, routes, frame, registry?.nodes ?? [], t) : null), [live, routes, frame, registry, t])
   const top = alerts ? topAlert(alerts) : null
   const day = Math.floor(t / 24)
+  const visibleMarket = useMemo(() => SITE_ID && market ? { ...market, hotels: market.hotels.filter((h) => h.real_days?.[day]) } : market, [market, day])
+  const weatherFrame = useMemo(() => SITE_ID && frame ? Object.fromEntries(Object.entries(frame).filter(([, f]) => f.weather.hourly)) : frame, [frame])
   // Optional: without hotel_thresholds.json loop #3 keeps its demo rule.
-  const hotelThresholds = useJsonResource<HotelThresholds>('hotel_thresholds.json').data
+  const hotelThresholds = useJsonResource<HotelThresholds>(SITE_ID ? null : 'hotel_thresholds.json').data
   // Optional: public transport access (built daily by dhde-preprocessing-model). Without it the card and layer just don't show.
   const transport = useJsonResource<TransportFile>('transport.json').data
   const transportMap = useJsonResource<TransportMapFile>('transport_map.json').data
   const transportOn = active.has('transport') || active.has('rail')
   // Bus trips (for moving buses and stop schedules) only load while the Bus routes layer is on.
   const trips = useJsonResource<TransportTripsFile>(active.has('transport') ? 'transport_trips.json' : null).data
-  const railRuns = useMemo(() => buildRuns(transportMap?.rail), [transportMap])
+  const railRuns = useMemo(() => SITE_ID ? [] : buildRuns(transportMap?.rail), [transportMap])
   const nudges = useMemo(
-    () => (live ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, hotelThresholds) : []),
+    () => (live && !SITE_ID ? computeNudges(live, market, registry?.nodes ?? [], live.today_day ?? 0, hotelThresholds) : []),
     [live, market, registry, hotelThresholds],
   )
   const nudgesShown = useMemo(() => (showAllNudges ? nudges : topPerDay(nudges, 3)), [nudges, showAllNudges])
@@ -267,11 +277,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const hubName: [string, string] = hubNode ? [hubNode.name, hubNode.name_ja] : ['Fukui Station', '福井駅']
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
-  const layerOn = (l: LayerId) => active.has(l)
+  const layerOn = (l: LayerId) => active.has(l) && siteLayerAllowed(l, live?.sources)
   const cardLayers = useMemo(
     () => ({ people: active.has('people'), weather: active.has('weather'), reviews: active.has('reviews'), survey: active.has('survey'), social: active.has('social') }),
     [active],
   )
+  const cardNodes = useMemo(() => active.has('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority), [active, nodes, frame])
   const paused = false
 
   const tabs = (
@@ -279,12 +290,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
       <button role="tab" aria-selected={rightTab === 'board'} onClick={() => setRightTab('board')}>
         <Icon name="alert" size={14} /> {tr('Live board', 'ライブボード')}
       </button>
-      <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
+      {!SITE_ID && <button role="tab" aria-selected={rightTab === 'nudges'} onClick={() => setRightTab('nudges')}>
         <Icon name="flag" size={14} /> {tr('Action nudges', '推奨アクション')} <span className="count-badge">{nudgesFrom.length}</span>
-      </button>
+      </button>}
     </div>
   )
-  const showNudges = narrow ? sheet === 'nudges' : rightTab === 'nudges'
+  const showNudges = !SITE_ID && (narrow ? sheet === 'nudges' : rightTab === 'nudges')
   const nudgeTitle = (
     <h2 className="fp-title">
       <Icon name="flag" /> {tr('Action nudges', '推奨アクション')}
@@ -301,15 +312,15 @@ export default function MapView({ registry, dashboard, economics, economicsError
       hubName={hubName}
       dashboard={dashboard}
       economics={economics}
-      market={market}
+      market={visibleMarket}
       t={t}
       onClose={() => onSelect(undefined)}
       onOpenNode={onOpenNode}
     />
   ) : showNudges && live ? (
-    <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
+    !SITE_ID && <NudgesPanel source={live?.sources?.nudges} nudges={nudgesFrom} total={nudgesFromAll} showAll={showAllNudges} setShowAll={setShowAllNudges} live={live} day={day} activeId={activeNudge} onPick={pickNudge} tabs={narrow ? nudgeTitle : tabs} onClose={narrow ? () => setSheet(null) : undefined} />
   ) : alerts ? (
-    <AlertsPanel source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
+    <AlertsPanel meta={live?.node_meta} source={live?.sources?.people} alerts={alerts} nodes={nodes} frame={frame} isDemo={isDemo} onSelect={(id) => onSelect(id)} onClose={narrow ? () => setSheet(null) : undefined} tabs={narrow ? undefined : tabs} />
   ) : null
 
   const sheetState = narrow ? (selected ? 'right' : sheet === 'layers' ? 'left' : sheet === 'alerts' || sheet === 'nudges' ? 'right' : 'none') : 'none'
@@ -320,6 +331,8 @@ export default function MapView({ registry, dashboard, economics, economicsError
         <FitView narrow={narrow} />
         {!narrow && <ZoomControl key={lang} position="bottomright" zoomInTitle={tr('Zoom in', '拡大', 'تكبير')} zoomOutTitle={tr('Zoom out', '縮小', 'تصغير')} />}
         <Basemap id={basemap} />
+        {SITE_ID && SITES[SITE_ID].lines.map((line, i) => <Polyline key={`site-line-${i}`} positions={line} pathOptions={{ color: '#fab219', weight: 3 }} />)}
+        {SITE_ID && SITES[SITE_ID].polygons.map((p) => <Polygon key={p.id} positions={p.polygon} pathOptions={{ color: '#fab219', fillOpacity: 0.08 }}>{p.badge && <Tooltip permanent direction="center" className="site-park-tip">{p.badge}</Tooltip>}</Polygon>)}
 
         {live && frame && routes && (
           <>
@@ -329,12 +342,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
             {layerOn('sentiment') && <SentimentLayer nodes={nodes} frame={frame} />}
           </>
         )}
-        {market && layerOn('hotels') && <HotelsLayer data={market} day={day} nodes={registry?.nodes ?? []} />}
+        {market && layerOn('hotels') && <HotelsLayer data={visibleMarket ?? market} day={day} nodes={registry?.nodes ?? []} />}
         {market && layerOn('rsi') && <RsiLayer data={market} />}
         {transportOn && transportMap && (
           <TransportLayer data={transportMap} bus={layerOn('transport')} rail={layerOn('rail')} trips={trips} runs={railRuns} />
         )}
-        {transportOn && transportMap && live && (
+        {!SITE_ID && transportOn && transportMap && live && (
           <VehiclesLayer
             trips={layerOn('transport') ? trips : null}
             lines={transportMap.lines}
@@ -358,13 +371,13 @@ export default function MapView({ registry, dashboard, economics, economicsError
           />
         )}
         {!layerOn('people') && <SiteMarkers nodes={nodes.filter((n) => n.priority)} selectedId={selectedId} onSelect={onSelect} />}
-        {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={frame} showPrecip={showPrecip} />}
+        {layerOn('weather') && frame && <WeatherLayer nodes={nodes} frame={weatherFrame ?? frame} showPrecip={showPrecip} />}
         {/* One card per site: its name, then a row per active layer (weather, reviews, survey, posts). */}
         <SiteCards
-          nodes={layerOn('people') ? nodes.filter((n) => frame?.[n.id]) : nodes.filter((n) => n.priority)}
+          nodes={cardNodes}
           extra={nodes}
           frame={frame}
-          market={market}
+          market={visibleMarket}
           layers={cardLayers}
           selectedId={selectedId}
           onSelect={onSelect}
@@ -390,7 +403,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             ) : (
               <span className="ss-msg">
                 <span className="ss-sev" style={{ background: '#0ca30c' }} aria-hidden="true"></span>
-                {tr('All conditions normal.', 'すべて平常です。')}
+                {tr(SITE_ID ? 'No confirmed alerts.' : 'All conditions normal.', SITE_ID ? '確認済みのアラートなし。' : 'すべて平常です。')}
               </span>
             )}
             {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} note={OVERVIEW_NOTE} /> : <DemoBadge />)}
@@ -408,7 +421,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
             setShowPrecip={setShowPrecip}
             isDemo={isDemo}
             economics={economics}
-            market={market}
+            market={visibleMarket}
             sources={live?.sources}
             economicsError={economicsError}
             onClose={narrow ? () => setSheet(null) : undefined}
@@ -430,9 +443,9 @@ export default function MapView({ registry, dashboard, economics, economicsError
                   <span className="count-badge warn">{alerts.traffic.length + alerts.weather.length + alerts.crowd.length}</span>
                 )}
               </button>
-              <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
+              {!SITE_ID && <button className="btn" aria-pressed={sheet === 'nudges' && !selected} onClick={() => { onSelect(undefined); setSheet(sheet === 'nudges' ? null : 'nudges') }}>
                 <Icon name="flag" /> {tr('Actions', 'アクション')} <span className="count-badge">{nudgesFrom.length}</span>
-              </button>
+              </button>}
             </div>
           )}
         </div>

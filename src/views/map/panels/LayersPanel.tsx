@@ -1,3 +1,4 @@
+import { siteLayerAllowed } from '../../../lib/siteMode'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useLang } from '../../../lib/i18n'
@@ -298,7 +299,7 @@ export function LayersPanel(p: Props) {
           <div key={g.id} className="layer-group">
             <h3 className="layer-group-title">{t(g.en, g.ja)}</h3>
             <ul className="layer-list">
-              {LAYERS.filter((l) => l.group === g.id).map((l) => {
+              {LAYERS.filter((l) => l.group === g.id && siteLayerAllowed(l.id, p.sources)).map((l) => {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>

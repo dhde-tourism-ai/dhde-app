@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../lib/siteMode'
 import type { IconName } from '../../lib/icons'
 
 export type LayerId =
@@ -72,9 +73,11 @@ export const OVERVIEW_NOTE = [
 export const DEFAULT_LAYERS: LayerId[] = []
 
 /** The viewer's last layer choice, or null on a first visit. */
+const LAYER_STORAGE_KEY = SITE_ID ? `dhde.layers.${SITE_ID}` : 'dhde.layers'
+
 export function readStoredLayers(): LayerId[] | null {
   try {
-    const raw = window.localStorage.getItem('dhde.layers')
+    const raw = window.localStorage.getItem(LAYER_STORAGE_KEY)
     if (raw === null) return null
     const valid = new Set(LAYERS.map((l) => l.id))
     return raw.split(',').filter((x): x is LayerId => valid.has(x as LayerId))
@@ -102,7 +105,7 @@ export function storePanelOpen(open: boolean) {
 
 export function storeLayers(layers: Iterable<LayerId>) {
   try {
-    window.localStorage.setItem('dhde.layers', [...layers].join(','))
+    window.localStorage.setItem(LAYER_STORAGE_KEY, [...layers].join(','))
   } catch {
     /* storage blocked: the choice still holds for this visit */
   }

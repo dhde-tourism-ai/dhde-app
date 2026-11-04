@@ -1,3 +1,4 @@
+import { SITE_ID } from '../lib/siteMode'
 import { useCallback, useEffect, useState } from 'react'
 
 export type ViewId = 'summary' | 'map' | 'nodes' | 'transport' | 'strategy' | 'site'
@@ -12,6 +13,12 @@ const VIEWS: ViewId[] = ['summary', 'map', 'nodes', 'transport', 'strategy', 'si
 
 function parse(hash: string): Route {
   const [, view, node] = hash.replace(/^#/, '').split('/')
+  if (SITE_ID) {
+    if (view === 'site' && node === SITE_ID) return { view: 'site', node: SITE_ID }
+    if (view === 'map' && (!node || node === SITE_ID)) return { view: 'map', node }
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#/map`)
+    return { view: 'map' }
+  }
   // No or unknown hash opens the executive summary.
   const v = VIEWS.includes(view as ViewId) ? (view as ViewId) : 'summary'
   return { view: v, node: node ? decodeURIComponent(node) : undefined }

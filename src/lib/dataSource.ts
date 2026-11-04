@@ -11,7 +11,7 @@
  * Dev builds add a cache-busting query so files rewritten in place are re-read.
  */
 
-const LIVE_BASE = (import.meta.env.VITE_DATA_BASE_URL ?? '').trim().replace(/\/+$/, '')
+const LIVE_BASE = import.meta.env.VITE_SITE ? '' : (import.meta.env.VITE_DATA_BASE_URL ?? '').trim().replace(/\/+$/, '')
 
 export const hasLiveSource = LIVE_BASE !== ''
 
