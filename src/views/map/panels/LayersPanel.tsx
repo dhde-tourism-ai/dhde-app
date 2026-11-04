@@ -1,3 +1,4 @@
+import { SITE_ID, siteLayerAllowed } from '../../../lib/siteMode'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useLang } from '../../../lib/i18n'
@@ -76,8 +77,8 @@ export function LayersPanel(p: Props) {
     if (!i || i.status === 'demo') return null
     return (
       <div className="lg-src">
-        <SourceBadge info={i} note={REAL_NOTE[id]} />
-        <span className="lg-note">{REAL_NOTE[id] ? t(REAL_NOTE[id]![0], REAL_NOTE[id]![1]) : ''}</span>
+        <SourceBadge info={i} note={SITE_ID ? undefined : REAL_NOTE[id]} />
+        <span className="lg-note">{SITE_ID ? t('Site snapshot. Only collected data and published forecasts are shown.', 'この地点の収集済みデータと公表予測のみ表示。') : REAL_NOTE[id] ? t(REAL_NOTE[id]![0], REAL_NOTE[id]![1]) : ''}</span>
       </div>
     )
   }
@@ -298,7 +299,7 @@ export function LayersPanel(p: Props) {
           <div key={g.id} className="layer-group">
             <h3 className="layer-group-title">{t(g.en, g.ja)}</h3>
             <ul className="layer-list">
-              {LAYERS.filter((l) => l.group === g.id).map((l) => {
+              {LAYERS.filter((l) => l.group === g.id && siteLayerAllowed(l.id, p.sources)).map((l) => {
                 const on = p.active.has(l.id)
                 return (
                   <li key={l.id} className={`layer-item ${on ? 'on' : ''}`}>
@@ -308,20 +309,20 @@ export function LayersPanel(p: Props) {
                       </span>
                       <span className="layer-text">
                         <span className="layer-name">
-                          {t(l.en, l.ja)}
+                          {SITE_ID && l.id === 'economics' ? t('Economics (modelled)', '経済（モデル推計）') : t(l.en, l.ja)}
                           {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact note={REAL_NOTE[l.id]} />}
                         </span>
-                        <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
+                        <span className="layer-hint">{SITE_ID ? t(l.id === 'economics' ? 'Modelled town economics' : 'Site data only', l.id === 'economics' ? '市町の経済モデル推計' : 'この地点のデータのみ') : t(l.hint_en, l.hint_ja)}</span>
                       </span>
                       <span className="switch">
-                        <input type="checkbox" checked={on} onChange={() => p.toggle(l.id)} aria-label={t(l.en, l.ja)} />
+                        <input type="checkbox" checked={on} onChange={() => p.toggle(l.id)} aria-label={SITE_ID && l.id === 'economics' ? t('Economics (modelled)', '経済（モデル推計）') : t(l.en, l.ja)} />
                         <span className="switch-track"></span>
                       </span>
                     </label>
                     {on && (
                       <div className="layer-legend">
                         {realNote(l.id)}
-                        {legend[l.id]}
+                        {SITE_ID ? <p className="lg-note">{t(l.id === 'people' ? 'Daily visitor estimate and published forecast; colour compares with a normal day.' : l.id === 'rail' ? 'Rail lines and stations only. No illustrative trains.' : l.id === 'economics' ? 'Modelled town totals, covering the whole municipality.' : l.id === 'transport' ? 'Local routes, stops, timetables and walking areas.' : 'Collected site aggregates; missing values are omitted.', l.id === 'people' ? '日別来訪者推計と公表予測。色は平常日との比較。' : l.id === 'rail' ? '鉄道路線と駅のみ。参考列車は非表示。' : l.id === 'economics' ? '市町全体のモデル推計値。' : l.id === 'transport' ? '周辺路線・停留所・時刻表・徒歩圏。' : 'この地点の収集済み集計値。欠測値は表示しません。')}</p> : legend[l.id]}
                       </div>
                     )}
                   </li>

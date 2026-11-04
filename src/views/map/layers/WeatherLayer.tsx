@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../../lib/siteMode'
 import type { NodeFrame } from '../../../lib/live'
 import { CONDITION_LABEL } from '../../../lib/live'
 import type { MapNode } from '../../../lib/nodes'
@@ -16,6 +17,7 @@ export function WeatherLayer({ nodes, frame, showPrecip }: { nodes: MapNode[]; f
 
 export function WeatherDetail({ n, f }: { n: MapNode; f: NodeFrame }) {
   const { t, lang } = useLang()
+  if (SITE_ID && !f.weather.hourly) return null
   const w = f.weather
   const u = (x: string) => unit(x, lang)
   return (

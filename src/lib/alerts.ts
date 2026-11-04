@@ -1,3 +1,4 @@
+import { SITE_ID } from './siteMode'
 import type { LiveData } from '../types/live'
 import type { RoutesFile } from '../types/routes'
 import type { RegistryNode } from '../types/nodes'
@@ -84,6 +85,13 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
 
   for (const [id, f] of Object.entries(frame)) {
     if (f.noEstimate) continue
+    if (SITE_ID) {
+      const meta = live.node_meta?.[id]
+      const value = meta?.visitors_daily[Math.floor(t / 24)]
+      const normal = meta?.normal_daily
+      if (value != null && normal && value >= normal * 1.35) crowd.push({ id: `cr-${id}`, sev: 'warn', node: id, en: `Daily visitor estimate ${Math.round(value)}: ${Math.round(value / normal * 100)}% of a normal day`, ja: `日別来訪者推計${Math.round(value)}人：平常日の${Math.round(value / normal * 100)}%`, ar: `تقدير الزوار اليومي ${Math.round(value)}` })
+      continue
+    }
     if (f.tier.key === 'crit' || f.tier.key === 'serious') {
       crowd.push({
         id: `cr-${id}`,

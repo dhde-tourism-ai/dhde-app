@@ -901,3 +901,6 @@ html[lang='ar'] * {
 html[lang='ar'] {
   --font-mono: var(--font-ar);
 }
+
+/* Site dashboards use static status indicators. */
+.site-mode *, .site-mode *::before, .site-mode *::after { animation: none !important; }

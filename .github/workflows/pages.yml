@@ -35,6 +35,13 @@ jobs:
       - run: npm run build
         env:
           VITE_DATA_BASE_URL: ${{ vars.DATA_BASE_URL }}
+      # Other sites await the transit isolation and browser checks in docs/site-builds.md.
+      - name: Build partner sites
+        run: |
+          for site in tojinbo; do
+            npm run build:site -- "$site"
+            node scripts/check_site_dist.mjs "$site"
+          done
       # Hash routing already works on static hosting; the 404 copy catches stray deep links.
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5

@@ -1,3 +1,4 @@
+import { SITE_ID } from './lib/siteMode'
 import { lazy, Suspense, useEffect } from 'react'
 import { useProductData } from './hooks/useProductData'
 import { useHashRoute } from './hooks/useHashRoute'
@@ -11,10 +12,10 @@ import { Loading, LoadError } from './components/StateMsg'
 
 // Every view is its own chunk (Leaflet for the map, recharts for Nodes and Strategy).
 const MapView = lazy(() => import('./views/map/MapView'))
-const StrategyView = lazy(() => import('./views/strategy/StrategyView'))
-const NodesView = lazy(() => import('./views/nodes/NodesView'))
-const SummaryView = lazy(() => import('./views/summary/SummaryView'))
-const TransportView = lazy(() => import('./views/transport/TransportView'))
+const StrategyView = import.meta.env.VITE_SITE ? () => null : lazy(() => import('./views/strategy/StrategyView'))
+const NodesView = import.meta.env.VITE_SITE ? () => null : lazy(() => import('./views/nodes/NodesView'))
+const SummaryView = import.meta.env.VITE_SITE ? () => null : lazy(() => import('./views/summary/SummaryView'))
+const TransportView = import.meta.env.VITE_SITE ? () => null : lazy(() => import('./views/transport/TransportView'))
 const SiteView = lazy(() => import('./views/site/SiteView'))
 
 const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
@@ -47,10 +48,10 @@ export default function App() {
 
   // #/site/<node>: one partner site, without the tabs; the chip shows that site's own data date.
   const site = route.view === 'site' ? (route.node ?? '') : null
-  const siteNode = site !== null ? registry.data?.nodes.find((n) => n.id === site) : undefined
-  const shared = (site !== null ? merged?.real?.nodes[site]?.as_of.visitors : merged?.real?.shared_date) ?? null
+  const siteNode = (SITE_ID || site !== null) ? registry.data?.nodes.find((n) => n.id === (SITE_ID || site)) : undefined
+  const shared = (SITE_ID ? merged?.real?.nodes[SITE_ID]?.as_of.visitors : site !== null ? merged?.real?.nodes[site]?.as_of.visitors : merged?.real?.shared_date) ?? null
   const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
-  const isDemo = !shared && live.data?.demo
+  const isDemo = !SITE_ID && !shared && live.data?.demo
 
   // The browser tab's title in Arabic; English and Japanese keep index.html's.
   const title = `DHDE · ${lang === 'ar' ? t('Fukui Tourism Intelligence') : 'Fukui Tourism Intelligence'}`
@@ -59,10 +60,10 @@ export default function App() {
   }, [title])
 
   return (
-    <div className={`app view-${route.view}`}>
+    <div className={`app ${SITE_ID ? 'site-mode' : ''} view-${route.view}`}>
       <header className="appbar">
-        {site !== null ? (
-          <a className="brand" href={`#/site/${site}`}>
+        {SITE_ID || site !== null ? (
+          <a className="brand" href={SITE_ID ? '#/map' : `#/site/${site}`}>
             <BrandMark />
             <span className="brand-name">
               {siteNode ? t(siteNode.name, siteNode.name_ja) : 'DHDE'}
@@ -79,10 +80,10 @@ export default function App() {
           </a>
         )}
 
-        {site === null && (
+        {(SITE_ID || site === null) && (
           <nav className="tabs" aria-label={t('Views', 'ビュー')}>
-            {TABS.map((tab) => (
-              <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
+            {(SITE_ID ? [{ id: 'map' as const, en: 'Map', ja: '地図', icon: 'map' as const }, { id: 'site' as const, en: 'Forecast', ja: '来場予測', icon: 'nodes' as const }] : TABS).map((tab) => (
+              <a key={tab.id} href={`#/${tab.id}${tab.id === 'site' ? `/${SITE_ID}` : ''}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
                 <Icon name={tab.icon} />
                 <span className="tab-label">{t(tab.en, tab.ja)}</span>
               </a>
@@ -95,7 +96,7 @@ export default function App() {
             <span className={`fresh-chip ${isDemo ? 'stale' : ''}`} title={
                 isDemo
                   ? t('Live layers run on demo data', 'ライブレイヤーはデモデータです')
-                  : site !== null
+                  : SITE_ID || site !== null
                     ? t('Visitor counts up to this date', 'この日までの来場者実績')
                     : t('Real data up to this date (shared date across nodes); some layers still use demo data', 'この日までの実データ（全ノード共通日）。一部レイヤーはデモ')
               }>
@@ -146,14 +147,14 @@ export default function App() {
               market={merged?.market ?? market.data}
               selectedId={route.node}
               onSelect={(id) => navigate({ view: 'map', node: id })}
-              onOpenNode={(id) => navigate({ view: 'nodes', node: id })}
+              onOpenNode={(id) => navigate({ view: SITE_ID ? 'site' : 'nodes', node: id })}
             />
           </Suspense>
         )}
 
         {route.view === 'nodes' && (
           <Suspense fallback={<Loading what={t('Loading node dashboards…', 'ノードを読み込み中…')} />}>
-            <NodesView data={data} selected={route.node} onSelect={(id) => navigate({ view: 'nodes', node: id })} />
+            <NodesView data={data} selected={route.node} onSelect={(id) => navigate({ view: SITE_ID ? 'site' : 'nodes', node: id })} />
           </Suspense>
         )}
 

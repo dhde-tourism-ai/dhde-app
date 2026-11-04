@@ -11,5 +11,7 @@ import tailwindcss from '@tailwindcss/vite'
 // domain root and under a sub-path such as /dhde-app/ on GitHub Pages.
 export default defineConfig({
   base: './',
+  publicDir: process.env.VITE_SITE ? `build/site-public/${process.env.VITE_SITE}` : 'public',
+  build: { outDir: process.env.VITE_SITE ? `dist/${process.env.VITE_SITE}` : 'dist' },
   plugins: [react(), tailwindcss()],
 })

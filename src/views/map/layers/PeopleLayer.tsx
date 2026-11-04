@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../../lib/siteMode'
 import { Fragment, useMemo } from 'react'
 import { CircleMarker, Marker, Pane, Tooltip } from 'react-leaflet'
 import L from 'leaflet'
@@ -161,7 +162,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 )}
                 <div className="tt-hero">
                   <b className="num">{Math.round(f.onSite).toLocaleString('en-US')}</b>
-                  <span>{f.observed ? t('people on site now', '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
+                  <span>{f.observed ? t(SITE_ID ? 'daily visitors' : 'people on site now', SITE_ID ? '日別来訪者数' : '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
                 </div>
                 <div className="tt-grid">
                   <span className="tt-k">{t('Crowding', '混雑')}</span>
@@ -179,7 +180,7 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                 </div>
                 {m ? (
                   <div className="tip-sub">
-                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`, `الطريقة: ${methodAr(m.method_text)}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`, `الطريقة: ${signalAr(measureLabel(m.measure))} محوّلة إلى الرقم الرسمي السنوي لعام 2025`)} (${m.official_2025?.toLocaleString('en-US') ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {t('Hourly shape simulated.', '時間別の形は模擬。')}
+                    {m.method_text ? t(`Method: ${m.method_text}`, `方法：${m.method_text_ja ?? m.method_text}`, `الطريقة: ${methodAr(m.method_text)}`) : `${t(`Method: ${measureLabel(m.measure)} scaled to the 2025 official annual count`, `方法：${measureLabel(m.measure)}を2025年公式年間値に換算`, `الطريقة: ${signalAr(measureLabel(m.measure))} محوّلة إلى الرقم الرسمي السنوي لعام 2025`)} (${m.official_2025?.toLocaleString('en-US') ?? '—'})`} · {t('confidence', '信頼度')} {t(CONF[m.confidence][0], CONF[m.confidence][1])}. {SITE_ID ? t('Daily total, held constant across hours.', '日合計を表示。時間別の推計は行いません。') : t('Hourly shape simulated.', '時間別の形は模擬。')}
                   </div>
                 ) : (
                   est && <div className="tip-sub">{t('Estimated measure (proxy / bookings / vehicles)', '推定値（代理指標・予約・車両）')}</div>

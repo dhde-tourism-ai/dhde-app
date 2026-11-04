@@ -1,3 +1,4 @@
+import { SITE_ID } from './siteMode'
 /**
  * Pure helpers over live_demo.json: the state of every node, route and alert at
  * one hour index. Views call frameAt() and never touch the raw arrays.
@@ -91,7 +92,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         const sg = m.signal_daily[d] ?? null
         return v === null && sg === null ? null : { visitors: v, signal: sg }
       })(),
-      noEstimate: Boolean(live.node_meta?.[id]?.no_estimate),
+      noEstimate: Boolean(live.node_meta?.[id]?.no_estimate) || Boolean(SITE_ID && live.node_meta?.[id] && live.node_meta[id].visitors_daily[d] == null && !live.node_meta[id].forecast_source_daily[d]),
       wxDay: {
         sun: n.weather.sun_h?.[d] ?? null,
         humidity: n.weather.humidity_pct?.[d] ?? null,

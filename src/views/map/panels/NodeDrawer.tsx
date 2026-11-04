@@ -1,3 +1,4 @@
+import { SITE_ID } from '../../../lib/siteMode'
 import { Area, Bar, BarChart, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { LiveData } from '../../../types/live'
 import type { RoutesFile } from '../../../types/routes'
@@ -190,14 +191,14 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                     </>
                   )}
                 </div>
-                <p className="muted small">{frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。', forecastMethodAr(meta.forecast_method))}</p>
+                <p className="muted small">{SITE_ID ? tr('Daily total; no hourly estimate.', '日合計を表示。時間別の推計は行いません。') : frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。', forecastMethodAr(meta.forecast_method))}</p>
               </div>
             ) : null}
             {!frame.noEstimate && (
             <>
             <div className="drawer-kpis">
               <div className="dk">
-                <span className="eyebrow">{frame.observed ? tr('On site now', '現在の人数') : tr('Forecast on site', '予測人数')}</span>
+                <span className="eyebrow">{frame.observed ? tr(SITE_ID ? 'Daily visitors' : 'On site now', SITE_ID ? '日別来訪者数' : '現在の人数') : tr('Forecast on site', '予測人数')}</span>
                 <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString('en-US')}</span>
                 <StatusTag tier={frame.tier} />
               </div>
@@ -216,9 +217,9 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <span className="meter-cap" style={{ left: `${Math.min(100, 100 / Math.max(1, frame.load))}%` }}></span>
             </div>
             <p className="meter-lab muted">
-              {Math.round(frame.load * 100)}% {tr('of comfortable capacity', 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
+              {Math.round(frame.load * 100)}% {tr(SITE_ID ? 'of normal day' : 'of comfortable capacity', SITE_ID ? '（平常日比）' : 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
-            <h3 className="drawer-h">{tr('Today’s rhythm, people on site', '1日の推移（現地人数）')}</h3>
+            <h3 className="drawer-h">{tr(SITE_ID ? 'Daily total across the selected day' : 'Today’s rhythm, people on site', SITE_ID ? '選択日の日合計（時間別推計なし）' : '1日の推移（現地人数）')}</h3>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={130}>
                 <ComposedChart data={hourly} margin={{ top: 6, right: 6, left: -4, bottom: 0 }}>
@@ -263,6 +264,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             </>
             )}
 
+            {(!SITE_ID || frame.weather.hourly) && <>
             <h3 className="drawer-h">{tr('Weather', '気象')}</h3>
             <div className="wx-block">
               <WeatherIcon cond={frame.weather.cond} size={34} />
@@ -282,10 +284,11 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                   </div>
                 )}
                 <div className="muted small">
-                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)} · {frame.wxDay.real ? <span className="tt-real">{tr('Real daily', '実データ（日別）')}</span> : <span className="tt-demo">{tr('Demo', 'デモ')}</span>}
+                  {tr('JMA point', '観測点')}: {tr(frame.weather.station, frame.weather.station_ja)} · {(frame.wxDay.real || (SITE_ID && frame.weather.hourly)) ? <span className="tt-real">{tr('Real daily', '実データ（日別）')}</span> : <span className="tt-demo">{tr('Demo', 'デモ')}</span>}
                 </div>
               </div>
             </div>
+            </>}
             {frame.alerts.map((a) => {
               const at = alertText(a, lang)
               return (
@@ -351,7 +354,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
         {market && (market.reviews[node.id] || market.survey[node.id]) && (
           <>
             <h3 className="drawer-h">
-              {tr('Voice of visitor and market', '来訪者の声と市場')} <DemoBadge compact />
+              {tr('Voice of visitor and market', '来訪者の声と市場')} {!SITE_ID && <DemoBadge compact />}
             </h3>
             <div className="voice-grid">
               {market.reviews[node.id] && (
