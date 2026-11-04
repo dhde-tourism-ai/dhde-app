@@ -93,7 +93,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         const sg = m.signal_daily[d] ?? null
         return v === null && sg === null ? null : { visitors: v, signal: sg }
       })(),
-      noEstimate: Boolean(live.node_meta?.[id]?.no_estimate) || Boolean(SITE_ID && live.node_meta?.[id] && live.node_meta[id].visitors_daily[d] == null && !live.node_meta[id].forecast_source_daily[d]),
+      noEstimate: Boolean(live.node_meta?.[id]?.no_estimate) || Boolean(live.node_meta?.[id] && live.node_meta[id].visitors_daily[d] == null && !live.node_meta[id].forecast_source_daily[d]),
       wxDay: {
         sun: n.weather.sun_h?.[d] ?? null,
         humidity: n.weather.humidity_pct?.[d] ?? null,
@@ -159,12 +159,16 @@ export function timeLabel(live: LiveData, i: number, lang: 'en' | 'ja' | 'ar'): 
 export function dailyArrivals(live: LiveData, id: string) {
   const n = live.nodes[id]
   if (!n) return []
-  return live.days.map((_, d) => {
+  return live.days.flatMap((_, d) => {
+    const meta = live.node_meta?.[id]
+    // Scoped views already omit missing days. Full-app charts and demand nudges
+    // must also omit them rather than treating the empty series as zero demand.
+    if (!SITE_ID && meta && !meta.no_estimate && !meta.forecast_source_daily.some(Boolean) && meta.visitors_daily[d] == null) return []
     const pred = n.arrivals.predicted.slice(d * 24, d * 24 + 24).reduce((a, b) => a + b, 0)
     const act = n.arrivals.actual.slice(d * 24, d * 24 + 24)
     const hasActual = act.some((v) => v !== null)
     const actualSoFar = hasActual ? act.reduce<number>((a, b) => a + (b ?? 0), 0) : null
-    return { d, predicted: pred, actualSoFar }
+    return [{ d, predicted: pred, actualSoFar }]
   })
 }
 

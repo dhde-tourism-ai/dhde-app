@@ -12,11 +12,12 @@
  * - People: per-node daily visitors = visitors_est (modelled); the demo intraday
  *   shape of the same weekday is scaled so each day's total matches. Today and
  *   future days: the node's 7-day model forecast (real_data.json `forecast`,
- *   with its own low/high range) where published; after it, or for nodes
- *   without one, the mean visitors_est of recent same weekdays (up to 4, looking
+ *   with its own low/high range) where published; after it, the mean
+ *   visitors_est of recent same weekdays (up to 4, looking
  *   back up to 8 weeks; holidays and Obon skipped for a normal day): a naive
  *   seasonal forecast. Either way spread with the
- *   demo shape. forecast_source_daily says which one each day used.
+ *   demo shape. Nodes without a published model have no projections on missing
+ *   days. forecast_source_daily says which forecast each day used.
  *   Nodes without an estimate (Fukui Station) keep demo shapes but are flagged
  *   no_estimate so the UI shows camera detections, never a visitor number.
  * - Weather: real hourly weather where the hourly collector has it
@@ -494,10 +495,13 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
       const demoTotal = Math.max(1, sum(demoArr))
       const realV = hasPeople ? visitorsDaily[d] : null
       const md = hasPeople && d >= P ? modelDay(dates[d]) : undefined
-      const fc = md?.visitors_est ?? (hasPeople && d >= P ? sameWeekday(dates[d]) : null)
+      const fc = md?.visitors_est ?? (hasPeople && rn?.forecast && d >= P ? sameWeekday(dates[d]) : null)
       fcSource.push(md?.visitors_est != null ? 'model' : fc !== null ? 'naive' : null)
       const kA = realV !== null ? realV / demoTotal : null
-      const kP = fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
+      // Missing days at a calibrated real node without a model have no visitors.
+      // Keep uncalibrated nodes' existing raw-signal behavior.
+      const missingEstimate = !!rn && !noEstimate && !rn.forecast && realV === null
+      const kP = missingEstimate ? 0 : fc !== null ? fc / demoTotal : realV !== null ? (sameWeekday(dates[d]) ?? realV) / demoTotal : 1
       // The model's own low/high range when it has one, else the demo band scaled like the forecast.
       const kLo = md?.visitors_lo != null ? md.visitors_lo / demoTotal : null
       const kHi = md?.visitors_hi != null ? md.visitors_hi / demoTotal : null
@@ -512,7 +516,7 @@ export function mergeAll(demo: LiveData, demoMarket: MarketVoiceData | null, rea
         if (kA !== null) {
           arrA.push(Math.round(pa * kA))
           osA.push(Math.round(po * kA))
-        } else if (!hasPeople && d >= P) {
+        } else if (!hasPeople && !missingEstimate && d >= P) {
           // Demo-only node: keep the demo "actuals" on the demo's own days.
           arrA.push(dn.arrivals.actual[i] ?? null)
           osA.push(dn.on_site.actual[i] ?? null)
