@@ -60,7 +60,7 @@ export default function App() {
   }, [title])
 
   return (
-    <div className={`app ${SITE_ID ? 'site-mode' : ''} view-${route.view}`}>
+    <div className={`app view-${route.view}`}>
       <header className="appbar">
         {SITE_ID || site !== null ? (
           <a className="brand" href={SITE_ID ? '#/map' : `#/site/${site}`}>
@@ -80,10 +80,10 @@ export default function App() {
           </a>
         )}
 
-        {(SITE_ID || site === null) && (
+        {(!SITE_ID && site === null) && (
           <nav className="tabs" aria-label={t('Views', 'ビュー')}>
-            {(SITE_ID ? [{ id: 'map' as const, en: 'Map', ja: '地図', icon: 'map' as const }, { id: 'site' as const, en: 'Forecast', ja: '来場予測', icon: 'nodes' as const }] : TABS).map((tab) => (
-              <a key={tab.id} href={`#/${tab.id}${tab.id === 'site' ? `/${SITE_ID}` : ''}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
+            {TABS.map((tab) => (
+              <a key={tab.id} href={`#/${tab.id}`} className="tab" aria-current={route.view === tab.id ? 'page' : undefined}>
                 <Icon name={tab.icon} />
                 <span className="tab-label">{t(tab.en, tab.ja)}</span>
               </a>

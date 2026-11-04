@@ -386,7 +386,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                   </span>
                 </div>
               )}
-              {market.social[node.id] && (!SITE_ID || market.social[node.id].real) && (
+              {market.social[node.id] && (
                 <div className="vg-cell">
                   {market.social[node.id].real ? (
                     <>

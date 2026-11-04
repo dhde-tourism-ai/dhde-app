@@ -1,68 +1,37 @@
 # Scoped site builds
 
-Run `npm run build:site -- <site>` and `node scripts/check_site_dist.mjs <site>`.
-Supported sites are `tojinbo`, `eiheiji` and `rainbow_line`. Output goes to
-`dist/<site>/`. Run the full `npm run build` first when building all outputs;
-it clears dist. Site builds preserve the root app. Pages builds all three sites.
-Japanese is the default unless the browser has a saved language preference.
+Run `npm run build:site -- <site>` and `node scripts/check_site_dist.mjs <site>`
+for `tojinbo`, `eiheiji` or `rainbow_line`. Output goes to `dist/<site>/`.
+Build the full app first with `npm run build`, which clears dist. Pages builds
+all three sites. Japanese is the default unless a language preference is saved.
 
-## Scoping and layers
+`scripts/scope_site_data.mjs` selects files and filters node records to the
+selected id, retaining baseline field structures. It removes fictional posts,
+review snippets, simulated movement and legacy dashboard totals. Transport
+routes, stops, rail geometry and trip indexes use the baseline data without
+geographic clipping. Node records and walking areas retain only the selected
+site. The initial viewport uses the site's baseline geometry.
 
-`scripts/site-config.mjs` defines sites, municipality and hotel feeds, and the
-12 km transport clipping radius, measured by haversine distance from the site
-anchor. `scripts/scope_site_data.mjs` allowlists files
-and picks known output fields at every depth, dropping unknown fields with a
-`::warning::` annotation. It retains one site's node, real history,
-forecasts and market data. Neutral
-templates provide array shapes only. Routes and legacy dashboard totals are
-empty. Transport keeps serving routes and nearby public infrastructure.
-Economics uses explicit node and town mappings and is offered only when the scoped
-file contains site visitor data, with modelled totals labelled. Unused operator
-`timetable_dates` metadata is omitted.
-Regional strategy, comparisons, demo posts and other unlisted files are omitted.
+`src/lib/siteMode.ts` removes demo fallbacks and gates layers using real-source
+lists. Economics is excluded because it required separate site and town mappings.
+Flow, traffic, nudges, density and illustrative vehicles remain excluded.
+Reviews have no snippets and social has no posts. Missing weather, hotel and
+forecast dates stay hidden. Daily totals stay constant across hours, and forecast
+availability follows the baseline merge's model selection. The survey proxy
+retains its low-confidence wording. The existing normal-day capacity comparison
+remains because removing it would expose baseline demo capacity.
 
-`src/lib/siteMode.ts` removes demo fallbacks and gates layers against the merged
-real-source lists. `src/lib/sites.ts` selects geometry from `siteGeometry/` so
-Vite removes other sites' geometry. `scripts/check_site_dist.mjs` rejects
-foreign IDs and aliases derived from `public/data` as keys, whole values or
-hyphen-separated ID segments in JSON. It scans JSON and JavaScript for other
-priority nodes' calibration and daily visitor fingerprints and checks JavaScript
-for foreign geometry. Shared hotel feeds are not fingerprinted. Public transit
-identifiers containing a site's
-name as a substring are allowed. Data loads from the local scoped snapshot;
-hourly weather and public JMA warnings use their existing external feeds.
+The site-only Map / Forecast tabs are removed. The baseline forecast page remains
+available through the map's detail link and `#/site/<site>`. Full-app navigation
+and behavior are unchanged. Site layer preferences use `dhde.layers.<site>`;
+the full app uses `dhde.layers`.
 
-| Site | Shown when backed by real data | Initial map extent |
-| --- | --- | --- |
-| Tojinbo | People, weather, bus and rail infrastructure, survey, social, reviews, sentiment. Hotels, search intent and modelled economics are optional. | Cliffs and pedestrian approach with nearby stop context. |
-| Eiheiji | People as a low-confidence survey proxy, weather, bus and rail infrastructure, survey, social, reviews, sentiment. Search intent and modelled economics are optional. | Temple precinct and monzen approach with nearby bus stops. Zoom out for Eiheiji-guchi. |
-| Rainbow Line | People from summit P1/P2 vehicles x 6.98, weather, bus and rail infrastructure, survey, social, reviews, sentiment. Hotels, search intent and modelled economics are optional. | Entire toll road and both summit car parks. |
+Data loads from the local snapshot. Hourly weather and JMA warnings use the
+existing external feeds. The distribution check rejects other configured partner-site ids
+as JSON keys or `id` values. It does not scan JavaScript, aliases or numeric
+fingerprints. Shared baseline geometry and transit infrastructure remain bundled.
+GitHub Pages is public, so scoping is not access control.
 
-The real-source lists decide availability as data changes. Eiheiji's map hotel
-layer is excluded because the shared coast feed maps to another node. Its
-forecast page retains its own published hotel records. Eiheiji has no model forecast;
-missing days show no estimate and never use a naive forecast. Its forecast page
-labels the survey proxy's low confidence and keeps the published Rakuten
-0%/0%/100% block visible despite the questionable shares.
-
-All sites exclude people flow, traffic, action nudges, regional density,
-illustrative vehicles and demo advisories. Movement and traffic curves are
-simulated; density is not independently measured for one site. Reviews omit
-snippets and social omits posts. People values are daily totals, held constant
-across hours. Missing weather and hotel dates stay hidden. Continuous CSS
-animations are disabled within the site shell.
-
-Site layer preferences read and write `dhde.layers.<site>` in local storage;
-the full app continues to use `dhde.layers`.
-
-Site builds keep data out of other partners' bundles, but GitHub Pages is public,
-so this is not access control.
-
-## Adding a site
-
-Add its feed mappings to `scripts/site-config.mjs`, geometry under
-`src/lib/siteGeometry/`, and a static selection branch in `src/lib/sites.ts`.
-Check the real-source lists and initial bounds at desktop and phone widths.
-Add distinctive geometry fingerprints to `scripts/site-config.mjs`. Pages reads
-the site list from that file.
-Build and check both the full app and every scoped site after changes.
+To add a site, add its market feed mappings to `scripts/site-config.mjs` and use
+its baseline geometry in `src/lib/sites.ts`. Build and check the full app and all
+sites, and inspect their initial bounds.

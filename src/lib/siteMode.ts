@@ -1,4 +1,3 @@
-import type { RegionalEconomics } from '../types/economics'
 import type { LiveData, DataSources } from '../types/live'
 import type { MarketVoiceData } from '../types/market'
 import type { LayerId } from '../views/map/layers'
@@ -6,12 +5,11 @@ import type { mergeAll } from './real'
 
 export const SITE_ID: string = import.meta.env.VITE_SITE ?? ''
 
-/** Only measured sources and explicitly labelled town economics are available. */
-export function siteLayerAllowed(layer: LayerId, sources?: DataSources, economics?: RegionalEconomics | null): boolean {
+/** Only measured sources are available. */
+export function siteLayerAllowed(layer: LayerId, sources?: DataSources): boolean {
   if (!SITE_ID) return true
-  if (layer === 'economics') return Boolean(economics?.nodes.some((n) => (n.id === SITE_ID || n.aliases?.includes(SITE_ID)) && n.visitors.value != null))
   if (['transport', 'rail'].includes(layer)) return true
-  if (['flow', 'traffic', 'nudges', 'density'].includes(layer)) return false
+  if (['flow', 'traffic', 'nudges', 'density', 'economics'].includes(layer)) return false
   return Boolean(sources?.[layer as keyof DataSources]?.real.includes(SITE_ID))
 }
 
@@ -30,11 +28,11 @@ export function cleanSiteMerge(merged: ReturnType<typeof mergeAll>): ReturnType<
     // The map uses daily totals at every hour. It makes no claim about hourly footfall.
     const forecast = merged.real?.nodes[SITE_ID]?.forecast?.days ?? []
     meta.forecast_method = 'Published daily model forecast; missing dates are omitted.'
-    meta.forecast_source_daily = live.days.map((day) => forecast.some((f) => f.date === day.date) ? 'model' : null)
+    meta.forecast_source_daily = meta.forecast_source_daily.map((source) => source === 'model' ? source : null)
     for (let i = 0; i < live.hours; i++) {
       const d = Math.floor(i / 24)
       const actual = meta.visitors_daily[d]
-      const predicted = forecast.find((f) => f.date === live.days[d].date)?.visitors_est ?? actual ?? 0
+      const predicted = (meta.forecast_source_daily[d] ? forecast.find((f) => f.date === live.days[d].date)?.visitors_est : null) ?? actual ?? 0
       for (const series of [n.on_site, n.arrivals]) {
         series.actual[i] = series === n.arrivals && actual != null ? actual / 24 : actual
         series.predicted[i] = series === n.arrivals ? predicted / 24 : predicted

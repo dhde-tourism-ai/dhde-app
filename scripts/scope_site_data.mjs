@@ -1,6 +1,5 @@
 import { mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { schemas, pickOutput } from './site-data-schema.mjs'
 import { sites } from './site-config.mjs'
 const read = async (name) => JSON.parse(await readFile(`public/data/${name}.json`, 'utf8'))
 
@@ -11,25 +10,11 @@ export async function scopeSite(site) {
   const root = `build/site-public/${site}`
   await rm(root, { recursive: true, force: true })
   await mkdir(`${root}/data`, { recursive: true })
-  const save = (name, data) => {
-    if (name.startsWith('transport')) {
-      delete data.timetable_dates; delete data.walk; delete data.hub
-      if (name !== 'transport') { delete data.timezone; delete data.reference_days }
-    }
-    const warnings = new Set()
-    const output = pickOutput(data, schemas[name], name, warnings)
-    for (const key of warnings) console.warn(`::warning::Dropped unknown site output field ${key}`)
-    return writeFile(`${root}/data/${name}.json`, JSON.stringify(output))
-  }
+  const save = (name, data) => writeFile(`${root}/data/${name}.json`, JSON.stringify(data))
   const registry = await read('nodes')
   const node = registry.nodes.find((n) => n.id === site)
-  const inside = ([lat, lon]) => {
-    const rad = (v) => v * Math.PI / 180
-    const a = Math.sin(rad(lat - node.lat) / 2) ** 2 + Math.cos(rad(node.lat)) * Math.cos(rad(lat)) * Math.sin(rad(lon - node.lon) / 2) ** 2
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= config.radiusKm
-  }
   const only = (nodes) => Object.fromEntries(Object.entries(nodes).filter(([id]) => id === site))
-  await save('nodes', { generated_at: registry.generated_at, prefectures: registry.prefectures, nodes: [node] })
+  await save('nodes', { ...registry, nodes: [node] })
   const real = await read('real_data')
   real.nodes = only(real.nodes)
   real.shared_date = real.nodes[site].as_of.visitors
@@ -59,39 +44,11 @@ export async function scopeSite(site) {
   await save('routes', { routes: [] })
   const transport = await read('transport')
   transport.nodes = only(transport.nodes)
-  const feeds = new Set(Object.values(transport.nodes[site].days).flatMap((d) => d.routes.map((r) => r.feed)))
-  transport.sources = transport.sources.filter((s) => feeds.has(s.id))
-  delete transport.hub
   await save('transport', transport)
   const map = await read('transport_map')
-  delete map.hub
-  const routeIds = new Set(Object.values(transport.nodes[site].days).flatMap((d) => d.routes.map((r) => r.id)))
-  map.lines = map.lines.filter((l) => routeIds.has(l.id)).map((l) => ({ ...l, path: l.path.filter(inside) })).filter((l) => l.path.length > 1)
-  map.stops = map.stops.filter((s) => inside([s.lat, s.lon])).map((s) => ({ ...s, nodes: s.nodes.filter((id) => id === site) }))
   map.walk_areas.nodes = only(map.walk_areas.nodes)
-  map.rail.lines = map.rail.lines.map((l) => ({ ...l, paths: l.paths.map((p) => p.filter(inside)).filter((p) => p.length > 1) })).filter((l) => l.paths.length)
-  map.rail.stations = map.rail.stations.filter((s) => inside([s.lat, s.lon]))
   await save('transport_map', map)
-  const trips = await read('transport_trips')
-  delete trips.hub
-  const stopMap = new Map(); const routeMap = new Map()
-  const stopIndices = trips.stops.map((p, i) => inside(p) ? i : -1).filter((i) => i >= 0)
-  stopIndices.forEach((i, j) => stopMap.set(i, j))
-  const routeIndices = trips.routes.map((r, i) => routeIds.has(r.id) ? i : -1).filter((i) => i >= 0)
-  routeIndices.forEach((i, j) => routeMap.set(i, j))
-  for (const key of ['stops', 'stop_ids', 'stop_names']) trips[key] = stopIndices.map((i) => trips[key][i])
-  trips.routes = routeIndices.map((i) => trips.routes[i])
-  for (const [day, rows] of Object.entries(trips.trips)) trips.trips[day] = rows.filter((r) => routeMap.has(r[0])).map(([r, stops, times]) => {
-    const indices = stops.map((s, i) => stopMap.has(s) ? i : -1).filter((i) => i >= 0)
-    return [routeMap.get(r), indices.map((i) => stopMap.get(stops[i])), indices.map((i) => times[i])]
-  }).filter((r) => r[1].length > 1)
-  await save('transport_trips', trips)
-  const economics = await read('regional_economics')
-  economics.nodes = economics.nodes.filter((n) => n.id === config.economicsNode)
-  economics.regions = economics.regions.filter((r) => r.id === config.town).map((r) => ({ ...r, nodes: [site] }))
-  economics.prefecture = {}; economics.assumptions = {}; economics.flows = []; economics.comparison_regions = []; economics.external_points = {}
-  economics.notes = ['Modelled town economics. Municipal totals cover the whole town, not just this site.']
-  await save('regional_economics', economics)
+  await cp('public/data/transport_trips.json', `${root}/data/transport_trips.json`)
   await cp('public/favicon.svg', `${root}/favicon.svg`)
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await scopeSite(process.argv[2] ?? process.env.VITE_SITE)

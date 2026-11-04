@@ -19,7 +19,7 @@ import type { MarketVoiceData } from '../types/market'
 export function useProductData() {
   const dashboard = useDashboardData()
   const registry = useJsonResource<NodeRegistry>('nodes.json')
-  const economics = useJsonResource<RegionalEconomics>('regional_economics.json')
+  const economics = useJsonResource<RegionalEconomics>(SITE_ID ? null : 'regional_economics.json')
   const strategy = useJsonResource<StrategicQuestions>(SITE_ID ? null : 'strategic_questions.json')
   const live = useJsonResource<LiveData>('live_demo.json')
   const routes = useJsonResource<RoutesFile>('routes.json')

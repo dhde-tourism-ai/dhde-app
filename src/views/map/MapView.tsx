@@ -227,7 +227,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   // Saved only when the viewer toggles a layer: a ?layers= link or a picked
   // nudge turning a layer on doesn't replace the viewer's own choice.
   const toggle = (l: LayerId) => {
-    if (!siteLayerAllowed(l, live?.sources, economics)) return
+    if (!siteLayerAllowed(l, live?.sources)) return
     const n = new Set(active)
     if (n.has(l)) n.delete(l)
     else {
@@ -277,7 +277,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const hubName: [string, string] = hubNode ? [hubNode.name, hubNode.name_ja] : ['Fukui Station', '福井駅']
   const isDemo = Boolean(live?.demo)
   const observed = live ? t <= live.observed_until : true
-  const layerOn = (l: LayerId) => active.has(l) && siteLayerAllowed(l, live?.sources, economics)
+  const layerOn = (l: LayerId) => active.has(l) && siteLayerAllowed(l, live?.sources)
   const cardLayers = useMemo(
     () => ({ people: active.has('people'), weather: active.has('weather'), reviews: active.has('reviews'), survey: active.has('survey'), social: active.has('social') }),
     [active],

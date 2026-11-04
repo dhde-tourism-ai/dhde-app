@@ -1,4 +1,3 @@
-import { SITE_ID } from '../lib/siteMode'
 import type { SourceInfo } from '../types/live'
 import { useLang } from '../lib/i18n'
 import { fmtDate } from '../lib/format'
@@ -11,11 +10,6 @@ import { DemoBadge } from './DemoBadge'
  */
 export function SourceBadge({ info, compact = false, note }: { info?: SourceInfo | null; compact?: boolean; note?: readonly [string, string] }) {
   const { t, lang } = useLang()
-  if (SITE_ID) {
-    if (!info?.real.length) return null
-    info = { ...info, status: 'real' }
-    note = undefined
-  }
   if (!info || info.status === 'demo') return <DemoBadge compact={compact} />
   const date = info.as_of ? fmtDate(info.as_of, lang).replace(/ \d{4}$/, '').replace(/^\d{4}年/, '') : ''
   const real = info.status === 'real'
