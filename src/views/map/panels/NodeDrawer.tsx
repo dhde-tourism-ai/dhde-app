@@ -217,7 +217,6 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                 )}
               </div>}
             </div>
-            {frame.tier.key !== 'none' && <>
             <div className="meter" role="img" aria-label={`${Math.round(frame.load * 100)}% ${tr('of comfortable capacity', '（快適容量比）')}`}>
               <span className="meter-fill" style={{ width: `${Math.min(100, frame.load * 100)}%`, background: frame.tier.colour }}></span>
               <span className="meter-cap" style={{ left: `${Math.min(100, 100 / Math.max(1, frame.load))}%` }}></span>
@@ -225,7 +224,6 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
             <p className="meter-lab muted">
               {Math.round(frame.load * 100)}% {tr(SITE_ID ? 'of normal day' : 'of comfortable capacity', SITE_ID ? '（平常日比）' : 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
-            </>}
             {!SITE_ID && <>
             <h3 className="drawer-h">{tr(SITE_ID ? 'Daily total across the selected day' : 'Today’s rhythm, people on site', SITE_ID ? '選択日の日合計（時間別推計なし）' : '1日の推移（現地人数）')}</h3>
             <div className="mini-chart">
