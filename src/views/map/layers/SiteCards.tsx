@@ -73,9 +73,9 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
             ? `<span class="nt-count${f.observed ? '' : ' fc'}">${f.observed ? '' : '~'}${Math.round(f.onSite).toLocaleString('en-US')}</span>`
             : `<span class="nt-count none">${escapeHtml(t('no data yet', 'データなし'))}</span>`
         const tier = f && !f.noEstimate ? `<span class="nt-dot" style="background:${f.tier.colour}"></span>` : ''
-        const est = f && (isEstimatedMeasure(n.measure) || n.measure === 'vehicles') ? `<span class="nt-est">${escapeHtml(SITE_ID && meta?.[n.id]?.measure === 'proxy_survey' ? t('survey proxy · low confidence', 'アンケート代理指標・信頼度低') : t('est.', '推定'))}</span>` : ''
+        const est = f && (isEstimatedMeasure(n.measure) || n.measure === 'vehicles') ? `<span class="nt-est">${escapeHtml(f?.tier.key === 'none' ? t('survey proxy · low confidence', 'アンケート代理指標・信頼度低') : t('est.', '推定'))}</span>` : ''
         // Zoomed out, the count stays only when the site is crowded.
-        head = `${tier}${head}${!compact || crowded ? count : ''}${SITE_ID && meta?.[n.id]?.measure === 'proxy_survey' ? est : compact ? '' : est}`
+        head = `${tier}${head}${!compact || crowded ? count : ''}${f?.tier.key === 'none' ? est : compact ? '' : est}`
       }
       const rows = rowsFor(n, frame, market, layers, lang).filter((x) => !compact || x.attention)
       const body = rows.map((x) => `<div class="sc-row sc-${x.key}${x.attention ? ' attn' : ''}">${x.html}</div>`).join('')

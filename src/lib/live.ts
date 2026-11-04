@@ -3,11 +3,11 @@ import { SITE_ID } from './siteMode'
  * Pure helpers over live_demo.json: the state of every node, route and alert at
  * one hour index. Views call frameAt() and never touch the raw arrays.
  */
-import type { LiveData, LiveWeatherAlert, RealSentiment, WeatherCondition } from '../types/live'
+import type { LiveData, LiveWeatherAlert, RealNodeMeta, RealSentiment, WeatherCondition } from '../types/live'
 import { DOW_AR, MON_AR } from './arFormat'
 
 export interface Tier {
-  key: 'good' | 'warn' | 'serious' | 'crit'
+  key: 'none' | 'good' | 'warn' | 'serious' | 'crit'
   label: string
   label_ja: string
   label_ar: string
@@ -15,13 +15,14 @@ export interface Tier {
 }
 
 /** Site crowding from people on site ÷ comfortable capacity. */
-export function crowdTier(load: number): Tier {
+export function crowdTier(load: number, meta?: RealNodeMeta): Tier {
+  if (meta?.measure === 'proxy_survey') return { key: 'none', label: 'Survey proxy · low confidence', label_ja: 'アンケート代理指標・信頼度低', label_ar: 'مؤشر بديل من الاستبيان · ثقة منخفضة', colour: '#c9d4ff' }
   if (load < 0.45) return { key: 'good', label: 'Comfortable', label_ja: '快適', label_ar: 'مريح', colour: '#0ca30c' }
   if (load < 0.8) return { key: 'warn', label: 'Busy', label_ja: 'やや混雑', label_ar: 'مزدحم قليلاً', colour: '#fab219' }
   if (load < 1.0) return { key: 'serious', label: 'Crowded', label_ja: '混雑', label_ar: 'مزدحم', colour: '#ec835a' }
   return { key: 'crit', label: 'Over capacity', label_ja: '過密', label_ar: 'فوق السعة', colour: '#d03b3b' }
 }
-export const CROWD_TIERS: Tier[] = [0.2, 0.6, 0.9, 1.2].map(crowdTier)
+export const CROWD_TIERS: Tier[] = [0.2, 0.6, 0.9, 1.2].map((load) => crowdTier(load))
 
 /** Road congestion 0..1. */
 export function trafficTier(c: number): Tier {
@@ -72,7 +73,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
       lo: n.on_site.lo?.[i] ?? null,
       hi: n.on_site.hi?.[i] ?? null,
       load,
-      tier: crowdTier(load),
+      tier: crowdTier(load, live.node_meta?.[id]),
       arrivals: n.arrivals.actual[i] ?? n.arrivals.predicted[i] ?? 0,
       weather: {
         temp: n.weather.temp_c[i],

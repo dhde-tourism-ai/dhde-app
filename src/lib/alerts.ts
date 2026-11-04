@@ -84,7 +84,7 @@ export function computeAlerts(live: LiveData, routes: RoutesFile | null, frame: 
   }
 
   for (const [id, f] of Object.entries(frame)) {
-    if (f.noEstimate) continue
+    if (f.noEstimate || f.tier.key === 'none') continue
     if (SITE_ID) {
       const meta = live.node_meta?.[id]
       const value = meta?.visitors_daily[Math.floor(t / 24)]

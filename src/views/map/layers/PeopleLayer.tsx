@@ -164,13 +164,15 @@ export function PeopleLayer({ nodes, frame, selectedId, onSelect, kanazawa, meta
                   <b className="num">{Math.round(f.onSite).toLocaleString('en-US')}</b>
                   <span>{f.observed ? t(SITE_ID ? 'daily visitors' : 'people on site now', SITE_ID ? '日別来訪者数' : '現在の人数') : t('people on site (forecast)', '予測人数')}</span>
                 </div>
-                {SITE_ID && m?.measure === 'proxy_survey' && <p>{t('Survey proxy, low confidence. No model forecast is published.', 'アンケート代理指標・信頼度低。モデル予測はありません。')}</p>}
+                {f.tier.key === 'none' && <p>{t('Survey proxy, low confidence. No model forecast is published.', 'アンケート代理指標・信頼度低。モデル予測はありません。')}</p>}
                 <div className="tt-grid">
+                  {f.tier.key !== 'none' && <>
                   <span className="tt-k">{t('Crowding', '混雑')}</span>
                   <span className="tt-v">
                     <span className="sw" style={{ background: col }}></span>
                     {t(f.tier.label, f.tier.label_ja, f.tier.label_ar)} ·{Math.round(f.load * 100)}%
                   </span>
+                  </>}
                   <span className="tt-k">{t('Forecast', '予測')}</span>
                   <span className="tt-v num">
                     {Math.round(f.predicted).toLocaleString('en-US')}
