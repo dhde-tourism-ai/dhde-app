@@ -196,14 +196,14 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
                     </>
                   )}
                 </div>
-                <p className="muted small">{SITE_ID ? tr('Daily total; no hourly estimate.', '日合計を表示。時間別の推計は行いません。') : frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。', forecastMethodAr(meta.forecast_method))}</p>
+                <p className="muted small">{SITE_ID ? frame.hourlyEstimate ? tr('Daily estimate spread over measured camera hourly shares or a typical day-type profile.', '日別推計をカメラの実測時間分布または平日・休日の平均分布で配分。') : tr('Daily total; no hourly estimate.', '日合計を表示。時間別の推計は行いません。') : frame.realDay?.visitors != null ? tr('The hourly figures below are a simulated shape scaled to this total.', '下の時間別は、この合計に合わせた模擬の形です。') : tr(meta.forecast_method, '直近4週の同曜日平均（実推計）を模擬の時間分布で配分。', forecastMethodAr(meta.forecast_method))}</p>
               </div>
             ) : null}
             {!frame.noEstimate && (
             <>
             <div className="drawer-kpis">
               <div className="dk">
-                <span className="eyebrow">{frame.observed ? tr(SITE_ID ? 'Daily visitors' : 'On site now', SITE_ID ? '日別来訪者数' : '現在の人数') : tr('Forecast on site', '予測人数')}</span>
+                <span className="eyebrow">{SITE_ID && frame.hourlyEstimate ? tr('Hourly visitor estimate', '時間別来訪者推計') : frame.observed ? tr(SITE_ID ? 'Daily visitors' : 'On site now', SITE_ID ? '日別来訪者数' : '現在の人数') : tr('Forecast on site', '予測人数')}</span>
                 <span className={`dk-val ${frame.observed ? '' : 'fc'}`}>{Math.round(frame.onSite).toLocaleString('en-US')}</span>
                 <StatusTag tier={frame.tier} />
               </div>
@@ -222,7 +222,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
               <span className="meter-cap" style={{ left: `${Math.min(100, 100 / Math.max(1, frame.load))}%` }}></span>
             </div>
             <p className="meter-lab muted">
-              {Math.round(frame.load * 100)}% {tr(SITE_ID ? 'of normal day' : 'of comfortable capacity', SITE_ID ? '（平常日比）' : 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
+              {Math.round(frame.load * 100)}% {tr(SITE_ID ? frame.hourlyEstimate ? 'of normal peak hour' : 'of normal day' : 'of comfortable capacity', SITE_ID ? frame.hourlyEstimate ? '（平常日のピーク時間比）' : '（平常日比）' : 'の快適容量')} ({ln?.comfortable_capacity.toLocaleString('en-US')})
             </p>
             {!SITE_ID && <>
             <h3 className="drawer-h">{tr(SITE_ID ? 'Daily total across the selected day' : 'Today’s rhythm, people on site', SITE_ID ? '選択日の日合計（時間別推計なし）' : '1日の推移（現地人数）')}</h3>

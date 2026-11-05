@@ -55,12 +55,21 @@ notes. Days the model ran without its week-ahead bookings are flagged
 low/high range is the 5th-95th percentile of past errors but held about 80%
 of unseen backtest days (range_coverage), so it is an ~80% range, not 90%.
 
+Hourly shape
+------------
+With --hourly-root, camera nodes use complete, positive-total daily CSVs for
+hourly shares. Other dates use workday/day-off mean shares from the 8 weeks
+through the latest counted day, including Japanese national holidays as days
+off. A day type with fewer than 4 days uses the all-days mean. Missing or
+unreadable hourly data leaves the node's daily behaviour unchanged.
+
 Fails loudly (non-zero exit, no file written) if the output would be empty or
 malformed, so a bad build can never replace a good file.
 """
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import subprocess
@@ -73,6 +82,78 @@ import pandas as pd
 JST = timezone(timedelta(hours=9))
 HISTORY_DAYS = 90
 FORWARD_DAYS = 90
+
+HOURLY_SENSORS = {
+    "tojinbo": [("tojinbo-shotaro", "Person")],
+    "rainbow_line": [("rainbow-line-parking-lot-1-gate", "LicensePlate"),
+                     ("rainbow-line-parking-lot-2-gate", "LicensePlate")],
+}
+
+
+def hourly_block(node: str, block: dict, root: Path | None, notes: list[str]) -> dict:
+    """Measured shares for counted days, typical shares for all other node dates."""
+    if node not in HOURLY_SENSORS:
+        return {}
+    try:
+        import jpholiday
+
+        if root is None:
+            raise ValueError("no --hourly-root")
+        latest = date.fromisoformat(block["as_of"]["visitors"])
+        start = latest - timedelta(days=55)
+        dates = {r["date"] for r in block["daily"] + block.get("forecast", {}).get("days", [])}
+        read_dates = dates | {(start + timedelta(days=i)).isoformat() for i in range(56)}
+        measured = {}
+        for ds in sorted(read_dates):
+            day = date.fromisoformat(ds)
+            if day > latest:
+                continue
+            counts = [0.0] * 24
+            for placement, kind in HOURLY_SENSORS[node]:
+                path = root / "daily" / placement / kind / ds[:4] / ds[5:7] / f"{ds}.csv"
+                if not path.exists():
+                    break
+                with path.open(encoding="utf-8-sig", newline="") as f:
+                    rows = list(csv.DictReader(f))
+                hours = {}
+                for row in rows:
+                    begin = datetime.fromisoformat(row["aggregate from"])
+                    end = datetime.fromisoformat(row["aggregate to"])
+                    count = float(row["total count"])
+                    if (row["placement"] != placement or row["object class"] != kind
+                            or begin.date() != day or begin.minute or begin.second or begin.microsecond
+                            or end != begin + timedelta(hours=1) or begin.hour in hours
+                            or not math.isfinite(count) or count < 0):
+                        break
+                    hours[begin.hour] = count
+                if len(rows) != 24 or len(hours) != 24:
+                    break
+                counts = [counts[h] + hours[h] for h in range(24)]
+            else:
+                total = sum(counts)
+                if total > 0 and math.isfinite(total):
+                    measured[ds] = [v / total for v in counts]
+        profile_days = {ds: share for ds, share in measured.items() if start.isoformat() <= ds <= latest.isoformat()}
+        if not profile_days:
+            raise ValueError("no complete positive-total days in the last 8 weeks")
+
+        def day_off(ds):
+            day = date.fromisoformat(ds)
+            return day.weekday() >= 5 or jpholiday.is_holiday(day)
+
+        def mean(shares):
+            return [sum(s[h] for s in shares) / len(shares) for h in range(24)]
+
+        all_days = mean(list(profile_days.values()))
+        typical = {}
+        for off in (False, True):
+            shares = [s for ds, s in profile_days.items() if day_off(ds) == off]
+            typical[off] = mean(shares) if len(shares) >= 4 else all_days
+        return {"hourly_share": {ds: measured.get(ds, typical[day_off(ds)]) for ds in sorted(dates)},
+                "peak_share": max(all_days)}
+    except Exception as e:  # noqa: BLE001 - hourly sources must never stop a refresh
+        notes.append(f"{node}: no hourly shares ({e!r}); the app keeps daily totals")
+        return {}
 
 # 観光客入込数 2025 edition (Fukui Prefecture, released 12 Jun 2026), gross visits.
 OFFICIAL_2025 = {
@@ -508,6 +589,16 @@ def validate(payload: dict) -> list[str]:
     if len(nodes) < 1:
         errs.append("no nodes")
     for k, v in nodes.items():
+        peak = v.get("peak_share")
+        if "peak_share" in v and (isinstance(peak, bool) or not isinstance(peak, (int, float))
+                                  or not math.isfinite(peak) or not 0 < peak <= 1):
+            errs.append(f"{k}: invalid peak_share")
+        for ds, shares in v.get("hourly_share", {}).items():
+            if (not isinstance(shares, list) or len(shares) != 24
+                    or any(isinstance(x, bool) or not isinstance(x, (int, float))
+                           or not math.isfinite(x) or x < 0 for x in shares)
+                    or abs(sum(shares) - 1) > 1e-6):
+                errs.append(f"{k}: invalid hourly shares on {ds}")
         if not v["daily"]:
             errs.append(f"{k}: no daily rows")
         f = v["calibration"]["factor"]
@@ -521,6 +612,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", required=True, help="folder with {node}_master.parquet files")
     ap.add_argument("--out", default="public/data/real_data.json")
+    ap.add_argument("--hourly-root", help="checkout of fukui-kanko-people-flow-data (optional)")
     ap.add_argument("--today", help="YYYY-MM-DD (default: today, JST)")
     ap.add_argument("--source-commit", default=None, help="dhde-preprocessing-model commit the tables came from")
     ap.add_argument("--forecast", help="forecast_fukui.csv from build_forecast.py (optional; its report JSON is read "
@@ -565,6 +657,10 @@ def main() -> int:
     elif fc_path:
         forecast_notes.append(f"7-day forecast file not found ({fc_path.name}); the app uses its naive forecast")
 
+    hourly_notes = []
+    for node, block in nodes.items():
+        block.update(hourly_block(node, block, Path(a.hourly_root).expanduser() if a.hourly_root else None, hourly_notes))
+
     people_dates = [v["as_of"]["visitors"] for v in nodes.values() if v["as_of"]["visitors"]]
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -581,6 +677,7 @@ def main() -> int:
             "calibration factor as visitors_est.",
             *calib_notes,
             *forecast_notes,
+            *hourly_notes,
         ],
         "nodes": nodes,
     }
@@ -599,7 +696,7 @@ def main() -> int:
         fcb = v.get("forecast")
         fc_txt = f" forecast={fcb['model']} wape={fcb['backtest_wape']}" if fcb else ""
         print(f"  {k:13s} {v['measure'] or '-':13s} factor={c['factor']} ({c['method']}) as_of={v['as_of']['visitors']}{fc_txt}")
-    for n in calib_notes + forecast_notes:
+    for n in calib_notes + forecast_notes + hourly_notes:
         print(f"  note: {n}")
     return 0
 

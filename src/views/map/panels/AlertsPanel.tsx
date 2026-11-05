@@ -73,6 +73,7 @@ interface Props {
 export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, tabs, source, meta }: Props) {
   const { t } = useLang()
   const withEst = frame ? Object.values(frame).filter((f) => !f.noEstimate) : []
+  const hourly = Boolean(SITE_ID && frame?.[SITE_ID]?.hourlyEstimate)
   const total = withEst.reduce((a, f) => a + f.onSite, 0)
   return (
     <section className="float-panel alerts-panel" aria-label={t('Live board', 'ライブボード')}>
@@ -93,7 +94,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         {frame && (
           <div className="board">
             <div className="board-total">
-              <span className="eyebrow">{SITE_ID && meta?.[SITE_ID]?.measure === 'proxy_survey' ? t('Survey proxy · low confidence', 'アンケート代理指標・信頼度低') : SITE_ID ? t('Daily visitor estimate', '日別来訪者推計') : withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`, `الناس في المواقع، ${withEst.length} مواقع لها تقديرات`)}</span>
+              <span className="eyebrow">{SITE_ID && meta?.[SITE_ID]?.measure === 'proxy_survey' ? t('Survey proxy · low confidence', 'アンケート代理指標・信頼度低') : SITE_ID ? hourly ? t('Hourly visitor estimate', '時間別来訪者推計') : t('Daily visitor estimate', '日別来訪者推計') : withEst.length === 6 ? t('People on site, six nodes', '6ノードの現地人数') : t(`People on site, ${withEst.length} nodes with estimates`, `推計のある${withEst.length}ノードの現地人数`, `الناس في المواقع، ${withEst.length} مواقع لها تقديرات`)}</span>
               <span className="board-num">{SITE_ID && !withEst.length ? '—' : Math.round(total).toLocaleString('en-US')}</span>
             </div>
             <ul className="board-list">
