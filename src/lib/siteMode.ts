@@ -22,6 +22,11 @@ export function cleanSiteMerge(merged: ReturnType<typeof mergeAll>): ReturnType<
   live.demo = false
   live.flows = {}; live.traffic = {}; live.advisories = []
   live.weather_alerts = live.weather_alerts.filter((a) => !a.demo && a.nodes.includes(SITE_ID)).map((a) => ({ ...a, nodes: [SITE_ID] }))
+  // No published forecast: the timeline ends with today instead of showing empty future days.
+  if (merged.real && !merged.real.nodes[SITE_ID]?.forecast) {
+    live.days = live.days.slice(0, (live.today_day ?? 0) + 1)
+    live.hours = live.days.length * 24
+  }
   const n = live.nodes[SITE_ID]
   const meta = live.node_meta?.[SITE_ID]
   if (n && meta) {

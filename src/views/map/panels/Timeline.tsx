@@ -7,7 +7,7 @@ import { clock, vehicleClock } from '../../../lib/vehicleClock'
 import { Icon } from '../../../components/icons'
 import { SourceBadge } from '../../../components/SourceBadge'
 
-/** Track shares: observed past days (when real data adds them), today (hourly), the next days. */
+/** Track shares: observed past days (when real data adds them), today (hourly), the next days (if any). */
 interface Scale {
   t0: number
   hours: number
@@ -17,7 +17,10 @@ interface Scale {
 
 function scaleFor(live: LiveData): Scale {
   const t0 = (live.today_day ?? 0) * 24
-  return { t0, hours: live.hours, pastW: t0 > 0 ? 0.2 : 0, todayW: t0 > 0 ? 0.3 : 0.36 }
+  const pastW = t0 > 0 ? 0.2 : 0
+  // A timeline that ends with today (a site build without a forecast) gives today the rest.
+  const todayW = live.hours <= t0 + 24 ? 1 - pastW : t0 > 0 ? 0.3 : 0.36
+  return { t0, hours: live.hours, pastW, todayW }
 }
 
 function xOf(i: number, s: Scale): number {
