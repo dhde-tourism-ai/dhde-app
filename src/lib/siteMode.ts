@@ -25,21 +25,27 @@ export function cleanSiteMerge(merged: ReturnType<typeof mergeAll>): ReturnType<
   const n = live.nodes[SITE_ID]
   const meta = live.node_meta?.[SITE_ID]
   if (n && meta) {
-    // The map uses daily totals at every hour. It makes no claim about hourly footfall.
-    const forecast = merged.real?.nodes[SITE_ID]?.forecast?.days ?? []
-    meta.forecast_method = 'Published daily model forecast; missing dates are omitted.'
+    // Spread daily estimates over camera hourly shares; otherwise keep flat daily totals.
+    const real = merged.real?.nodes[SITE_ID]
+    const forecast = real?.forecast?.days ?? []
+    meta.hourly_share_dates = Object.keys(real?.hourly_share ?? {})
+    meta.forecast_method = real?.hourly_share
+      ? 'Published daily model forecast spread over measured camera hourly shares or typical day-type profiles; missing dates are omitted.'
+      : 'Published daily model forecast; missing dates are omitted.'
     meta.forecast_source_daily = meta.forecast_source_daily.map((source) => source === 'model' ? source : null)
     for (let i = 0; i < live.hours; i++) {
       const d = Math.floor(i / 24)
       const actual = meta.visitors_daily[d]
+      const share = real?.hourly_share?.[live.days[d].date]?.[i % 24]
       const predicted = (meta.forecast_source_daily[d] ? forecast.find((f) => f.date === live.days[d].date)?.visitors_est : null) ?? actual ?? 0
       for (const series of [n.on_site, n.arrivals]) {
-        series.actual[i] = series === n.arrivals && actual != null ? actual / 24 : actual
-        series.predicted[i] = series === n.arrivals ? predicted / 24 : predicted
+        const scale = share ?? (series === n.arrivals ? 1 / 24 : 1)
+        series.actual[i] = actual == null ? actual : actual * scale
+        series.predicted[i] = predicted * scale
         series.lo = undefined; series.hi = undefined
       }
     }
-    n.comfortable_capacity = meta.normal_daily ?? 1
+    n.comfortable_capacity = (meta.normal_daily ?? 1) * (real?.peak_share ?? 1)
   }
   if (market && !merged.real) {
     market.hotels = []; market.rsi = []; market.survey = {}; market.social = {}; market.reviews = {}

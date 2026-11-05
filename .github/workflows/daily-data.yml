@@ -82,6 +82,17 @@ jobs:
       - name: Fetch sources
         run: python "$PREPROC/scripts/fetch_data.py"
 
+      - name: Fetch hourly camera counts
+        run: |
+          if git -C "$DHDE_WORKSPACE_ROOT/fukui-kanko-people-flow-data" sparse-checkout add \
+              '/daily/tojinbo-shotaro/Person/' \
+              '/daily/rainbow-line-parking-lot-1-gate/LicensePlate/' \
+              '/daily/rainbow-line-parking-lot-2-gate/LicensePlate/'; then
+            echo "HOURLY_ROOT=$DHDE_WORKSPACE_ROOT/fukui-kanko-people-flow-data" >> "$GITHUB_ENV"
+          else
+            echo "::warning::hourly camera counts unavailable; building without hourly shares"
+          fi
+
       - name: Build node tables
         run: |
           mkdir -p "$OUT"
@@ -115,7 +126,7 @@ jobs:
           fi
 
       - name: Build real_data.json
-        run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --calibration "$OUT/calibration_check.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA"
+        run: python scripts/build_real_data.py --input "$OUT" --forecast "$OUT/forecast_fukui.csv" --calibration "$OUT/calibration_check.csv" --out public/data/real_data.json --source-commit "$PREPROC_SHA" ${HOURLY_ROOT:+--hourly-root "$HOURLY_ROOT"}
 
       - name: Validate real_data.json
         run: node scripts/check_data.mjs

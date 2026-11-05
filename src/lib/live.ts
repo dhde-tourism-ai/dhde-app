@@ -51,6 +51,8 @@ export interface NodeFrame {
   realDay: { visitors: number | null; signal: number | null } | null
   /** No visitor estimate exists (Fukui Station): show the raw signal only. */
   noEstimate: boolean
+  /** Site estimate spread over a camera hourly profile for the selected date. */
+  hourlyEstimate: boolean
   /** Weather extras from real_data.json for the day. */
   wxDay: { sun: number | null; humidity: number | null; snow: number | null; temp: number | null; precip: number | null; wind: number | null; real: boolean }
 }
@@ -92,6 +94,7 @@ export function frameAt(live: LiveData, i: number): Record<string, NodeFrame> {
         const sg = m.signal_daily[d] ?? null
         return v === null && sg === null ? null : { visitors: v, signal: sg }
       })(),
+      hourlyEstimate: Boolean(SITE_ID && live.node_meta?.[id]?.hourly_share_dates?.includes(live.days[d].date)),
       noEstimate: Boolean(live.node_meta?.[id]?.no_estimate) || Boolean(SITE_ID && live.node_meta?.[id] && live.node_meta[id].visitors_daily[d] == null && !live.node_meta[id].forecast_source_daily[d]),
       wxDay: {
         sun: n.weather.sun_h?.[d] ?? null,

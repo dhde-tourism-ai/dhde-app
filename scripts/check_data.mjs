@@ -44,6 +44,15 @@ for (const [id, n] of nodes) {
     continue
   }
   if (!Array.isArray(n.daily) || n.daily.length === 0) fail(`${p}.daily: missing or empty`)
+  if (n.hourly_share !== undefined) {
+    if (typeof n.hourly_share !== 'object' || n.hourly_share === null || Array.isArray(n.hourly_share)) fail(`${p}.hourly_share must be an object`)
+    else for (const [date, shares] of Object.entries(n.hourly_share)) {
+      if (!DATE.test(date) || !Array.isArray(shares) || shares.length !== 24 ||
+          shares.some((v) => typeof v !== 'number' || !Number.isFinite(v) || v < 0) ||
+          Math.abs(shares.reduce((a, b) => a + b, 0) - 1) > 1e-6) fail(`${p}.hourly_share.${date} invalid`)
+    }
+  }
+  if (n.peak_share !== undefined && (typeof n.peak_share !== 'number' || !Number.isFinite(n.peak_share) || n.peak_share <= 0 || n.peak_share > 1)) fail(`${p}.peak_share invalid`)
   let prev = ''
   for (const [i, r] of (n.daily ?? []).entries()) {
     if (typeof r?.date !== 'string' || !DATE.test(r.date)) fail(`${p}.daily[${i}].date invalid`)

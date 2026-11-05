@@ -136,6 +136,10 @@ export interface RealForecast {
 }
 
 export interface RealNode {
+  /** Hourly fractions of each daily total, measured or from the camera's typical day type. */
+  hourly_share?: Record<string, number[]>
+  /** Largest hourly fraction in the mean camera profile, for normal peak-hour crowding. */
+  peak_share?: number
   measure: string | null
   signal_column: string | null
   calibration: RealCalibration
