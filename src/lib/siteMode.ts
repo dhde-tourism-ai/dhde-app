@@ -33,6 +33,10 @@ export function cleanSiteMerge(merged: ReturnType<typeof mergeAll>): ReturnType<
       ? 'Published daily model forecast spread over measured camera hourly shares or typical day-type profiles; missing dates are omitted.'
       : 'Published daily model forecast; missing dates are omitted.'
     meta.forecast_source_daily = meta.forecast_source_daily.map((source) => source === 'model' ? source : null)
+    // The timeline ends at the last model forecast day (today without one), not on empty days.
+    const lastDay = Math.max(live.today_day ?? 0, meta.forecast_source_daily.findLastIndex(Boolean))
+    live.days = live.days.slice(0, lastDay + 1)
+    live.hours = live.days.length * 24
     for (let i = 0; i < live.hours; i++) {
       const d = Math.floor(i / 24)
       const actual = meta.visitors_daily[d]
