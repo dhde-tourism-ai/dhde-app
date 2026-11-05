@@ -120,7 +120,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
         )}
         {!SITE_ID && <Group title={t('Traffic alerts', '交通アラート')} icon="traffic" items={alerts.traffic} empty={t('Roads flowing freely.', '道路は順調です。')} onPick={onSelect} />}
         <Group title={t('Weather alerts', '気象アラート')} icon="weather" items={alerts.weather} empty={SITE_ID ? t('No confirmed warnings received.', '確認済みの警報情報はありません。') : t('No advisories in force.', '発表中の注意報はありません。')} onPick={onSelect} />
-        <Group title={t('Crowding', '混雑')} icon="people" items={alerts.crowd} empty={SITE_ID ? t('No unusual daily count recorded.', '日別人数の大きな増加は未確認です。') : t('All sites comfortable.', 'すべて快適です。')} onPick={onSelect} />
+        <Group title={t('Crowding', '混雑')} icon="people" items={alerts.crowd} empty={SITE_ID ? hourly ? t('No unusual hourly count recorded.', '時間別人数の大きな増加は未確認です。') : t('No unusual daily count recorded.', '日別人数の大きな増加は未確認です。') : t('All sites comfortable.', 'すべて快適です。')} onPick={onSelect} />
         {!SITE_ID && <Group title={t('For operators', '事業者向け')} icon="info" items={alerts.insights} empty={t('Nothing to act on.', '対応事項はありません。')} onPick={onSelect} />}
       </div>
     </section>
