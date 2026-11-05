@@ -172,6 +172,17 @@ function parseSurvey(v: unknown): RealNode['survey'] {
 }
 
 /** The model forecast block, or undefined when it's missing or has no usable day. */
+/** Site mode hourly shares: keep only dates with 24 finite, non-negative fractions. */
+function parseHourlyShare(h: unknown): Record<string, number[]> | undefined {
+  if (!isObj(h)) return undefined
+  const out: Record<string, number[]> = {}
+  for (const [date, shares] of Object.entries(h)) {
+    if (!DATE_RE.test(date) || !Array.isArray(shares) || shares.length !== 24) continue
+    if (shares.every((x) => typeof x === 'number' && Number.isFinite(x) && x >= 0)) out[date] = shares as number[]
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
 function parseForecast(f: unknown): RealForecast | undefined {
   if (!isObj(f) || !Array.isArray(f.days)) return undefined
   const days: RealForecastDay[] = f.days
@@ -249,6 +260,9 @@ export function parseReal(raw: unknown): RealData | null {
       rakuten: parseRakuten(n.rakuten),
       survey: parseSurvey(n.survey),
       forecast: parseForecast(n.forecast),
+      hourly_share: parseHourlyShare(n.hourly_share),
+      // Divides crowding capacity, so only a positive fraction is kept.
+      peak_share: (num(n.peak_share) ?? 0) > 0 ? (n.peak_share as number) : undefined,
     }
   }
   if (Object.keys(nodes).length === 0) return null
