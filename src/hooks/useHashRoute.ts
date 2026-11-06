@@ -19,8 +19,8 @@ function parse(hash: string): Route {
     window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#/map`)
     return { view: 'map' }
   }
-  // No or unknown hash opens the executive summary.
-  const v = VIEWS.includes(view as ViewId) ? (view as ViewId) : 'summary'
+  // No or unknown hash opens the map.
+  const v = VIEWS.includes(view as ViewId) ? (view as ViewId) : 'map'
   return { view: v, node: node ? decodeURIComponent(node) : undefined }
 }
 

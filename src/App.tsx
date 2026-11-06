@@ -19,11 +19,11 @@ const TransportView = import.meta.env.VITE_SITE ? () => null : lazy(() => import
 const SiteView = lazy(() => import('./views/site/SiteView'))
 
 const TABS: { id: ViewId; en: string; ja: string; icon: IconName }[] = [
-  { id: 'summary', en: 'Summary', ja: '概要', icon: 'home' },
   { id: 'map', en: 'Map', ja: '地図', icon: 'map' },
   { id: 'nodes', en: 'Nodes', ja: 'ノード', icon: 'nodes' },
   { id: 'transport', en: 'Transport', ja: '交通', icon: 'bus' },
   { id: 'strategy', en: 'Strategy', ja: '戦略', icon: 'strategy' },
+  { id: 'summary', en: 'Summary', ja: '概要', icon: 'home' },
 ]
 
 function BrandMark() {
@@ -71,7 +71,7 @@ export default function App() {
             </span>
           </a>
         ) : (
-          <a className="brand" href="#/summary" aria-label="DHDE · Fukui Tourism Intelligence">
+          <a className="brand" href="#/map" aria-label="DHDE · Fukui Tourism Intelligence">
             <BrandMark />
             <span className="brand-name">
               DHDE<span className="dot">·</span>

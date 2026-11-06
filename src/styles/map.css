@@ -549,7 +549,6 @@
   .status-strip .ss-msg {
     white-space: normal;
     line-height: 1.25;
-    max-height: 2.5em;
   }
 
   .status-strip {
@@ -558,13 +557,14 @@
 }
 
 .status-strip {
+  direction: ltr;
   position: absolute;
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  /* Between the layers card (12 + 316px) and the board (12 + 348px), with a little air. */
-  max-width: calc(100% - 744px);
-  min-width: 320px;
+  left: 340px;
+  right: 416px;
+  /* Leave room for the 316px layers card and the 392px live board. */
+  min-width: 0;
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -606,6 +606,7 @@
 }
 
 .ss-msg {
+  flex: 1 1 160px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -621,6 +622,15 @@
   height: 8px;
   border-radius: 50%;
   flex: none;
+}
+
+.ss-message-text {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
 }
 
 .map-left,
@@ -1232,6 +1242,7 @@ button.al-item:hover {
 }
 
 .timeline {
+  direction: ltr;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1489,7 +1500,8 @@ button.al-item:hover {
 /* medium widths: status strip drops below the panels' tops */
 @media (max-width: 1180px) {
   .status-strip {
-    max-width: calc(100% - 700px);
+    left: 314px;
+    right: 384px;
     min-width: 0;
   }
 
@@ -1836,3 +1848,19 @@ html[lang='ar'] .tl-readout {
   width: auto;
   min-width: 158px;
 }
+
+html[dir='rtl'] .ss-tag,
+html[dir='rtl'] .ss-time,
+html[dir='rtl'] .ss-msg,
+html[dir='rtl'] .timeline .tl-title,
+html[dir='rtl'] .timeline .tl-day,
+html[dir='rtl'] .timeline .tl-mode,
+html[dir='rtl'] .timeline .tl-chart-heading > span,
+html[dir='rtl'] .timeline .src-badge,
+html[dir='rtl'] .timeline .tl-nowbtn {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+
+.ss-time { min-width: 0; flex-shrink: 1; }
