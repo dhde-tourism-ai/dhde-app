@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T07:01:49Z",
+  "generated_at": "2026-11-06T07:01:57Z",
   "source": {
     "repo": "dhde-tourism-ai/dhde-preprocessing-model",
     "commit": "de18acb"
@@ -11,11 +11,11 @@
       "kind": "visitors",
       "label": "Sakai city (Tojinbo)",
       "label_ja": "坂井市（東尋坊）",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 12.8,
-      "baseline_mape_pct": 12.8,
+      "model": "neighbour_growth",
+      "backtest_mape_pct": 7.5,
+      "baseline_mape_pct": 9.4,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -101,80 +101,84 @@
         {
           "month": "2026-09",
           "value": 203936.0
+        },
+        {
+          "month": "2026-10",
+          "value": 186981.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 168125.0,
-          "low": 145675.0,
-          "high": 257722.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 206694.0,
-          "low": 179093.0,
-          "high": 316845.0
+          "predicted": 221052.0,
+          "low": 207176.0,
+          "high": 259895.0
         },
         {
           "month": "2026-12",
-          "predicted": 118190.0,
-          "low": 102408.0,
-          "high": 181176.0
+          "predicted": 126400.0,
+          "low": 118466.0,
+          "high": 148611.0
         },
         {
           "month": "2027-01",
-          "predicted": 82141.0,
-          "low": 71172.0,
-          "high": 125915.0
+          "predicted": 87847.0,
+          "low": 82333.0,
+          "high": 103283.0
         },
         {
           "month": "2027-02",
-          "predicted": 92438.0,
-          "low": 80094.0,
-          "high": 141700.0
+          "predicted": 98859.0,
+          "low": 92654.0,
+          "high": 116231.0
         },
         {
           "month": "2027-03",
-          "predicted": 162449.0,
-          "low": 140757.0,
-          "high": 249021.0
+          "predicted": 173734.0,
+          "low": 162828.0,
+          "high": 204262.0
         },
         {
           "month": "2027-04",
-          "predicted": 153635.0,
-          "low": 133120.0,
-          "high": 235510.0
+          "predicted": 164308.0,
+          "low": 153993.0,
+          "high": 193179.0
         },
         {
           "month": "2027-05",
-          "predicted": 257053.0,
-          "low": 222728.0,
-          "high": 394041.0
+          "predicted": 274910.0,
+          "low": 257653.0,
+          "high": 323216.0
         },
         {
           "month": "2027-06",
-          "predicted": 148641.0,
-          "low": 128792.0,
-          "high": 227854.0
+          "predicted": 158967.0,
+          "low": 148988.0,
+          "high": 186900.0
         },
         {
           "month": "2027-07",
-          "predicted": 186990.0,
-          "low": 162021.0,
-          "high": 286640.0
+          "predicted": 199980.0,
+          "low": 187426.0,
+          "high": 235119.0
         },
         {
           "month": "2027-08",
-          "predicted": 325661.0,
-          "low": 282174.0,
-          "high": 499211.0
+          "predicted": 348284.0,
+          "low": 326421.0,
+          "high": 409483.0
         },
         {
           "month": "2027-09",
-          "predicted": 203936.0,
-          "low": 176704.0,
-          "high": 312617.0
+          "predicted": 218103.0,
+          "low": 204412.0,
+          "high": 256427.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 199970.0,
+          "low": 187417.0,
+          "high": 235108.0
         }
       ]
     },
@@ -183,11 +187,11 @@
       "kind": "visitors",
       "label": "Fukui city (Fukui Station)",
       "label_ja": "福井市（福井駅）",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 10.6,
-      "baseline_mape_pct": 10.6,
+      "model": "neighbour_growth",
+      "backtest_mape_pct": 11.3,
+      "baseline_mape_pct": 14.2,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -273,80 +277,84 @@
         {
           "month": "2026-09",
           "value": 319362.0
+        },
+        {
+          "month": "2026-10",
+          "value": 323597.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 261220.0,
-          "low": 246923.0,
-          "high": 330838.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 318941.0,
-          "low": 301484.0,
-          "high": 403942.0
+          "predicted": 341097.0,
+          "low": 337692.0,
+          "high": 408729.0
         },
         {
           "month": "2026-12",
-          "predicted": 231351.0,
-          "low": 218689.0,
-          "high": 293008.0
+          "predicted": 247422.0,
+          "low": 244952.0,
+          "high": 296480.0
         },
         {
           "month": "2027-01",
-          "predicted": 196729.0,
-          "low": 185961.0,
-          "high": 249159.0
+          "predicted": 210395.0,
+          "low": 208295.0,
+          "high": 252112.0
         },
         {
           "month": "2027-02",
-          "predicted": 186829.0,
-          "low": 176603.0,
-          "high": 236621.0
+          "predicted": 199807.0,
+          "low": 197813.0,
+          "high": 239425.0
         },
         {
           "month": "2027-03",
-          "predicted": 289680.0,
-          "low": 273825.0,
-          "high": 366883.0
+          "predicted": 309803.0,
+          "low": 306711.0,
+          "high": 371230.0
         },
         {
           "month": "2027-04",
-          "predicted": 250898.0,
-          "low": 237166.0,
-          "high": 317765.0
+          "predicted": 268327.0,
+          "low": 265649.0,
+          "high": 321530.0
         },
         {
           "month": "2027-05",
-          "predicted": 346668.0,
-          "low": 327694.0,
-          "high": 439059.0
+          "predicted": 370750.0,
+          "low": 367049.0,
+          "high": 444261.0
         },
         {
           "month": "2027-06",
-          "predicted": 260125.0,
-          "low": 245888.0,
-          "high": 329451.0
+          "predicted": 278195.0,
+          "low": 275418.0,
+          "high": 333355.0
         },
         {
           "month": "2027-07",
-          "predicted": 264076.0,
-          "low": 249622.0,
-          "high": 334455.0
+          "predicted": 282421.0,
+          "low": 279601.0,
+          "high": 338418.0
         },
         {
           "month": "2027-08",
-          "predicted": 344178.0,
-          "low": 325340.0,
-          "high": 435905.0
+          "predicted": 368087.0,
+          "low": 364413.0,
+          "high": 441070.0
         },
         {
           "month": "2027-09",
-          "predicted": 319362.0,
-          "low": 301882.0,
-          "high": 404475.0
+          "predicted": 341547.0,
+          "low": 338138.0,
+          "high": 409268.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 346076.0,
+          "low": 342622.0,
+          "high": 414695.0
         }
       ]
     },
@@ -356,10 +364,10 @@
       "label": "Katsuyama city",
       "label_ja": "勝山市",
       "model": "seasonal_naive",
-      "backtest_mape_pct": 10.6,
-      "baseline_mape_pct": 10.6,
+      "backtest_mape_pct": 4.5,
+      "baseline_mape_pct": 4.5,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -445,80 +453,84 @@
         {
           "month": "2026-09",
           "value": 157182.0
+        },
+        {
+          "month": "2026-10",
+          "value": 152246.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 154130.0,
-          "low": 121395.0,
-          "high": 205876.0
-        },
-        {
           "month": "2026-11",
           "predicted": 171815.0,
-          "low": 135324.0,
-          "high": 229499.0
+          "low": 146398.0,
+          "high": 186850.0
         },
         {
           "month": "2026-12",
           "predicted": 87048.0,
-          "low": 68560.0,
-          "high": 116273.0
+          "low": 74171.0,
+          "high": 94665.0
         },
         {
           "month": "2027-01",
           "predicted": 94710.0,
-          "low": 74595.0,
-          "high": 126507.0
+          "low": 80699.0,
+          "high": 102998.0
         },
         {
           "month": "2027-02",
           "predicted": 133863.0,
-          "low": 105433.0,
-          "high": 178805.0
+          "low": 114060.0,
+          "high": 145577.0
         },
         {
           "month": "2027-03",
           "predicted": 163655.0,
-          "low": 128897.0,
-          "high": 218599.0
+          "low": 139445.0,
+          "high": 177976.0
         },
         {
           "month": "2027-04",
           "predicted": 100488.0,
-          "low": 79146.0,
-          "high": 134225.0
+          "low": 85623.0,
+          "high": 109281.0
         },
         {
           "month": "2027-05",
           "predicted": 166399.0,
-          "low": 131058.0,
-          "high": 222264.0
+          "low": 141783.0,
+          "high": 180960.0
         },
         {
           "month": "2027-06",
           "predicted": 102908.0,
-          "low": 81052.0,
-          "high": 137457.0
+          "low": 87685.0,
+          "high": 111913.0
         },
         {
           "month": "2027-07",
           "predicted": 150280.0,
-          "low": 118363.0,
-          "high": 200734.0
+          "low": 128049.0,
+          "high": 163430.0
         },
         {
           "month": "2027-08",
           "predicted": 230262.0,
-          "low": 181358.0,
-          "high": 307568.0
+          "low": 196199.0,
+          "high": 250411.0
         },
         {
           "month": "2027-09",
           "predicted": 157182.0,
-          "low": 123799.0,
-          "high": 209953.0
+          "low": 133930.0,
+          "high": 170936.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 152246.0,
+          "low": 129724.0,
+          "high": 165568.0
         }
       ]
     },
@@ -527,11 +539,11 @@
       "kind": "visitors",
       "label": "Mihama + Wakasa (Rainbow Line)",
       "label_ja": "美浜町＋若狭町（レインボーライン）",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 17.0,
-      "baseline_mape_pct": 17.0,
+      "model": "neighbour_growth",
+      "backtest_mape_pct": 14.2,
+      "baseline_mape_pct": 15.6,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -617,80 +629,84 @@
         {
           "month": "2026-09",
           "value": 188204.0
+        },
+        {
+          "month": "2026-10",
+          "value": 206838.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 151170.0,
-          "low": 113251.0,
-          "high": 234681.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 194117.0,
-          "low": 145425.0,
-          "high": 301353.0
+          "predicted": 207602.0,
+          "low": 183445.0,
+          "high": 272871.0
         },
         {
           "month": "2026-12",
-          "predicted": 83099.0,
-          "low": 62255.0,
-          "high": 129005.0
+          "predicted": 88872.0,
+          "low": 78530.0,
+          "high": 116813.0
         },
         {
           "month": "2027-01",
-          "predicted": 47314.0,
-          "low": 35446.0,
-          "high": 73452.0
+          "predicted": 50601.0,
+          "low": 44713.0,
+          "high": 66509.0
         },
         {
           "month": "2027-02",
-          "predicted": 70044.0,
-          "low": 52474.0,
-          "high": 108738.0
+          "predicted": 74910.0,
+          "low": 66193.0,
+          "high": 98461.0
         },
         {
           "month": "2027-03",
-          "predicted": 126672.0,
-          "low": 94898.0,
-          "high": 196649.0
+          "predicted": 135472.0,
+          "low": 119708.0,
+          "high": 178063.0
         },
         {
           "month": "2027-04",
-          "predicted": 123413.0,
-          "low": 92456.0,
-          "high": 191590.0
+          "predicted": 131986.0,
+          "low": 116628.0,
+          "high": 173482.0
         },
         {
           "month": "2027-05",
-          "predicted": 240931.0,
-          "low": 180496.0,
-          "high": 374028.0
+          "predicted": 257668.0,
+          "low": 227685.0,
+          "high": 338678.0
         },
         {
           "month": "2027-06",
-          "predicted": 132353.0,
-          "low": 99154.0,
-          "high": 205469.0
+          "predicted": 141547.0,
+          "low": 125076.0,
+          "high": 186049.0
         },
         {
           "month": "2027-07",
-          "predicted": 176215.0,
-          "low": 132013.0,
-          "high": 273561.0
+          "predicted": 188456.0,
+          "low": 166527.0,
+          "high": 247706.0
         },
         {
           "month": "2027-08",
-          "predicted": 248403.0,
-          "low": 186094.0,
-          "high": 385628.0
+          "predicted": 265659.0,
+          "low": 234746.0,
+          "high": 349181.0
         },
         {
           "month": "2027-09",
-          "predicted": 188204.0,
-          "low": 140995.0,
-          "high": 292173.0
+          "predicted": 201278.0,
+          "low": 177857.0,
+          "high": 264559.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 221206.0,
+          "low": 195466.0,
+          "high": 290753.0
         }
       ]
     },
@@ -699,11 +715,11 @@
       "kind": "visitors",
       "label": "Eiheiji town",
       "label_ja": "永平寺町",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 17.6,
-      "baseline_mape_pct": 17.6,
+      "model": "own_growth",
+      "backtest_mape_pct": 10.7,
+      "baseline_mape_pct": 15.1,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -789,80 +805,84 @@
         {
           "month": "2026-09",
           "value": 85764.0
+        },
+        {
+          "month": "2026-10",
+          "value": 90335.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 76055.0,
-          "low": 57590.0,
-          "high": 110476.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 107634.0,
-          "low": 81503.0,
-          "high": 156347.0
+          "predicted": 116653.0,
+          "low": 116653.0,
+          "high": 146074.0
         },
         {
           "month": "2026-12",
-          "predicted": 38374.0,
-          "low": 29058.0,
-          "high": 55741.0
+          "predicted": 41590.0,
+          "low": 41590.0,
+          "high": 52079.0
         },
         {
           "month": "2027-01",
-          "predicted": 26798.0,
-          "low": 20292.0,
-          "high": 38926.0
+          "predicted": 29044.0,
+          "low": 29044.0,
+          "high": 36368.0
         },
         {
           "month": "2027-02",
-          "predicted": 29897.0,
-          "low": 22639.0,
-          "high": 43428.0
+          "predicted": 32402.0,
+          "low": 32402.0,
+          "high": 40574.0
         },
         {
           "month": "2027-03",
-          "predicted": 56431.0,
-          "low": 42731.0,
-          "high": 81971.0
+          "predicted": 61160.0,
+          "low": 61160.0,
+          "high": 76584.0
         },
         {
           "month": "2027-04",
-          "predicted": 61012.0,
-          "low": 46199.0,
-          "high": 88625.0
+          "predicted": 66125.0,
+          "low": 66125.0,
+          "high": 82801.0
         },
         {
           "month": "2027-05",
-          "predicted": 91899.0,
-          "low": 69588.0,
-          "high": 133491.0
+          "predicted": 99600.0,
+          "low": 99600.0,
+          "high": 124719.0
         },
         {
           "month": "2027-06",
-          "predicted": 59725.0,
-          "low": 45225.0,
-          "high": 86755.0
+          "predicted": 64730.0,
+          "low": 64730.0,
+          "high": 81055.0
         },
         {
           "month": "2027-07",
-          "predicted": 54996.0,
-          "low": 41644.0,
-          "high": 79886.0
+          "predicted": 59604.0,
+          "low": 59604.0,
+          "high": 74637.0
         },
         {
           "month": "2027-08",
-          "predicted": 81873.0,
-          "low": 61996.0,
-          "high": 118927.0
+          "predicted": 88734.0,
+          "low": 88734.0,
+          "high": 111113.0
         },
         {
           "month": "2027-09",
-          "predicted": 85764.0,
-          "low": 64942.0,
-          "high": 124579.0
+          "predicted": 92951.0,
+          "low": 92951.0,
+          "high": 116393.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 97905.0,
+          "low": 97905.0,
+          "high": 122597.0
         }
       ]
     },
@@ -871,11 +891,11 @@
       "kind": "visitors",
       "label": "Awara city",
       "label_ja": "あわら市",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 14.2,
-      "baseline_mape_pct": 14.2,
+      "model": "own_growth",
+      "backtest_mape_pct": 11.4,
+      "baseline_mape_pct": 14.9,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -961,80 +981,84 @@
         {
           "month": "2026-09",
           "value": 68731.0
+        },
+        {
+          "month": "2026-10",
+          "value": 70736.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 56118.0,
-          "low": 45360.0,
-          "high": 78112.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 60796.0,
-          "low": 49141.0,
-          "high": 84624.0
+          "predicted": 65500.0,
+          "low": 65500.0,
+          "high": 79537.0
         },
         {
           "month": "2026-12",
-          "predicted": 36641.0,
-          "low": 29617.0,
-          "high": 51002.0
+          "predicted": 39476.0,
+          "low": 39476.0,
+          "high": 47936.0
         },
         {
           "month": "2027-01",
-          "predicted": 25395.0,
-          "low": 20527.0,
-          "high": 35348.0
+          "predicted": 27360.0,
+          "low": 27360.0,
+          "high": 33223.0
         },
         {
           "month": "2027-02",
-          "predicted": 34712.0,
-          "low": 28058.0,
-          "high": 48317.0
+          "predicted": 37398.0,
+          "low": 37398.0,
+          "high": 45412.0
         },
         {
           "month": "2027-03",
-          "predicted": 51816.0,
-          "low": 41883.0,
-          "high": 72124.0
+          "predicted": 55825.0,
+          "low": 55825.0,
+          "high": 67789.0
         },
         {
           "month": "2027-04",
-          "predicted": 50617.0,
-          "low": 40913.0,
-          "high": 70455.0
+          "predicted": 54533.0,
+          "low": 54533.0,
+          "high": 66220.0
         },
         {
           "month": "2027-05",
-          "predicted": 77852.0,
-          "low": 62927.0,
-          "high": 108365.0
+          "predicted": 83875.0,
+          "low": 83875.0,
+          "high": 101851.0
         },
         {
           "month": "2027-06",
-          "predicted": 62397.0,
-          "low": 50435.0,
-          "high": 86852.0
+          "predicted": 67225.0,
+          "low": 67225.0,
+          "high": 81632.0
         },
         {
           "month": "2027-07",
-          "predicted": 59465.0,
-          "low": 48065.0,
-          "high": 82771.0
+          "predicted": 64066.0,
+          "low": 64066.0,
+          "high": 77796.0
         },
         {
           "month": "2027-08",
-          "predicted": 82827.0,
-          "low": 66949.0,
-          "high": 115290.0
+          "predicted": 89235.0,
+          "low": 89235.0,
+          "high": 108360.0
         },
         {
           "month": "2027-09",
-          "predicted": 68731.0,
-          "low": 55555.0,
-          "high": 95669.0
+          "predicted": 74049.0,
+          "low": 74049.0,
+          "high": 89918.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 76209.0,
+          "low": 76209.0,
+          "high": 92541.0
         }
       ]
     },
@@ -1043,11 +1067,11 @@
       "kind": "visitors",
       "label": "Fukui prefecture",
       "label_ja": "福井県",
-      "model": "seasonal_naive",
-      "backtest_mape_pct": 9.8,
-      "baseline_mape_pct": 9.8,
+      "model": "neighbour_growth",
+      "backtest_mape_pct": 7.6,
+      "baseline_mape_pct": 9.6,
       "range_rough": true,
-      "data_through": "2026-09",
+      "data_through": "2026-10",
       "comparable_from": "2025-01",
       "actual": [
         {
@@ -1133,80 +1157,84 @@
         {
           "month": "2026-09",
           "value": 1402433.0
+        },
+        {
+          "month": "2026-10",
+          "value": 1456465.0
         }
       ],
       "forecast": [
         {
-          "month": "2026-10",
-          "predicted": 1257633.0,
-          "low": 1047017.0,
-          "high": 1576031.0
-        },
-        {
           "month": "2026-11",
-          "predicted": 1513102.0,
-          "low": 1259703.0,
-          "high": 1896178.0
+          "predicted": 1618212.0,
+          "low": 1531053.0,
+          "high": 1816583.0
         },
         {
           "month": "2026-12",
-          "predicted": 921236.0,
-          "low": 766957.0,
-          "high": 1154468.0
+          "predicted": 985231.0,
+          "low": 932165.0,
+          "high": 1106007.0
         },
         {
           "month": "2027-01",
-          "predicted": 738286.0,
-          "low": 614645.0,
-          "high": 925200.0
+          "predicted": 789572.0,
+          "low": 747045.0,
+          "high": 886363.0
         },
         {
           "month": "2027-02",
-          "predicted": 837855.0,
-          "low": 697539.0,
-          "high": 1049977.0
+          "predicted": 896058.0,
+          "low": 847795.0,
+          "high": 1005902.0
         },
         {
           "month": "2027-03",
-          "predicted": 1154628.0,
-          "low": 961263.0,
-          "high": 1446948.0
+          "predicted": 1234836.0,
+          "low": 1168326.0,
+          "high": 1386210.0
         },
         {
           "month": "2027-04",
-          "predicted": 1093221.0,
-          "low": 910139.0,
-          "high": 1369995.0
+          "predicted": 1169164.0,
+          "low": 1106191.0,
+          "high": 1312487.0
         },
         {
           "month": "2027-05",
-          "predicted": 1624966.0,
-          "low": 1352833.0,
-          "high": 2036363.0
+          "predicted": 1737847.0,
+          "low": 1644244.0,
+          "high": 1950883.0
         },
         {
           "month": "2027-06",
-          "predicted": 1076641.0,
-          "low": 896336.0,
-          "high": 1349217.0
+          "predicted": 1151432.0,
+          "low": 1089414.0,
+          "high": 1292581.0
         },
         {
           "month": "2027-07",
-          "predicted": 1302443.0,
-          "low": 1084323.0,
-          "high": 1632186.0
+          "predicted": 1392920.0,
+          "low": 1317895.0,
+          "high": 1563672.0
         },
         {
           "month": "2027-08",
-          "predicted": 1808033.0,
-          "low": 1505242.0,
-          "high": 2265778.0
+          "predicted": 1933631.0,
+          "low": 1829483.0,
+          "high": 2170667.0
         },
         {
           "month": "2027-09",
-          "predicted": 1402433.0,
-          "low": 1167568.0,
-          "high": 1757491.0
+          "predicted": 1499856.0,
+          "low": 1419071.0,
+          "high": 1683717.0
+        },
+        {
+          "month": "2027-10",
+          "predicted": 1557641.0,
+          "low": 1473744.0,
+          "high": 1748586.0
         }
       ]
     },
