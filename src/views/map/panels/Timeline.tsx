@@ -7,37 +7,13 @@ import { clock, vehicleClock } from '../../../lib/vehicleClock'
 import { Icon } from '../../../components/icons'
 import { SourceBadge } from '../../../components/SourceBadge'
 
-/** Track shares: observed past days (when real data adds them), today (hourly), the next days (if any). */
-interface Scale {
-  t0: number
-  hours: number
-  pastW: number
-  todayW: number
+/** Equal-width hours and days keep the past and forecast on the same time scale. */
+function xOf(i: number, hours: number): number {
+  return i / Math.max(1, hours)
 }
 
-function scaleFor(live: LiveData): Scale {
-  const t0 = (live.today_day ?? 0) * 24
-  const pastW = t0 > 0 ? 0.2 : 0
-  // A timeline that ends with today (a site build without a forecast) gives today the rest.
-  const todayW = live.hours <= t0 + 24 ? 1 - pastW : t0 > 0 ? 0.3 : 0.36
-  return { t0, hours: live.hours, pastW, todayW }
-}
-
-function xOf(i: number, s: Scale): number {
-  const rest = Math.max(1, s.hours - s.t0 - 24)
-  if (i <= s.t0) return s.t0 > 0 ? (i / s.t0) * s.pastW : 0
-  const j = i - s.t0
-  if (j <= 24) return s.pastW + (j / 24) * s.todayW
-  return s.pastW + s.todayW + ((j - 24) / rest) * (1 - s.pastW - s.todayW)
-}
-
-function iOf(x: number, s: Scale): number {
-  const rest = Math.max(1, s.hours - s.t0 - 24)
-  let i: number
-  if (x <= s.pastW && s.t0 > 0) i = (x / s.pastW) * s.t0
-  else if (x <= s.pastW + s.todayW) i = s.t0 + ((x - s.pastW) / s.todayW) * 24
-  else i = s.t0 + 24 + ((x - s.pastW - s.todayW) / (1 - s.pastW - s.todayW)) * rest
-  return Math.max(0, Math.min(s.hours - 1, Math.round(i)))
+function iOf(x: number, hours: number): number {
+  return Math.max(0, Math.min(hours - 1, Math.floor(x * hours)))
 }
 
 interface Props {
@@ -70,26 +46,27 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const H = live.hours
   const now = live.observed_until
   const nowIdx = live.now_index ?? now
-  const sc = scaleFor(live)
   const todayDay = live.today_day ?? 0
+  const pastDays = todayDay
+  const futureDays = Math.max(0, live.days.length - todayDay - 1)
+  const rangeLabel = tr(`Past ${pastDays} days · Today · Next ${futureDays} days`, `過去${pastDays}日間・今日・今後${futureDays}日間`, `آخر ${pastDays} أيام · اليوم · الأيام ${futureDays} القادمة`)
   const observed = t <= now
   const isLive = !playing && t === nowIdx
 
   // Total people on site across all nodes, per hour: the day's rhythm behind the scrubber.
   const spark = useMemo(() => {
-    const s2 = scaleFor(live)
     const tot = Array.from({ length: live.hours }, (_, i) =>
       Object.values(live.nodes).reduce((a, n) => a + (n.on_site.actual[i] ?? n.on_site.predicted[i] ?? 0), 0),
     )
     const max = Math.max(1, ...tot)
-    const pts = tot.map((v, i) => `${(xOf(i + 0.5, s2) * 1000).toFixed(1)},${(40 - (v / max) * 36).toFixed(1)}`)
+    const pts = tot.map((v, i) => `${(xOf(i + 0.5, live.hours) * 1000).toFixed(1)},${(40 - (v / max) * 36).toFixed(1)}`)
     return `M0,40 L${pts.join(' L')} L1000,40 Z`
   }, [live])
 
   const pick = (e: PointerEvent<HTMLDivElement>) => {
     const r = track.current?.getBoundingClientRect()
     if (!r) return
-    setT(iOf((e.clientX - r.left) / r.width, sc))
+    setT(iOf((e.clientX - r.left) / r.width, H))
   }
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -100,12 +77,24 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       setT(Math.max(0, Math.min(H - 1, t + step[e.key])))
     } else if (e.key === 'Home') {
       e.preventDefault()
+      setPlaying(false)
       setT(0)
     } else if (e.key === 'End') {
       e.preventDefault()
+      setPlaying(false)
       setT(H - 1)
     }
   }
+
+  const dateLabels = useMemo(() => {
+    const locale = lang === 'ja' ? 'ja-JP' : lang === 'ar' ? 'ar' : 'en-GB'
+    const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'Asia/Tokyo' })
+    const monthDay = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo' })
+    return live.days.map(({ date }) => {
+      const at = new Date(`${date}T12:00:00+09:00`)
+      return { weekday: weekday.format(at), date: monthDay.format(at) }
+    })
+  }, [live.days, lang])
 
   const day = Math.floor(t / 24)
   const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${observed ? tr('observed', '実測') : tr('forecast', '予測')}`
@@ -117,10 +106,12 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       </button>
 
       <div className="tl-readout">
+        <strong className="tl-title">{tr('Visitor Trends & Forecast', '来訪者の推移と予測', 'اتجاهات الزوار والتوقعات')} <span className="tl-range">{rangeLabel}</span></strong>
         <div className="tl-time">
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
           {/* While playing, the timeline's hour (the vehicles run on at their own, slower pace). */}
           {vehicles && !playing ? <VehicleTime live={isLive} /> : <span className="tl-hour num">{hourLabel(t)}</span>}
+          <span className="tl-zone">JST</span>
         </div>
         {vehicles && !isLive && !playing ? (
           <span className="tl-mode run" title={tr('Off Now, buses and trains are simulated from the time shown (scheduled positions)', '現在以外の時刻：表示時刻からのシミュレーション（時刻表上の位置）')}>
@@ -136,6 +127,10 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       </div>
 
       <div className="tl-track-wrap">
+        <div className="tl-chart-heading">
+          <span>{tr('Estimated people on site · all available sites', '推計滞在人数・データのある全地点', 'الأشخاص المقدّرون في المواقع · جميع المواقع المتاحة')}</span>
+          <span>{tr('Drag to update map · shaded = forecast', 'ドラッグで地図の時刻を変更・斜線＝予測', 'اسحب لتحديث الخريطة · التظليل = توقعات')}</span>
+        </div>
         <div
           ref={track}
           className="tl-track"
@@ -159,25 +154,21 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
           <svg className="tl-spark" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
             <path d={spark} />
           </svg>
-          <div className="tl-future" style={{ left: `${xOf(now + 1, sc) * 100}%` }}></div>
+          <div className="tl-future" style={{ left: `${xOf(now + 1, H) * 100}%` }}></div>
           {live.days.map((d, k) => (
-            <div key={d.date} className={`tl-day-seg ${k === todayDay ? 'today' : ''} ${k < todayDay ? 'past' : ''} ${d.weekend ? 'wknd' : ''}`} style={{ left: `${xOf(k * 24, sc) * 100}%`, width: `${(xOf((k + 1) * 24, sc) - xOf(k * 24, sc)) * 100}%` }}>
+            <div key={d.date} className={`tl-day-seg ${k === 0 ? 'first' : ''} ${k === todayDay ? 'today' : ''} ${k < todayDay ? 'past' : ''} ${d.weekend ? 'wknd' : ''}`} style={{ left: `${xOf(k * 24, H) * 100}%`, width: `${(xOf((k + 1) * 24, H) - xOf(k * 24, H)) * 100}%` }}>
               <span className="tl-day-lab">
-                <span className="lab-long">{k === todayDay ? tr('Today', '今日') : k < todayDay ? live.days[k].date.slice(8).replace(/^0/, '') : dayLabel(live, k, lang, true)}</span>
-                <span className="lab-short">{k === todayDay ? tr('Today', '今日') : live.days[k].date.slice(8).replace(/^0/, '')}</span>
+                <span>{dateLabels[k].weekday}</span>
+                <span>{dateLabels[k].date}</span>
               </span>
+              {k === todayDay && <span className="tl-today-label">{tr('Today', '今日', 'اليوم')}</span>}
             </div>
           ))}
-          {[6, 12, 18].map((h) => (
-             <span key={h} className={`tl-hour-tick h${h}`} style={{ left: `${xOf(sc.t0 + h, sc) * 100}%` }}>
-              {String(h).padStart(2, '0')}
-            </span>
-          ))}
-          <div className="tl-now" style={{ left: `${xOf(now + 0.5, sc) * 100}%` }} title={tr('Latest observation', '最新の観測')}>
-            <span>{todayDay > 0 ? tr('data', '実測') : tr('now', '現在')}</span>
+          <div className="tl-now" style={{ left: `${xOf(now + 0.5, H) * 100}%` }} title={tr('Latest observation', '最新の観測')}>
+            <span>{tr('Latest data', '最新データ', 'أحدث البيانات')}</span>
           </div>
-          {nowIdx !== now && <div className="tl-clock" style={{ left: `${xOf(nowIdx + 0.5, sc) * 100}%` }} title={tr('Now', '現在')}></div>}
-          <div className="tl-thumb" style={{ left: `${xOf(t + 0.5, sc) * 100}%` }}></div>
+          {nowIdx !== now && <div className="tl-clock" style={{ left: `${xOf(nowIdx + 0.5, H) * 100}%` }} title={tr('Now', '現在')}></div>}
+          <div className="tl-thumb" style={{ left: `${xOf(t + 0.5, H) * 100}%` }}></div>
         </div>
       </div>
 
