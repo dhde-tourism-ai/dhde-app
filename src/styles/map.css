@@ -1,6 +1,7 @@
 /* Map view: full-screen map, floating panels, bottom timeline; bottom sheet on phones. */
 
 .mapview {
+  --timeline-height: 196px;
   position: relative;
   height: calc(100dvh - var(--appbar-h));
   min-height: 420px;
@@ -40,7 +41,7 @@
 }
 
 .leaflet-bottom {
-  bottom: 114px;
+  bottom: calc(var(--timeline-height) + 20px);
 }
 
 .leaflet-right .leaflet-control {
@@ -637,7 +638,7 @@
 .map-right {
   position: absolute;
   top: 12px;
-  bottom: 118px;
+  bottom: calc(var(--timeline-height) + 24px);
   display: flex;
   flex-direction: column;
   pointer-events: none;
@@ -1242,23 +1243,26 @@ button.al-item:hover {
 }
 
 .timeline {
+  /* Time always advances left to right; Arabic labels retain their own direction. */
   direction: ltr;
-  display: flex;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-rows: 44px 120px;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px 14px 14px;
+  gap: 8px 12px;
+  padding: 12px;
   background: var(--glass);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-float);
   backdrop-filter: blur(10px);
-  height: 94px;
+  height: var(--timeline-height);
 }
 
 .play-btn {
   flex: none;
-  width: 56px;
-  height: 56px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: 0;
   background: var(--accent);
@@ -1275,10 +1279,11 @@ button.al-item:hover {
 
 .tl-readout {
   flex: none;
-  width: 158px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  align-items: center;
+  gap: 0 12px;
 }
 
 .tl-time {
@@ -1294,13 +1299,13 @@ button.al-item:hover {
 }
 
 .tl-hour {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
 }
 
 .tl-mode {
-  align-self: flex-start;
-  font-size: 12px;
+  align-self: center;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1319,14 +1324,15 @@ button.al-item:hover {
 }
 
 .tl-track-wrap {
-  flex: 1;
+  grid-column: 1 / -1;
+  grid-row: 2;
   min-width: 0;
-  padding: 0 4px;
+  padding: 0;
 }
 
 .tl-track {
   position: relative;
-  height: 62px;
+  height: 96px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.025);
   cursor: pointer;
@@ -1338,9 +1344,9 @@ button.al-item:hover {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 18px;
+  bottom: 32px;
   width: 100%;
-  height: 36px;
+  height: 58px;
 }
 
 .tl-spark path {
@@ -1353,7 +1359,7 @@ button.al-item:hover {
 .tl-future {
   position: absolute;
   top: 0;
-  bottom: 18px;
+  bottom: 32px;
   right: 0;
   background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 4px, transparent 4px 8px);
   border-left: 1px dashed var(--line-strong);
@@ -1383,8 +1389,13 @@ button.al-item:hover {
 .tl-day-lab {
   position: absolute;
   bottom: 0;
-  left: 5px;
-  font-size: 12px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 14px;
+  font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -1392,7 +1403,7 @@ button.al-item:hover {
 .tl-day-seg.today .tl-day-lab {
   color: var(--text-2);
   font-weight: 600;
-  left: 2px;
+  left: 0;
 }
 
 .tl-hour-tick {
@@ -1408,7 +1419,7 @@ button.al-item:hover {
 .tl-now {
   position: absolute;
   top: -4px;
-  bottom: 16px;
+  bottom: 32px;
   width: 0;
   border-left: 1.5px solid var(--good);
   pointer-events: none;
@@ -1428,7 +1439,7 @@ button.al-item:hover {
 .tl-thumb {
   position: absolute;
   top: 2px;
-  bottom: 18px;
+  bottom: 32px;
   width: 3px;
   transform: translateX(-1.5px);
   background: var(--accent-strong);
@@ -1493,8 +1504,9 @@ button.al-item:hover {
 
 .tl-controls .seg button,
 .tl-nowbtn {
-  min-height: 40px;
-  font-size: 14px;
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 /* medium widths: status strip drops below the panels' tops */
@@ -1579,11 +1591,11 @@ button.al-item:hover {
   }
 
   .timeline {
-    height: auto;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    padding: 8px 10px;
-    border-radius: var(--r-lg);
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    grid-template-rows: 44px 120px;
+    gap: 8px;
+    padding: 8px;
+    height: 188px;
   }
 
   .sheet-left .timeline,
@@ -1591,74 +1603,20 @@ button.al-item:hover {
     border-radius: 0 0 var(--r-lg) var(--r-lg);
   }
 
-  .play-btn {
-    width: 46px;
-    height: 46px;
-  }
-
-  .tl-readout {
-    width: auto;
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .tl-day {
-    font-size: 12px;
-  }
-
-  .tl-hour {
-    font-size: 20px;
-  }
-
-  .tl-mode {
-    font-size: 10.5px;
-  }
-
-  .tl-controls {
-    gap: 4px;
-  }
-
-  .tl-controls .seg {
-    display: none;
-  }
-
-  .tl-controls .demo-badge {
-    display: none;
-  }
-
-  .tl-track-wrap {
-    flex-basis: 100%;
-    order: 3;
-    padding: 0;
-  }
-
-  .tl-track {
-    height: 56px;
-  }
-
-  .tl-spark {
-    height: 32px;
-  }
-
-  .tl-day-lab,
-  .tl-hour-tick {
-    font-size: 10.5px;
-  }
-
-  .lab-long {
-    display: none;
-  }
-
-  .lab-short {
-    display: inline;
-  }
-
-  .tl-hour-tick.h6,
-  .tl-hour-tick.h18 {
-    display: none;
-  }
+  .play-btn { width: 30px; height: 30px; }
+  .tl-readout { gap: 0 6px; }
+  .tl-day { font-size: 11px; }
+  .tl-hour { font-size: 16px; }
+  .tl-time { gap: 4px; }
+  .tl-mode { font-size: 9px; padding: 1px 4px; }
+  .tl-controls { gap: 2px; }
+  .tl-controls .seg, .tl-controls .src-badge { display: none; }
+  .tl-day-seg .tl-day-lab { display: none; }
+  .tl-day-seg:nth-child(3n) .tl-day-lab { display: flex; }
+  .tl-day-seg.first .tl-day-lab { align-items: flex-start; }
+  .tl-now span, .tl-today-label { display: none; }
+  .tl-chart-heading { font-size: 10px; }
+  .tl-chart-heading span:last-child { display: none; }
 
   .sheet-tabs {
     display: flex;
@@ -1846,7 +1804,7 @@ html[dir='rtl'] .tl-track {
 /* Arabic day names are longer: the readout grows and the track gives way. */
 html[lang='ar'] .tl-readout {
   width: auto;
-  min-width: 158px;
+  min-width: 0;
 }
 
 html[dir='rtl'] .ss-tag,
@@ -1862,5 +1820,35 @@ html[dir='rtl'] .timeline .tl-nowbtn {
   unicode-bidi: isolate;
 }
 
-
 .ss-time { min-width: 0; flex-shrink: 1; }
+.timeline .tl-title { justify-self: start; }
+
+/* Chart-first timeline: controls above, one continuous daily scale below. */
+.tl-title { grid-column: 1 / -1; font-size: 13px; line-height: 18px; }
+.tl-zone { font-size: 10px; color: var(--muted); }
+.tl-chart-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  height: 24px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.tl-today-label {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--accent-strong);
+}
+.tl-day-seg.today { background: var(--accent-soft); }
+.tl-now { top: 0; }
+.tl-now span { top: 2px; font-size: 9px; }
+
+.tl-range { font-size: 11px; font-weight: 400; color: var(--text-2); margin-inline-start: 12px; }
+html[dir='rtl'] .tl-range { unicode-bidi: isolate; }
+@media (max-width: 960px) {
+  .tl-range { display: block; margin-inline-start: 0; font-size: 9px; line-height: 12px; }
+  .tl-title { font-size: 12px; line-height: 14px; }
+}

@@ -17,8 +17,8 @@
   padding: 12px 14px;
   /* A site's detail with several layers on can be taller than the map between the top
      strip and the timeline: it stops there and fades out (clicking the site opens the
-     drawer with all of it); short cards don't fade. 248px = app bar, strip and timeline with their gaps. */
-  max-height: calc(100vh - 248px);
+     drawer with all of it); short cards don't fade. The available height follows the map timeline size. */
+  max-height: calc(100vh - var(--timeline-height) - 154px);
   overflow: hidden;
 }
 
@@ -834,7 +834,7 @@
 .tl-clock {
   position: absolute;
   top: 0;
-  bottom: 16px;
+  bottom: 32px;
   width: 0;
   border-left: 1.5px dashed var(--accent);
   pointer-events: none;
@@ -904,8 +904,7 @@
 }
 
 @media (max-width: 720px) {
-  .tl-controls .src-badge,
-  .tl-day-seg.past .tl-day-lab {
+  .tl-controls .src-badge {
     display: none;
   }
 }
