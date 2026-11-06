@@ -179,7 +179,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const narrow = useIsNarrow()
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
-  const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? readStoredLayers() ?? (SITE_ID ? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
+  const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? (SITE_ID ? readStoredLayers() ?? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
@@ -398,12 +398,12 @@ export default function MapView({ registry, dashboard, economics, economicsError
             {top ? (
               <span className="ss-msg">
                 <span className="ss-sev" style={{ background: SEV_COLOUR[top.sev] }} aria-hidden="true"></span>
-                {tr(top.en, top.ja, top.ar)}
+                <span className="ss-message-text" title={tr(top.en, top.ja, top.ar)}>{tr(top.en, top.ja, top.ar)}</span>
               </span>
             ) : (
               <span className="ss-msg">
                 <span className="ss-sev" style={{ background: '#0ca30c' }} aria-hidden="true"></span>
-                {tr(SITE_ID ? 'No confirmed alerts.' : 'All conditions normal.', SITE_ID ? '確認済みのアラートなし。' : 'すべて平常です。')}
+                <span className="ss-message-text">{tr(SITE_ID ? 'No confirmed alerts.' : 'All conditions normal.', SITE_ID ? '確認済みのアラートなし。' : 'すべて平常です。')}</span>
               </span>
             )}
             {isDemo && (live?.sources && Object.values(live.sources).some((x) => x && x.status !== 'demo') ? <SourceBadge info={{ status: 'mixed', as_of: live.shared_date ?? null, real: [] }} note={OVERVIEW_NOTE} /> : <DemoBadge />)}

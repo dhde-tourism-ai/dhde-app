@@ -70,7 +70,8 @@ export const OVERVIEW_NOTE = [
   '一部のレイヤーは実データ、残りは推計またはデモ。レイヤーをオンにすると推計・デモの部分を確認できます。',
 ] as const
 
-export const DEFAULT_LAYERS: LayerId[] = []
+// Start each regional map visit with the everyday overview; explicit URL layers still win.
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'weather', 'traffic']
 
 /** The viewer's last layer choice, or null on a first visit. */
 const LAYER_STORAGE_KEY = SITE_ID ? `dhde.layers.${SITE_ID}` : 'dhde.layers'

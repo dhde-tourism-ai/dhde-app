@@ -97,6 +97,8 @@ table th {
 
 /* ---------------- App bar ---------------- */
 .appbar {
+  /* Keep navigation and language controls in the same place in every locale. */
+  direction: ltr;
   position: sticky;
   top: 0;
   z-index: 1200;
@@ -225,6 +227,7 @@ table th {
 }
 
 .lang-toggle {
+  flex-shrink: 0;
   display: inline-flex;
   padding: 3px;
   border-radius: var(--r-pill);
@@ -233,6 +236,8 @@ table th {
 }
 
 .lang-toggle button {
+  flex-shrink: 0;
+  white-space: nowrap;
   border: 0;
   background: none;
   padding: 4px 10px;
@@ -695,11 +700,25 @@ html[dir='rtl'] .switch input:checked + .switch-track::after {
   flex: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
   .brand-sub,
   .fresh-chip .fresh-text-long {
     display: none;
   }
+}
+
+html[dir='rtl'] .appbar .tab-label,
+html[dir='rtl'] .appbar .brand-sub,
+html[dir='rtl'] .appbar .fresh-chip {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+@media (max-width: 480px) {
+  .appbar .brand { display: none; }
+  .appbar .tabs { margin-inline-start: 0; }
+  .appbar .appbar-right { margin-inline-start: auto; }
+  .lang-toggle button { padding-inline: 7px; }
 }
 
 @media (max-width: 720px) {
