@@ -106,7 +106,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       </button>
 
       <div className="tl-readout">
-        <strong className="tl-title">{tr('Visitor Trends & Forecast', '来訪者の推移と予測', 'اتجاهات الزوار والتوقعات')} <span className="tl-range">{rangeLabel}</span></strong>
+        <strong className="tl-title">{tr('Visitor Trends & Forecast', '来訪者の推移と予測', 'اتجاهات الزوار والتوقعات')}</strong>
         <div className="tl-time">
           <span className="tl-day">{dayLabel(live, day, lang)}</span>
           {/* While playing, the timeline's hour (the vehicles run on at their own, slower pace). */}
@@ -128,6 +128,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
 
       <div className="tl-track-wrap">
         <div className="tl-chart-heading">
+          <span className="tl-range">{rangeLabel}</span>
           <span>{tr('Estimated people on site · all available sites', '推計滞在人数・データのある全地点', 'الأشخاص المقدّرون في المواقع · جميع المواقع المتاحة')}</span>
           <span>{tr('Drag to update map · shaded = forecast', 'ドラッグで地図の時刻を変更・斜線＝予測', 'اسحب لتحديث الخريطة · التظليل = توقعات')}</span>
         </div>
