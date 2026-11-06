@@ -1,7 +1,7 @@
 /* Map view: full-screen map, floating panels, bottom timeline; bottom sheet on phones. */
 
 .mapview {
-  --timeline-height: 196px;
+  --timeline-height: 152px;
   position: relative;
   height: calc(100dvh - var(--appbar-h));
   min-height: 420px;
@@ -1246,11 +1246,11 @@ button.al-item:hover {
   /* Time always advances left to right; Arabic labels retain their own direction. */
   direction: ltr;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  grid-template-rows: 44px 120px;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-rows: 28px 114px;
   align-items: center;
-  gap: 8px 12px;
-  padding: 12px;
+  gap: 0 10px;
+  padding: 4px 10px;
   background: var(--glass);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
@@ -1261,8 +1261,8 @@ button.al-item:hover {
 
 .play-btn {
   flex: none;
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 0;
   background: var(--accent);
@@ -1281,7 +1281,7 @@ button.al-item:hover {
   flex: none;
   min-width: 0;
   display: grid;
-  grid-template-columns: max-content max-content;
+  grid-template-columns: max-content max-content max-content;
   align-items: center;
   gap: 0 12px;
 }
@@ -1299,7 +1299,7 @@ button.al-item:hover {
 }
 
 .tl-hour {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -1592,10 +1592,10 @@ button.al-item:hover {
 
   .timeline {
     grid-template-columns: 32px minmax(0, 1fr) auto;
-    grid-template-rows: 44px 120px;
-    gap: 8px;
-    padding: 8px;
-    height: 188px;
+    grid-template-rows: 38px 114px;
+    gap: 2px 8px;
+    padding: 6px;
+    height: 168px;
   }
 
   .sheet-left .timeline,
@@ -1604,7 +1604,9 @@ button.al-item:hover {
   }
 
   .play-btn { width: 30px; height: 30px; }
-  .tl-readout { gap: 0 6px; }
+  .tl-readout { grid-template-columns: max-content max-content; gap: 0 6px; }
+  .tl-title { grid-column: 1 / -1; }
+  .tl-chart-heading > span:not(.tl-range) { display: none; }
   .tl-day { font-size: 11px; }
   .tl-hour { font-size: 16px; }
   .tl-time { gap: 4px; }
@@ -1824,13 +1826,13 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 .timeline .tl-title { justify-self: start; }
 
 /* Chart-first timeline: controls above, one continuous daily scale below. */
-.tl-title { grid-column: 1 / -1; font-size: 13px; line-height: 18px; }
+.tl-title { font-size: 13px; line-height: 18px; }
 .tl-zone { font-size: 10px; color: var(--muted); }
 .tl-chart-heading {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  height: 24px;
+  height: 18px;
   font-size: 11px;
   color: var(--text-2);
 }
@@ -1846,9 +1848,15 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 .tl-now { top: 0; }
 .tl-now span { top: 2px; font-size: 9px; }
 
-.tl-range { font-size: 11px; font-weight: 400; color: var(--text-2); margin-inline-start: 12px; }
+.tl-range { font-size: 11px; font-weight: 400; color: var(--text-2); white-space: nowrap; }
 html[dir='rtl'] .tl-range { unicode-bidi: isolate; }
 @media (max-width: 960px) {
   .tl-range { display: block; margin-inline-start: 0; font-size: 9px; line-height: 12px; }
   .tl-title { font-size: 12px; line-height: 14px; }
+}
+
+.tl-mode { justify-self: start; }
+@media (min-width: 721px) and (max-width: 1180px) {
+  .tl-controls .src-badge { display: none; }
+  .tl-chart-heading > span:last-child { display: none; }
 }
