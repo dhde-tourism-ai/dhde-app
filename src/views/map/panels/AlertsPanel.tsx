@@ -83,7 +83,7 @@ export function AlertsPanel({ alerts, nodes, frame, isDemo, onSelect, onClose, t
             <Icon name="alert" /> {t('Live board', 'ライブボード')}
           </h2>
         )}
-        {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} note={['Crowding uses real daily visitor totals with a simulated hourly shape; weather advisories are demo.', '混雑は来訪者の日合計が実データ（時間別は模擬）。気象注意報はデモ。']} />}
+        {isDemo && <SourceBadge info={source} compact={Boolean(tabs)} note={['Crowding is estimated from calibrated daily totals and simulated hourly distributions. Weather advisories use JMA when available, with demo fallback.', '混雑は校正済み日合計と模擬の時間分布からの推計。気象注意報は取得可能なら気象庁、取得できない場合はデモ。']} />}
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />

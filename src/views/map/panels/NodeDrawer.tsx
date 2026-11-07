@@ -145,7 +145,7 @@ export function NodeDrawer({ node, frame, live, routes, transport, hubName = ['F
           ) : (
             <span className="measure-tag est">{tr('Not measured yet', '未計測')}</span>
           )}
-          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} note={['Daily visitor totals for this site are real estimates; the hourly shape is simulated.', 'この地点の日別来訪者数は実推計。時間別の形は模擬。']} /> : <DemoBadge />)}
+          {frame && live?.demo && (live.node_meta?.[node.id] ? <SourceBadge kind="estimated" info={{ status: 'mixed', as_of: live.node_meta[node.id].visitors_as_of, real: [node.id] }} note={['Daily visitor totals for this site are real estimates; the hourly shape is simulated.', 'この地点の日別来訪者数は実推計。時間別の形は模擬。']} /> : <DemoBadge />)}
         </div>
 
         {!frame ? (
