@@ -393,7 +393,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
       <div className="map-ui">
         {live && (
           <div className="status-strip" role="status" aria-live="polite">
-            <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{observed ? tr('LIVE', 'ライブ') : tr('FORECAST', '予測')}</span>
+            <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{!live.sources?.people || live.sources.people.status === 'demo' ? tr('DEMO', 'デモ', 'تجريبي') : observed ? tr('ESTIMATED', '推計', 'تقديري') : tr('FORECAST', '予測')}</span>
             <span className="ss-time">{timeLabel(live, t, lang)}</span>
             {top ? (
               <span className="ss-msg">

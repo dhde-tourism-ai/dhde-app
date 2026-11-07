@@ -3,30 +3,28 @@ import { useLang } from '../lib/i18n'
 import { fmtDate } from '../lib/format'
 import { DemoBadge } from './DemoBadge'
 
-/**
- * Provenance of a layer or panel: "Demo data", "Real · as of <date>", or
- * "Partly estimated or demo · <date>" when only some values are real. `note`
- * (EN, JA) says which part is estimated or demo; without it the tooltip gives the count.
- */
-export function SourceBadge({ info, compact = false, note }: { info?: SourceInfo | null; compact?: boolean; note?: readonly [string, string] }) {
+import type { DataKind } from '../lib/dataProvenance'
+const LABELS = {
+  observed: ['Observed', '観測・収集', 'مرصود'],
+  estimated: ['Estimated', '推計', 'تقديري'],
+  forecast: ['Forecast', '予測', 'توقعات'],
+  mixed: ['Mixed data', '混合データ', 'بيانات مختلطة'],
+} as const
+
+/** Source coverage is not the same as measurement type: derived values need an explicit kind. */
+export function SourceBadge({ info, compact = false, note, kind }: { info?: SourceInfo | null; compact?: boolean; note?: readonly [string, string]; kind?: DataKind }) {
   const { t, lang } = useLang()
   if (!info || info.status === 'demo') return <DemoBadge compact={compact} />
   const date = info.as_of ? fmtDate(info.as_of, lang).replace(/ \d{4}$/, '').replace(/^\d{4}年/, '') : ''
-  const real = info.status === 'real'
-  const latest = info.as_of ? t(` Latest real data: ${info.as_of}.`, `最新の実データ：${info.as_of}。`, ` أحدث بيانات حقيقية: ${info.as_of}.`) : ''
-  const title = real
-    ? t(`Real data, latest ${info.as_of ?? ''}`, `実データ（最新 ${info.as_of ?? ''}）`, `بيانات حقيقية، الأحدث ${info.as_of ?? ''}`)
-    : (note
-        ? t(note[0], note[1])
-        : t(
-            `Partly estimated or demo: real data for ${info.real.length} item(s), the rest is estimated or demo.`,
-            `一部推計・デモ：${info.real.length}件は実データ、残りは推計またはデモ。`,
-            `تقديرية أو تجريبية جزئيًا: بيانات حقيقية لـ ${info.real.length} عنصر، والباقي تقديري أو تجريبي.`,
-          )) + latest
+  const category = kind ?? (info.status === 'real' ? 'observed' : 'mixed')
+  const [en, ja, ar] = LABELS[category]
+  const label = t(en, ja, ar)
+  const detail = note ? t(note[0], note[1]) : t('Source coverage only; derived values may be estimated or forecast. See the data explanation for this layer.', 'データの収録範囲を示します。加工値には推計・予測を含みます。レイヤーの説明をご確認ください。', 'تغطية المصدر فقط؛ قد تكون القيم المشتقة تقديرية أو متوقعة. راجع شرح بيانات الطبقة.')
+  const latest = info.as_of ? t(` Source date: ${info.as_of}.`, ` データ日：${info.as_of}。`, ` تاريخ المصدر: ${info.as_of}.`) : ''
   return (
-    <span className={`src-badge ${real ? 'real' : 'mixed'}`} title={title}>
+    <span className={`src-badge ${category === 'observed' ? 'real' : 'mixed'}`} title={`${label}: ${detail}${latest}`}>
       <span className="src-dot" aria-hidden="true"></span>
-      <span className="src-label">{real ? t('Real', '実データ') : t('Partly estimated or demo', '一部推計・デモ')}</span>
+      <span className="src-label">{label}</span>
       {!compact && date && <span className="src-date">· {date}</span>}
     </span>
   )

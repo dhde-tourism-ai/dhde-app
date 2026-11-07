@@ -50,6 +50,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const pastDays = todayDay
   const futureDays = Math.max(0, live.days.length - todayDay - 1)
   const rangeLabel = tr(`Past ${pastDays} days · Today · Next ${futureDays} days`, `過去${pastDays}日間・今日・今後${futureDays}日間`, `آخر ${pastDays} أيام · اليوم · الأيام ${futureDays} القادمة`)
+  const demoOnly = !live.sources?.people || live.sources.people.status === 'demo'
   const observed = t <= now
   const isLive = !playing && t === nowIdx
 
@@ -97,7 +98,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   }, [live.days, lang])
 
   const day = Math.floor(t / 24)
-  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${observed ? tr('observed', '実測') : tr('forecast', '予測')}`
+  const valueText = `${dayLabel(live, day, lang)} ${hourLabel(t)}, ${demoOnly ? tr('demo', 'デモ', 'تجريبي') : observed ? tr('estimated', '推計', 'تقديري') : tr('forecast', '予測')}`
 
   return (
     <div className="timeline" aria-label={tr('Timeline', 'タイムライン')}>
@@ -122,7 +123,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
             {tr('Live', 'ライブ')}
           </span>
         ) : (
-          <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{observed ? tr('Observed', '実測') : tr('Forecast', '予測')}</span>
+          <span className={`tl-mode ${observed ? 'obs' : 'fc'}`}>{demoOnly ? tr('Demo', 'デモ', 'تجريبي') : observed ? tr('Estimated', '推計', 'تقديري') : tr('Forecast', '予測')}</span>
         )}
       </div>
 
@@ -190,7 +191,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
         >
           <Icon name="now" /> {tr('Now', '現在')}
         </button>
-        {live.demo && <SourceBadge info={live.sources?.people} compact note={['Past days: real daily visitor totals with a simulated hourly shape. Future days: forecast.', '過去日：来訪者の日合計は実データ、時間別は模擬。将来日：予測。']} />}
+        {live.demo && <SourceBadge info={live.sources?.people} kind={observed ? 'estimated' : 'forecast'} compact note={['Past days: calibrated daily visitor estimates with a simulated hourly shape. Future days: forecast.', '過去日：日合計は校正済みの推計、時間別は模擬。将来日：予測。']} />}
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { layerDataKind } from '../../../lib/dataProvenance'
 import { siteLayerAllowed } from '../../../lib/siteMode'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
@@ -34,17 +35,17 @@ interface Props {
 }
 
 const REAL_NOTE: Partial<Record<LayerId, [string, string]>> = {
-  people: ["Day totals are real estimates (each site's daily signal times one calibration factor from its official annual count; confidence per node). The hourly shape is simulated so each day adds up to the real total. Future days: the 7-day model forecast, then the same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections and busyness (% of an average 2025 day) only.", '日合計は実推計（各地点の日次シグナルに公式年間値からの換算係数を掛けたもの）。時間別の形は模擬で日合計に一致。将来日は7日間モデル予測、その後は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数と混雑度（2025年の平均日比）のみ。'],
-  density: ['Follows the People layer: real day totals, simulated hourly shape.', '人数レイヤーと同じ：日合計は実データ、時間別は模擬。'],
+  people: ["Day totals are estimates calibrated from source data (each site's daily signal times one calibration factor from its official annual count; confidence per node). The hourly shape is simulated so each day adds up to the daily estimate. Future days: the 7-day model forecast, then the same-weekday average of the last 4 weeks. Fukui Station has no official count: camera detections and busyness (% of an average 2025 day) only.", '日合計は実推計（各地点の日次シグナルに公式年間値からの換算係数を掛けたもの）。時間別の形は模擬で日合計に一致。将来日は7日間モデル予測、その後は直近4週の同曜日平均。福井駅は公式値がなくカメラ検知数と混雑度（2025年の平均日比）のみ。'],
+  density: ['Estimated: calibrated daily visitor totals and simulated hourly distributions. Future visitor values are forecasts.', '人数レイヤーと同じ：日合計は校正済みの推計、時間別は模擬。将来は予測。'],
   flow: ['Route volumes follow each destination’s real day total; the split by road and hour is simulated.', '各目的地の実日合計に比例。道路・時間の配分は模擬。'],
   traffic: ['Roads with a counter (Katsuyama, Eiheiji, Rainbow Line) follow the real daily volume; others and all future days stay demo.', '計測器のある道路（勝山・永平寺・レインボーライン）は実交通量。その他と将来日はデモ。'],
-  weather: ['Hourly weather is real: JMA observations for past days, and ahead the JMA model forecast via Open-Meteo (CC BY 4.0), refreshed every 30 min. Older days: real daily values (JMA) with a synthesised hourly curve. Warnings and advisories are JMA’s, live (demo only if JMA can’t be reached).', '時間別の天気は実データ：過去の日は気象庁の観測値、先は気象庁モデルの予報（Open-Meteo、CC BY 4.0、30分ごとに更新）。それ以前の日は日別の実データ（気象庁）から時間別を合成。警報・注意報は気象庁の最新情報（取得できない場合のみデモ）。'],
+  weather: ['Observed: past JMA hourly records. Forecast: future JMA model output via Open-Meteo (CC BY 4.0), refreshed every 30 min. Estimated: older daily JMA values spread into a synthesised hourly curve. Demo: missing observations without a usable forecast or daily record. Warnings and advisories are JMA’s, live (demo only if JMA can’t be reached).', '時間別の天気は実データ：過去の日は気象庁の観測値、先は気象庁モデルの予報（Open-Meteo、CC BY 4.0、30分ごとに更新）。それ以前の日は日別の実データ（気象庁）から時間別を合成。警報・注意報は気象庁の最新情報（取得できない場合のみデモ）。'],
   hotels: ['Occupancy, ADR and rooms from FTAS reservation feeds, forward bookings up to 90 days (real). Rakuten availability (share of hotels within 3 km with rooms 1/7/30 days ahead) is real where there is a daily snapshot, demo elsewhere.', '稼働率・客室単価・室数はFTAS予約データ、90日先までの予約（実データ）。楽天の空室（3km以内で1・7・30日先に空室がある施設の割合）は日次スナップショットがある地域は実データ、それ以外はデモ。'],
   rsi: ['Google Maps Business Profile map views, searches and directions for the node in each area (real, lags about 5 days). Other areas demo.', 'Googleビジネスプロフィールの表示・検索・経路（実データ、約5日遅れ）。その他はデモ。'],
   reviews: ['Rating, new reviews, star split and total count are real (Google). Snippets are fictional demo.', '評価・新規件数・星の内訳・総件数は実データ（Google）。抜粋は架空のデモ。'],
   survey: ['Fukui nodes: responses, satisfaction, NPS, reasons for visiting and home region (Japan) are real (FTAS survey). Elsewhere only response counts are real; the rest is demo.', '福井のノード：回答数・満足度・NPS・来訪理由・居住地（国内）は実データ（FTASアンケート）。その他のノードは回答数のみ実データ、他はデモ。'],
   social: ['Weekly, where collected: Instagram posts tagged at each site, and Bluesky, YouTube and Reddit posts and comments naming it, with language and model-scored sentiment (counts and scores only, no posts shown). Some languages are translated to English before scoring. Language points to a market, not nationality; kanji-only text counts as Japanese, so Chinese shares are a floor. Likes (nearest 10) and comments (nearest 5) are rounded, counted when collected. Elsewhere, and the feed, fictional demo.', '毎週、収集済みの地点：各地点にタグ付けされたInstagram投稿と、地点に触れたBluesky・YouTube・Redditの投稿・コメント（言語とモデル判定の感情付き。件数とスコアのみで投稿は非表示）。一部の言語は英訳してから判定。言語は市場の目安で国籍ではなく、漢字のみの文は日本語として数えるため中国語の割合は最低値。いいね（10単位）・コメント（5単位）は丸めた収集時点の数。その他の地点とフィードは架空のデモ。'],
-  sentiment: ['Real where a site has at least 5 scored posts and comments in its last weekly window (Instagram captions plus Bluesky, YouTube and Reddit). Scored by a first language model, not yet checked against hand-labelled posts: read it as a trend, not a verdict. Elsewhere fictional demo.', '直近1週間に判定済みの投稿・コメントが5件以上ある地点は実データ（Instagram本文とBluesky・YouTube・Reddit）。手作業の判定との照合前の初期言語モデルによる判定のため、傾向として見てください。その他は架空のデモ。'],
+  sentiment: ['Estimated sentiment from collected text where a site has at least 5 scored posts and comments in its last weekly window (Instagram captions plus Bluesky, YouTube and Reddit). Scored by a first language model, not yet checked against hand-labelled posts: read it as a trend, not a verdict. Elsewhere fictional demo.', '直近1週間に判定済みの投稿・コメントが5件以上ある地点はモデル推計（Instagram本文とBluesky・YouTube・Reddit）。手作業の判定との照合前の初期言語モデルによる判定のため、傾向として見てください。その他は架空のデモ。'],
   nudges: ['Demand and booking action nudges use real visitor history and forward bookings where available.', '需要・予約の推奨アクションは実データ（来訪者履歴・先行予約）を使用。'],
 }
 
@@ -76,10 +77,10 @@ export function LayersPanel(p: Props) {
     const i = src(id)
     if (!i || i.status === 'demo') return null
     return (
-      <div className="lg-src">
-        <SourceBadge info={i} note={REAL_NOTE[id]} />
+      <details className="lg-src">
+        <summary><SourceBadge info={i} kind={layerDataKind(id)} /> {t('Data details', 'データの詳細', 'تفاصيل البيانات')}</summary>
         <span className="lg-note">{REAL_NOTE[id] ? t(REAL_NOTE[id]![0], REAL_NOTE[id]![1]) : ''}</span>
-      </div>
+      </details>
     )
   }
 
@@ -284,6 +285,16 @@ export function LayersPanel(p: Props) {
       </header>
 
       <div className="fp-body" id="layers-body" hidden={!open}>
+        <details className="data-label-guide">
+          <summary>{t('Data labels', 'データ区分', 'تصنيفات البيانات')}</summary>
+          <ul>
+            <li>{t('Observed — collected records', '観測・収集 — 記録値', 'مرصود — سجلات مجمعة')}</li>
+            <li>{t('Estimated — calculated or simulated', '推計 — 計算・模擬値', 'تقديري — قيم محسوبة أو محاكاة')}</li>
+            <li>{t('Forecast — predicted values', '予測 — 予測値', 'توقعات — قيم متوقعة')}</li>
+            <li>{t('Demo — illustrative data', 'デモ — 例示データ', 'تجريبي — بيانات توضيحية')}</li>
+            <li>{t('Mixed data — open Data details', '混合データ — 詳細をご確認ください', 'مختلط — افتح تفاصيل البيانات')}</li>
+          </ul>
+        </details>
         <div className="basemap-row">
           <span className="eyebrow">{t('Basemap', 'ベースマップ')}</span>
           <div className="seg" role="group" aria-label={t('Basemap', 'ベースマップ')}>
@@ -310,7 +321,7 @@ export function LayersPanel(p: Props) {
                       <span className="layer-text">
                         <span className="layer-name">
                           {t(l.en, l.ja)}
-                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} compact note={REAL_NOTE[l.id]} />}
+                          {l.demo && p.isDemo && on && <SourceBadge info={src(l.id)} kind={layerDataKind(l.id)} compact note={REAL_NOTE[l.id]} />}
                         </span>
                         <span className="layer-hint">{t(l.hint_en, l.hint_ja)}</span>
                       </span>

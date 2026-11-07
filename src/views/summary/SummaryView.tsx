@@ -1,3 +1,4 @@
+import { layerDataKind } from '../../lib/dataProvenance'
 import { useMemo } from 'react'
 import type { ProductData } from '../../hooks/useProductData'
 import type { ProgressCard, StrategyCard } from '../../types/strategy'
@@ -284,7 +285,7 @@ export default function SummaryView({ data }: { data: ProductData }) {
               return (
                 <li key={id}>
                   <span className="sum-label">{layer ? t(layer.en, layer.ja) : id}</span>
-                  <SourceBadge info={info} />
+                  <SourceBadge info={info} kind={layerDataKind(id)} />
                 </li>
               )
             })}
