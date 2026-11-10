@@ -35,7 +35,7 @@ export function NudgesPanel({ nudges, total, showAll, setShowAll, live, day, act
     <section className="float-panel nudges-panel" aria-label={t('Action nudges', '推奨アクション')}>
       <header className="fp-head">
         {tabs}
-        <SourceBadge info={source} compact note={['Demand and booking alerts use real visitor history and forward bookings; weather-route alerts are demo.', '需要・予約のアラートは実データ（来訪者履歴・先行予約）、天候・ルートはデモ。']} />
+        <SourceBadge info={source} compact note={['Demand and booking alerts use real visitor history and forward bookings; weather-route alerts use available weather inputs and fallback data; suggestions are rule-based.', '需要・予約のアラートは実データ（来訪者履歴・先行予約）、天候・ルートは取得できた気象情報と代替データを使用。提案はルールに基づきます。']} />
         {onClose && (
           <button className="icon-btn fp-close" onClick={onClose} aria-label={t('Close', '閉じる')}>
             <Icon name="close" />
