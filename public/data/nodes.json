@@ -90,15 +90,15 @@
       "role_ja": "山間部：恐竜博物館",
       "prefecture": "fukui",
       "municipality": "katsuyama",
-      "lat": 36.0764,
-      "lon": 136.5011,
+      "lat": 36.0823,
+      "lon": 136.5066,
       "priority": true,
       "measure": "proxy",
       "secondary_measures": [
         "reservations"
       ],
       "colour": "#1baf7a",
-      "coords_note": "approx., Fukui Prefectural Dinosaur Museum area",
+      "coords_note": "Fukui Prefectural Dinosaur Museum (OSM node 1420949543)",
       "label_dir": "right"
     },
     {
