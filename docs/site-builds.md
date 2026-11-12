@@ -1,9 +1,9 @@
 # Scoped site builds
 
 Run `npm run build:site -- <site>` and `node scripts/check_site_dist.mjs <site>`
-for `tojinbo`, `eiheiji` or `rainbow_line`. Output goes to `dist/<site>/`.
+for `tojinbo`, `eiheiji`, `rainbow_line` or `katsuyama`. Output goes to `dist/<site>/`.
 Build the full app first with `npm run build`, which clears dist. Pages builds
-all three sites. Japanese is the default unless a language preference is saved.
+all four sites. Japanese is the default unless a language preference is saved.
 
 `scripts/scope_site_data.mjs` selects files and filters node records to the
 selected id, retaining baseline field structures. It removes fictional posts,
