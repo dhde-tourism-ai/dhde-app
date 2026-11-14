@@ -47,9 +47,6 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
   const now = live.observed_until
   const nowIdx = live.now_index ?? now
   const todayDay = live.today_day ?? 0
-  const pastDays = todayDay
-  const futureDays = Math.max(0, live.days.length - todayDay - 1)
-  const rangeLabel = tr(`Past ${pastDays} days · Today · Next ${futureDays} days`, `過去${pastDays}日間・今日・今後${futureDays}日間`, `آخر ${pastDays} أيام · اليوم · الأيام ${futureDays} القادمة`)
   const demoOnly = !live.sources?.people || live.sources.people.status === 'demo'
   const observed = t <= now
   const isLive = !playing && t === nowIdx
@@ -102,7 +99,7 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
 
   return (
     <div className="timeline" aria-label={tr('Timeline', 'タイムライン')}>
-      <button className="play-btn" onClick={() => setPlaying(!playing)} aria-label={playing ? tr('Pause', '一時停止') : tr('Play', '再生')}>
+      <button className={`play-btn ${playing ? 'is-playing' : 'is-paused'}`} onClick={() => setPlaying(!playing)} aria-label={playing ? tr('Pause', '一時停止') : tr('Play', '再生')}>
         <Icon name={playing ? 'pause' : 'play'} size={18} />
       </button>
 
@@ -129,7 +126,6 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
 
       <div className="tl-track-wrap">
         <div className="tl-chart-heading">
-          <span className="tl-range">{rangeLabel}</span>
           <span>{tr('Estimated people on site · all available sites', '推計滞在人数・データのある全地点', 'الأشخاص المقدّرون في المواقع · جميع المواقع المتاحة')}</span>
           <span>{tr('Drag to update map · shaded = forecast', 'ドラッグで地図の時刻を変更・斜線＝予測', 'اسحب لتحديث الخريطة · التظليل = توقعات')}</span>
         </div>

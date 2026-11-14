@@ -1606,7 +1606,6 @@ button.al-item:hover {
   .play-btn { width: 30px; height: 30px; }
   .tl-readout { grid-template-columns: max-content max-content; gap: 0 6px; }
   .tl-title { grid-column: 1 / -1; }
-  .tl-chart-heading > span:not(.tl-range) { display: none; }
   .tl-day { font-size: 11px; }
   .tl-hour { font-size: 16px; }
   .tl-time { gap: 4px; }
@@ -1848,10 +1847,7 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 .tl-now { top: 0; }
 .tl-now span { top: 2px; font-size: 9px; }
 
-.tl-range { font-size: 11px; font-weight: 400; color: var(--text-2); white-space: nowrap; }
-html[dir='rtl'] .tl-range { unicode-bidi: isolate; }
 @media (max-width: 960px) {
-  .tl-range { display: block; margin-inline-start: 0; font-size: 9px; line-height: 12px; }
   .tl-title { font-size: 12px; line-height: 14px; }
 }
 
@@ -1859,4 +1855,54 @@ html[dir='rtl'] .tl-range { unicode-bidi: isolate; }
 @media (min-width: 721px) and (max-width: 1180px) {
   .tl-controls .src-badge { display: none; }
   .tl-chart-heading > span:last-child { display: none; }
+}
+
+/* Keep the glyph centered regardless of browser button padding. */
+.timeline .play-btn { padding: 0; line-height: 0; }
+.timeline .play-btn svg { display: block; width: 18px; height: 18px; }
+.timeline .play-btn.is-paused svg { transform: translateX(1px); }
+.map-credits {
+  position: absolute;
+  right: 416px;
+  bottom: calc(var(--timeline-height) + 24px);
+  max-width: min(320px, calc(100% - 24px));
+  padding: 3px 6px;
+  background: var(--glass);
+  color: var(--text-2);
+  border-radius: 6px;
+  font-size: 10px;
+  pointer-events: auto;
+}
+.map-credits summary { cursor: pointer; }
+.map-credits div { padding-top: 4px; }
+@media (max-width: 720px) {
+  .mapview { --timeline-height: 148px; }
+  .map-ui { padding-bottom: 32px; }
+  .map-bottom { padding-bottom: 4px; }
+  .map-bottom .sheet-tabs {
+    position: absolute;
+    top: 8px;
+    left: 6px;
+    right: 6px;
+    margin: 0;
+    pointer-events: auto;
+  }
+  .map-ui .status-strip {
+    top: auto;
+    bottom: 4px;
+    left: 6px;
+    right: 6px;
+    height: 24px;
+    padding: 2px 6px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    font-size: 10px;
+    box-shadow: none;
+  }
+  .status-strip .ss-tag { font-size: 9px; padding: 1px 6px; }
+  .status-strip .src-badge { margin-inline-start: auto; }
+  .timeline { height: var(--timeline-height); grid-template-rows: 38px 96px; }
+  .timeline .tl-chart-heading { display: none; }
+  .map-left, .map-right { max-height: min(50dvh, calc(100% - 234px)); }
+  .map-credits { bottom: calc(var(--timeline-height) + 42px); right: 6px; }
 }
