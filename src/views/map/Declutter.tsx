@@ -6,7 +6,7 @@ const GAP = 3
 /** A card keeps its spot until something covers more than this share of it (its own text can grow a little). */
 const KEEP_OVERLAP = 0.1
 /** The UI drawn over the map: cards never sit under it. */
-const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution', '.sheet-tabs', '.mobile-layer-rail']
+const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution', '.sheet-tabs']
 /** Marks that stay where they are; cards move off them. */
 const FIXED = '.nudge-flag, .route-flag'
 
@@ -169,7 +169,7 @@ export function Declutter() {
         if (it.el.parentElement) it.el.parentElement.dataset.dc = 'dot'
         placed.push(it.el.getBoundingClientRect())
       }
-      // Mobile cards can move farther to avoid the rail. Keep their geographic anchor explicit.
+      // Mobile cards can move farther to avoid the panel tabs. Keep their geographic anchor explicit.
       connectors.replaceChildren()
       if (narrow) for (const el of cards) {
         if (el.classList.contains('dc-dot')) continue
@@ -227,7 +227,7 @@ export function Declutter() {
     const moved = () => schedule()
     const ro = new ResizeObserver(full)
     ro.observe(root)
-    for (const s of ['.map-left', '.map-right', '.map-bottom', '.mobile-layer-rail', '.sheet-tabs']) {
+    for (const s of ['.map-left', '.map-right', '.map-bottom', '.sheet-tabs']) {
       const el = document.querySelector(s)
       if (el) ro.observe(el)
     }
