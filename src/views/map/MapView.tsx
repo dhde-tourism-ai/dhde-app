@@ -24,7 +24,7 @@ import { useIsNarrow } from '../../hooks/useIsNarrow'
 import { Icon } from '../../components/icons'
 import { DemoBadge } from '../../components/DemoBadge'
 import { SourceBadge } from '../../components/SourceBadge'
-import { DEFAULT_LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers, TOWN_LAYERS } from './layers'
+import { DEFAULT_LAYERS, LAYERS, OVERVIEW_NOTE, readStoredLayers, readUrlState, storeLayers, TOWN_LAYERS } from './layers'
 import type { BasemapId, LayerId } from './layers'
 import { PeopleLayer } from './layers/PeopleLayer'
 import { SiteMarkers } from './layers/SiteMarkers'
@@ -65,7 +65,7 @@ function FitView({ narrow }: { narrow: boolean }) {
   useEffect(() => {
     const id = window.setTimeout(() => {
       map.invalidateSize()
-      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [8, 8], paddingBottomRight: [8, 150] } : { paddingTopLeft: [330, 64], paddingBottomRight: [440, 96] })
+      map.fitBounds(VIEW_BOUNDS, narrow ? { paddingTopLeft: [30, 90], paddingBottomRight: [50, 200] } : { paddingTopLeft: [330, 64], paddingBottomRight: [440, 96] })
     }, 50)
     return () => window.clearTimeout(id)
   }, [map, narrow])
@@ -180,6 +180,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
   const [url] = useState(readUrlState)
   const [basemap, setBasemap] = useState<BasemapId>(url.base ?? 'hybrid')
   const [active, setActive] = useState<Set<LayerId>>(() => new Set((url.layers ?? (SITE_ID ? readStoredLayers() ?? ['people', 'weather', 'transport', 'rail', 'survey', 'social', 'reviews', 'sentiment'] as LayerId[] : DEFAULT_LAYERS))))
+  const [quickLayers, setQuickLayers] = useState(true)
   const [showPrecip, setShowPrecip] = useState(true)
   const [tIdx, setT] = useState<number | null>(url.t)
   const [playing, setPlaying] = useState(false)
@@ -392,6 +393,18 @@ export default function MapView({ registry, dashboard, economics, economicsError
 
       <div className="map-ui">
         <MapCredits id={basemap} />
+        {narrow && !SITE_ID && <aside className="mobile-layer-rail" aria-label={tr('Quick layers', 'レイヤー切替', 'الطبقات السريعة')}>
+          <button className="mlr-heading" aria-expanded={quickLayers} aria-controls="quick-layer-options" onClick={() => setQuickLayers(!quickLayers)}>
+            <Icon name="layers" size={14} />{tr('Layers', 'レイヤー', 'الطبقات')}<span aria-hidden="true">{quickLayers ? '−' : '+'}</span>
+          </button>
+          <div id="quick-layer-options" hidden={!quickLayers}>
+            <p>{tr('Tap to choose', 'タップで切替', 'انقر للاختيار')}</p>
+            {LAYERS.filter(l => DEFAULT_LAYERS.includes(l.id)).map(l => <button key={l.id} className="mlr-option" aria-pressed={active.has(l.id)} onClick={() => toggle(l.id)}>
+              <Icon name={l.icon} size={13} /><span>{tr(l.id === 'density' ? 'Density' : l.id === 'social' ? 'Social' : l.en, l.ja)}</span><span aria-hidden="true">{active.has(l.id) ? '✓' : '+'}</span>
+            </button>)}
+            <button className="mlr-all" onClick={() => { onSelect(undefined); setSheet('layers'); setQuickLayers(false) }}>{tr('All layers', '全レイヤー', 'كل الطبقات')} →</button>
+          </div>
+        </aside>}
         {live && (
           <div className="status-strip" role="status" aria-live="polite">
             <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{!live.sources?.people || live.sources.people.status === 'demo' ? tr('DEMO', 'デモ', 'تجريبي') : observed ? tr('ESTIMATED', '推計', 'تقديري') : tr('FORECAST', '予測')}</span>

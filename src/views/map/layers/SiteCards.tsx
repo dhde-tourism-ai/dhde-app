@@ -49,7 +49,7 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
   const narrow = useIsNarrow()
   const map = useMapEvents({ zoomend: () => setZoom(map.getZoom()) })
   const [zoom, setZoom] = useState(() => map.getZoom())
-  const compact = zoom < COMPACT_ZOOM
+  const compact = !narrow && zoom < COMPACT_ZOOM
 
   const shown = useMemo(() => {
     const ids = new Set(nodes.map((n) => n.id))
@@ -61,7 +61,7 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
     for (const n of shown) {
       const f = frame?.[n.id]
       const dir = n.label_dir ?? 'right'
-      const r = layers.people && f ? peopleRadius(Math.max(f.onSite, f.predicted)) + 5 : 11
+      const r = narrow ? 10 : layers.people && f ? peopleRadius(Math.max(f.onSite, f.predicted)) + 5 : 11
       const name = escapeHtml(pick(lang, n.name.replace(' East Entrance', ''), n.name_ja))
       const crowded = !!f && !f.noEstimate && (f.tier.key === 'serious' || f.tier.key === 'crit')
       let head = `<span class="nt-name">${name}</span>`
@@ -81,12 +81,12 @@ export function SiteCards({ nodes, extra, frame, market, layers, selectedId, onS
       const body = rows.map((x) => `<div class="sc-row sc-${x.key}${x.attention ? ' attn' : ''}">${x.html}</div>`).join('')
       out[n.id] = L.divIcon({
         className: 'map-divicon',
-        html: `<div class="site-card dir-${dir}${n.id === selectedId ? ' sel' : ''}${f || !layers.people ? '' : ' muted-tag'}" style="--r:${r}px"><div class="sc-head">${head}</div>${body}</div>`,
+        html: `<div class="site-card${narrow ? ' mobile-site-card' : ''} dir-${dir}${n.id === selectedId ? ' sel' : ''}${f || !layers.people ? '' : ' muted-tag'}" style="--r:${r}px"><div class="sc-head">${head}</div>${narrow ? `<div class="sc-mobile-details">${body}</div>` : body}</div>`,
         iconSize: [0, 0],
       })
     }
     return out
-  }, [shown, frame, market, layers, selectedId, lang, t, meta, day, compact])
+  }, [shown, frame, market, layers, selectedId, lang, t, meta, day, compact, narrow])
 
   const detailOn = layers.weather || layers.reviews || layers.survey || layers.social
   return (
