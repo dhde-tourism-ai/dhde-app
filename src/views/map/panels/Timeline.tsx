@@ -125,10 +125,6 @@ export function Timeline({ live, t, setT, playing, setPlaying, speed, setSpeed, 
       </div>
 
       <div className="tl-track-wrap">
-        <div className="tl-chart-heading">
-          <span>{tr('Estimated people on site · all available sites', '推計滞在人数・データのある全地点', 'الأشخاص المقدّرون في المواقع · جميع المواقع المتاحة')}</span>
-          <span>{tr('Drag to update map · shaded = forecast', 'ドラッグで地図の時刻を変更・斜線＝予測', 'اسحب لتحديث الخريطة · التظليل = توقعات')}</span>
-        </div>
         <div
           ref={track}
           className="tl-track"
