@@ -6,7 +6,7 @@ const GAP = 3
 /** A card keeps its spot until something covers more than this share of it (its own text can grow a little). */
 const KEEP_OVERLAP = 0.1
 /** The UI drawn over the map: cards never sit under it. */
-const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution']
+const UI = ['.map-left > *', '.map-right > *', '.status-strip', '.map-bottom', '.leaflet-control-zoom', '.leaflet-control-attribution', '.sheet-tabs', '.mobile-layer-rail']
 /** Marks that stay where they are; cards move off them. */
 const FIXED = '.nudge-flag, .route-flag'
 
@@ -53,6 +53,10 @@ export function Declutter() {
   const map = useMap()
   useEffect(() => {
     const root = map.getContainer()
+    const connectors = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    connectors.classList.add('mobile-card-connectors')
+    connectors.setAttribute('aria-hidden', 'true')
+    root.appendChild(connectors)
     let raf = 0
     let timer = 0
     // A full run forgets the remembered spots and places every card afresh.
@@ -74,7 +78,8 @@ export function Declutter() {
       const ui: Box[] = UI.flatMap((s) => [...document.querySelectorAll<HTMLElement>(s)])
         .map((e) => e.getBoundingClientRect())
         .filter(visible)
-      const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
+      const narrow = window.matchMedia('(max-width: 720px)').matches
+      const strip = document.querySelector(narrow ? '.sheet-tabs' : '.status-strip')?.getBoundingClientRect()
       const bottomBar = document.querySelector('.map-bottom')?.getBoundingClientRect()
       const area: Box = {
         left: mapBox.left + 4,
@@ -93,11 +98,11 @@ export function Declutter() {
       // Each card's box on either side of its site (town cards, centred, have one).
       const measure = (el: HTMLElement, home: Side, other: Side | null) => {
         const boxes: Partial<Record<Side, Box>> = { [home]: el.getBoundingClientRect() }
-        if (other) {
-          setSide(el, other)
-          boxes[other] = el.getBoundingClientRect()
-          setSide(el, home)
+        for (const side of narrow && home !== 'town' ? SIDES : other ? [other] : []) {
+          setSide(el, side)
+          boxes[side] = el.getBoundingClientRect()
         }
+        setSide(el, home)
         return boxes
       }
       const isTown = (el: HTMLElement) => el.classList.contains('town')
@@ -125,7 +130,7 @@ export function Declutter() {
           const box = boxes[side]!
           const h = box.bottom - box.top + GAP
           // Small steps first, so a card stays as close to its site as it can.
-          const dy = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1].map((k) => k * h).find((d) => free(shift(box, 0, d)))
+          const dy = (narrow ? [0, -.5, .5, -1, 1, -1.5, 1.5, -2, 2, -3, 3] : [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -1, 1]).map((k) => k * h).find((d) => free(shift(box, 0, d)))
           if (dy !== undefined) return { side, box, dy }
         }
         return null
@@ -145,7 +150,7 @@ export function Declutter() {
         else rest.push(it)
       }
       for (const it of rest) {
-        const sides = [it.home, ...(it.other ? [it.other] : [])]
+        const sides = narrow && it.home !== 'town' ? [it.home, ...SIDES.filter(s => s !== it.home)] : [it.home, ...(it.other ? [it.other] : [])]
         const whole = spot(measure(it.el, it.home, it.other), sides)
         if (whole) {
           place(it.el, whole.side, whole.box, whole.dy, false)
@@ -163,6 +168,20 @@ export function Declutter() {
         it.el.classList.add('dc-dot')
         if (it.el.parentElement) it.el.parentElement.dataset.dc = 'dot'
         placed.push(it.el.getBoundingClientRect())
+      }
+      // Mobile cards can move farther to avoid the rail. Keep their geographic anchor explicit.
+      connectors.replaceChildren()
+      if (narrow) for (const el of cards) {
+        if (el.classList.contains('dc-dot')) continue
+        const anchor = el.parentElement?.getBoundingClientRect()
+        if (!anchor) continue
+        const card = el.getBoundingClientRect()
+        const x = Math.max(card.left, Math.min(anchor.left, card.right))
+        const y = Math.max(card.top, Math.min(anchor.top, card.bottom))
+        if (Math.hypot(x - anchor.left, y - anchor.top) < 16) continue
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+        for (const [k, v] of Object.entries({ x1: anchor.left - mapBox.left, y1: anchor.top - mapBox.top, x2: x - mapBox.left, y2: y - mapBox.top })) line.setAttribute(k, String(v))
+        connectors.appendChild(line)
       }
     }
 
@@ -208,7 +227,7 @@ export function Declutter() {
     const moved = () => schedule()
     const ro = new ResizeObserver(full)
     ro.observe(root)
-    for (const s of ['.map-left', '.map-right', '.map-bottom']) {
+    for (const s of ['.map-left', '.map-right', '.map-bottom', '.mobile-layer-rail', '.sheet-tabs']) {
       const el = document.querySelector(s)
       if (el) ro.observe(el)
     }
@@ -220,6 +239,7 @@ export function Declutter() {
       window.clearTimeout(timer)
       mo.disconnect()
       ro.disconnect()
+      connectors.remove()
       map.off('zoomend resize', full)
       map.off('moveend', moved)
     }
