@@ -47,7 +47,7 @@ import type { RailRun } from '../../lib/railModel'
 import { HotelsLayer, RsiLayer } from './layers/VoiceMarketLayers'
 import { SiteCards } from './layers/SiteCards'
 import { Declutter } from './Declutter'
-import { Basemap } from './Basemap'
+import { Basemap, MapCredits } from './Basemap'
 
 /** Fukui's six priority nodes; the Kanazawa inflow enters from the top edge. */
 const REGION_BOUNDS: [[number, number], [number, number]] = [
@@ -98,7 +98,7 @@ function KeepCardsInView() {
       el.style.marginLeft = ''
       const r = el.getBoundingClientRect()
       const mapBox = map.getContainer().getBoundingClientRect()
-      const strip = document.querySelector('.status-strip')?.getBoundingClientRect()
+      const strip = document.querySelector(window.matchMedia('(max-width: 720px)').matches ? '.sheet-tabs' : '.status-strip')?.getBoundingClientRect()
       const timeline = document.querySelector('.map-bottom')?.getBoundingClientRect()
       const top = Math.max(mapBox.top, strip ? strip.bottom : mapBox.top) + 8
       const bottom = Math.min(mapBox.bottom, timeline ? timeline.top : mapBox.bottom) - 8
@@ -327,7 +327,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
 
   return (
     <section className={`mapview sheet-${sheetState}`}>
-      <MapContainer bounds={VIEW_BOUNDS} zoomSnap={0.25} zoomDelta={0.5} zoomControl={false} scrollWheelZoom className="map-canvas" preferCanvas={false} worldCopyJump={false}>
+      <MapContainer bounds={VIEW_BOUNDS} zoomSnap={0.25} zoomDelta={0.5} zoomControl={false} attributionControl={false} scrollWheelZoom className="map-canvas" preferCanvas={false} worldCopyJump={false}>
         <FitView narrow={narrow} />
         {!narrow && <ZoomControl key={lang} position="bottomright" zoomInTitle={tr('Zoom in', '拡大', 'تكبير')} zoomOutTitle={tr('Zoom out', '縮小', 'تصغير')} />}
         <Basemap id={basemap} />
@@ -391,6 +391,7 @@ export default function MapView({ registry, dashboard, economics, economicsError
       </MapContainer>
 
       <div className="map-ui">
+        <MapCredits id={basemap} />
         {live && (
           <div className="status-strip" role="status" aria-live="polite">
             <span className={`ss-tag ${observed ? 'live' : 'fc'}`}>{!live.sources?.people || live.sources.people.status === 'demo' ? tr('DEMO', 'デモ', 'تجريبي') : observed ? tr('ESTIMATED', '推計', 'تقديري') : tr('FORECAST', '予測')}</span>

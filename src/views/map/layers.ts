@@ -71,7 +71,7 @@ export const OVERVIEW_NOTE = [
 ] as const
 
 // Start each regional map visit with the everyday overview; explicit URL layers still win.
-export const DEFAULT_LAYERS: LayerId[] = ['weather', 'density', 'hotels', 'economics', 'social']
+export const DEFAULT_LAYERS: LayerId[] = ['people', 'weather', 'density', 'economics', 'social']
 
 /** The viewer's last layer choice, or null on a first visit. */
 const LAYER_STORAGE_KEY = SITE_ID ? `dhde.layers.${SITE_ID}` : 'dhde.layers'

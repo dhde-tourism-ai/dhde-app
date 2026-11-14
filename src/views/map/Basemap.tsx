@@ -1,7 +1,7 @@
 import { TileLayer } from 'react-leaflet'
 import type { BasemapId } from './layers'
 
-const ESRI_ATTR = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community · Labels &copy; Esri'
+export const ESRI_ATTR = 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community · Labels &copy; Esri'
 
 /** The map's tile layers for a basemap choice (Map view and the #/site view). */
 export function Basemap({ id }: { id: BasemapId }) {
@@ -38,4 +38,14 @@ export function Basemap({ id }: { id: BasemapId }) {
       <TileLayer key="ref" url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
     </>
   )
+}
+
+/** Compact, keyboard-accessible map credits, retaining each provider attribution. */
+export function MapCredits({ id }: { id: BasemapId }) {
+  return <details className="map-credits" key={id}>
+    <summary aria-label="Map credits">© Map</summary>
+    <div>{id === 'hybrid' ? ESRI_ATTR.replaceAll('&copy;', '©') : id === 'streets'
+      ? <>© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</>
+      : <>Tiles © Esri — Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</>}</div>
+  </details>
 }
