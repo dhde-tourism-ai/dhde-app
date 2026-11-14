@@ -941,15 +941,15 @@ html[lang='ar'] {
     display: inline-flex;
     position: fixed;
     right: 6px;
-    bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(2px + env(safe-area-inset-bottom, 0px));
     z-index: 1300;
-    height: 24px;
+    height: 30px;
     padding: 2px;
     align-items: center;
     background: var(--glass, var(--surface));
     backdrop-filter: blur(8px);
   }
-  .mobile-lang button { padding: 1px 7px; font-size: 10px; line-height: 18px; }
+  .mobile-lang button { padding: 2px 9px; font-size: 12px; line-height: 20px; }
 }
 @media (max-width: 389px) {
   .appbar .tab { gap: 3px; padding-inline: 3px; font-size: 11px; }
