@@ -927,3 +927,31 @@ html[lang='ar'] {
   .appbar .tab { padding-inline: 6px; }
   .appbar .lang-toggle button { padding-inline: 5px; }
 }
+
+/* Phones: the tabs fill the bar with icon + label; the language switch moves to the bottom-right corner. */
+.mobile-lang { display: none; }
+@media (max-width: 720px) {
+  .appbar .appbar-right { display: none; }
+  .appbar .tabs { flex: 1; min-width: 0; margin-inline-start: 0; justify-content: space-between; }
+  .appbar .tabs { overflow-x: auto; scrollbar-width: none; }
+  .appbar .tab { flex: 0 0 auto; justify-content: center; gap: 3px; padding: 6px 4px; font-size: 12px; }
+  .appbar .tab svg { width: 14px; height: 14px; flex: none; }
+  .appbar .tab .tab-label { display: inline; white-space: nowrap; }
+  .mobile-lang {
+    display: inline-flex;
+    position: fixed;
+    right: 6px;
+    bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    z-index: 1300;
+    height: 24px;
+    padding: 2px;
+    align-items: center;
+    background: var(--glass, var(--surface));
+    backdrop-filter: blur(8px);
+  }
+  .mobile-lang button { padding: 1px 7px; font-size: 10px; line-height: 18px; }
+}
+@media (max-width: 389px) {
+  .appbar .tab { gap: 3px; padding-inline: 3px; font-size: 11px; }
+  .appbar .tab svg { width: 13px; height: 13px; }
+}

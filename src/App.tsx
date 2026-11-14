@@ -53,6 +53,21 @@ export default function App() {
   const generated = shared ?? live.data?.generated_at ?? dashboard.data?.generated_at
   const isDemo = !SITE_ID && !shared && live.data?.demo
 
+  // Phones show the language switch in the bottom-right corner (mobile-lang) so the tabs have room for labels.
+  const renderLangToggle = (extra: string) => (
+    <div className={`lang-toggle ${extra}`} role="group" aria-label={t('Language', '言語')}>
+      <button aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
+        EN
+      </button>
+      <button aria-pressed={lang === 'ja'} onClick={() => setLang('ja')} lang="ja">
+        日本語
+      </button>
+      <button aria-pressed={lang === 'ar'} onClick={() => setLang('ar')} lang="ar">
+        العربية
+      </button>
+    </div>
+  )
+  const langToggle = renderLangToggle('appbar-lang')
   // The browser tab's title in Arabic; English and Japanese keep index.html's.
   const title = `DHDE · ${lang === 'ar' ? t('Fukui Tourism Intelligence') : 'Fukui Tourism Intelligence'}`
   useEffect(() => {
@@ -104,19 +119,10 @@ export default function App() {
               <span className="fresh-text-long">{shared ? t('Real data to', '実データ') : t('Data', 'データ')}</span> {fmtDate(generated, lang)}
             </span>
           )}
-          <div className="lang-toggle" role="group" aria-label={t('Language', '言語')}>
-            <button aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
-              EN
-            </button>
-            <button aria-pressed={lang === 'ja'} onClick={() => setLang('ja')} lang="ja">
-              日本語
-            </button>
-            <button aria-pressed={lang === 'ar'} onClick={() => setLang('ar')} lang="ar">
-              العربية
-            </button>
-          </div>
+          {langToggle}
         </div>
       </header>
+      {renderLangToggle('mobile-lang')}
 
       {fallback && (
         <div className="saved-data-note" role="status">

@@ -1925,3 +1925,9 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 @media (max-width: 720px) {
   .mobile-site-card.dc-dot .sc-mobile-details { display: none; }
 }
+
+/* Phones: the strip shrinks to its content and shares the bottom row with the language switch. */
+@media (max-width: 720px) {
+  .map-ui .status-strip { right: auto; max-width: calc(100% - 170px); }
+  .map-ui .status-strip .ss-time { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+}
