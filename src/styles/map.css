@@ -1,7 +1,7 @@
 /* Map view: full-screen map, floating panels, bottom timeline; bottom sheet on phones. */
 
 .mapview {
-  --timeline-height: 152px;
+  --timeline-height: 134px;
   position: relative;
   height: calc(100dvh - var(--appbar-h));
   min-height: 420px;
@@ -1247,7 +1247,7 @@ button.al-item:hover {
   direction: ltr;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr) auto;
-  grid-template-rows: 28px 114px;
+  grid-template-rows: 28px 96px;
   align-items: center;
   gap: 0 10px;
   padding: 4px 10px;
@@ -1616,8 +1616,6 @@ button.al-item:hover {
   .tl-day-seg:nth-child(3n) .tl-day-lab { display: flex; }
   .tl-day-seg.first .tl-day-lab { align-items: flex-start; }
   .tl-now span, .tl-today-label { display: none; }
-  .tl-chart-heading { font-size: 10px; }
-  .tl-chart-heading span:last-child { display: none; }
 
   .sheet-tabs {
     display: flex;
@@ -1814,7 +1812,6 @@ html[dir='rtl'] .ss-msg,
 html[dir='rtl'] .timeline .tl-title,
 html[dir='rtl'] .timeline .tl-day,
 html[dir='rtl'] .timeline .tl-mode,
-html[dir='rtl'] .timeline .tl-chart-heading > span,
 html[dir='rtl'] .timeline .src-badge,
 html[dir='rtl'] .timeline .tl-nowbtn {
   direction: rtl;
@@ -1827,14 +1824,6 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 /* Chart-first timeline: controls above, one continuous daily scale below. */
 .tl-title { font-size: 13px; line-height: 18px; }
 .tl-zone { font-size: 10px; color: var(--muted); }
-.tl-chart-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  height: 18px;
-  font-size: 11px;
-  color: var(--text-2);
-}
 .tl-today-label {
   position: absolute;
   top: 4px;
@@ -1854,7 +1843,6 @@ html[dir='rtl'] .timeline .tl-nowbtn {
 .tl-mode { justify-self: start; }
 @media (min-width: 721px) and (max-width: 1180px) {
   .tl-controls .src-badge { display: none; }
-  .tl-chart-heading > span:last-child { display: none; }
 }
 
 /* Keep the glyph centered regardless of browser button padding. */
@@ -1902,7 +1890,6 @@ html[dir='rtl'] .timeline .tl-nowbtn {
   .status-strip .ss-tag { font-size: 9px; padding: 1px 6px; }
   .status-strip .src-badge { margin-inline-start: auto; }
   .timeline { height: var(--timeline-height); grid-template-rows: 38px 96px; }
-  .timeline .tl-chart-heading { display: none; }
   .map-left, .map-right { max-height: min(50dvh, calc(100% - 234px)); }
   .map-credits { bottom: calc(var(--timeline-height) + 42px); right: 6px; }
 }
