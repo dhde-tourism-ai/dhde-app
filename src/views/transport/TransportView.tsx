@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useIsNarrow } from '../../hooks/useIsNarrow'
 import type { ReactNode } from 'react'
 import { MON_AR } from '../../lib/arFormat'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -142,7 +143,17 @@ function Badge({ status }: { status: MarketStatus }) {
  * arrive; getting there without a car; the transport market; spending and
  * interest), then notes and sources folded away.
  */
+/** Phone charts put labels above bars, leaving the full card width for comparison. */
+function MobileBars({ rows }: { rows: { name: string; value: number; label: ReactNode; color: string; onClick?: () => void }[] }) {
+  const max = Math.max(1, ...rows.map(r => r.value))
+  return <ul className="td-mobile-bars">{rows.map((r, i) => <li key={i}>
+    <div className="td-mobile-bar-label">{r.onClick ? <button onClick={r.onClick}>{r.name}</button> : <span>{r.name}</span>}<strong>{r.label}</strong></div>
+    <div className="td-mobile-bar-track" aria-hidden="true"><span style={{ width: `${Math.max(0, r.value) / max * 100}%`, background: r.color }} /></div>
+  </li>)}</ul>
+}
+
 export default function TransportView({ registry, onOpenMap }: { registry: NodeRegistry | null; onOpenMap: (id: string) => void }) {
+  const narrow = useIsNarrow()
   const { t, lang } = useLang()
   const res = useJsonResource<TransportFile>('transport.json')
   const modes = useJsonResource<TransportModesFile>('transport_modes.json').data
@@ -225,7 +236,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     ? modeSites.map((id) => ({
         id,
         name: name(id),
-        ...Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])),
+        ...(Object.fromEntries(MODE_ORDER.map((m) => [m, Math.round((modes.nodes[id].shares[m]?.share ?? 0) * 1000) / 10])) as Record<ModeId, number>),
       }))
     : []
   const backBars = sites
@@ -328,7 +339,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               sub={t(`Visitors split by tourism survey answers · ${periodLabel}`, `来訪者を観光アンケートの割合で按分・${periodLabel}`, `الزوار مقسّمون حسب إجابات استبيان السياحة · ${periodLabel}`)}
               source={t('Estimate · survey × visitor counts', '推計・アンケート×来訪者数')}
             >
-              <div className="td-chart" style={{ height: 230 }}>
+              {narrow ? (<MobileBars rows={modeBars.map(r => ({ name: r.name, value: r.value, label: compact(r.value, lang), color: MODE_COLOUR[r.id] }))} />) : (<div className="td-chart" style={{ height: 230 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={modeBars} margin={{ top: 22, right: 6, left: 6, bottom: 0 }}>
                     <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} interval={0} />
@@ -342,7 +353,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </div>)}
             </Card>
             <Card
               className="td-7"
@@ -351,7 +362,11 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               sub={t('Share of tourists by mode, %', '交通手段別の割合（%）')}
               source={t('Fukui Prefecture tourism survey', '福井県観光アンケート')}
             >
-              <div className="td-chart" style={{ height: 230 }}>
+              {narrow ? (<ul className="td-mobile-bars">{stacked.map((r, i) => <li key={i}>
+                <strong>{r.name}</strong>
+                <div className="td-mobile-stack" aria-hidden="true">{MODE_ORDER.map(m => <span key={m} style={{ width: `${r[m]}%`, background: MODE_COLOUR[m] }} />)}</div>
+                <div className="td-mobile-shares">{MODE_ORDER.map(m => <span key={m}><i style={{ background: MODE_COLOUR[m] }} />{t(...MODE_NAME[m])} {r[m]}%</span>)}</div>
+              </li>)}</ul>) : (<div className="td-chart" style={{ height: 230 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stacked} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }} barCategoryGap={7}>
                     <XAxis type="number" domain={[0, 100]} hide />
@@ -364,7 +379,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </div>)}
               <div className="td-legend">
                 {MODE_ORDER.map((m) => (
                   <span key={m}>
@@ -383,7 +398,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               className="td-5"
               title={t('Last bus back to Fukui Station', '福井駅への最終バス')}
             >
-              <div className="td-chart" style={{ height: 240 }}>
+              {narrow ? (<MobileBars rows={backBars.map(r => ({ name: r.name, value: r.value == null ? 0 : Math.max(0, r.value - 360), label: r.label, color: r.value != null && r.value <= EARLY_LAST_RETURN_MIN ? EARLY : LATER, onClick: () => onOpenMap(r.id) }))} />) : (<div className="td-chart" style={{ height: 240 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={backBars.map((b) => ({ ...b, value: b.value ?? 6 * 60 }))}
@@ -446,7 +461,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </div>)}
             </Card>
             <Card
               className="td-7"
@@ -519,7 +534,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               sub={t('Revenue · FY2024', '収入・2024年度')}
               source={t('Chubu District Transport Bureau · Fukui Shimbun', '中部運輸局・福井新聞')}
             >
-              <div className="td-chart" style={{ height: 40 + revenue.length * 46 }}>
+              {narrow ? (<MobileBars rows={revenue.map(r => ({ name: t(r.label, r.label_ja), value: r.yen ?? 0, label: yen(r.yen ?? 0), color: GROUP_COLOUR[r.mode] ?? LATER }))} />) : (<div className="td-chart" style={{ height: 40 + revenue.length * 46 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={revenue.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))}
@@ -537,7 +552,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </div>)}
             </Card>
             <Card
               className="td-6"
@@ -545,7 +560,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               sub={t('Passengers a year', '年間輸送人員')}
               source={t('JR West · Fukui Shimbun · Chunichi · Chubu District Transport Bureau', 'JR西日本・福井新聞・中日新聞・中部運輸局')}
             >
-              <div className="td-chart" style={{ height: 40 + ridership.length * 38 }}>
+              {narrow ? (<MobileBars rows={ridership.map(r => ({ name: t(r.label, r.label_ja), value: r.passengers, label: people(r.passengers), color: GROUP_COLOUR[r.mode] ?? LATER }))} />) : (<div className="td-chart" style={{ height: 40 + ridership.length * 38 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={ridership.map((r) => ({ ...r, name: t(r.label, r.label_ja) }))}
@@ -568,7 +583,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </div>)}
             </Card>
           </div>
           <div className="td-stats">
@@ -597,7 +612,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                 sub={t('By mode · grey: tourists living in Fukui', '交通手段別・灰色：県内在住の観光客')}
                 source={t('Estimate · prefecture tourism survey', '推計・県観光アンケート')}
               >
-                <div className="td-chart" style={{ height: 40 + spendRows.length * 44 }}>
+                {narrow ? (<MobileBars rows={spendRows.map(r => ({ name: r.name, value: r.yen, label: <>{yenFull(r.yen)}{r.local != null && <span className="muted"> · {yenFull(r.local)}</span>}</>, color: MODE_COLOUR[r.id] }))} />) : (<div className="td-chart" style={{ height: 40 + spendRows.length * 44 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={spendRows} layout="vertical" margin={{ top: 2, right: 150, left: 4, bottom: 2 }}>
                       <XAxis type="number" hide />
@@ -633,7 +648,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
+                </div>)}
               </Card>
             )}
             {trends && trends.terms.length > 0 && (

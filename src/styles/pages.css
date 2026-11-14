@@ -2990,3 +2990,31 @@ html[dir='rtl'] .scn-tick-label {
   direction: rtl;
   unicode-bidi: isolate;
 }
+
+/* Strategy phones: readable rows instead of compressed desktop equations and panels. */
+@media (max-width: 720px) {
+  .strategy .eq-head { align-items: flex-start; flex-wrap: wrap; }
+  .strategy .eq-terms { flex-direction: column; gap: 0; }
+  .strategy .eq-part { flex-direction: column; width: 100%; }
+  .strategy .eq-term { width: 100%; flex: auto; padding: 10px 12px; }
+  .strategy .eq-value { font-size: 20px; overflow-wrap: anywhere; }
+  .strategy .eq-label { font-size: 12px; }
+  .strategy .eq-op { padding: 3px 0; line-height: 1.2; }
+  .strategy .q-nav a { flex-shrink: 0; }
+  .strategy .q-themes.seg { display: flex; flex-wrap: wrap; max-width: 100%; }
+  .strategy .q-themes button { flex: 1 1 auto; padding: 8px 10px; white-space: normal; }
+  .strategy .q-group-stack { display: block; }
+  .strategy .q-group:not(.on) { display: none; }
+  .strategy .q-group .s-card-body, .strategy .q-group .s-card-body > div { display: block; }
+  .strategy .q-group .forecast-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .strategy .q-group .span-12 .hbar-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; font-size: 12px; }
+  .strategy .q-group .span-12 .hbar-label { grid-column: 1; }
+  .strategy .q-group .span-12 .hbar-track { grid-row: 2; grid-column: 1 / -1; height: 16px; }
+  .strategy .q-group .span-12 .hbar-value { grid-row: 1; grid-column: 2; font-size: 13px; }
+  .strategy .s-card { padding: 14px 12px; }
+  .strategy .s-card-head { flex-wrap: wrap; }
+  .strategy .s-card-head h3 { min-width: 0; overflow-wrap: anywhere; }
+  .strategy .gn-pace, .strategy .eco-kpis { grid-template-columns: minmax(0, 1fr); }
+  .strategy .table-wrap, .strategy .heat-wrap, .strategy .next7-scroll { max-width: 100%; overflow-x: auto; }
+  .strategy .seg { flex-wrap: wrap; max-width: 100%; }
+}
