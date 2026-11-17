@@ -1,42 +1,42 @@
 {
- "generated_at": "2026-11-16T06:48:01Z",
+ "generated_at": "2026-11-17T08:08:09Z",
  "spend_per_visitor": {
   "note": "Survey 交通費: transport spend for the trip per person, band midpoints; includes getting to Fukui.",
-  "responses": 21871,
+  "responses": 21795,
   "visitors_from_outside": {
    "train": {
     "yen": 22000.0,
-    "n": 1134
+    "n": 1132
    },
    "bus": {
     "yen": 25400.0,
-    "n": 1416
+    "n": 1414
    },
    "own_car": {
-    "yen": 11600.0,
-    "n": 11793
+    "yen": 11700.0,
+    "n": 11742
    },
    "rental_car": {
     "yen": 32800.0,
-    "n": 1800
+    "n": 1804
    },
    "other": {
     "yen": 23300.0,
-    "n": 980
+    "n": 977
    }
   },
   "fukui_residents": {
    "train": {
-    "yen": 3600.0,
+    "yen": 3700.0,
     "n": 96
    },
    "bus": {
-    "yen": 6900.0,
+    "yen": 7000.0,
     "n": 48
    },
    "own_car": {
     "yen": 3900.0,
-    "n": 4480
+    "n": 4459
    },
    "rental_car": {
     "yen": 15000.0,
@@ -54,8 +54,8 @@
   "source": "code4fukui/fukui-kanko-survey (Fukui Prefecture tourism survey), 福井県内での交通手段",
   "url": "https://github.com/code4fukui/fukui-kanko-survey",
   "licence": "CC BY 4.0",
-  "from": "2025-11-16",
-  "to": "2026-11-15"
+  "from": "2025-11-17",
+  "to": "2026-11-16"
  },
  "modes": [
   "train",
@@ -67,39 +67,39 @@
  "totals": {
   "last_30_days": {
    "period": [
-    "2026-10-17",
-    "2026-11-15"
+    "2026-10-18",
+    "2026-11-16"
    ],
-   "visitors": 343218,
+   "visitors": 334965,
    "by_mode": {
     "train": {
-     "visitors": 20659,
-     "lo": 15718,
-     "hi": 25766,
-     "share": 0.0602
+     "visitors": 20227,
+     "lo": 15376,
+     "hi": 25240,
+     "share": 0.0604
     },
     "bus": {
-     "visitors": 52726,
-     "lo": 44300,
-     "hi": 61153,
-     "share": 0.1536
+     "visitors": 51576,
+     "lo": 43323,
+     "hi": 59828,
+     "share": 0.154
     },
     "own_car": {
-     "visitors": 210756,
-     "lo": 199470,
-     "hi": 222044,
-     "share": 0.6141
+     "visitors": 205483,
+     "lo": 194435,
+     "hi": 216533,
+     "share": 0.6134
     },
     "rental_car": {
-     "visitors": 45857,
-     "lo": 37962,
-     "hi": 53753,
-     "share": 0.1336
+     "visitors": 44778,
+     "lo": 37047,
+     "hi": 52507,
+     "share": 0.1337
     },
     "other": {
-     "visitors": 13217,
-     "lo": 8747,
-     "hi": 17685,
+     "visitors": 12902,
+     "lo": 8526,
+     "hi": 17277,
      "share": 0.0385
     }
    }
@@ -112,34 +112,34 @@
    "visitors": 3568975,
    "by_mode": {
     "train": {
-     "visitors": 213696,
-     "lo": 163177,
-     "hi": 265493,
+     "visitors": 213626,
+     "lo": 163044,
+     "hi": 265483,
      "share": 0.0599
     },
     "bus": {
-     "visitors": 554861,
-     "lo": 471046,
-     "hi": 638677,
+     "visitors": 554975,
+     "lo": 471091,
+     "hi": 638859,
      "share": 0.1555
     },
     "own_car": {
-     "visitors": 2170405,
-     "lo": 2057872,
-     "hi": 2282937,
-     "share": 0.6081
+     "visitors": 2170927,
+     "lo": 2058324,
+     "hi": 2283530,
+     "share": 0.6083
     },
     "rental_car": {
-     "visitors": 492545,
-     "lo": 413242,
-     "hi": 571851,
+     "visitors": 492678,
+     "lo": 413288,
+     "hi": 572066,
      "share": 0.138
     },
     "other": {
-     "visitors": 137467,
-     "lo": 92860,
-     "hi": 182073,
-     "share": 0.0385
+     "visitors": 136771,
+     "lo": 92217,
+     "hi": 181323,
+     "share": 0.0383
     }
    }
   }
@@ -149,92 +149,92 @@
    "survey_areas": [
     "東尋坊 エリア"
    ],
-   "responses": 553,
+   "responses": 552,
    "shares": {
     "train": {
-     "share": 0.084087,
-     "lo": 0.060956,
-     "hi": 0.107217
+     "share": 0.084239,
+     "lo": 0.061069,
+     "hi": 0.10741
     },
     "bus": {
-     "share": 0.273056,
-     "lo": 0.235922,
-     "hi": 0.31019
+     "share": 0.273551,
+     "lo": 0.236362,
+     "hi": 0.310739
     },
     "own_car": {
-     "share": 0.438517,
-     "lo": 0.39716,
-     "hi": 0.479875
+     "share": 0.4375,
+     "lo": 0.396116,
+     "hi": 0.478884
     },
     "rental_car": {
-     "share": 0.170886,
-     "lo": 0.139513,
-     "hi": 0.202259
+     "share": 0.171196,
+     "lo": 0.139772,
+     "hi": 0.202619
     },
     "other": {
-     "share": 0.033454,
-     "lo": 0.018466,
-     "hi": 0.048441
+     "share": 0.033514,
+     "lo": 0.0185,
+     "hi": 0.048529
     }
    },
    "bus_kind": {
-    "route": 0.245,
-    "tour": 0.028
+    "route": 0.2455,
+    "tour": 0.0281
    },
-   "visitors_30d": 70023,
+   "visitors_30d": 69171,
    "by_mode_30d": {
     "train": {
-     "visitors": 5888,
-     "lo": 4268,
-     "hi": 7508
+     "visitors": 5827,
+     "lo": 4224,
+     "hi": 7430
     },
     "bus": {
-     "visitors": 19120,
-     "lo": 16520,
-     "hi": 21720
+     "visitors": 18922,
+     "lo": 16349,
+     "hi": 21494
     },
     "own_car": {
-     "visitors": 30706,
-     "lo": 27810,
-     "hi": 33602
+     "visitors": 30262,
+     "lo": 27400,
+     "hi": 33125
     },
     "rental_car": {
-     "visitors": 11966,
-     "lo": 9769,
-     "hi": 14163
+     "visitors": 11842,
+     "lo": 9668,
+     "hi": 14015
     },
     "other": {
-     "visitors": 2343,
-     "lo": 1293,
-     "hi": 3392
+     "visitors": 2318,
+     "lo": 1280,
+     "hi": 3357
     }
    },
    "official_annual_2025": 651000.0,
    "by_mode_year": {
     "train": {
-     "visitors": 54741,
-     "lo": 39682,
-     "hi": 69798
+     "visitors": 54840,
+     "lo": 39756,
+     "hi": 69924
     },
     "bus": {
-     "visitors": 177759,
-     "lo": 153585,
-     "hi": 201934
+     "visitors": 178082,
+     "lo": 153872,
+     "hi": 202291
     },
     "own_car": {
-     "visitors": 285475,
-     "lo": 258551,
-     "hi": 312399
+     "visitors": 284812,
+     "lo": 257872,
+     "hi": 311753
     },
     "rental_car": {
-     "visitors": 111247,
-     "lo": 90823,
-     "hi": 131671
+     "visitors": 111449,
+     "lo": 90992,
+     "hi": 131905
     },
     "other": {
-     "visitors": 21779,
-     "lo": 12021,
-     "hi": 31535
+     "visitors": 21818,
+     "lo": 12044,
+     "hi": 31592
     }
    },
    "visitor_measure": "camera",
@@ -246,36 +246,36 @@
    "survey_areas": [
     "福井駅前 エリア"
    ],
-   "responses": 890,
+   "responses": 888,
    "shares": {
     "train": {
-     "share": 0.3,
-     "lo": 0.269893,
-     "hi": 0.330107
+     "share": 0.298423,
+     "lo": 0.268328,
+     "hi": 0.328519
     },
     "bus": {
-     "share": 0.096067,
-     "lo": 0.076707,
-     "hi": 0.115428
+     "share": 0.096284,
+     "lo": 0.076882,
+     "hi": 0.115686
     },
     "own_car": {
-     "share": 0.326404,
-     "lo": 0.295598,
-     "hi": 0.357211
+     "share": 0.32714,
+     "lo": 0.296281,
+     "hi": 0.357998
     },
     "rental_car": {
-     "share": 0.079775,
-     "lo": 0.061974,
-     "hi": 0.097576
+     "share": 0.082207,
+     "lo": 0.064141,
+     "hi": 0.100274
     },
     "other": {
-     "share": 0.197753,
-     "lo": 0.171584,
-     "hi": 0.223921
+     "share": 0.195946,
+     "lo": 0.169839,
+     "hi": 0.222053
     }
    },
    "bus_kind": {
-    "route": 0.0753,
+    "route": 0.0755,
     "tour": 0.0208
    },
    "visitors_30d": null,
@@ -292,92 +292,92 @@
     "かつやま恐竜の森 エリア",
     "スーベニアショップふらぷとる エリア"
    ],
-   "responses": 1866,
+   "responses": 1856,
    "shares": {
     "train": {
-     "share": 0.053859,
-     "lo": 0.043616,
-     "hi": 0.064101
+     "share": 0.05361,
+     "lo": 0.043362,
+     "hi": 0.063858
     },
     "bus": {
-     "share": 0.132905,
-     "lo": 0.117502,
-     "hi": 0.148308
+     "share": 0.132543,
+     "lo": 0.117117,
+     "hi": 0.14797
     },
     "own_car": {
-     "share": 0.635316,
-     "lo": 0.613476,
-     "hi": 0.657156
+     "share": 0.636045,
+     "lo": 0.614156,
+     "hi": 0.657935
     },
     "rental_car": {
-     "share": 0.148446,
-     "lo": 0.132314,
-     "hi": 0.164578
+     "share": 0.148707,
+     "lo": 0.13252,
+     "hi": 0.164894
     },
     "other": {
-     "share": 0.029475,
-     "lo": 0.021801,
-     "hi": 0.037149
+     "share": 0.029095,
+     "lo": 0.021448,
+     "hi": 0.036741
     }
    },
    "bus_kind": {
-    "route": 0.0681,
-    "tour": 0.0648
+    "route": 0.0679,
+    "tour": 0.0647
    },
-   "visitors_30d": 119952,
+   "visitors_30d": 114704,
    "by_mode_30d": {
     "train": {
-     "visitors": 6460,
-     "lo": 5232,
-     "hi": 7689
+     "visitors": 6149,
+     "lo": 4974,
+     "hi": 7325
     },
     "bus": {
-     "visitors": 15942,
-     "lo": 14095,
-     "hi": 17790
+     "visitors": 15203,
+     "lo": 13434,
+     "hi": 16973
     },
     "own_car": {
-     "visitors": 76207,
-     "lo": 73588,
-     "hi": 78827
+     "visitors": 72957,
+     "lo": 70446,
+     "hi": 75468
     },
     "rental_car": {
-     "visitors": 17806,
-     "lo": 15871,
-     "hi": 19741
+     "visitors": 17057,
+     "lo": 15201,
+     "hi": 18914
     },
     "other": {
-     "visitors": 3536,
-     "lo": 2615,
-     "hi": 4456
+     "visitors": 3337,
+     "lo": 2460,
+     "hi": 4214
     }
    },
    "official_annual_2025": 1298975.0,
    "by_mode_year": {
     "train": {
-     "visitors": 69961,
-     "lo": 56656,
-     "hi": 83266
+     "visitors": 69638,
+     "lo": 56326,
+     "hi": 82950
     },
     "bus": {
-     "visitors": 172640,
-     "lo": 152632,
-     "hi": 192648
+     "visitors": 172170,
+     "lo": 152132,
+     "hi": 192209
     },
     "own_car": {
-     "visitors": 825260,
-     "lo": 796890,
-     "hi": 853629
+     "visitors": 826207,
+     "lo": 797773,
+     "hi": 854641
     },
     "rental_car": {
-     "visitors": 192828,
-     "lo": 171873,
-     "hi": 213783
+     "visitors": 193167,
+     "lo": 172140,
+     "hi": 214193
     },
     "other": {
-     "visitors": 38287,
-     "lo": 28319,
-     "hi": 48256
+     "visitors": 37794,
+     "lo": 27860,
+     "hi": 47726
     }
    },
    "visitor_measure": "reservations",
@@ -389,92 +389,92 @@
    "survey_areas": [
     "レインボーライン エリア"
    ],
-   "responses": 310,
+   "responses": 311,
    "shares": {
     "train": {
-     "share": 0.004839,
+     "share": 0.004823,
      "lo": 0.0,
-     "hi": 0.012564
+     "hi": 0.012523
     },
     "bus": {
-     "share": 0.11129,
-     "lo": 0.076281,
-     "hi": 0.1463
+     "share": 0.110932,
+     "lo": 0.076029,
+     "hi": 0.145836
     },
     "own_car": {
-     "share": 0.785484,
-     "lo": 0.739788,
-     "hi": 0.831179
+     "share": 0.786174,
+     "lo": 0.740605,
+     "hi": 0.831742
     },
     "rental_car": {
-     "share": 0.079032,
-     "lo": 0.048999,
-     "hi": 0.109065
+     "share": 0.078778,
+     "lo": 0.048838,
+     "hi": 0.108719
     },
     "other": {
-     "share": 0.019355,
-     "lo": 0.004018,
-     "hi": 0.034691
+     "share": 0.019293,
+     "lo": 0.004005,
+     "hi": 0.03458
     }
    },
    "bus_kind": {
     "route": 0.0129,
-    "tour": 0.0984
+    "tour": 0.0981
    },
-   "visitors_30d": 56925,
+   "visitors_30d": 55390,
    "by_mode_30d": {
     "train": {
-     "visitors": 275,
+     "visitors": 267,
      "lo": 0,
-     "hi": 715
+     "hi": 694
     },
     "bus": {
-     "visitors": 6335,
-     "lo": 4342,
-     "hi": 8328
+     "visitors": 6145,
+     "lo": 4211,
+     "hi": 8078
     },
     "own_car": {
-     "visitors": 44714,
-     "lo": 42112,
-     "hi": 47315
+     "visitors": 43546,
+     "lo": 41022,
+     "hi": 46070
     },
     "rental_car": {
-     "visitors": 4499,
-     "lo": 2789,
-     "hi": 6209
+     "visitors": 4364,
+     "lo": 2705,
+     "hi": 6022
     },
     "other": {
-     "visitors": 1102,
-     "lo": 229,
-     "hi": 1975
+     "visitors": 1069,
+     "lo": 222,
+     "hi": 1915
     }
    },
    "official_annual_2025": 443000.0,
    "by_mode_year": {
     "train": {
-     "visitors": 2144,
+     "visitors": 2137,
      "lo": 0,
-     "hi": 5566
+     "hi": 5548
     },
     "bus": {
-     "visitors": 49301,
-     "lo": 33792,
-     "hi": 64811
+     "visitors": 49143,
+     "lo": 33681,
+     "hi": 64605
     },
     "own_car": {
-     "visitors": 347969,
-     "lo": 327726,
-     "hi": 368212
+     "visitors": 348275,
+     "lo": 328088,
+     "hi": 368462
     },
     "rental_car": {
-     "visitors": 35011,
-     "lo": 21707,
-     "hi": 48316
+     "visitors": 34899,
+     "lo": 21635,
+     "hi": 48163
     },
     "other": {
-     "visitors": 8574,
-     "lo": 1780,
-     "hi": 15368
+     "visitors": 8547,
+     "lo": 1774,
+     "hi": 15319
     }
    },
    "visitor_measure": "vehicles",
@@ -487,92 +487,92 @@
     "あわら温泉 エリア",
     "あわら湯のまち エリア"
    ],
-   "responses": 670,
+   "responses": 669,
    "shares": {
     "train": {
-     "share": 0.106716,
-     "lo": 0.083337,
-     "hi": 0.130096
+     "share": 0.106876,
+     "lo": 0.083464,
+     "hi": 0.130288
     },
     "bus": {
-     "share": 0.082836,
-     "lo": 0.061964,
-     "hi": 0.103707
+     "share": 0.08296,
+     "lo": 0.062058,
+     "hi": 0.103861
     },
     "own_car": {
-     "share": 0.635075,
-     "lo": 0.598622,
-     "hi": 0.671528
+     "share": 0.634529,
+     "lo": 0.598037,
+     "hi": 0.671021
     },
     "rental_car": {
-     "share": 0.095522,
-     "lo": 0.073265,
-     "hi": 0.11778
+     "share": 0.095665,
+     "lo": 0.073376,
+     "hi": 0.117954
     },
     "other": {
-     "share": 0.079851,
-     "lo": 0.059326,
-     "hi": 0.100376
+     "share": 0.07997,
+     "lo": 0.059416,
+     "hi": 0.100525
     }
    },
    "bus_kind": {
-    "route": 0.0619,
+    "route": 0.062,
     "tour": 0.0209
    },
-   "visitors_30d": 66262,
+   "visitors_30d": 65644,
    "by_mode_30d": {
     "train": {
-     "visitors": 7071,
-     "lo": 5522,
-     "hi": 8620
+     "visitors": 7016,
+     "lo": 5479,
+     "hi": 8553
     },
     "bus": {
-     "visitors": 5489,
-     "lo": 4106,
-     "hi": 6872
+     "visitors": 5446,
+     "lo": 4074,
+     "hi": 6818
     },
     "own_car": {
-     "visitors": 42081,
-     "lo": 39666,
-     "hi": 44497
+     "visitors": 41653,
+     "lo": 39258,
+     "hi": 44049
     },
     "rental_car": {
-     "visitors": 6329,
-     "lo": 4855,
-     "hi": 7804
+     "visitors": 6280,
+     "lo": 4817,
+     "hi": 7743
     },
     "other": {
-     "visitors": 5291,
-     "lo": 3931,
-     "hi": 6651
+     "visitors": 5250,
+     "lo": 3900,
+     "hi": 6599
     }
    },
    "official_annual_2025": 658000.0,
    "by_mode_year": {
     "train": {
-     "visitors": 70219,
-     "lo": 54836,
-     "hi": 85603
+     "visitors": 70324,
+     "lo": 54919,
+     "hi": 85730
     },
     "bus": {
-     "visitors": 54506,
-     "lo": 40772,
-     "hi": 68239
+     "visitors": 54588,
+     "lo": 40834,
+     "hi": 68341
     },
     "own_car": {
-     "visitors": 417879,
-     "lo": 393893,
-     "hi": 441865
+     "visitors": 417520,
+     "lo": 393508,
+     "hi": 441532
     },
     "rental_car": {
-     "visitors": 62853,
-     "lo": 48208,
-     "hi": 77499
+     "visitors": 62948,
+     "lo": 48281,
+     "hi": 77614
     },
     "other": {
-     "visitors": 52542,
-     "lo": 39037,
-     "hi": 66047
+     "visitors": 52620,
+     "lo": 39096,
+     "hi": 66145
     }
    },
    "visitor_measure": "hotel_guests",
@@ -585,92 +585,92 @@
     "大本山 永平寺 エリア",
     "永平寺門前 エリア"
    ],
-   "responses": 1495,
+   "responses": 1490,
    "shares": {
     "train": {
-     "share": 0.032107,
-     "lo": 0.023171,
-     "hi": 0.041043
+     "share": 0.032215,
+     "lo": 0.023249,
+     "hi": 0.04118
     },
     "bus": {
-     "share": 0.194314,
-     "lo": 0.174257,
-     "hi": 0.214372
+     "share": 0.194966,
+     "lo": 0.17485,
+     "hi": 0.215083
     },
     "own_car": {
-     "share": 0.567224,
-     "lo": 0.542108,
-     "hi": 0.59234
+     "share": 0.567785,
+     "lo": 0.542631,
+     "hi": 0.592939
     },
     "rental_car": {
-     "share": 0.174916,
-     "lo": 0.155659,
-     "hi": 0.194174
+     "share": 0.174161,
+     "lo": 0.154904,
+     "hi": 0.193418
     },
     "other": {
-     "share": 0.031438,
-     "lo": 0.022593,
-     "hi": 0.040284
+     "share": 0.030872,
+     "lo": 0.02209,
+     "hi": 0.039655
     }
    },
    "bus_kind": {
-    "route": 0.1452,
-    "tour": 0.0492
+    "route": 0.1456,
+    "tour": 0.0493
    },
    "visitors_30d": 30056,
    "by_mode_30d": {
     "train": {
-     "visitors": 965,
-     "lo": 696,
-     "hi": 1234
+     "visitors": 968,
+     "lo": 699,
+     "hi": 1238
     },
     "bus": {
-     "visitors": 5840,
-     "lo": 5237,
-     "hi": 6443
+     "visitors": 5860,
+     "lo": 5255,
+     "hi": 6465
     },
     "own_car": {
-     "visitors": 17048,
-     "lo": 16294,
-     "hi": 17803
+     "visitors": 17065,
+     "lo": 16309,
+     "hi": 17821
     },
     "rental_car": {
-     "visitors": 5257,
-     "lo": 4678,
-     "hi": 5836
+     "visitors": 5235,
+     "lo": 4656,
+     "hi": 5813
     },
     "other": {
-     "visitors": 945,
-     "lo": 679,
-     "hi": 1211
+     "visitors": 928,
+     "lo": 664,
+     "hi": 1192
     }
    },
    "official_annual_2025": 518000,
    "by_mode_year": {
     "train": {
-     "visitors": 16631,
-     "lo": 12003,
-     "hi": 21260
+     "visitors": 16687,
+     "lo": 12043,
+     "hi": 21331
     },
     "bus": {
-     "visitors": 100655,
-     "lo": 90265,
-     "hi": 111045
+     "visitors": 100992,
+     "lo": 90572,
+     "hi": 111413
     },
     "own_car": {
-     "visitors": 293822,
-     "lo": 280812,
-     "hi": 306832
+     "visitors": 294113,
+     "lo": 281083,
+     "hi": 307142
     },
     "rental_car": {
-     "visitors": 90606,
-     "lo": 80631,
-     "hi": 100582
+     "visitors": 90215,
+     "lo": 80240,
+     "hi": 100191
     },
     "other": {
-     "visitors": 16285,
-     "lo": 11703,
-     "hi": 20867
+     "visitors": 15992,
+     "lo": 11443,
+     "hi": 20541
     }
    },
    "visitor_measure": "proxy_survey",
