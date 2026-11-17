@@ -49,11 +49,37 @@ function SegmentLabel(p: LabelProps) {
   const v = Number(p.value)
   if (!(v >= 10) || w < 34) return null
   return (
-    <text x={x + w / 2} y={y + h / 2} dy="0.35em" textAnchor="middle" fill="#0a1120" fontSize={11.5} fontWeight={700}>
-      {Math.round(v)}%
+    <text x={x + w / 2} y={y + h / 2} dy="0.35em" textAnchor="middle" direction="ltr" unicodeBidi="isolate" fill="#0a1120" fontSize={11.5} fontWeight={700}>
+      {`${Math.round(v)}%`}
     </text>
   )
 }
+/** Keep each Arabic category in one RTL text block; Recharts' SVG word wrapping
+ * otherwise reverses parentheses and starts long labels inside the plotted bars. */
+function ArabicCategoryTick({ x = 0, y = 0, payload, width }: { x?: number | string; y?: number | string; payload?: { value: string }; width: number }) {
+  const labelWidth = width - 12
+  return <foreignObject x={Number(x) - labelWidth} y={Number(y) - 22} width={labelWidth} height={44}>
+    <div className="td-ar-axis-label" dir="rtl">{payload?.value}</div>
+  </foreignObject>
+}
+
+/** Label and percentage have independent bidi scopes, so the percent sign stays with its value. */
+function ModeShareTooltip({ active, payload, label }: { active?: boolean; payload?: ReadonlyArray<{ dataKey?: string | number; value?: unknown }>; label?: unknown }) {
+  const { t, lang } = useLang()
+  if (!active || !payload?.length) return null
+  return <div className="td-mode-tooltip" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <strong>{String(label ?? '')}</strong>
+    {MODE_ORDER.map(m => {
+      const item = payload.find(p => p.dataKey === m)
+      if (item?.value == null) return null
+      return <div key={m} className="td-mode-tooltip-row">
+        <span><i style={{ background: MODE_COLOUR[m] }} />{t(...MODE_NAME[m])}</span>
+        <bdi dir="ltr">{`${item.value}%`}</bdi>
+      </div>
+    })}
+  </div>
+}
+
 const GRID = '#34425e'
 const AXIS = { fill: '#aeb9cd', fontSize: 12 }
 const TIP = { background: '#17233a', border: '1px solid rgba(160,185,230,.2)', borderRadius: 8, fontSize: 12.5, color: '#e9eef8' }
@@ -268,12 +294,12 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
     site === 'all'
       ? {
           value: `${early.length} / ${linked.length}`,
-          label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`, `مواقع آخر باص فيها قبل 17:30 · ${dayLabel}`),
+          label: t(`Sites with last bus by 17:30 · ${dayLabel}`, `最終バス17:30までの地点・${dayLabel}`, `مواقع آخر حافلة فيها قبل 17:30 · ${dayLabel}`),
           warn: early.length > 0,
         }
       : {
           value: siteBack != null ? clockLabel(data.nodes[site].days[day]?.to_hub?.leave) : t('None', 'なし'),
-          label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`, `آخر باص للعودة · ${dayLabel}`),
+          label: t(`Last bus back · ${dayLabel}`, `最終バス・${dayLabel}`, `آخر حافلة للعودة · ${dayLabel}`),
           warn: siteBack != null && siteBack <= EARLY_LAST_RETURN_MIN,
         },
     { value: revenueTotal ? yen(revenueTotal) : '—', label: t('Transport revenue a year', '交通の年間収入') },
@@ -365,13 +391,13 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
               {narrow ? (<ul className="td-mobile-bars">{stacked.map((r, i) => <li key={i}>
                 <strong>{r.name}</strong>
                 <div className="td-mobile-stack" aria-hidden="true">{MODE_ORDER.map(m => <span key={m} style={{ width: `${r[m]}%`, background: MODE_COLOUR[m] }} />)}</div>
-                <div className="td-mobile-shares">{MODE_ORDER.map(m => <span key={m}><i style={{ background: MODE_COLOUR[m] }} />{t(...MODE_NAME[m])} {r[m]}%</span>)}</div>
+                <div className="td-mobile-shares">{MODE_ORDER.map(m => <span key={m}><i style={{ background: MODE_COLOUR[m] }} />{t(...MODE_NAME[m])} <bdi dir="ltr">{`${r[m]}%`}</bdi></span>)}</div>
               </li>)}</ul>) : (<div className="td-chart" style={{ height: 230 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stacked} layout="vertical" margin={{ top: 0, right: 12, left: 4, bottom: 0 }} barCategoryGap={7}>
                     <XAxis type="number" domain={[0, 100]} hide />
-                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={150} />
-                    <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v, k) => [`${v}%`, t(...MODE_NAME[k as ModeId])]} />
+                    <YAxis type="category" dataKey="name" tick={lang === 'ar' ? <ArabicCategoryTick width={150} /> : AXIS} tickLine={false} axisLine={false} width={150} />
+                    <Tooltip cursor={CURSOR} content={<ModeShareTooltip />} />
                     {MODE_ORDER.map((m) => (
                       <Bar key={m} dataKey={m} stackId="s" fill={MODE_COLOUR[m]} isAnimationActive={false} stroke="#121c2f" strokeWidth={2}>
                         <LabelList dataKey={m} content={SegmentLabel} />
@@ -414,7 +440,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                       tickLine={false}
                       axisLine={{ stroke: GRID }}
                     />
-                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={170} />
+                    <YAxis type="category" dataKey="name" tick={lang === 'ar' ? <ArabicCategoryTick width={170} /> : AXIS} tickLine={false} axisLine={false} width={170} />
                     <ReferenceLine
                       x={EARLY_LAST_RETURN_MIN}
                       stroke={EARLY}
@@ -542,7 +568,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     margin={{ top: 2, right: 82, left: 4, bottom: 2 }}
                   >
                     <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={210} />
+                    <YAxis type="category" dataKey="name" tick={lang === 'ar' ? <ArabicCategoryTick width={210} /> : AXIS} tickLine={false} axisLine={false} width={210} />
                     <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [yen(Number(v)), t('revenue', '収入')]} />
                     <Bar dataKey="yen" barSize={22} radius={[0, 4, 4, 0]} isAnimationActive={false}>
                       {revenue.map((r) => (
@@ -568,7 +594,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                     margin={{ top: 2, right: 64, left: 4, bottom: 2 }}
                   >
                     <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={230} />
+                    <YAxis type="category" dataKey="name" tick={lang === 'ar' ? <ArabicCategoryTick width={230} /> : AXIS} tickLine={false} axisLine={false} width={230} />
                     <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [Number(v).toLocaleString(), t('passengers', '人')]} />
                     <Bar dataKey="passengers" barSize={18} radius={[0, 4, 4, 0]} isAnimationActive={false}>
                       {ridership.map((r) => (
@@ -616,7 +642,7 @@ export default function TransportView({ registry, onOpenMap }: { registry: NodeR
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={spendRows} layout="vertical" margin={{ top: 2, right: 150, left: 4, bottom: 2 }}>
                       <XAxis type="number" hide />
-                      <YAxis type="category" dataKey="name" tick={AXIS} tickLine={false} axisLine={false} width={96} />
+                      <YAxis type="category" dataKey="name" tick={lang === 'ar' ? <ArabicCategoryTick width={96} /> : AXIS} tickLine={false} axisLine={false} width={96} />
                       <Tooltip cursor={CURSOR} contentStyle={TIP} formatter={(v) => [yenFull(Number(v)), t('per visitor', '1人当たり')]} />
                       <Bar dataKey="yen" barSize={20} radius={[0, 4, 4, 0]} isAnimationActive={false}>
                         {spendRows.map((r) => (
