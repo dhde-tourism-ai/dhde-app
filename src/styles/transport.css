@@ -524,3 +524,18 @@
   .td-stat-meta { flex-wrap: wrap; }
   .td-card-source { overflow-wrap: anywhere; }
 }
+
+/* Arabic chart labels use HTML bidi layout without changing axis geometry. */
+.td-ar-axis-label {
+  height: 100%; display: flex; align-items: center; justify-content: flex-start;
+  font-size: 12px; line-height: 1.35; color: #aeb9cd;
+  text-align: right; white-space: normal; overflow-wrap: anywhere; unicode-bidi: isolate;
+}
+.td-mode-tooltip {
+  padding: 10px; background: #17233a; border: 1px solid rgba(160,185,230,.2);
+  border-radius: 8px; color: #e9eef8; font-size: 12.5px; min-width: 160px;
+}
+.td-mode-tooltip > strong { display: block; margin-bottom: 5px; }
+.td-mode-tooltip-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 3px 0; }
+.td-mode-tooltip-row i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-inline-end: 5px; }
+.td-mode-tooltip-row bdi, .td-mobile-shares bdi { white-space: nowrap; font-variant-numeric: tabular-nums; }
