@@ -1,20 +1,20 @@
 {
- "generated_at": "2026-11-18T07:43:33+00:00",
- "today": "2026-11-18",
+ "generated_at": "2026-11-19T07:40:30+00:00",
+ "today": "2026-11-19",
  "method": "Per hotel area, from its reservation feed's past nights: tight = the 90th percentile of occupancy (plus demand 35% above normal where demand_check), slack = the 10th percentile for that weekday (plus demand at or above normal).",
  "notes": [],
  "areas": {
   "fukui_station": {
    "node": "fukui_station",
    "demand_check": true,
-   "nights": 1063,
+   "nights": 1064,
    "since": "2023-12-21",
    "median_occ_pct": 63,
    "tight_occ_pct": 87,
    "slack_occ_pct": {
     "Mon": 28,
     "Tue": 33,
-    "Wed": 37,
+    "Wed": 38,
     "Thu": 39,
     "Fri": 41,
     "Sat": 49,
@@ -24,7 +24,7 @@
   "awara_onsen": {
    "node": "awara_onsen",
    "demand_check": false,
-   "nights": 1168,
+   "nights": 1169,
    "since": "2023-09-06",
    "median_occ_pct": 54,
    "tight_occ_pct": 76,
@@ -41,14 +41,14 @@
   "echizen_coast": {
    "node": "tojinbo",
    "demand_check": true,
-   "nights": 698,
+   "nights": 699,
    "since": "2024-12-19",
    "median_occ_pct": 32,
    "tight_occ_pct": 61,
    "slack_occ_pct": {
     "Mon": 13,
     "Tue": 11,
-    "Wed": 6,
+    "Wed": 7,
     "Thu": 13,
     "Fri": 26,
     "Sat": 40,
@@ -58,10 +58,10 @@
   "mikata_five_lakes": {
    "node": "rainbow_line",
    "demand_check": true,
-   "nights": 531,
+   "nights": 532,
    "since": "2025-06-05",
    "median_occ_pct": 49,
-   "tight_occ_pct": 89,
+   "tight_occ_pct": 88,
    "slack_occ_pct": {
     "Mon": 21,
     "Tue": 19,
